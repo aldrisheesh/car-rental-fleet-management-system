@@ -1,6 +1,7 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { getCurrentPrincipal } from "./lib/auth.server";
+import { canAccessAdminPath } from "./lib/auth";
 import { renderErrorPage } from "./lib/error-page";
 
 const authBoundaryMiddleware = createMiddleware().server(
@@ -17,8 +18,7 @@ const authBoundaryMiddleware = createMiddleware().server(
 
     const principal = await getCurrentPrincipal();
     const allowed = isAdminArea
-      ? principal?.role === "Owner/Admin" &&
-        principal.accountStatus === "Active"
+      ? canAccessAdminPath(principal, pathname)
       : principal?.role === "Customer/Renter" &&
         principal.accountStatus === "Active";
 

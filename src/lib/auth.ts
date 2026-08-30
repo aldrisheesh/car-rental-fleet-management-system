@@ -35,3 +35,22 @@ export function hasRole(
 ): boolean {
   return isActivePrincipal(principal) && principal.role === role;
 }
+
+/** Coarse access map for the existing administrative route tree. */
+export function canAccessAdminPath(
+  principal: AppPrincipal | null,
+  pathname: string,
+): boolean {
+  if (!isActivePrincipal(principal) || !pathname.startsWith("/admin")) {
+    return false;
+  }
+  if (principal.role === "Owner/Admin") return true;
+  if (principal.role !== "Operations Staff") return false;
+
+  return (
+    pathname === "/admin/bookings" ||
+    pathname.startsWith("/admin/bookings/") ||
+    pathname === "/admin/calendar" ||
+    pathname.startsWith("/admin/calendar/")
+  );
+}
