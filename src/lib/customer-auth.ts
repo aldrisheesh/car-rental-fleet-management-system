@@ -1,5 +1,4 @@
 export const CUSTOMER_SESSION_KEY = "briahs-customer-session";
-export const CUSTOMER_PROFILE_KEY = "briahs-customer-profile";
 import { getClientPrincipal, signOutWithCredentialsApi } from "./auth-client";
 
 export type CustomerSession = {
@@ -61,42 +60,11 @@ export function clearCustomerSession() {
 }
 
 export function getCustomerProfile(session: CustomerSession): CustomerProfile {
-  if (!hasBrowserStorage()) return createDefaultProfile(session);
-
-  const rawProfile = window.localStorage.getItem(CUSTOMER_PROFILE_KEY);
-  if (!rawProfile) return createDefaultProfile(session);
-
-  try {
-    const profile = JSON.parse(rawProfile) as Partial<CustomerProfile>;
-    if (
-      profile.email &&
-      profile.email.toLowerCase() !== session.email.toLowerCase()
-    ) {
-      return createDefaultProfile(session);
-    }
-
-    return {
-      name: profile.name || session.name,
-      email: profile.email || session.email,
-      phone: profile.phone || session.phone || "",
-      streetAddress: profile.streetAddress || session.streetAddress || "",
-      barangay: profile.barangay || session.barangay || "",
-      cityMunicipality:
-        profile.cityMunicipality || session.cityMunicipality || "",
-      province: profile.province || session.province || "",
-      postalCode: profile.postalCode || session.postalCode || "",
-      updatedAt: profile.updatedAt || "",
-    };
-  } catch {
-    window.localStorage.removeItem(CUSTOMER_PROFILE_KEY);
-    return createDefaultProfile(session);
-  }
+  return createDefaultProfile(session);
 }
 
-export function setCustomerProfile(profile: CustomerProfile) {
-  if (!hasBrowserStorage()) return;
-  window.localStorage.setItem(CUSTOMER_PROFILE_KEY, JSON.stringify(profile));
-}
+/** @deprecated Profile persistence is server-backed; retained for callers during transition. */
+export function setCustomerProfile(_profile: CustomerProfile) {}
 
 function createDefaultProfile(session: CustomerSession): CustomerProfile {
   return {

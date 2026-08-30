@@ -14,6 +14,11 @@ export type Database = {
           email: string | null;
           full_name: string;
           phone_number: string | null;
+          street_address: string | null;
+          barangay: string | null;
+          city_municipality: string | null;
+          province: string | null;
+          postal_code: string | null;
           user_type: string;
           account_status: string;
           created_at: string;
@@ -24,6 +29,11 @@ export type Database = {
           email?: string | null;
           full_name?: string;
           phone_number?: string | null;
+          street_address?: string | null;
+          barangay?: string | null;
+          city_municipality?: string | null;
+          province?: string | null;
+          postal_code?: string | null;
           user_type?: string;
           account_status?: string;
           created_at?: string;

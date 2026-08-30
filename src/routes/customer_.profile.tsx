@@ -10,11 +10,9 @@ import { toast } from "sonner";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { getAdminSession } from "@/lib/admin-auth";
-import { updateOwnProfile } from "@/lib/auth-client";
+import { getOwnProfile, updateOwnProfile } from "@/lib/auth-client";
 import {
-  getCustomerProfile,
   getCustomerSession,
-  setCustomerProfile,
   type CustomerProfile,
   type CustomerSession,
 } from "@/lib/customer-auth";
@@ -72,17 +70,23 @@ function CustomerProfilePage() {
       return;
     }
 
-    const profile = getCustomerProfile(activeSession);
     setSession(activeSession);
-    setForm({
-      name: activeSession.name,
-      email: activeSession.email,
-      phone: profile.phone,
-      streetAddress: profile.streetAddress,
-      barangay: profile.barangay,
-      cityMunicipality: profile.cityMunicipality,
-      province: profile.province,
-      postalCode: profile.postalCode,
+    void getOwnProfile().then((result) => {
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
+      const profile = result.data.profile;
+      setForm({
+        name: profile.full_name,
+        email: profile.email ?? activeSession.email,
+        phone: profile.phone_number ?? "",
+        streetAddress: profile.street_address ?? "",
+        barangay: profile.barangay ?? "",
+        cityMunicipality: profile.city_municipality ?? "",
+        province: profile.province ?? "",
+        postalCode: profile.postal_code ?? "",
+      });
     });
   }, [navigate]);
 
@@ -123,46 +127,26 @@ function CustomerProfilePage() {
       const result = await updateOwnProfile({
         fullName: form.name.trim(),
         phoneNumber: form.phone.trim(),
+        streetAddress: form.streetAddress.trim(),
+        barangay: form.barangay.trim(),
+        cityMunicipality: form.cityMunicipality.trim(),
+        province: form.province.trim(),
+        postalCode: form.postalCode.trim(),
       });
       if (!result.ok) {
         toast.error(result.message);
         return;
       }
 
-      const updatedSession: CustomerSession = {
-        ...activeSession,
-        name: result.data.principal.fullName,
-        phone: form.phone.trim(),
-        streetAddress: form.streetAddress.trim(),
-        barangay: form.barangay.trim(),
-        cityMunicipality: form.cityMunicipality.trim(),
-        province: form.province.trim(),
-        postalCode: form.postalCode.trim(),
-      };
-      const updatedProfile: CustomerProfile = {
-        ...form,
-        name: result.data.principal.fullName,
-        email: activeSession.email,
-        phone: form.phone.trim(),
-        streetAddress: form.streetAddress.trim(),
-        barangay: form.barangay.trim(),
-        cityMunicipality: form.cityMunicipality.trim(),
-        province: form.province.trim(),
-        postalCode: form.postalCode.trim(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      setCustomerProfile(updatedProfile);
-      setSession(updatedSession);
       setForm({
         name: result.data.principal.fullName,
         email: activeSession.email,
-        phone: updatedProfile.phone,
-        streetAddress: updatedProfile.streetAddress,
-        barangay: updatedProfile.barangay,
-        cityMunicipality: updatedProfile.cityMunicipality,
-        province: updatedProfile.province,
-        postalCode: updatedProfile.postalCode,
+        phone: form.phone.trim(),
+        streetAddress: form.streetAddress.trim(),
+        barangay: form.barangay.trim(),
+        cityMunicipality: form.cityMunicipality.trim(),
+        province: form.province.trim(),
+        postalCode: form.postalCode.trim(),
       });
       toast.success("Profile updated", {
         description: "Your customer details have been saved.",

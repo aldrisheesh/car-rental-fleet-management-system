@@ -98,9 +98,30 @@ export function getSession() {
 export function updateOwnProfile(input: {
   fullName: string;
   phoneNumber: string;
+  streetAddress: string;
+  barangay: string;
+  cityMunicipality: string;
+  province: string;
+  postalCode: string;
 }) {
   return request<{ principal: AppPrincipal }>("/api/auth/profile", {
     method: "PATCH",
     body: JSON.stringify(input),
   });
+}
+
+export function getOwnProfile() {
+  return request<{
+    profile: {
+      full_name: string;
+      email: string | null;
+      phone_number: string | null;
+      street_address: string | null;
+      barangay: string | null;
+      city_municipality: string | null;
+      province: string | null;
+      postal_code: string | null;
+      updated_at: string;
+    };
+  }>("/api/auth/profile");
 }
