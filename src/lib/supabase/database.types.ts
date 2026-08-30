@@ -163,6 +163,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["renter_requirement_documents"]["Insert"]>;
         Relationships: [];
       };
+      renter_requirement_reviews: {
+        Row: { id: string; requirement_set_id: string; reviewer_id: string; government_id_document_id: string; government_id_version: number; government_id_outcome: string; government_id_reason: string | null; drivers_license_document_id: string; drivers_license_version: number; drivers_license_outcome: string; drivers_license_reason: string | null; identity_consistency: string; lto_outcome: string; lto_checked_at: string | null; resulting_status: string; reviewed_at: string };
+        Insert: Record<string, any>;
+        Update: Record<string, any>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -170,6 +176,8 @@ export type Database = {
         Args: { p_requirement_set_id: string; p_booking_id: string; p_customer_id: string; p_requirement_type: string; p_storage_path: string; p_original_filename: string; p_mime_type: string; p_size_bytes: number; p_version: number };
         Returns: string;
       };
+      record_renter_requirement_review: { Args: Record<string, any>; Returns: string };
+      resubmit_renter_requirements: { Args: { p_requirement_set_id: string; p_customer_id: string }; Returns: boolean };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

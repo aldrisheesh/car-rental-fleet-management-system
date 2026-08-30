@@ -35,24 +35,50 @@ async function read({ request }: { request: Request }) {
       if (signed.error || !signed.data) return error("Unable to open document.", 503);
       return Response.json({ url: signed.data.signedUrl });
     }
+    if (!bookingId && principal.role === "Owner/Admin") {
+      const pending = await client.from("renter_requirement_sets").select("*, booking:booking_requests(id,customer:profiles(id,full_name,email),requested_vehicle:vehicles(name))").eq("status", "Pending Review").order("updated_at", { ascending: true });
+      if (pending.error) return error("Unable to load requirements.", 503);
+      return Response.json({ requirementSets: pending.data ?? [], requiredTypes: TYPES });
+    }
     if (!bookingId) return error("Booking is required.");
     const booking = await ownBooking(client, bookingId, principal); if (!booking) return error("Booking not found.", 404);
     const set = await getSet(client, bookingId, booking.customer_id, principal.role === "Customer/Renter");
     if (set.error) return error("Unable to load requirements.", 503);
     if (principal.role === "Operations Staff") return Response.json({ requirementSet: set.data, documents: [], requiredTypes: TYPES });
     const docs = set.data ? await client.from("renter_requirement_documents").select("id,requirement_set_id,booking_id,customer_id,requirement_type,original_filename,mime_type,size_bytes,version,is_current,uploaded_at,superseded_at").eq("requirement_set_id", set.data.id).order("uploaded_at", { ascending: false }) : { data: [], error: null };
-    return Response.json({ requirementSet: set.data, documents: docs.data ?? [], requiredTypes: TYPES });
+    const reviews = set.data ? await client.from("renter_requirement_reviews").select("*").eq("requirement_set_id", set.data.id).order("reviewed_at", { ascending: false }) : { data: [], error: null };
+    return Response.json({ requirementSet: set.data, documents: docs.data ?? [], reviews: reviews.data ?? [], requiredTypes: TYPES });
   } catch (e) { return error(e instanceof Error && e.message === "forbidden" ? "Forbidden." : "Authentication required.", e instanceof Error && e.message === "forbidden" ? 403 : 401); }
 }
 
 async function mutate({ request }: { request: Request }) {
   let uploadedPath: string | null = null;
   try {
-    const principal = await requirePrincipal(); if (principal.role !== "Customer/Renter") return error("Customer access is required.", 403);
+    const principal = await requirePrincipal();
+    const client = getSupabaseServerClient();
+    if (principal.role === "Owner/Admin") {
+      const body = await request.json().catch(() => null) as Record<string, unknown> | null;
+      if (body?.action !== "review") return error("Invalid review action.");
+      const setId = String(body.requirementSetId || "");
+      const rs = await client.from("renter_requirement_sets").select("*").eq("id", setId).maybeSingle();
+      if (!rs.data) return error("Requirement set not found.", 404);
+      const docs = await client.from("renter_requirement_documents").select("id,version,requirement_type,is_current").eq("requirement_set_id", setId).eq("is_current", true);
+      const gov = docs.data?.find((d) => d.requirement_type === "Valid Government ID"); const lic = docs.data?.find((d) => d.requirement_type === "Driver's License");
+      if (!gov || !lic) return error("Both current documents are required.");
+      const result = await client.rpc("record_renter_requirement_review", { p_requirement_set_id: setId, p_reviewer_id: principal.userId, p_government_id_document_id: String(body.governmentIdDocumentId || gov.id), p_government_id_version: Number(body.governmentIdVersion || gov.version), p_government_id_outcome: String(body.governmentIdOutcome || ""), p_government_id_reason: String(body.governmentIdReason || ""), p_drivers_license_document_id: String(body.driversLicenseDocumentId || lic.id), p_drivers_license_version: Number(body.driversLicenseVersion || lic.version), p_drivers_license_outcome: String(body.driversLicenseOutcome || ""), p_drivers_license_reason: String(body.driversLicenseReason || ""), p_identity_consistency: String(body.identityConsistency || ""), p_lto_outcome: String(body.ltoOutcome || ""), p_resulting_status: String(body.resultingStatus || "") });
+      if (result.error) { const map: Record<string,string> = { not_reviewable:"Requirement set is no longer pending review.", stale_document:"Document version is stale; reload and review the current files.", invalid_verified_gate:"Verified requires both accepted documents, consistent identity, and LTO Clear.", invalid_resubmission_gate:"Needs Resubmission requires a flagged document with a reason.", missing_reason:"A customer-facing replacement reason is required." }; return error(map[result.error.message] || "Unable to save review.", 409); }
+      return Response.json({ reviewId: result.data, status: body.resultingStatus });
+    }
+    if (principal.role !== "Customer/Renter") return error("Customer access is required.", 403);
     const form = await request.formData(); const bookingId = String(form.get("bookingId") || ""); const action = String(form.get("action") || "upload");
-    const client = getSupabaseServerClient(); const booking = await ownBooking(client, bookingId, principal); if (!booking) return error("Booking not found.", 404);
+    const booking = await ownBooking(client, bookingId, principal); if (!booking) return error("Booking not found.", 404);
     const set = await getSet(client, bookingId, principal.userId, true); if (set.error || !set.data) return error("Unable to initialize requirements.", 503);
-    if (set.data.status !== "Not Submitted") return error("Requirements are already pending review and cannot be changed.", 409);
+    if (action === "resubmit") {
+      const result = await client.rpc("resubmit_renter_requirements", { p_requirement_set_id: set.data.id, p_customer_id: principal.userId });
+      if (result.error) return error(result.error.message === "replacement_required" ? "Replace every flagged document before resubmitting." : "Requirements are not ready for resubmission.", 409);
+      return Response.json({ status: "Pending Review" });
+    }
+    if (set.data.status !== "Not Submitted" && set.data.status !== "Needs Resubmission") return error("Requirements are already pending review and cannot be changed.", 409);
     if (action === "submit") {
       const current = await client.from("renter_requirement_documents").select("requirement_type").eq("requirement_set_id", set.data.id).eq("is_current", true);
       if (current.error || !TYPES.every((t) => current.data?.some((d) => d.requirement_type === t))) return error("Upload both required documents before submitting.");
@@ -60,6 +86,11 @@ async function mutate({ request }: { request: Request }) {
       if (updated.error) return error("Unable to submit requirements.", 503); return Response.json({ requirementSet: updated.data });
     }
     const type = String(form.get("requirementType") || ""); if (!(TYPES as readonly string[]).includes(type)) return error("Unsupported requirement type.");
+    if (set.data.status === "Needs Resubmission") {
+      const latest = await client.from("renter_requirement_reviews").select("government_id_outcome,drivers_license_outcome").eq("requirement_set_id", set.data.id).order("reviewed_at", { ascending: false }).limit(1).maybeSingle();
+      const flagged = type === "Valid Government ID" ? latest.data?.government_id_outcome === "Needs Replacement" : latest.data?.drivers_license_outcome === "Needs Replacement";
+      if (!flagged) return error("Only flagged document types may be replaced.", 403);
+    }
     const file = form.get("file"); if (!(file instanceof File) || file.size === 0) return error("A file is required.");
     const validationError = await validateRequirementFile(file); if (validationError) return error(validationError);
     const ext = file.name.toLowerCase().split(".").pop() || "";
