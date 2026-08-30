@@ -46,8 +46,12 @@ async function read({ request }: { request: Request }) {
     if (set.error) return error("Unable to load requirements.", 503);
     if (principal.role === "Operations Staff") return Response.json({ requirementSet: set.data, documents: [], requiredTypes: TYPES });
     const docs = set.data ? await client.from("renter_requirement_documents").select("id,requirement_set_id,booking_id,customer_id,requirement_type,original_filename,mime_type,size_bytes,version,is_current,uploaded_at,superseded_at").eq("requirement_set_id", set.data.id).order("uploaded_at", { ascending: false }) : { data: [], error: null };
-    const reviews = set.data ? await client.from("renter_requirement_reviews").select("*").eq("requirement_set_id", set.data.id).order("reviewed_at", { ascending: false }) : { data: [], error: null };
-    return Response.json({ requirementSet: set.data, documents: docs.data ?? [], reviews: reviews.data ?? [], requiredTypes: TYPES });
+    const reviews = set.data ? await client.from("renter_requirement_reviews").select("*").eq("requirement_set_id", set.data.id).order("reviewed_at", { ascending: false }).limit(1).maybeSingle() : { data: null, error: null };
+    if (principal.role === "Customer/Renter") {
+      const r = reviews.data;
+      return Response.json({ requirementSet: set.data, documents: docs.data ?? [], review: r ? { governmentIdOutcome: r.government_id_outcome, governmentIdReason: r.government_id_reason, driversLicenseOutcome: r.drivers_license_outcome, driversLicenseReason: r.drivers_license_reason, identityConsistency: r.identity_consistency, ltoOutcome: r.lto_outcome } : null, requiredTypes: TYPES });
+    }
+    return Response.json({ requirementSet: set.data, documents: docs.data ?? [], reviews: reviews.data ? [reviews.data] : [], requiredTypes: TYPES });
   } catch (e) { return error(e instanceof Error && e.message === "forbidden" ? "Forbidden." : "Authentication required.", e instanceof Error && e.message === "forbidden" ? 403 : 401); }
 }
 
