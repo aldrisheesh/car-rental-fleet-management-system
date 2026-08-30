@@ -3,296 +3,156 @@
 **Status:** Frozen for Baseline Requirement Submission  
 **Last updated:** 2026-08-31
 
-This document defines the implementation rules for the baseline Customer/Renter requirement-submission capability.
+This document defines the implementation rules for baseline Customer/Renter requirement submission and secure storage.
 
-It is intentionally limited to secure renter-document submission and storage. Manual requirement review and verification belong to a later vertical slice.
+Manual review semantics are defined separately in `12-requirement-review-and-verification.md`.
 
-## 1. Source Basis
-
-The revised manuscript requires customers to submit valid identification, driver's-license information, and other applicable renter requirements before booking approval.
-
-The validated client workflow requires requirements to be fully verified before down payment proceeds and confirms use of the LTO portal as an external license-verification aid.
-
-Existing prototype UI fields and older mock/data-dictionary document examples are not automatically mandatory business requirements.
-
-## 2. Baseline Scenario
+## Baseline Scenario
 
 The baseline implementation scenario is:
 
 **Customer/Renter is also the intended self-drive driver.**
 
-For this scenario, exactly two document types are required before the requirement set may move from `Not Submitted` to `Pending Review`:
+Required document types:
 
 1. `Valid Government ID`
 2. `Driver's License`
 
-These names are canonical requirement-type labels for the baseline implementation.
+A customer-uploaded LTO portal screenshot is not a baseline required upload.
 
-## 3. LTO Portal Rule
+## Accepted File Types
 
-The business may use the LTO portal externally to verify driver's-license information.
+Accept only:
 
-A customer-uploaded screenshot of the LTO portal is **not** a baseline required upload.
-
-Do not preserve the prototype's LTO-screenshot field as a mandatory requirement merely because it exists in the current UI.
-
-Later requirement-review logic may record that Owner/Admin performed external LTO verification, but VS006 must not invent the final review metadata if it is outside that slice.
-
-## 4. Additional / Alternate Documents
-
-The manuscript and older data dictionary mention possible supporting documents such as:
-
-- proof of billing
-- authorization letter
-- selfie with ID
-- other supporting documents
-
-These are not frozen as universally required.
-
-Do not make them mandatory in the baseline self-drive renter flow.
-
-If future client validation defines an alternate renter/driver scenario, this document may be revised to add a scenario-specific requirement matrix.
-
-## 5. Accepted File Types
-
-Baseline renter-document uploads accept only:
-
-- JPEG / JPG — MIME `image/jpeg`
-- PNG — MIME `image/png`
-- PDF — MIME `application/pdf`
-
-Do not accept executable, archive, script, HTML, SVG, or arbitrary binary formats.
-
-The implementation must validate both:
-
-- declared MIME type; and
-- expected extension/content handling as reasonably supported by the selected server/storage implementation.
-
-A renamed executable or unsupported file must not be accepted merely because its filename looks valid.
-
-## 6. Maximum File Size and Count
+- JPEG/JPG — `image/jpeg`
+- PNG — `image/png`
+- PDF — `application/pdf`
 
 Maximum size:
 
-**10 MiB per uploaded file**
+**10 MiB per file**
 
-Baseline count:
+Validate extension, MIME type, and supported file signature server-side.
 
-- one current `Valid Government ID` file per booking requirement set;
-- one current `Driver's License` file per booking requirement set.
+## Booking Association
 
-A replacement creates a new version/current file rather than allowing multiple simultaneously active files for the same baseline requirement type.
+Every requirement set belongs to exactly one canonical booking request.
 
-Do not introduce arbitrary multi-file upload for a baseline requirement type.
+Customer identity must come from the authenticated principal.
 
-## 7. Booking Association
+## Requirement Set
 
-Every renter-document submission must belong to exactly one canonical booking request.
+Each booking has at most one current requirement set.
 
-The authenticated Customer/Renter may upload documents only for a booking owned by that authenticated customer.
-
-Do not accept a client-supplied customer ID as ownership authority.
-
-The server must derive customer identity from the authenticated principal and validate ownership of the target booking.
-
-## 8. Requirement Set
-
-Use a booking-level requirement-set concept to represent the aggregate requirement-verification status defined in `03-workflows-and-status-rules.md`.
-
-A booking has at most one current requirement set.
-
-Initial aggregate status:
+Initial status:
 
 `Not Submitted`
 
-When current valid uploads exist for both baseline required document types and the customer completes/submits the requirement set:
+When both baseline required current documents exist and the customer explicitly submits the set:
 
 `Not Submitted` → `Pending Review`
 
-Customer upload does not create `Verified`.
+After Owner/Admin review:
 
-`Pending Review` → `Needs Resubmission` and `Pending Review` → `Verified` belong to the later authorized review capability.
+- `Pending Review` → `Needs Resubmission`; or
+- `Pending Review` → `Verified`
 
-## 9. Document Metadata
+Detailed review conditions are authoritative in `12-requirement-review-and-verification.md`.
 
-Persist document metadata separately from the binary file.
+## Document Metadata
 
-At minimum, each stored document record should preserve:
+Persist at minimum:
 
 - canonical document ID;
+- requirement-set ID;
 - booking ID;
-- authenticated customer ID or derivable owner relation;
+- customer ownership relation;
 - canonical requirement type;
 - private storage path/key;
-- original filename for display only;
+- original filename;
 - MIME type;
 - size in bytes;
-- version or equivalent replacement ordering;
-- whether/current-version semantics;
+- version/replacement ordering;
+- current/non-current state;
 - uploaded timestamp;
 - superseded timestamp where applicable.
 
-Do not use the original user filename as the authoritative storage key.
+Do not store signed URLs as truth.
 
-Generate collision-resistant storage object names.
+## Replacement / Resubmission
 
-## 10. Replacement / Resubmission
+Before initial submission (`Not Submitted`), Customer/Renter may replace either current requirement document.
 
-For an unverified requirement set:
+When status is `Needs Resubmission`, Customer/Renter may replace only document types currently marked as requiring replacement by Owner/Admin review.
 
-- Customer/Renter may replace their own current document for a required type.
-- Replacement must create a new stored object/document version.
-- The previous version becomes superseded/non-current.
-- Do not silently overwrite the previous object in place.
-- Only the current version is used for the active requirement submission.
+Replacement must:
 
-When the aggregate status is `Needs Resubmission`, submission of the required corrected replacement(s) may return the aggregate status to `Pending Review`.
+- create a new private storage object;
+- create a new document version;
+- supersede the previous current version;
+- preserve the previous object privately;
+- maintain exactly one current version per requirement type.
 
-Exactly which document(s) require replacement will be determined by the later Owner/Admin review record.
+After the required corrected files are present, the customer explicitly resubmits:
 
-After the aggregate status is `Verified`, Customer/Renter replacement is not allowed in the baseline flow.
+`Needs Resubmission` → `Pending Review`
 
-Exceptional reopening after verification remains an open decision.
+The new review cycle evaluates the new current versions.
 
-## 11. Supabase Storage Security
+After status is `Verified`, ordinary customer replacement is prohibited.
 
-Renter requirement files must use a **private Supabase Storage bucket**.
+Exceptional reopening after verification remains open.
 
-Recommended canonical bucket name:
+## Supabase Storage Security
+
+Use private bucket:
 
 `renter-requirements`
 
-The bucket must not be public.
-
-A storage object should be namespaced so ownership and booking association are explicit, for example:
+Recommended path shape:
 
 `{customer_id}/{booking_id}/{requirement_type_key}/{generated_file_id}.{extension}`
 
-Exact internal normalization of `requirement_type_key` may be chosen by implementation as long as the canonical business labels remain unchanged.
+Never expose a permanent public URL.
 
-## 12. File Access
+Protected file delivery must use:
+
+- trusted server-mediated access; or
+- a short-lived signed URL after trusted authorization.
+
+Maximum signed-URL lifetime:
+
+**5 minutes**
+
+## File Access
 
 ### Customer/Renter
 
-May:
-
-- upload permitted document types for their own booking;
-- view/download only their own current/superseded requirement documents where the UI exposes them;
-- replace their own unverified/current requirements under the rules above.
-
-Must not:
-
-- access another customer's requirement files;
-- modify review decisions;
-- mark requirements verified.
+May access only requirement metadata/files for their own bookings.
 
 ### Owner/Admin
 
-May access protected renter documents required for manual requirement verification.
-
-Review/verification mutation is implemented in the later review slice.
+May access protected renter documents required for manual verification.
 
 ### Operations Staff
 
-Must not receive raw access to:
+Must not receive raw access to government-ID or driver's-license files.
 
-- government-ID files;
-- driver's-license files.
+## Retention
 
-Staff may later receive only an authorized non-sensitive derived status where required for reservation coordination.
+No long-term automatic retention/deletion duration is frozen.
 
-## 13. Delivery of Private Files
+Do not automatically delete aged or superseded requirement files.
 
-Never expose a permanent public URL for protected renter documents.
+## Warning to Codex
 
-Use one of these protected patterns:
+Do not:
 
-- trusted server-mediated file response; or
-- short-lived signed URL created only after trusted authorization.
-
-If signed URLs are used, use a short expiry suitable for immediate viewing/download. Default implementation target:
-
-**5 minutes maximum**
-
-Do not store signed URLs as persistent database truth.
-
-Store the private object path/key instead.
-
-## 14. Upload Trust Boundary
-
-The implementation must validate before accepting/persisting a file:
-
-- authenticated principal;
-- `Customer/Renter` role;
-- active account where applicable;
-- ownership of target booking;
-- allowed requirement type;
-- allowed file type;
-- file-size limit;
-- replacement/status eligibility.
-
-Do not rely only on browser `accept` attributes.
-
-Client-side validation may improve UX but is not the security boundary.
-
-## 15. Filename and Metadata Safety
-
-Treat original filenames as untrusted display metadata.
-
-Sanitize or safely encode filenames before display.
-
-Do not build storage paths directly from an unsanitized original filename.
-
-Do not expose server filesystem paths, service-role credentials, or private bucket internals to the user.
-
-## 16. Retention and Deletion
-
-No automatic time-based deletion policy is frozen yet.
-
-Therefore:
-
-- do not implement automatic expiry/deletion of renter documents;
-- do not hard-delete superseded files merely as part of replacement;
-- keep superseded versions private and non-current;
-- retain files until a formal retention/deletion policy is approved.
-
-This is an implementation safety default, not a permanent legal/business retention period.
-
-The long-term retention/deletion duration remains in `10-open-decisions.md`.
-
-## 17. Scope Boundary for VS006
-
-VS006 may implement:
-
-- private Storage bucket/policies;
-- requirement-set persistence;
-- secure customer uploads;
-- document metadata;
-- baseline two-document submission;
-- replacement/versioning before verification;
-- own-document viewing;
-- aggregate `Not Submitted` → `Pending Review`.
-
-VS006 must not implement:
-
-- Owner/Admin verification to `Verified`;
-- review rejection / `Needs Resubmission` decisions unless explicitly authorized by the slice;
-- payment submission;
-- payment verification;
-- booking confirmation;
-- vehicle assignment;
-- rental lifecycle;
-- arbitrary additional mandatory document scenarios.
-
-## 18. Warning to Codex
-
-Do not treat the existing prototype requirement-upload UI as business authority.
-
-In particular:
-
-- do not require an LTO portal screenshot;
-- do not make proof of billing, authorization letter, selfie with ID, or `Other` mandatory in the baseline flow;
-- do not make Storage public;
-- do not expose Operations Staff to protected ID/license files;
-- do not allow upload to imply verification;
-- do not invent a long-term retention duration.
+- require an LTO screenshot;
+- add additional mandatory baseline document types;
+- make Storage public;
+- expose Operations Staff to raw renter documents;
+- treat upload as verification;
+- allow replacement of arbitrary files while `Needs Resubmission`;
+- allow ordinary replacement after `Verified`;
+- invent a retention duration.
