@@ -22,6 +22,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
 import { Route as ApiRequirementsRouteImport } from './routes/api.requirements'
+import { Route as ApiPaymentsRouteImport } from './routes/api.payments'
 import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
@@ -108,6 +109,11 @@ const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
 const ApiRequirementsRoute = ApiRequirementsRouteImport.update({
   id: '/api/requirements',
   path: '/api/requirements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentsRoute = ApiPaymentsRouteImport.update({
+  id: '/api/payments',
+  path: '/api/payments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMasterDataRoute = ApiMasterDataRouteImport.update({
@@ -248,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/master-data': typeof ApiMasterDataRoute
+  '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/master-data': typeof ApiMasterDataRoute
+  '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
@@ -322,6 +330,7 @@ export interface FileRoutesById {
   '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/master-data': typeof ApiMasterDataRoute
+  '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer_/profile': typeof CustomerProfileRoute
@@ -361,6 +370,7 @@ export interface FileRouteTypes {
     | '/api/bookings'
     | '/api/health'
     | '/api/master-data'
+    | '/api/payments'
     | '/api/requirements'
     | '/api/vehicles'
     | '/customer/profile'
@@ -397,6 +407,7 @@ export interface FileRouteTypes {
     | '/api/bookings'
     | '/api/health'
     | '/api/master-data'
+    | '/api/payments'
     | '/api/requirements'
     | '/api/vehicles'
     | '/customer/profile'
@@ -434,6 +445,7 @@ export interface FileRouteTypes {
     | '/api/bookings'
     | '/api/health'
     | '/api/master-data'
+    | '/api/payments'
     | '/api/requirements'
     | '/api/vehicles'
     | '/customer_/profile'
@@ -459,6 +471,7 @@ export interface RootRouteChildren {
   ApiBookingsRoute: typeof ApiBookingsRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMasterDataRoute: typeof ApiMasterDataRoute
+  ApiPaymentsRoute: typeof ApiPaymentsRoute
   ApiRequirementsRoute: typeof ApiRequirementsRoute
   ApiVehiclesRoute: typeof ApiVehiclesRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
@@ -560,6 +573,13 @@ declare module '@tanstack/react-router' {
       path: '/api/requirements'
       fullPath: '/api/requirements'
       preLoaderRoute: typeof ApiRequirementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments': {
+      id: '/api/payments'
+      path: '/api/payments'
+      fullPath: '/api/payments'
+      preLoaderRoute: typeof ApiPaymentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/master-data': {
@@ -769,6 +789,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBookingsRoute: ApiBookingsRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiMasterDataRoute: ApiMasterDataRoute,
+  ApiPaymentsRoute: ApiPaymentsRoute,
   ApiRequirementsRoute: ApiRequirementsRoute,
   ApiVehiclesRoute: ApiVehiclesRoute,
   CustomerProfileRoute: CustomerProfileRoute,
