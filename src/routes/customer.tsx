@@ -54,7 +54,6 @@ function CustomerViewPage() {
   const [bookingRequests, setBookingRequests] = useState<any[]>([]);
   const [idFileName, setIdFileName] = useState("");
   const [licenseFileName, setLicenseFileName] = useState("");
-  const [ltoLicenseScreenshotFileName, setLtoLicenseScreenshotFileName] = useState("");
   const pastCustomerBookings: Booking[] = [];
 
   useEffect(() => {
@@ -112,9 +111,6 @@ function CustomerViewPage() {
                 const missing: string[] = [];
                 if (!idFileName) missing.push("Valid ID");
                 if (!licenseFileName) missing.push("Driver's License");
-                if (!ltoLicenseScreenshotFileName) {
-                  missing.push("Screenshot of License on LTO portal");
-                }
 
                 if (missing.length > 0) {
                   toast.error("Please upload the required documents.", {
@@ -142,11 +138,6 @@ function CustomerViewPage() {
                 label="Driver's License"
                 helper={licenseFileName || "Upload front/back copy"}
                 onFilePick={(name) => setLicenseFileName(name)}
-              />
-              <UploadField
-                label="Screenshot of License on LTO portal"
-                helper={ltoLicenseScreenshotFileName || "Upload LTO portal screenshot"}
-                onFilePick={(name) => setLtoLicenseScreenshotFileName(name)}
               />
               <button
                 type="submit"
@@ -267,6 +258,8 @@ function CustomerViewPage() {
             </div>
           </Card>
 
+          {bookingRequests[0] && <RequirementSubmission booking={bookingRequests[0]} />}
+
           <Card title="Past bookings" icon={<History className="h-4 w-4 text-primary" />}>
             {bookingRequests.length > 0 && <div className="mb-4 space-y-3">{bookingRequests.map((request) => <div key={request.id} className="rounded-md border border-primary/30 bg-primary/5 px-3 py-3"><div className="flex items-center justify-between gap-3"><div><p className="text-sm font-semibold">Request {request.id.slice(0, 8)}</p><p className="text-xs text-muted-foreground">{request.requested_vehicle?.name ?? "Requested vehicle"} · {new Date(request.pickup_at).toLocaleString()}</p></div><StatusPill status={request.booking_status} /></div></div>)}</div>}
             <PastBookings rows={pastCustomerBookings} />
@@ -277,6 +270,33 @@ function CustomerViewPage() {
       <Footer />
     </div>
   );
+}
+
+function RequirementSubmission({ booking }: { booking: any }) {
+  const [data, setData] = useState<any>(null);
+  const [busy, setBusy] = useState(false);
+  const load = () => fetch(`/api/requirements?bookingId=${encodeURIComponent(booking.id)}`, { credentials: "same-origin" }).then((r) => r.ok ? r.json() : null).then(setData).catch(() => undefined);
+  useEffect(() => { load(); }, [booking.id]);
+  const current = (type: string) => data?.documents?.find((d: any) => d.requirement_type === type && d.is_current);
+  async function upload(type: string, file: File | undefined) {
+    if (!file) return;
+    setBusy(true); const form = new FormData(); form.set("bookingId", booking.id); form.set("requirementType", type); form.set("file", file);
+    const response = await fetch("/api/requirements", { method: "POST", body: form, credentials: "same-origin" }); const body = await response.json().catch(() => ({})); setBusy(false);
+    if (!response.ok) { toast.error(body.message || "Unable to upload document."); return; } toast.success(`${type} uploaded`); load();
+  }
+  async function submit() {
+    setBusy(true); const form = new FormData(); form.set("bookingId", booking.id); form.set("action", "submit"); const response = await fetch("/api/requirements", { method: "POST", body: form, credentials: "same-origin" }); const body = await response.json().catch(() => ({})); setBusy(false);
+    if (!response.ok) { toast.error(body.message || "Unable to submit requirements."); return; } toast.success("Requirements submitted", { description: "Pending Review. Payment becomes available after Owner/Admin verification." }); load();
+  }
+  const ready = Boolean(current("Valid Government ID") && current("Driver's License"));
+  return <Card title="Renter requirements" icon={<FileCheck2 className="h-4 w-4 text-primary" />}>
+    <p className="mb-3 text-xs text-muted-foreground">Request {booking.id.slice(0, 8)} · upload exactly one current file for each required document.</p>
+    <div className="grid gap-3 sm:grid-cols-2">
+      {["Valid Government ID", "Driver's License"].map((type) => <label key={type} className="rounded-md border border-border bg-secondary/20 p-3 text-sm"><span className="font-medium">{type}</span><input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" disabled={busy || data?.requirementSet?.status !== "Not Submitted"} onChange={(e) => upload(type, e.target.files?.[0])} className="mt-2 block w-full text-xs" /><span className="mt-1 block text-xs text-muted-foreground">{current(type)?.original_filename || "Not submitted"}</span></label>)}
+    </div>
+    <div className="mt-3 flex items-center justify-between gap-3"><StatusPill status={data?.requirementSet?.status || "Not Submitted"} /><button type="button" disabled={!ready || busy || data?.requirementSet?.status !== "Not Submitted"} onClick={submit} className="touch-target rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50">Submit for review</button></div>
+    {data?.requirementSet?.status === "Pending Review" && <p className="mt-2 text-xs text-muted-foreground">Uploads are not verification. Owner/Admin review is required before payment.</p>}
+  </Card>;
 }
 
 function PastBookings({ rows }: { rows: Booking[] }) {

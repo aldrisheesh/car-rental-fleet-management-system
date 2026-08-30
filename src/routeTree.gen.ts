@@ -21,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
+import { Route as ApiRequirementsRouteImport } from './routes/api.requirements'
 import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
@@ -102,6 +103,11 @@ const CustomerProfileRoute = CustomerProfileRouteImport.update({
 const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
   id: '/api/vehicles',
   path: '/api/vehicles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRequirementsRoute = ApiRequirementsRouteImport.update({
+  id: '/api/requirements',
+  path: '/api/requirements',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMasterDataRoute = ApiMasterDataRouteImport.update({
@@ -242,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/master-data': typeof ApiMasterDataRoute
+  '/api/requirements': typeof ApiRequirementsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
@@ -277,6 +284,7 @@ export interface FileRoutesByTo {
   '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/master-data': typeof ApiMasterDataRoute
+  '/api/requirements': typeof ApiRequirementsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin': typeof AdminIndexRoute
@@ -314,6 +322,7 @@ export interface FileRoutesById {
   '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/master-data': typeof ApiMasterDataRoute
+  '/api/requirements': typeof ApiRequirementsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer_/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
@@ -352,6 +361,7 @@ export interface FileRouteTypes {
     | '/api/bookings'
     | '/api/health'
     | '/api/master-data'
+    | '/api/requirements'
     | '/api/vehicles'
     | '/customer/profile'
     | '/admin/'
@@ -387,6 +397,7 @@ export interface FileRouteTypes {
     | '/api/bookings'
     | '/api/health'
     | '/api/master-data'
+    | '/api/requirements'
     | '/api/vehicles'
     | '/customer/profile'
     | '/admin'
@@ -423,6 +434,7 @@ export interface FileRouteTypes {
     | '/api/bookings'
     | '/api/health'
     | '/api/master-data'
+    | '/api/requirements'
     | '/api/vehicles'
     | '/customer_/profile'
     | '/admin/'
@@ -447,6 +459,7 @@ export interface RootRouteChildren {
   ApiBookingsRoute: typeof ApiBookingsRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMasterDataRoute: typeof ApiMasterDataRoute
+  ApiRequirementsRoute: typeof ApiRequirementsRoute
   ApiVehiclesRoute: typeof ApiVehiclesRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
   ApiAuthProfileRoute: typeof ApiAuthProfileRoute
@@ -540,6 +553,13 @@ declare module '@tanstack/react-router' {
       path: '/api/vehicles'
       fullPath: '/api/vehicles'
       preLoaderRoute: typeof ApiVehiclesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/requirements': {
+      id: '/api/requirements'
+      path: '/api/requirements'
+      fullPath: '/api/requirements'
+      preLoaderRoute: typeof ApiRequirementsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/master-data': {
@@ -749,6 +769,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBookingsRoute: ApiBookingsRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiMasterDataRoute: ApiMasterDataRoute,
+  ApiRequirementsRoute: ApiRequirementsRoute,
   ApiVehiclesRoute: ApiVehiclesRoute,
   CustomerProfileRoute: CustomerProfileRoute,
   ApiAuthProfileRoute: ApiAuthProfileRoute,

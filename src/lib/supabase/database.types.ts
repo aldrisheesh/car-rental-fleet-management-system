@@ -151,6 +151,18 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["booking_requests"]["Insert"]>;
         Relationships: [];
       };
+      renter_requirement_sets: {
+        Row: { id: string; booking_id: string; customer_id: string; status: string; submitted_at: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; booking_id: string; customer_id: string; status?: string; submitted_at?: string | null; created_at?: string; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["renter_requirement_sets"]["Insert"]>;
+        Relationships: [];
+      };
+      renter_requirement_documents: {
+        Row: { id: string; requirement_set_id: string; booking_id: string; customer_id: string; requirement_type: string; storage_path: string; original_filename: string; mime_type: string; size_bytes: number; version: number; is_current: boolean; uploaded_at: string; superseded_at: string | null };
+        Insert: { id?: string; requirement_set_id: string; booking_id: string; customer_id: string; requirement_type: string; storage_path: string; original_filename: string; mime_type: string; size_bytes: number; version: number; is_current?: boolean; uploaded_at?: string; superseded_at?: string | null };
+        Update: Partial<Database["public"]["Tables"]["renter_requirement_documents"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
