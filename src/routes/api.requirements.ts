@@ -1,10 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { validateRequirementFile } from "@/lib/requirements-validation";
 
-const MAX = 10 * 1024 * 1024;
 const TYPES = ["Valid Government ID", "Driver's License"] as const;
-const MIME_EXT: Record<string, string[]> = { "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"], "application/pdf": ["pdf"] };
 const error = (message: string, status = 400) => Response.json({ message }, { status });
 const safeName = (name: string) => name.replace(/[^a-zA-Z0-9._ -]/g, "_").slice(0, 180) || "document";
 const keyFor = (type: string) => type === "Valid Government ID" ? "government-id" : "drivers-license";
@@ -62,16 +61,15 @@ async function mutate({ request }: { request: Request }) {
     }
     const type = String(form.get("requirementType") || ""); if (!(TYPES as readonly string[]).includes(type)) return error("Unsupported requirement type.");
     const file = form.get("file"); if (!(file instanceof File) || file.size === 0) return error("A file is required.");
-    const ext = file.name.toLowerCase().split(".").pop() || ""; if (!MIME_EXT[file.type]?.includes(ext) || !MIME_EXT[file.type]) return error("Unsupported file format."); if (file.size > MAX) return error("File exceeds the 10 MiB limit.");
+    const validationError = await validateRequirementFile(file); if (validationError) return error(validationError);
+    const ext = file.name.toLowerCase().split(".").pop() || "";
     const existing = await client.from("renter_requirement_documents").select("id,version,storage_path").eq("requirement_set_id", set.data.id).eq("requirement_type", type).eq("is_current", true).maybeSingle();
     const version = (existing.data?.version ?? 0) + 1; const path = `${principal.userId}/${bookingId}/${keyFor(type)}/${crypto.randomUUID()}.${ext}`; uploadedPath = path;
     const up = await client.storage.from("renter-requirements").upload(path, file, { contentType: file.type, upsert: false }); if (up.error) return error("Unable to store document.", 503);
-    if (existing.data) {
-      const supersede = await client.from("renter_requirement_documents").update({ is_current: false, superseded_at: new Date().toISOString() }).eq("id", existing.data.id);
-      if (supersede.error) { await client.storage.from("renter-requirements").remove([path]); return error("Unable to replace document.", 503); }
-    }
-    const inserted = await client.from("renter_requirement_documents").insert({ requirement_set_id: set.data.id, booking_id: bookingId, customer_id: principal.userId, requirement_type: type, storage_path: path, original_filename: safeName(file.name), mime_type: file.type, size_bytes: file.size, version, is_current: true }).select("*").single();
-    if (inserted.error) { await client.storage.from("renter-requirements").remove([path]); return error("Unable to save document.", 503); }
+    const switched = await client.rpc("replace_renter_requirement_document", { p_requirement_set_id: set.data.id, p_booking_id: bookingId, p_customer_id: principal.userId, p_requirement_type: type, p_storage_path: path, p_original_filename: safeName(file.name), p_mime_type: file.type, p_size_bytes: file.size, p_version: version });
+    if (switched.error || !switched.data) { await client.storage.from("renter-requirements").remove([path]); return error("Unable to save document.", 503); }
+    const inserted = await client.from("renter_requirement_documents").select("*").eq("id", switched.data).single();
+    if (inserted.error || !inserted.data) { await client.storage.from("renter-requirements").remove([path]); return error("Unable to load saved document.", 503); }
     return Response.json({ document: inserted.data });
   } catch (e) { if (uploadedPath) { try { await getSupabaseServerClient().storage.from("renter-requirements").remove([uploadedPath]); } catch {} } return error(e instanceof Error && e.message === "forbidden" ? "Forbidden." : "Authentication required.", e instanceof Error && e.message === "forbidden" ? 403 : 401); }
 }

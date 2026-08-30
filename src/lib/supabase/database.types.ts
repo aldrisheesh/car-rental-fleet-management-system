@@ -165,7 +165,12 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      replace_renter_requirement_document: {
+        Args: { p_requirement_set_id: string; p_booking_id: string; p_customer_id: string; p_requirement_type: string; p_storage_path: string; p_original_filename: string; p_mime_type: string; p_size_bytes: number; p_version: number };
+        Returns: string;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
