@@ -43,13 +43,24 @@ Do not silently choose or invent a new rule.
 
 ---
 
-## 3. Open Decisions
+## 3. Open Decisions and Client Clarifications
 
 Anything explicitly identified as unresolved in:
 
 `codex-context/10-open-decisions.md`
 
-must remain unresolved unless the current approved slice explicitly freezes that decision.
+must remain unresolved unless the current approved slice explicitly freezes that decision or explicitly authorizes a safe provisional implementation.
+
+Client-specific operational details requiring direct confirmation from Briah's are tracked in:
+
+`codex-context/14-client-clarification-register.md`
+
+When a client-specific detail is missing:
+
+- do not silently present an assumption as client-confirmed truth;
+- if a safe, conservative, configurable/isolated provisional behavior is explicitly authorized by the current slice, development may continue;
+- record or preserve the applicable `CQ-###` clarification;
+- if the uncertainty affects security, authorization, irreversible architecture, or a core state machine and no safe provisional design exists, treat it as blocking.
 
 Do not infer missing business rules from:
 
@@ -59,8 +70,6 @@ Do not infer missing business rules from:
 - localStorage structures;
 - sample calculations;
 - previous prototype behavior.
-
-Report blockers instead of inventing policy.
 
 ---
 
@@ -126,14 +135,7 @@ The existing code is the implementation record of completed slices.
 
 Supabase/PostgreSQL is the canonical persistence platform for backend records established by approved slices.
 
-Prototype sources such as:
-
-- static arrays;
-- localStorage;
-- mock TypeScript objects;
-- hard-coded demo records;
-
-must not become canonical simply because they existed before backend implementation.
+Prototype sources such as static arrays, localStorage, mock TypeScript objects, and hard-coded demo records must not become canonical simply because they existed before backend implementation.
 
 Replace mock persistence incrementally as each approved slice establishes canonical backend behavior.
 
@@ -151,15 +153,9 @@ Do not rewrite applied migrations.
 
 Use new additive migrations for subsequent schema changes.
 
-Prefer:
+Prefer explicit constraints, foreign keys, appropriate nullability, database-controlled defaults, and reversible/additive evolution where practical.
 
-- explicit constraints;
-- foreign keys;
-- appropriate nullability;
-- database-controlled defaults;
-- reversible/additive evolution where practical.
-
-Do not encode unresolved business rules into schema constraints.
+Do not encode unresolved business rules into schema constraints unless the current slice explicitly freezes the rule.
 
 ---
 
@@ -179,15 +175,7 @@ Do not introduce alternative persisted role names.
 
 Application authorization must resolve trusted application role/state from canonical server/database data.
 
-Never authorize privileged behavior solely from:
-
-- localStorage;
-- client state;
-- client-readable cookies;
-- raw signup metadata;
-- request-supplied role values;
-- hidden UI controls;
-- route names.
+Never authorize privileged behavior solely from localStorage, client state, client-readable cookies, raw signup metadata, request-supplied role values, hidden UI controls, or route names.
 
 Public self-registration creates `Customer/Renter` only.
 
@@ -213,16 +201,7 @@ RLS is defense in depth and must not be weakened merely to simplify frontend int
 
 ## 11. Credentials and Secrets
 
-Never commit, print, or expose:
-
-- database passwords;
-- service-role keys;
-- access tokens;
-- refresh tokens;
-- SMTP credentials;
-- API secrets;
-- `.env` contents;
-- private customer documents.
+Never commit, print, or expose database passwords, service-role keys, access tokens, refresh tokens, SMTP credentials, API secrets, `.env` contents, or private customer documents.
 
 The Supabase service-role credential must remain server-only.
 
@@ -234,13 +213,7 @@ Browser-reachable modules must never import or expose privileged server credenti
 
 Security-sensitive operations must execute through trusted server-side code.
 
-Validate:
-
-- authenticated identity;
-- role;
-- account state where applicable;
-- request input;
-- ownership or authorization as required by the slice.
+Validate authenticated identity, role, account state where applicable, request input, and ownership/authorization as required by the slice.
 
 Do not trust client-supplied identifiers or state when the server can derive them from the authenticated principal.
 
@@ -266,29 +239,13 @@ A failed mutation must not leave the UI presenting an unpersisted successful sta
 
 Use controlled user-facing errors.
 
-Do not expose:
-
-- raw SQL;
-- stack traces;
-- database internals;
-- provider secrets;
-- sensitive authorization details.
+Do not expose raw SQL, stack traces, database internals, provider secrets, or sensitive authorization details.
 
 ---
 
 ## 15. Mock Operational Data
 
 Some operational prototype data will remain until its dedicated slice is implemented.
-
-Examples may include:
-
-- booking statuses;
-- rental statuses;
-- maintenance statuses;
-- utilization;
-- availability;
-- forecast results;
-- recommendation results.
 
 Keep such behavior isolated.
 
@@ -316,14 +273,7 @@ Each slice should add targeted tests appropriate to the capability.
 
 Prefer focused tests over broad unrelated test expansion.
 
-Where applicable, validate:
-
-- authorization boundaries;
-- input validation;
-- persistence behavior;
-- ownership isolation;
-- error handling;
-- critical deterministic business rules.
+Where applicable, validate authorization boundaries, input validation, persistence behavior, ownership isolation, error handling, and critical deterministic business rules.
 
 Existing tests from completed slices must continue passing.
 
@@ -333,11 +283,7 @@ Existing tests from completed slices must continue passing.
 
 When a slice depends on the linked development Supabase project or another external provider, perform provider-backed validation where the configured environment permits it.
 
-Report each relevant validation as:
-
-- `PASS`
-- `FAIL`
-- `BLOCKED`
+Report each relevant validation as `PASS`, `FAIL`, or `BLOCKED`.
 
 Never fabricate provider validation.
 
@@ -371,14 +317,7 @@ Avoid framework rewrites unless explicitly approved.
 
 Run the validation appropriate to the current slice.
 
-Typically this includes relevant equivalents of:
-
-- targeted tests;
-- existing regression tests;
-- lint;
-- TypeScript validation where configured;
-- production build;
-- migration/provider checks where applicable.
+Typically this includes relevant equivalents of targeted tests, existing regression tests, lint, TypeScript validation where configured, production build, and migration/provider checks where applicable.
 
 Report actual results only.
 
@@ -409,12 +348,7 @@ Use a fresh Codex session for each new vertical slice whenever practical.
 
 Within one slice, the same session may be reused for narrow corrections after ChatGPT review.
 
-Once a slice is approved:
-
-- end/archive that Codex session;
-- begin the next slice in a fresh session.
-
-This reduces unnecessary accumulated context.
+Once a slice is approved, end/archive that Codex session and begin the next slice in a fresh session.
 
 ---
 
@@ -422,14 +356,7 @@ This reduces unnecessary accumulated context.
 
 Minimize unnecessary context consumption.
 
-Do not:
-
-- repeatedly reread the entire repository;
-- repeatedly reread all `codex-context` files;
-- reproduce large source files in reports;
-- generate broad architecture summaries after implementation;
-- explain unrelated code;
-- plan future slices.
+Do not repeatedly reread the entire repository or all `codex-context` files, reproduce large source files in reports, generate broad architecture summaries after implementation, explain unrelated code, or plan future slices.
 
 The current slice should contain enough explicit direction to implement the capability.
 
@@ -460,12 +387,6 @@ After completing the approved vertical slice:
 
 **STOP.**
 
-Do not:
-
-- begin another slice;
-- implement adjacent features;
-- clean unrelated technical debt;
-- revise the manuscript;
-- modify `codex-context` unless explicitly authorized.
+Do not begin another slice, implement adjacent features, clean unrelated technical debt, revise the manuscript, or modify `codex-context` unless explicitly authorized.
 
 Wait for ChatGPT review and the next approved contract.

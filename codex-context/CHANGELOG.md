@@ -1,5 +1,39 @@
 # Changelog
 
+## 2026-08-31 — Client Clarification Register
+
+Added a formal workflow for continuing development while preserving unresolved client-specific operational questions.
+
+### Added
+
+- `14-client-clarification-register.md`
+- Initial client-validation questions covering:
+  - 50% down-payment calculation basis;
+  - security deposit;
+  - remaining-balance timing;
+  - production payment methods;
+  - additional/red-flag renter requirements;
+  - renter/driver differences;
+  - requested vs assigned vehicle substitution;
+  - vehicle release/turnover;
+  - vehicle operational statuses;
+  - rental extensions;
+  - late-return penalties;
+  - damage charges;
+  - fuel-return policy;
+  - final settlement/completion;
+  - maintenance workflow;
+  - Operations Staff editable reservation fields.
+
+### Clarified
+
+- Client-specific unknowns with safe provisional designs do not automatically block all development.
+- Temporary assumptions must be conservative, isolated/configurable where practical, and clearly distinguished from client-confirmed rules.
+- Security, authorization, irreversible architecture, and core state-machine decisions still require explicit freezing when no safe provisional design exists.
+- `10-open-decisions.md` now cross-references client-dependent questions in the clarification register.
+
+---
+
 ## 2026-08-31 — Requirement Review and Verification
 
 Updated the Development Baseline before VS007.

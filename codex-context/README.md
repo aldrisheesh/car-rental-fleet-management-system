@@ -17,6 +17,19 @@ When sources conflict, use this order:
 
 If a required behavior remains unspecified, do not invent it.
 
+## Development With Client-Specific Gaps
+
+Not every undocumented client operational detail must block development.
+
+Use:
+
+- `10-open-decisions.md` for unresolved decisions that still require engineering/business resolution;
+- `14-client-clarification-register.md` for specific operational details that only Briah's can reliably confirm.
+
+A vertical slice may proceed with a conservative/configurable temporary assumption only when the slice explicitly authorizes it and the assumption does not compromise security, authorization, irreversible architecture, or core workflow integrity.
+
+Temporary assumptions are not client-confirmed business truth.
+
 ## Currently Frozen for Implementation
 
 The baseline now includes:
@@ -38,18 +51,21 @@ The baseline now includes:
 
 ## Still Open
 
-Do not guess:
+Do not guess unless a current vertical-slice contract explicitly defines a safe provisional behavior:
 
 - exact Operations Staff editable reservation fields;
 - alternate renter/driver requirement scenarios;
 - long-term sensitive-upload retention;
 - payment-proof details;
+- monetary/settlement details;
 - rental/vehicle/maintenance lifecycle state machines;
 - cancellation/refund detail;
 - selected fuel-reference administration detail;
 - item-level transfer approval persistence;
 - API cache/refresh policy;
 - broader notification/audit specification.
+
+Client-confirmation questions for many operational gaps are maintained in `14-client-clarification-register.md`.
 
 ## Documents
 
@@ -65,10 +81,13 @@ Do not guess:
 - `10-open-decisions.md`
 - `11-requirements-and-secure-storage.md`
 - `12-requirement-review-and-verification.md`
+- `14-client-clarification-register.md`
 - `CHANGELOG.md`
 
 ## Update Rule
 
-Before implementing behavior still listed in `10-open-decisions.md`, freeze that decision first.
+Before implementing behavior that remains a blocking item in `10-open-decisions.md`, freeze that decision first.
 
-Do not silently overwrite previously frozen decisions.
+When development uncovers a client-specific unknown that can safely use a provisional/configurable behavior, add or update the corresponding `CQ-###` entry in `14-client-clarification-register.md`.
+
+After client validation, update the affected frozen specification and implementation rather than silently changing behavior.
