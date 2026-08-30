@@ -1,22 +1,23 @@
 # Workflows and Status Rules
 
-**Status:** Partially Frozen — booking, requirement-verification, and payment-verification foundations frozen; later lifecycle state machines still pending  
+**Status:** Partially Frozen — booking, requirement-verification, payment-verification, and baseline requirement-submission foundations frozen; later lifecycle state machines still pending  
 **Last updated:** 2026-08-31
 
 Existing repository mock statuses are not authoritative when they conflict with this document.
 
 ## Frozen High-Level Ordering
 
-1. A Customer/Renter submits a booking request and applicable renter information/requirements.
-2. Required renter documents are reviewed before the customer proceeds with the required down payment.
-3. Incomplete, unreadable, inconsistent, or otherwise unacceptable requirements must not be silently treated as verified.
-4. Payment verification is manual and is performed by Owner/Admin against the business's external bank/e-wallet records.
-5. A booking must not be treated as confirmed merely because it was submitted.
-6. Vehicle assignment is an Owner/Admin decision and must respect applicable availability and maintenance-readiness rules.
-7. Final booking confirmation requires the applicable requirement, payment, and vehicle-assignment gates defined below.
-8. Active rental processing begins only after applicable pre-rental gates and vehicle release/turnover are satisfied.
-9. Return processing includes vehicle condition review, applicable charges/balances, and settlement before the rental transaction is complete.
-10. Customer cancellation is a pre-active-rental action. Exact cancellation/reopening/refund consequences remain open.
+1. A Customer/Renter submits a booking request.
+2. The Customer/Renter submits the required renter/driver documents for that booking.
+3. Required renter documents are reviewed before the customer proceeds with the required down payment.
+4. Incomplete, unreadable, inconsistent, or otherwise unacceptable requirements must not be silently treated as verified.
+5. Payment verification is manual and is performed by Owner/Admin against the business's external bank/e-wallet records.
+6. A booking must not be treated as confirmed merely because it was submitted.
+7. Vehicle assignment is an Owner/Admin decision and must respect applicable availability and maintenance-readiness rules.
+8. Final booking confirmation requires the applicable requirement, payment, and vehicle-assignment gates defined below.
+9. Active rental processing begins only after applicable pre-rental gates and vehicle release/turnover are satisfied.
+10. Return processing includes vehicle condition review, applicable charges/balances, and settlement before the rental transaction is complete.
+11. Customer cancellation is a pre-active-rental action. Exact cancellation/reopening/refund consequences remain open.
 
 ## Separation of Workflow Concerns
 
@@ -71,11 +72,28 @@ Allowed progression:
 - `Not Submitted` → `Pending Review`
 - `Pending Review` → `Needs Resubmission`
 - `Pending Review` → `Verified`
-- `Needs Resubmission` → `Pending Review` after corrected/replacement requirements are submitted.
+- `Needs Resubmission` → `Pending Review` after the required corrected/replacement document set is resubmitted.
 
 Missing or unavailable requirement information must never be silently treated as `Verified`.
 
-Exact required documents, upload constraints, replacement mechanics, and retention rules remain open in `10-open-decisions.md`.
+### Submission Gate
+
+For the baseline self-drive renter scenario, a requirement set becomes eligible for `Pending Review` only after current uploads exist for both baseline required document types:
+
+- `Valid Government ID`
+- `Driver's License`
+
+The exact upload/security rules are frozen in `11-requirements-and-secure-storage.md`.
+
+Customer upload alone does not produce `Verified`.
+
+### LTO Verification
+
+The client-validated workflow uses the LTO portal as an external verification aid for driver's-license checking.
+
+A separate customer-uploaded `LTO portal screenshot` is **not** a baseline required document in the current frozen implementation rules.
+
+Owner/Admin may use the external LTO portal during later manual requirement review. The exact review-record fields for recording that external verification may be implemented in the requirement-review slice.
 
 ## Payment-Verification Status
 
@@ -112,9 +130,13 @@ Smart Vehicle Finder output or customer selection may inform the requested vehic
 
 ## Owner/Admin Confirmation Authority
 
-Final booking confirmation, payment verification, and vehicle assignment are Owner/Admin actions.
+Final booking confirmation, payment verification, requirement verification, and vehicle assignment are Owner/Admin actions.
 
-Operations Staff may perform only reservation activities explicitly allowed by `02-roles-and-permissions.md`. Exact Operations Staff editable reservation fields remain open.
+Operations Staff may perform only reservation activities explicitly allowed by `02-roles-and-permissions.md`.
+
+Operations Staff must not receive raw access to protected government-ID or driver's-license files.
+
+Exact Operations Staff editable reservation fields remain open.
 
 ## Rental Lifecycle Boundary
 
@@ -134,7 +156,7 @@ The exact maintenance lifecycle enum and transitions remain open. Do not substit
 
 The frozen statuses define authoritative semantics, but a vertical slice does not need to implement every transition immediately.
 
-A Booking Request Foundation slice may create a booking with `booking_status = Submitted` without implementing confirmation, rejection, cancellation, requirement review, payment verification, or rental transitions.
+A secure requirement-upload slice may establish protected storage, requirement-set records, document metadata, and the `Not Submitted` → `Pending Review` submission gate without implementing manual review to `Needs Resubmission` or `Verified`.
 
 ## Warning to Codex
 
@@ -143,10 +165,11 @@ Do not infer additional booking, requirement, payment, rental, vehicle, maintena
 Still open unless later frozen:
 
 - exact Operations Staff editable reservation fields;
+- alternate renter/driver scenario requirements beyond the baseline self-drive renter;
 - exact rental lifecycle statuses/transitions;
 - exact vehicle operational statuses/transitions;
 - exact maintenance lifecycle statuses/transitions;
 - detailed cancellation/rejection/reopening/refund consequences;
-- exact requirement/document upload rules.
+- long-term sensitive-upload retention/deletion duration.
 
 See `10-open-decisions.md`.

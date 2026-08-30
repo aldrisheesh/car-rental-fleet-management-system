@@ -1,7 +1,7 @@
 # Data and Business Rules
 
 **Status:** Development Baseline v1 — Partially Frozen  
-**Last updated:** 2026-08-29
+**Last updated:** 2026-08-31
 
 This document contains business/data rules that are already stable enough for implementation. Items explicitly marked open must not be guessed.
 
@@ -14,11 +14,23 @@ Sensitive records include at minimum:
 - proof-of-payment files
 - payment-verification information
 
-These require restricted access. Owner/Admin may access protected documents as needed for verification. Operations Staff must not receive raw access to these protected files.
+These require restricted access.
 
-Customer/Renter may access only their own protected submissions.
+Owner/Admin may access protected renter documents as needed for manual verification.
 
-Exact accepted file types, maximum size/count, replacement rules, and retention/deletion rules remain open.
+Operations Staff must not receive raw access to:
+
+- customer government-ID files
+- driver's-license files
+- payment-proof files
+
+Customer/Renter may access only their own protected submissions associated with their own booking records.
+
+Baseline renter-document upload constraints and secure-storage rules are frozen in:
+
+`11-requirements-and-secure-storage.md`
+
+The long-term retention/deletion duration for sensitive uploads remains open. Until that policy is frozen, the implementation must not perform automatic time-based deletion.
 
 ## 2. Payment
 
@@ -156,10 +168,7 @@ Manual and simulated inputs must not be represented as live API-derived operatio
 
 The following remain open and must not be invented:
 
-- exact renter/authorized-driver document list per scenario
-- accepted upload file types
-- maximum upload size/count
-- document replacement/resubmission behavior
-- sensitive-upload retention/deletion policy
+- alternate renter/driver requirement matrix beyond the baseline self-drive renter
+- long-term sensitive-upload retention/deletion duration
 - exact reference-fuel source priority and source-note requirements
-- exact lifecycle status enums/transitions defined in `03-workflows-and-status-rules.md`
+- exact lifecycle status enums/transitions still marked open in `03-workflows-and-status-rules.md`

@@ -1,7 +1,7 @@
 # Briah's Car Rental — Codex Context
 
 **Status:** Development Baseline v1 active  
-**Last updated:** 2026-08-29
+**Last updated:** 2026-08-31
 
 This folder is the implementation context and source-of-truth package for developing the capstone system.
 
@@ -29,6 +29,12 @@ The following areas are now sufficiently frozen for implementation:
 
 - system scope/non-negotiable boundaries
 - actor boundaries and major role restrictions
+- booking-request foundation and canonical booking statuses
+- baseline requirement-verification statuses and workflow gate
+- baseline self-drive renter requirement set:
+  - Valid Government ID
+  - Driver's License
+- renter-document upload file types, 10 MiB limit, replacement/versioning, and private Storage rules
 - qualifying-demand definition
 - vehicle utilization calculation
 - 14-day idle-vehicle rule
@@ -44,9 +50,11 @@ The following areas are now sufficiently frozen for implementation:
 
 The following remain intentionally open and must not be guessed:
 
-- exact transactional status machines
+- exact rental/vehicle/maintenance lifecycle status machines
 - exact Operations Staff editable reservation fields
-- upload/file constraints and retention rules
+- alternate renter/driver requirement scenarios
+- long-term sensitive-upload retention/deletion duration
+- payment-proof upload details
 - selected fuel-reference administration details
 - item-level approved-transfer candidate persistence
 - API refresh/caching policies
@@ -57,43 +65,32 @@ The following remain intentionally open and must not be guessed:
 
 - `01-system-ground-truth.md` — system purpose, scope, actors, and non-negotiable boundaries
 - `02-roles-and-permissions.md` — functional access boundaries derived from defended use cases
-- `03-workflows-and-status-rules.md` — high-level workflow gates; exact state machines still pending
-- `04-data-and-business-rules.md` — frozen analytical/business rules plus remaining data-level open items
+- `03-workflows-and-status-rules.md` — frozen booking/requirement/payment foundations plus remaining lifecycle boundaries
+- `04-data-and-business-rules.md` — frozen analytical/business rules and sensitive-data principles
 - `05-forecasting-specification.md` — **frozen WMA and MAPE rules**
 - `06-recommendation-specification.md` — **frozen customer recommendation and branch-allocation rules**, except one item-level persistence detail
 - `07-external-context-and-api-rules.md` — **frozen provider/fallback/classification strategy**, with refresh/caching details still open
 - `08-notifications-and-audit.md` — notification triggers and audit requirements (**pending specification**)
 - `09-implementation-constraints.md` — architectural and implementation guardrails for Codex
 - `10-open-decisions.md` — unresolved decisions that must not be guessed
+- `11-requirements-and-secure-storage.md` — **frozen baseline renter-document submission and private Storage rules**
 - `CHANGELOG.md` — documentation revision history
 
 ## Start-Development Rule
 
-Codex may begin backend/platform foundation work now.
+Backend/platform and currently frozen transactional foundations may be implemented through approved vertical slices.
 
-Safe initial work includes:
-
-- Supabase/PostgreSQL project and migration foundation
-- Supabase Auth integration
-- server-side authorization/RBAC infrastructure
-- private Storage foundation for protected uploads
-- shared validation and server-function patterns
-- stable entity/data-model migrations that do not require inventing unresolved state transitions
-- test/build/environment infrastructure
-- replacement of mock reads where the corresponding business rules are already frozen
-
-Before implementing final booking/payment/rental mutation flows, freeze the exact state-transition matrix in `03-workflows-and-status-rules.md`.
+Before implementing a behavior still listed in `10-open-decisions.md`, freeze that decision first.
 
 ## Update Workflow
 
 For every future iteration:
 
-1. Use the latest ZIP as the baseline.
-2. Extract it without recreating the specification from memory.
-3. Modify only the documents affected by the new decision.
-4. Keep established terminology consistent.
-5. Move resolved items out of `10-open-decisions.md`.
-6. Update `CHANGELOG.md`.
-7. Repackage the entire folder as the next ZIP.
+1. Use the latest repository state as the baseline.
+2. Modify only documents affected by the new decision.
+3. Keep established terminology consistent.
+4. Move resolved items out of `10-open-decisions.md`.
+5. Update `CHANGELOG.md`.
+6. Commit the revised context before the next dependent vertical slice.
 
 Do not silently overwrite previously frozen decisions.

@@ -1,5 +1,44 @@
 # Changelog
 
+## 2026-08-31 — Baseline Requirement Submission and Secure Storage
+
+Updated the Development Baseline before VS006.
+
+### Frozen / Clarified
+
+- Frozen baseline self-drive renter requirements to:
+  - `Valid Government ID`
+  - `Driver's License`
+- Clarified that an LTO portal screenshot is not a baseline customer-upload requirement.
+- Preserved LTO portal checking as an external Owner/Admin verification aid.
+- Frozen renter-document file formats to JPEG/JPG, PNG, and PDF.
+- Frozen maximum renter-document size to 10 MiB per file.
+- Frozen one-current-file-per-baseline-requirement-type behavior.
+- Frozen replacement as versioned/superseding upload rather than in-place overwrite.
+- Frozen private Supabase Storage requirement and protected access rules.
+- Frozen Customer own-document isolation and Owner/Admin document access.
+- Reaffirmed that Operations Staff cannot access raw government-ID or driver's-license files.
+- Frozen booking-level requirement-set submission gate:
+  - `Not Submitted` → `Pending Review` after both baseline required documents are present and submitted.
+- Clarified that upload never equals verification.
+- Deferred long-term retention/deletion duration; automatic time-based deletion is prohibited until the policy is frozen.
+- Added `11-requirements-and-secure-storage.md`.
+
+### Open Decisions Reduced
+
+Removed baseline file type, size/count, and ordinary pre-verification replacement behavior from the open-decision register.
+
+Still open:
+
+- alternate renter/driver requirement scenarios
+- long-term sensitive-upload retention/deletion duration
+- exceptional replacement/reopening after verification
+- payment-proof upload constraints
+- later lifecycle/status decisions
+- exact Operations Staff editable reservation fields
+
+---
+
 ## 2026-08-29 — Development Baseline v1
 
 Updated the latest uploaded context package after manuscript alignment and API/provider verification.
@@ -35,21 +74,8 @@ Updated the latest uploaded context package after manuscript alignment and API/p
 - `05-forecasting-specification.md` is now frozen for Development Baseline v1.
 - `06-recommendation-specification.md` is frozen except for item-level transfer approval persistence.
 - `07-external-context-and-api-rules.md` has frozen provider/classification behavior; refresh/caching policies remain open.
-- `04-data-and-business-rules.md` is partially frozen with remaining upload/reference-data details explicitly open.
-- `03-workflows-and-status-rules.md` preserves the known client workflow order, but exact state machines remain open.
-
-### Open Decisions Reduced
-
-Removed resolved forecasting, recommendation, and provider-selection questions from `10-open-decisions.md`.
-
-Remaining development-critical open areas are primarily:
-
-- exact booking/requirement/payment/rental/vehicle/maintenance state transitions
-- exact Operations Staff editable booking fields
-- protected-upload constraints/retention
-- item-level approved transfer-candidate persistence
-- API refresh/caching policies
-- notification/audit rules
+- `04-data-and-business-rules.md` is partially frozen.
+- `03-workflows-and-status-rules.md` preserves the known client workflow order.
 
 ### Development Readiness
 
