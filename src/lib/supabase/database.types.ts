@@ -14,8 +14,8 @@ export type Database = {
           email: string | null;
           full_name: string;
           phone_number: string | null;
-          user_type: string | null;
-          account_status: string | null;
+          user_type: string;
+          account_status: string;
           created_at: string;
           updated_at: string;
         };
@@ -24,8 +24,8 @@ export type Database = {
           email?: string | null;
           full_name?: string;
           phone_number?: string | null;
-          user_type?: string | null;
-          account_status?: string | null;
+          user_type?: string;
+          account_status?: string;
           created_at?: string;
           updated_at?: string;
         };

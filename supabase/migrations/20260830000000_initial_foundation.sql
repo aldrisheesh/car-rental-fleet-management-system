@@ -6,8 +6,8 @@ create table if not exists public.profiles (
   email text unique,
   full_name text not null default '',
   phone_number text,
-  user_type text,
-  account_status text,
+  user_type text not null default 'Customers / Renters',
+  account_status text not null default 'Active',
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
@@ -78,14 +78,13 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, full_name, phone_number, user_type, account_status)
+  -- Authorization/account state comes from database defaults, never signup metadata.
+  insert into public.profiles (id, email, full_name, phone_number)
   values (
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data ->> 'full_name', ''),
-    new.raw_user_meta_data ->> 'phone_number',
-    new.raw_user_meta_data ->> 'user_type',
-    new.raw_user_meta_data ->> 'account_status'
+    new.raw_user_meta_data ->> 'phone_number'
   )
   on conflict (id) do nothing;
   return new;
@@ -114,12 +113,15 @@ alter table public.branches enable row level security;
 alter table public.vehicle_categories enable row level security;
 alter table public.vehicles enable row level security;
 
+-- Profiles are created by the Auth trigger. Customers may update ordinary
+-- profile fields only; role and account state are not client-writable.
+revoke insert on public.profiles from anon, authenticated;
+revoke update on public.profiles from anon, authenticated;
+grant update (full_name, phone_number) on public.profiles to authenticated;
+
 drop policy if exists profiles_select_own on public.profiles;
 create policy profiles_select_own on public.profiles
   for select to authenticated using (auth.uid() = id);
-drop policy if exists profiles_insert_own on public.profiles;
-create policy profiles_insert_own on public.profiles
-  for insert to authenticated with check (auth.uid() = id);
 drop policy if exists profiles_update_own on public.profiles;
 create policy profiles_update_own on public.profiles
   for update to authenticated using (auth.uid() = id) with check (auth.uid() = id);
