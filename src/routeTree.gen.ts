@@ -20,6 +20,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
+import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
@@ -87,6 +88,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const CustomerProfileRoute = CustomerProfileRouteImport.update({
   id: '/customer_/profile',
   path: '/customer/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/health': typeof ApiHealthRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/health': typeof ApiHealthRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/health': typeof ApiHealthRoute
   '/customer_/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/health'
     | '/customer/profile'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/health'
     | '/customer/profile'
     | '/admin'
   id:
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/health'
     | '/customer_/profile'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -323,6 +335,7 @@ export interface RootRouteChildren {
   PaymentDetailsRoute: typeof PaymentDetailsRoute
   SignInRoute: typeof SignInRoute
   VehiclesRoute: typeof VehiclesRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
 }
 
@@ -403,6 +416,13 @@ declare module '@tanstack/react-router' {
       path: '/customer/profile'
       fullPath: '/customer/profile'
       preLoaderRoute: typeof CustomerProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
@@ -545,6 +565,7 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentDetailsRoute: PaymentDetailsRoute,
   SignInRoute: SignInRoute,
   VehiclesRoute: VehiclesRoute,
+  ApiHealthRoute: ApiHealthRoute,
   CustomerProfileRoute: CustomerProfileRoute,
 }
 export const routeTree = rootRouteImport
