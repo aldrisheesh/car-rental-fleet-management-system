@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCookie } from "@tanstack/react-start/server";
 
-import { getCurrentPrincipal, getServerAuthClient } from "@/lib/auth.server";
+import {
+  getCurrentPrincipal,
+  getServerAuthClient,
+  setAuthView,
+} from "@/lib/auth.server";
 
 export const Route = createFileRoute("/api/auth/profile")({
   server: {
@@ -94,20 +98,22 @@ export const Route = createFileRoute("/api/auth/profile")({
           );
 
         const updated = await getCurrentPrincipal();
-        return updated
-          ? Response.json({
-              principal: updated,
-              profile: {
-                full_name: fullName,
-                phone_number: phoneNumber,
-                street_address: streetAddress,
-                barangay,
-                city_municipality: cityMunicipality,
-                province,
-                postal_code: postalCode,
-              },
-            })
-          : Response.json({ message: "Session expired." }, { status: 401 });
+        if (updated) {
+          setAuthView(updated);
+          return Response.json({
+            principal: updated,
+            profile: {
+              full_name: fullName,
+              phone_number: phoneNumber,
+              street_address: streetAddress,
+              barangay,
+              city_municipality: cityMunicipality,
+              province,
+              postal_code: postalCode,
+            },
+          });
+        }
+        return Response.json({ message: "Session expired." }, { status: 401 });
       },
     },
   },

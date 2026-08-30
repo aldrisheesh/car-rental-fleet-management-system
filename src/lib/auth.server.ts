@@ -8,6 +8,7 @@ import {
 import { hasRole, isAppRole, type AppPrincipal, type AppRole } from "./auth";
 import type { Database } from "./supabase/database.types";
 import { getSupabasePublicEnv } from "./supabase/env";
+import { encodePrincipalForView } from "./auth-view.server";
 
 const ACCESS_COOKIE = "briahs-auth-access";
 const REFRESH_COOKIE = "briahs-auth-refresh";
@@ -33,8 +34,14 @@ function isSecureCookie() {
   );
 }
 
-function encodePrincipal(principal: AppPrincipal) {
-  return Buffer.from(JSON.stringify(principal)).toString("base64url");
+export function setAuthView(principal: AppPrincipal) {
+  setCookie(VIEW_COOKIE, encodePrincipalForView(principal), {
+    httpOnly: false,
+    sameSite: "lax",
+    secure: isSecureCookie(),
+    path: "/",
+    maxAge: 60 * 60 * 24 * 14,
+  });
 }
 
 export function setAuthSession(
@@ -55,13 +62,7 @@ export function setAuthSession(
     ...shared,
     maxAge: 60 * 60 * 24 * 14,
   });
-  setCookie(VIEW_COOKIE, encodePrincipal(principal), {
-    httpOnly: false,
-    sameSite: "lax",
-    secure: isSecureCookie(),
-    path: "/",
-    maxAge: 60 * 60 * 24 * 14,
-  });
+  setAuthView(principal);
 }
 
 export function clearAuthSession() {
