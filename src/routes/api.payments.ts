@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { validateRequirementFile } from "@/lib/requirements-validation";
+import { projectCustomerPayment } from "@/lib/payment-integrity";
 
 const error = (message: string, status = 400) => Response.json({ message }, { status });
 const safeName = (name: string) => name.replace(/[^a-zA-Z0-9._ -]/g, "_").slice(0, 180) || "proof";
@@ -27,7 +28,8 @@ async function read({ request }: { request: Request }) {
     const result = await query;
     if (result.error) return error("Unable to load payments.", 503);
     const methods = await client.from("payment_methods").select("id,code,label,instructions,is_demo").eq("is_active", true).order("label");
-    return Response.json({ payments: result.data ?? [], paymentMethods: methods.data ?? [] });
+    const payments = principal.role === "Customer/Renter" ? (result.data ?? []).map(projectCustomerPayment) : (result.data ?? []);
+    return Response.json({ payments, paymentMethods: methods.data ?? [] });
   } catch (e) { return error(e instanceof Error && e.message === "forbidden" ? "Forbidden." : "Authentication required.", e instanceof Error && e.message === "forbidden" ? 403 : 401); }
 }
 
@@ -45,9 +47,8 @@ async function mutate({ request }: { request: Request }) {
       const stale = Number(body?.proofVersion || 0) !== Number(current.data?.version || 0) || String(body?.transactionReference ?? payment.data.transaction_reference) !== String(payment.data.transaction_reference ?? "") || Number(body?.submittedAmount ?? payment.data.submitted_amount) !== Number(payment.data.submitted_amount);
       if (stale) return error("Submission changed; reload before reviewing.", 409);
       if (action === "resubmit" && !String(body?.reason || "").trim()) return error("A customer-facing reason is required.");
-      const patch: Record<string, unknown> = { status: action === "verify" ? "Verified" : action === "resubmit" ? "Needs Resubmission" : "Pending Verification", reviewed_by: principal.userId, reviewed_at: new Date().toISOString(), reviewed_proof_version: current.data?.version ?? null, reviewed_submitted_amount: payment.data.submitted_amount, reviewed_transaction_reference: payment.data.transaction_reference, resubmission_reason: action === "resubmit" ? String(body.reason).trim() : null };
-      const updated = await client.from("payments").update(patch).eq("id", paymentId).eq("status", "Pending Verification").select("*").single();
-      if (updated.error) return error("Unable to save review.", 503); return Response.json({ payment: updated.data });
+      const updated = await client.rpc("review_payment_atomic", { p_payment_id: paymentId, p_reviewer_id: principal.userId, p_action: action, p_proof_version: Number(body?.proofVersion || 0), p_submitted_amount: Number(body?.submittedAmount), p_transaction_reference: String(body?.transactionReference || ""), p_reason: String(body?.reason || "") });
+      if (updated.error) { const map: Record<string,string> = { insufficient_amount:"Submitted amount is below the required down payment.", stale_proof:"Proof changed; reload before reviewing.", stale_snapshot:"Payment details changed; reload before reviewing.", missing_reason:"A customer-facing reason is required.", not_pending:"Payment is no longer pending." }; return error(map[updated.error.message] || "Unable to save review.", 409); } return Response.json({ payment: updated.data });
     }
     if (principal.role !== "Customer/Renter") return error("Customer access is required.", 403);
     const form = await request.formData(); const bookingId = String(form.get("bookingId") || ""); const action = String(form.get("action") || "submit");
