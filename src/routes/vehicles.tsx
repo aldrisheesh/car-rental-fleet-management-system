@@ -1,11 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { VehicleCard } from "@/components/site/VehicleCard";
-import { vehicles } from "@/data/vehicles";
+import { vehicles as mockVehicles, type Vehicle } from "@/data/vehicles";
 
-const categories = ["All", "Economy", "Sedan", "SUV", "MPV", "Van", "Pickup"] as const;
+const categories = [
+  "All",
+  "Economy",
+  "Sedan",
+  "SUV",
+  "MPV",
+  "Van",
+  "Pickup",
+] as const;
 const branches = ["All branches", "Taft, Manila", "Antipolo, Rizal"] as const;
 
 type VehicleSearch = {
@@ -15,11 +23,17 @@ type VehicleSearch = {
 };
 
 function isCategory(value: unknown): value is (typeof categories)[number] {
-  return typeof value === "string" && categories.includes(value as (typeof categories)[number]);
+  return (
+    typeof value === "string" &&
+    categories.includes(value as (typeof categories)[number])
+  );
 }
 
 function isBranch(value: unknown): value is (typeof branches)[number] {
-  return typeof value === "string" && branches.includes(value as (typeof branches)[number]);
+  return (
+    typeof value === "string" &&
+    branches.includes(value as (typeof branches)[number])
+  );
 }
 
 function isDateValue(value: unknown): value is string {
@@ -29,8 +43,13 @@ function isDateValue(value: unknown): value is string {
 export const Route = createFileRoute("/vehicles")({
   validateSearch: (search: Record<string, unknown>): VehicleSearch => ({
     category:
-      isCategory(search.category) && search.category !== "All" ? search.category : undefined,
-    branch: isBranch(search.branch) && search.branch !== "All branches" ? search.branch : undefined,
+      isCategory(search.category) && search.category !== "All"
+        ? search.category
+        : undefined,
+    branch:
+      isBranch(search.branch) && search.branch !== "All branches"
+        ? search.branch
+        : undefined,
     pickup: isDateValue(search.pickup) ? search.pickup : undefined,
   }),
   head: () => ({
@@ -44,7 +63,8 @@ export const Route = createFileRoute("/vehicles")({
       { property: "og:title", content: "Vehicles — Briah's Car Rental" },
       {
         property: "og:description",
-        content: "Browse our full fleet of cars, SUVs, MPVs, vans, and pickups.",
+        content:
+          "Browse our full fleet of cars, SUVs, MPVs, vans, and pickups.",
       },
     ],
     links: [{ rel: "canonical", href: "/vehicles" }],
@@ -60,6 +80,54 @@ function VehiclesPage() {
   const [branch, setBranch] = useState<(typeof branches)[number]>(
     isBranch(search.branch) ? search.branch : "All branches",
   );
+  const [vehicles, setVehicles] = useState<Vehicle[]>(mockVehicles);
+
+  useEffect(() => {
+    void fetch("/api/vehicles")
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then(
+        (
+          rows: Array<{
+            id: string;
+            name: string;
+            license_plate: string | null;
+            transmission: string | null;
+            fuel_type: string | null;
+            seat_capacity: number | null;
+            daily_rate: number | null;
+            image_url: string | null;
+            branch: { name: string } | null;
+            category: { name: string } | null;
+          }>,
+        ) => {
+          setVehicles(
+            rows.map((row) => {
+              const fallback = mockVehicles.find(
+                (vehicle) => vehicle.name === row.name,
+              );
+              return {
+                id: row.id,
+                name: row.name,
+                category: (row.category?.name ??
+                  fallback?.category ??
+                  "Economy") as Vehicle["category"],
+                image: row.image_url ?? fallback?.image ?? "",
+                pricePerDay: Number(row.daily_rate ?? 0),
+                transmission:
+                  row.transmission === "Manual" ? "Manual" : "Automatic",
+                seats: row.seat_capacity ?? 0,
+                fuel: row.fuel_type === "Diesel" ? "Diesel" : "Gasoline",
+                branch: (row.branch?.name ??
+                  fallback?.branch ??
+                  "Taft, Manila") as Vehicle["branch"],
+                available: true,
+              };
+            }),
+          );
+        },
+      )
+      .catch(() => undefined);
+  }, []);
 
   const filtered = vehicles.filter((v) => {
     if (cat !== "All" && v.category !== cat) return false;
@@ -72,8 +140,12 @@ function VehiclesPage() {
       <Header />
       <section className="border-b border-border bg-secondary/60">
         <div className="container-page py-16 text-center">
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Our fleet</p>
-          <h1 className="mt-2 font-display text-4xl font-semibold md:text-5xl">All vehicles</h1>
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
+            Our fleet
+          </p>
+          <h1 className="mt-2 font-display text-4xl font-semibold md:text-5xl">
+            All vehicles
+          </h1>
           <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
             Every car is self-drive. Filter by type or branch to find your ride.
           </p>
@@ -87,9 +159,19 @@ function VehiclesPage() {
 
       <section className="container-page mt-10">
         <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border bg-card p-4 shadow-soft">
-          <FilterGroup label="Type" options={categories} value={cat} onChange={setCat} />
+          <FilterGroup
+            label="Type"
+            options={categories}
+            value={cat}
+            onChange={setCat}
+          />
           <div className="hidden h-6 w-px bg-border md:block" />
-          <FilterGroup label="Branch" options={branches} value={branch} onChange={setBranch} />
+          <FilterGroup
+            label="Branch"
+            options={branches}
+            value={branch}
+            onChange={setBranch}
+          />
           <div className="ml-auto rounded-full bg-secondary px-3 py-1.5 text-xs font-medium text-muted-foreground">
             {filtered.length} vehicle{filtered.length === 1 ? "" : "s"}
           </div>
@@ -107,7 +189,8 @@ function VehiclesPage() {
               No vehicles found
             </h2>
             <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-              No vehicles match those filters yet. Try another branch or browse the full fleet.
+              No vehicles match those filters yet. Try another branch or browse
+              the full fleet.
             </p>
             <button
               type="button"
@@ -159,7 +242,11 @@ function FilterGroup<T extends string>({
       <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label={`${label} filter`}>
+      <div
+        className="flex flex-wrap gap-1.5"
+        role="group"
+        aria-label={`${label} filter`}
+      >
         {options.map((o) => (
           <button
             type="button"

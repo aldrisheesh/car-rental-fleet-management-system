@@ -1,12 +1,32 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, LayoutGrid, List, Wrench } from "lucide-react";
 import {
   MaintenanceRecordDialog,
   type MaintenanceRecordDraft,
 } from "@/components/admin/MaintenanceRecordDialog";
-import { Badge, Btn, Card, KPI, PageHeader, TInput, TSelect, Toolbar } from "@/components/admin/ui";
-import { bookings, fleet, peso, type FleetVehicle, type VehicleStatus } from "@/data/admin";
+import {
+  Badge,
+  Btn,
+  Card,
+  KPI,
+  PageHeader,
+  TInput,
+  TSelect,
+  Toolbar,
+} from "@/components/admin/ui";
+import {
+  bookings,
+  fleet,
+  peso,
+  type FleetVehicle,
+  type VehicleStatus,
+} from "@/data/admin";
+import {
+  fetchMasterData,
+  saveMasterData,
+  type ApiMasterVehicle,
+} from "@/lib/master-data-client";
 import {
   Dialog,
   DialogContent,
@@ -34,9 +54,20 @@ const vehicleStatuses: VehicleStatus[] = [
   "Inactive",
 ];
 
-const vehicleCategories = ["Economy", "Sedan", "SUV", "MPV", "Van", "Pickup"] as const;
+const vehicleCategories = [
+  "Economy",
+  "Sedan",
+  "SUV",
+  "MPV",
+  "Van",
+  "Pickup",
+] as const;
 const transmissionOptions = ["Automatic", "Manual"] as const;
-const conditionOptions: FleetVehicle["condition"][] = ["Excellent", "Good", "Needs service"];
+const conditionOptions: FleetVehicle["condition"][] = [
+  "Excellent",
+  "Good",
+  "Needs service",
+];
 const branchOptions = ["Taft, Manila", "Antipolo, Rizal"] as const;
 
 type AddVehicleDraft = {
@@ -86,23 +117,91 @@ function FleetPage() {
   );
   const [addVehicleError, setAddVehicleError] = useState("");
 
+  useEffect(() => {
+    void fetchMasterData<ApiMasterVehicle>("vehicles")
+      .then((rows) =>
+        setFleetRows(
+          rows.map((vehicle) => ({
+            id: vehicle.id,
+            name: vehicle.name,
+            plate: vehicle.license_plate ?? "",
+            make: vehicle.name.split(" ")[0] ?? vehicle.name,
+            model: vehicle.name.split(" ").slice(1).join(" "),
+            color: "",
+            category: vehicle.category?.name ?? "Uncategorized",
+            transmission:
+              vehicle.transmission === "Manual" ? "Manual" : "Automatic",
+            seats: vehicle.seat_capacity ?? 0,
+            branch: vehicle.branch?.name ?? "",
+            pricePerDay: Number(vehicle.daily_rate ?? 0),
+            condition: "Good",
+            status: vehicle.is_active ? "Available" : "Inactive",
+            chassisNumber: "",
+          })),
+        ),
+      )
+      .catch(() => undefined);
+  }, []);
+
   function getEffectiveStatus(vehicle: FleetVehicle) {
     return vehicle.status;
   }
 
-  function handleVehicleBranchChange(vehicleId: string, branch: FleetVehicle["branch"]) {
+  function handleVehicleBranchChange(
+    vehicleId: string,
+    branch: FleetVehicle["branch"],
+  ) {
+    const vehicle = fleetRows.find((item) => item.id === vehicleId);
     setFleetRows((prev) =>
-      prev.map((vehicle) => (vehicle.id === vehicleId ? { ...vehicle, branch } : vehicle)),
+      prev.map((vehicle) =>
+        vehicle.id === vehicleId ? { ...vehicle, branch } : vehicle,
+      ),
     );
+    if (!vehicle) return;
+    void Promise.all([
+      fetchMasterData<{ id: string; name: string }>("branches"),
+      fetchMasterData<{ id: string; name: string }>("categories"),
+    ])
+      .then(([branches, categories]) => {
+        const branchRecord = branches.find((item) => item.name === branch);
+        const categoryRecord = categories.find(
+          (item) => item.name === vehicle.category,
+        );
+        if (!branchRecord || !categoryRecord)
+          throw new Error("Invalid branch or category.");
+        return saveMasterData({
+          resource: "vehicles",
+          id: vehicleId,
+          input: {
+            name: vehicle.name,
+            branchId: branchRecord.id,
+            categoryId: categoryRecord.id,
+            licensePlate: vehicle.plate,
+            transmission: vehicle.transmission,
+            seatCapacity: vehicle.seats,
+            dailyRate: vehicle.pricePerDay,
+            isActive: vehicle.status !== "Inactive",
+          },
+        });
+      })
+      .catch(() => undefined);
   }
 
-  const countAvailable = fleetRows.filter((v) => getEffectiveStatus(v) === "Available").length;
-  const countReserved = fleetRows.filter((v) => getEffectiveStatus(v) === "Reserved").length;
-  const countOngoing = fleetRows.filter((v) => getEffectiveStatus(v) === "Rented").length;
+  const countAvailable = fleetRows.filter(
+    (v) => getEffectiveStatus(v) === "Available",
+  ).length;
+  const countReserved = fleetRows.filter(
+    (v) => getEffectiveStatus(v) === "Reserved",
+  ).length;
+  const countOngoing = fleetRows.filter(
+    (v) => getEffectiveStatus(v) === "Rented",
+  ).length;
   const countUnderMaintenance = fleetRows.filter(
     (v) => getEffectiveStatus(v) === "Maintenance",
   ).length;
-  const countCompletedRentals = bookings.filter((b) => b.status === "Completed").length;
+  const countCompletedRentals = bookings.filter(
+    (b) => b.status === "Completed",
+  ).length;
 
   const rows = fleetRows
     .filter((vehicle) => {
@@ -126,9 +225,15 @@ function FleetPage() {
         return false;
       return true;
     })
-    .map((vehicle) => ({ ...vehicle, effectiveStatus: getEffectiveStatus(vehicle) }));
+    .map((vehicle) => ({
+      ...vehicle,
+      effectiveStatus: getEffectiveStatus(vehicle),
+    }));
 
-  function createDraftFromVehicle(sourceRows: FleetVehicle[], index = 0): MaintenanceRecordDraft {
+  function createDraftFromVehicle(
+    sourceRows: FleetVehicle[],
+    index = 0,
+  ): MaintenanceRecordDraft {
     const vehicle = sourceRows[index] ?? sourceRows[0];
     const numericId = Number(vehicle?.id?.replace(/\D/g, "") || 1001);
 
@@ -218,9 +323,43 @@ function FleetPage() {
       chassisNumber: addVehicleDraft.chassisNumber.trim(),
     };
 
-    setFleetRows((prev) => [...prev, nextVehicle]);
-    setAddVehicleOpen(false);
-    setAddVehicleError("");
+    void Promise.all([
+      fetchMasterData<{ id: string; name: string }>("branches"),
+      fetchMasterData<{ id: string; name: string }>("categories"),
+    ])
+      .then(([branches, categories]) => {
+        const branch = branches.find(
+          (item) => item.name === addVehicleDraft.branch,
+        );
+        const category = categories.find(
+          (item) => item.name === addVehicleDraft.category,
+        );
+        if (!branch || !category)
+          throw new Error("Select a valid branch and category.");
+        return saveMasterData({
+          resource: "vehicles",
+          input: {
+            name: nextVehicle.name,
+            branchId: branch.id,
+            categoryId: category.id,
+            licensePlate: nextVehicle.plate,
+            transmission: nextVehicle.transmission,
+            seatCapacity: nextVehicle.seats,
+            dailyRate: nextVehicle.pricePerDay,
+            isActive: true,
+          },
+        });
+      })
+      .then(() => {
+        setFleetRows((prev) => [...prev, nextVehicle]);
+        setAddVehicleOpen(false);
+        setAddVehicleError("");
+      })
+      .catch((error: unknown) =>
+        setAddVehicleError(
+          error instanceof Error ? error.message : "Unable to save vehicle.",
+        ),
+      );
   }
 
   return (
@@ -277,7 +416,10 @@ function FleetPage() {
             onChange={(e) => setQ(e.target.value)}
             className="min-w-72"
           />
-          <TSelect value={status} onChange={(e) => setStatus(e.target.value as never)}>
+          <TSelect
+            value={status}
+            onChange={(e) => setStatus(e.target.value as never)}
+          >
             {statuses.map((currentStatus) => (
               <option key={currentStatus}>{currentStatus}</option>
             ))}
@@ -333,8 +475,12 @@ function FleetPage() {
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h3 className="font-display text-base font-semibold">{vehicle.name}</h3>
-                    <div className="font-mono text-xs text-muted-foreground">{vehicle.plate}</div>
+                    <h3 className="font-display text-base font-semibold">
+                      {vehicle.name}
+                    </h3>
+                    <div className="font-mono text-xs text-muted-foreground">
+                      {vehicle.plate}
+                    </div>
                   </div>
                 </div>
                 <dl className="mt-3 grid grid-cols-2 gap-y-1.5 text-xs">
@@ -345,7 +491,9 @@ function FleetPage() {
                   <dt className="text-muted-foreground">Color</dt>
                   <dd className="text-right">{vehicle.color}</dd>
                   <dt className="text-muted-foreground">Chassis No.</dt>
-                  <dd className="text-right font-mono text-[11px]">{vehicle.chassisNumber}</dd>
+                  <dd className="text-right font-mono text-[11px]">
+                    {vehicle.chassisNumber}
+                  </dd>
                   <dt className="text-muted-foreground">Transmission</dt>
                   <dd className="text-right">{vehicle.transmission}</dd>
                   <dt className="text-muted-foreground">Seats</dt>
@@ -382,25 +530,33 @@ function FleetPage() {
                 <th className="px-4 py-3 text-left font-semibold">Plate</th>
                 <th className="px-4 py-3 text-left font-semibold">Branch</th>
                 <th className="px-4 py-3 text-left font-semibold">Condition</th>
-                <th className="px-4 py-3 text-right font-semibold">Rate / day</th>
+                <th className="px-4 py-3 text-right font-semibold">
+                  Rate / day
+                </th>
                 <th className="px-4 py-3 text-left font-semibold">Status</th>
                 <th className="px-4 py-3 text-right font-semibold">Action</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((vehicle) => (
-                <tr key={vehicle.id} className="border-b border-border/60 hover:bg-secondary/40">
+                <tr
+                  key={vehicle.id}
+                  className="border-b border-border/60 hover:bg-secondary/40"
+                >
                   <td className="px-4 py-3">
                     <div className="font-medium">{vehicle.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      {vehicle.category} • {vehicle.transmission} • {vehicle.seats} seats
+                      {vehicle.category} • {vehicle.transmission} •{" "}
+                      {vehicle.seats} seats
                     </div>
                     <div className="mt-0.5 text-xs text-muted-foreground">
-                      {vehicle.make} • {vehicle.model} • {vehicle.color} • Chassis:{" "}
-                      {vehicle.chassisNumber}
+                      {vehicle.make} • {vehicle.model} • {vehicle.color} •
+                      Chassis: {vehicle.chassisNumber}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs">{vehicle.plate}</td>
+                  <td className="px-4 py-3 font-mono text-xs">
+                    {vehicle.plate}
+                  </td>
                   <td className="px-4 py-3">
                     <TSelect
                       value={vehicle.branch}
@@ -425,7 +581,10 @@ function FleetPage() {
                     <Badge>{vehicle.effectiveStatus}</Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Btn variant="primary" onClick={() => openServiceModalByVehicle(vehicle.id)}>
+                    <Btn
+                      variant="primary"
+                      onClick={() => openServiceModalByVehicle(vehicle.id)}
+                    >
                       Service now
                     </Btn>
                   </td>
@@ -466,7 +625,9 @@ function FleetPage() {
               </span>
               <TInput
                 value={addVehicleDraft.chassisNumber}
-                onChange={(e) => handleAddVehicleField("chassisNumber", e.target.value)}
+                onChange={(e) =>
+                  handleAddVehicleField("chassisNumber", e.target.value)
+                }
               />
             </label>
             <label className="block">
@@ -513,7 +674,9 @@ function FleetPage() {
               </span>
               <TSelect
                 value={addVehicleDraft.category}
-                onChange={(e) => handleAddVehicleField("category", e.target.value)}
+                onChange={(e) =>
+                  handleAddVehicleField("category", e.target.value)
+                }
               >
                 {vehicleCategories.map((item) => (
                   <option key={item}>{item}</option>
@@ -526,7 +689,9 @@ function FleetPage() {
               </span>
               <TSelect
                 value={addVehicleDraft.branch}
-                onChange={(e) => handleAddVehicleField("branch", e.target.value)}
+                onChange={(e) =>
+                  handleAddVehicleField("branch", e.target.value)
+                }
               >
                 {branchOptions.map((item) => (
                   <option key={item}>{item}</option>
@@ -539,7 +704,12 @@ function FleetPage() {
               </span>
               <TSelect
                 value={addVehicleDraft.status}
-                onChange={(e) => handleAddVehicleField("status", e.target.value as VehicleStatus)}
+                onChange={(e) =>
+                  handleAddVehicleField(
+                    "status",
+                    e.target.value as VehicleStatus,
+                  )
+                }
               >
                 {vehicleStatuses.map((item) => (
                   <option key={item}>{item}</option>
@@ -553,7 +723,10 @@ function FleetPage() {
               <TSelect
                 value={addVehicleDraft.transmission}
                 onChange={(e) =>
-                  handleAddVehicleField("transmission", e.target.value as "Automatic" | "Manual")
+                  handleAddVehicleField(
+                    "transmission",
+                    e.target.value as "Automatic" | "Manual",
+                  )
                 }
               >
                 {transmissionOptions.map((item) => (
@@ -569,7 +742,9 @@ function FleetPage() {
                 type="number"
                 min="1"
                 value={addVehicleDraft.pricePerDay}
-                onChange={(e) => handleAddVehicleField("pricePerDay", e.target.value)}
+                onChange={(e) =>
+                  handleAddVehicleField("pricePerDay", e.target.value)
+                }
               />
             </label>
             <label className="block">
@@ -579,7 +754,10 @@ function FleetPage() {
               <TSelect
                 value={addVehicleDraft.condition}
                 onChange={(e) =>
-                  handleAddVehicleField("condition", e.target.value as FleetVehicle["condition"])
+                  handleAddVehicleField(
+                    "condition",
+                    e.target.value as FleetVehicle["condition"],
+                  )
                 }
               >
                 {conditionOptions.map((item) => (
@@ -589,7 +767,9 @@ function FleetPage() {
             </label>
           </div>
 
-          {addVehicleError ? <p className="text-sm text-rose-400">{addVehicleError}</p> : null}
+          {addVehicleError ? (
+            <p className="text-sm text-rose-400">{addVehicleError}</p>
+          ) : null}
 
           <DialogFooter>
             <Btn onClick={() => setAddVehicleOpen(false)}>Cancel</Btn>

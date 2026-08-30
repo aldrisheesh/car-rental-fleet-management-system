@@ -20,6 +20,8 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
+import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
+import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -93,6 +95,16 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const CustomerProfileRoute = CustomerProfileRouteImport.update({
   id: '/customer_/profile',
   path: '/customer/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
+  id: '/api/vehicles',
+  path: '/api/vehicles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMasterDataRoute = ApiMasterDataRouteImport.update({
+  id: '/api/master-data',
+  path: '/api/master-data',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -215,6 +227,8 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/master-data': typeof ApiMasterDataRoute
+  '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
@@ -246,6 +260,8 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/master-data': typeof ApiMasterDataRoute
+  '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin': typeof AdminIndexRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
@@ -279,6 +295,8 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/master-data': typeof ApiMasterDataRoute
+  '/api/vehicles': typeof ApiVehiclesRoute
   '/customer_/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
@@ -313,6 +331,8 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/users'
     | '/api/health'
+    | '/api/master-data'
+    | '/api/vehicles'
     | '/customer/profile'
     | '/admin/'
     | '/api/auth/profile'
@@ -344,6 +364,8 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/users'
     | '/api/health'
+    | '/api/master-data'
+    | '/api/vehicles'
     | '/customer/profile'
     | '/admin'
     | '/api/auth/profile'
@@ -376,6 +398,8 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/users'
     | '/api/health'
+    | '/api/master-data'
+    | '/api/vehicles'
     | '/customer_/profile'
     | '/admin/'
     | '/api/auth/profile'
@@ -396,6 +420,8 @@ export interface RootRouteChildren {
   SignInRoute: typeof SignInRoute
   VehiclesRoute: typeof VehiclesRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiMasterDataRoute: typeof ApiMasterDataRoute
+  ApiVehiclesRoute: typeof ApiVehiclesRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
   ApiAuthProfileRoute: typeof ApiAuthProfileRoute
   ApiAuthSessionRoute: typeof ApiAuthSessionRoute
@@ -481,6 +507,20 @@ declare module '@tanstack/react-router' {
       path: '/customer/profile'
       fullPath: '/customer/profile'
       preLoaderRoute: typeof CustomerProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vehicles': {
+      id: '/api/vehicles'
+      path: '/api/vehicles'
+      fullPath: '/api/vehicles'
+      preLoaderRoute: typeof ApiVehiclesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/master-data': {
+      id: '/api/master-data'
+      path: '/api/master-data'
+      fullPath: '/api/master-data'
+      preLoaderRoute: typeof ApiMasterDataRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -666,6 +706,8 @@ const rootRouteChildren: RootRouteChildren = {
   SignInRoute: SignInRoute,
   VehiclesRoute: VehiclesRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiMasterDataRoute: ApiMasterDataRoute,
+  ApiVehiclesRoute: ApiVehiclesRoute,
   CustomerProfileRoute: CustomerProfileRoute,
   ApiAuthProfileRoute: ApiAuthProfileRoute,
   ApiAuthSessionRoute: ApiAuthSessionRoute,
