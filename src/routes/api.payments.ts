@@ -21,7 +21,7 @@ async function read({ request }: { request: Request }) {
       return Response.json({ url: signed.data.signedUrl });
     }
     if (principal.role === "Operations Staff") return Response.json({ payments: [] });
-    let query = client.from("payments").select("*, payment_methods(id,code,label,instructions,is_demo), payment_proofs(*)").order("updated_at", { ascending: false });
+    let query = client.from("payments").select("*, booking:booking_requests(id,booking_status,customer:profiles(id,full_name,email)), payment_methods(id,code,label,instructions,is_demo), payment_proofs(*)").order("updated_at", { ascending: false });
     if (principal.role === "Customer/Renter") query = query.eq("customer_id", principal.userId);
     if (bookingId) query = query.eq("booking_id", bookingId);
     const result = await query;
