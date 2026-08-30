@@ -23,6 +23,8 @@ import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
 import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
+import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
+import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-master-data'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
@@ -110,6 +112,16 @@ const ApiMasterDataRoute = ApiMasterDataRouteImport.update({
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBookingsRoute = ApiBookingsRouteImport.update({
+  id: '/api/bookings',
+  path: '/api/bookings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBookingMasterDataRoute = ApiBookingMasterDataRouteImport.update({
+  id: '/api/booking-master-data',
+  path: '/api/booking-master-data',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -226,6 +238,8 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/booking-master-data': typeof ApiBookingMasterDataRoute
+  '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/vehicles': typeof ApiVehiclesRoute
@@ -259,6 +273,8 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/booking-master-data': typeof ApiBookingMasterDataRoute
+  '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/vehicles': typeof ApiVehiclesRoute
@@ -294,6 +310,8 @@ export interface FileRoutesById {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/booking-master-data': typeof ApiBookingMasterDataRoute
+  '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/vehicles': typeof ApiVehiclesRoute
@@ -330,6 +348,8 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/booking-master-data'
+    | '/api/bookings'
     | '/api/health'
     | '/api/master-data'
     | '/api/vehicles'
@@ -363,6 +383,8 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/booking-master-data'
+    | '/api/bookings'
     | '/api/health'
     | '/api/master-data'
     | '/api/vehicles'
@@ -397,6 +419,8 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/booking-master-data'
+    | '/api/bookings'
     | '/api/health'
     | '/api/master-data'
     | '/api/vehicles'
@@ -419,6 +443,8 @@ export interface RootRouteChildren {
   PaymentDetailsRoute: typeof PaymentDetailsRoute
   SignInRoute: typeof SignInRoute
   VehiclesRoute: typeof VehiclesRoute
+  ApiBookingMasterDataRoute: typeof ApiBookingMasterDataRoute
+  ApiBookingsRoute: typeof ApiBookingsRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMasterDataRoute: typeof ApiMasterDataRoute
   ApiVehiclesRoute: typeof ApiVehiclesRoute
@@ -528,6 +554,20 @@ declare module '@tanstack/react-router' {
       path: '/api/health'
       fullPath: '/api/health'
       preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/bookings': {
+      id: '/api/bookings'
+      path: '/api/bookings'
+      fullPath: '/api/bookings'
+      preLoaderRoute: typeof ApiBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/booking-master-data': {
+      id: '/api/booking-master-data'
+      path: '/api/booking-master-data'
+      fullPath: '/api/booking-master-data'
+      preLoaderRoute: typeof ApiBookingMasterDataRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
@@ -705,6 +745,8 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentDetailsRoute: PaymentDetailsRoute,
   SignInRoute: SignInRoute,
   VehiclesRoute: VehiclesRoute,
+  ApiBookingMasterDataRoute: ApiBookingMasterDataRoute,
+  ApiBookingsRoute: ApiBookingsRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiMasterDataRoute: ApiMasterDataRoute,
   ApiVehiclesRoute: ApiVehiclesRoute,

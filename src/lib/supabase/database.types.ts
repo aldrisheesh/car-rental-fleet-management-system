@@ -3,7 +3,7 @@
  *
  *   npx supabase gen types typescript --project-id <project-ref> > src/lib/supabase/database.types.ts
  *
- * The checked-in shape is intentionally limited to Vertical Slice 001 tables.
+ * The checked-in shape covers the canonical tables established through VS005.
  */
 export type Database = {
   public: {
@@ -132,6 +132,24 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      booking_requests: {
+        Row: {
+          id: string; customer_id: string; requested_vehicle_id: string; assigned_vehicle_id: string | null;
+          pickup_branch_id: string; return_branch_id: string; pickup_at: string; return_at: string;
+          destination: string | null; purpose_of_use: string; pickup_delivery_option: string;
+          pickup_location: string | null; dropoff_location: string | null; preferred_seat_count: number | null;
+          customer_contact_number: string | null; booking_status: string; created_at: string; updated_at: string;
+        };
+        Insert: {
+          id?: string; customer_id: string; requested_vehicle_id: string; assigned_vehicle_id?: string | null;
+          pickup_branch_id: string; return_branch_id: string; pickup_at: string; return_at: string;
+          destination?: string | null; purpose_of_use: string; pickup_delivery_option: string;
+          pickup_location?: string | null; dropoff_location?: string | null; preferred_seat_count?: number | null;
+          customer_contact_number?: string | null; booking_status?: string; created_at?: string; updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["booking_requests"]["Insert"]>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;

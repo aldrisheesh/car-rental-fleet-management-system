@@ -1,34 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Filter, Download } from "lucide-react";
 import { Badge, Btn, Card, PageHeader, TInput, TSelect, Toolbar } from "@/components/admin/ui";
-import { bookings, type BookingStatus } from "@/data/admin";
 
 export const Route = createFileRoute("/admin/bookings")({ component: BookingsPage });
 
-const statuses: (BookingStatus | "All")[] = [
-  "All",
-  "Pending",
-  "Confirmed",
-  "Ongoing",
-  "Completed",
-  "Cancelled",
-];
+const statuses = ["All", "Submitted"] as const;
 const branches = ["All branches", "Taft, Manila", "Antipolo, Rizal"];
 
 function BookingsPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<(typeof statuses)[number]>("All");
   const [branch, setBranch] = useState<(typeof branches)[number]>("All branches");
+  const [bookings, setBookings] = useState<any[]>([]);
+  useEffect(() => { fetch("/api/bookings", { credentials: "same-origin" }).then((r) => r.ok ? r.json() : []).then(setBookings).catch(() => undefined); }, []);
 
   const rows = useMemo(
     () =>
       bookings.filter((b) => {
-        if (status !== "All" && b.status !== status) return false;
-        if (branch !== "All branches" && b.branch !== branch) return false;
+        if (status !== "All" && b.booking_status !== status) return false;
+        if (branch !== "All branches" && b.pickup_branch?.name !== branch) return false;
         if (
           q &&
-          ![b.id, b.customer, b.vehicle, b.plate].join(" ").toLowerCase().includes(q.toLowerCase())
+          ![b.id, b.customer?.full_name, b.requested_vehicle?.name, b.requested_vehicle?.license_plate].join(" ").toLowerCase().includes(q.toLowerCase())
         )
           return false;
         return true;
@@ -95,17 +89,17 @@ function BookingsPage() {
                   className="border-b border-border/60 transition-colors hover:bg-secondary/40"
                 >
                   <Td className="font-mono text-xs text-muted-foreground">{b.id}</Td>
-                  <Td className="font-medium">{b.customer}</Td>
+                  <Td className="font-medium">{b.customer?.full_name ?? "—"}</Td>
                   <Td>
-                    <div>{b.vehicle}</div>
-                    <div className="text-[11px] text-muted-foreground">{b.plate}</div>
+                    <div>{b.requested_vehicle?.name ?? "—"}</div>
+                    <div className="text-[11px] text-muted-foreground">{b.requested_vehicle?.license_plate ?? ""}</div>
                   </Td>
-                  <Td className="text-muted-foreground">{b.branch}</Td>
+                  <Td className="text-muted-foreground">{b.pickup_branch?.name ?? "—"}</Td>
                   <Td className="text-muted-foreground">
-                    {b.from} → {b.to}
+                    {new Date(b.pickup_at).toLocaleString()} → {new Date(b.return_at).toLocaleString()}
                   </Td>
                   <Td>
-                    <Badge>{b.status}</Badge>
+                    <Badge>{b.booking_status}</Badge>
                   </Td>
                 </tr>
               ))}

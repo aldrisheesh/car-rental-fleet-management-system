@@ -23,12 +23,12 @@ import {
 } from "@/components/ui/dialog";
 import { getAdminSession } from "@/lib/admin-auth";
 import { getCustomerProfile, getCustomerSession } from "@/lib/customer-auth";
-import { vehicles } from "@/data/vehicles";
+import { vehicles as fallbackVehicles } from "@/data/vehicles";
 import { CANCELLATION_POLICY, RENTAL_DONTS, RENTAL_DOS } from "@/data/rental-policy";
 
 type Search = { vehicle?: string };
 type BookingErrors = Partial<
-  Record<"pickup" | "dropoff" | "name" | "email" | "phone" | "terms", string>
+  Record<"pickup" | "dropoff" | "name" | "email" | "phone" | "purpose" | "locations" | "terms", string>
 >;
 
 export const Route = createFileRoute("/booking")({
@@ -60,16 +60,23 @@ function BookingPage() {
   const { vehicle } = Route.useSearch();
   const [authOpen, setAuthOpen] = useState(false);
   const [customerSession, setCustomerSession] = useState(() => getCustomerSession());
-  const initial = vehicles.find((v) => v.id === vehicle) ?? vehicles[0];
+  const initial = fallbackVehicles.find((v) => v.id === vehicle) ?? fallbackVehicles[0];
+  const [masterData, setMasterData] = useState<{ branches: { id: string; name: string }[]; vehicles: any[] }>({ branches: [], vehicles: [] });
 
   const [vehicleId, setVehicleId] = useState(initial.id);
-  const [branch, setBranch] = useState(initial.branch);
+  const [branch, setBranch] = useState<string>(initial.branch);
   const [returnBranch, setReturnBranch] = useState("Same as pickup");
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [destination, setDestination] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [pickupDeliveryOption, setPickupDeliveryOption] = useState<"pickup" | "delivery">("pickup");
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [dropoffLocation, setDropoffLocation] = useState("");
+  const [preferredSeatCount, setPreferredSeatCount] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [errors, setErrors] = useState<BookingErrors>({});
@@ -95,7 +102,19 @@ function BookingPage() {
     setErrors((current) => ({ ...current, name: undefined, email: undefined }));
   }, [customerSession]);
 
-  const selected = vehicles.find((v) => v.id === vehicleId) ?? initial;
+  useEffect(() => {
+    fetch("/api/booking-master-data", { credentials: "same-origin" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => data && setMasterData(data))
+      .catch(() => undefined);
+  }, [customerSession]);
+  useEffect(() => {
+    if (!masterData.branches.length) return;
+    setBranch((current) => masterData.branches.some((b) => b.id === current) ? current : masterData.branches[0].id);
+  }, [masterData.branches]);
+
+  const selectedCanonical = masterData.vehicles.find((v) => v.id === vehicleId);
+  const selected = selectedCanonical ?? initial;
   const effectiveName = customerSession?.name ?? name;
   const effectiveEmail = customerSession?.email ?? email;
 
@@ -121,6 +140,10 @@ function BookingPage() {
       name: effectiveName,
       email: effectiveEmail,
       phone,
+      purpose,
+      pickupDeliveryOption,
+      pickupLocation,
+      dropoffLocation,
       acceptTerms: nextAcceptTerms,
     });
     setErrors(nextErrors);
@@ -131,14 +154,10 @@ function BookingPage() {
     }
 
     setSubmitting(true);
-    window.setTimeout(() => {
-      setSubmitting(false);
-      setSubmitted(true);
-      setSuccessNotice({ vehicleName: selected.name, days });
-      window.setTimeout(() => {
-        void navigate({ to: "/customer", hash: "post-booking" });
-      }, 1400);
-    }, 650);
+    fetch("/api/bookings", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestedVehicleId: vehicleId, pickupBranchId: branch, returnBranchId: returnBranch === "Same as pickup" ? branch : returnBranch, pickupAt: pickup, returnAt: dropoff, destination, purposeOfUse: purpose, pickupDeliveryOption, pickupLocation, dropoffLocation, preferredSeatCount }) })
+      .then(async (response) => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Unable to submit booking request."); return data; })
+      .then((data) => { setSubmitting(false); setSubmitted(true); setSuccessNotice({ vehicleName: selected.name, days }); void data; window.setTimeout(() => void navigate({ to: "/customer", hash: "post-booking" }), 1400); })
+      .catch((error) => { setSubmitting(false); toast.error(error instanceof Error ? error.message : "Unable to submit booking request."); });
   }
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -275,7 +294,7 @@ function BookingPage() {
                   onChange={(event) => setVehicleId(event.target.value)}
                   className="input-control"
                 >
-                  {vehicles.map((v) => (
+                  {(masterData.vehicles.length ? masterData.vehicles : fallbackVehicles).map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.name}
                     </option>
@@ -289,8 +308,7 @@ function BookingPage() {
                   onChange={(event) => setBranch(event.target.value as never)}
                   className="input-control"
                 >
-                  <option>Taft, Manila</option>
-                  <option>Antipolo, Rizal</option>
+                  {(masterData.branches.length ? masterData.branches : [{ id: "Taft, Manila", name: "Taft, Manila" }, { id: "Antipolo, Rizal", name: "Antipolo, Rizal" }]).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </Field>
               <Field label="Return branch" id="booking-return-branch">
@@ -300,9 +318,8 @@ function BookingPage() {
                   onChange={(event) => setReturnBranch(event.target.value)}
                   className="input-control"
                 >
-                  <option>Same as pickup</option>
-                  <option>Taft, Manila</option>
-                  <option>Antipolo, Rizal</option>
+                  <option value="Same as pickup">Same as pickup</option>
+                  {(masterData.branches.length ? masterData.branches : [{ id: "Taft, Manila", name: "Taft, Manila" }, { id: "Antipolo, Rizal", name: "Antipolo, Rizal" }]).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </Field>
               <Field label="Pickup date and time" id="booking-pickup" error={errors.pickup}>
@@ -401,12 +418,18 @@ function BookingPage() {
                 />
               </Field>
               <Field label="Destination (optional)" id="booking-destination">
-                <input
-                  id="booking-destination"
-                  className="input-control"
-                  placeholder="e.g. Baguio, La Union"
-                />
-              </Field>
+                  <input
+                    id="booking-destination"
+                    className="input-control"
+                    placeholder="e.g. Baguio, La Union"
+                    value={destination}
+                    onChange={(event) => setDestination(event.target.value)}
+                  />
+                </Field>
+              <Field label="Purpose of use" id="booking-purpose" error={errors.purpose}><input id="booking-purpose" className="input-control" value={purpose} onChange={(e) => setPurpose(e.target.value)} required /></Field>
+              <Field label="Preferred seats (optional)" id="booking-seats"><input id="booking-seats" type="number" min="1" className="input-control" value={preferredSeatCount} onChange={(e) => setPreferredSeatCount(e.target.value)} /></Field>
+              <Field label="Pickup or delivery" id="booking-option"><select id="booking-option" className="input-control" value={pickupDeliveryOption} onChange={(e) => setPickupDeliveryOption(e.target.value as "pickup" | "delivery")}><option value="pickup">Pickup at branch</option><option value="delivery">Delivery / drop-off</option></select></Field>
+              {pickupDeliveryOption === "delivery" && <><Field label="Pickup location" id="booking-pickup-location" error={errors.locations}><input id="booking-pickup-location" className="input-control" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} /></Field><Field label="Drop-off location" id="booking-dropoff-location"><input id="booking-dropoff-location" className="input-control" value={dropoffLocation} onChange={(e) => setDropoffLocation(e.target.value)} /></Field></>}
             </div>
           </div>
 
@@ -553,6 +576,10 @@ function validateBooking({
   name,
   email,
   phone,
+  purpose,
+  pickupDeliveryOption,
+  pickupLocation,
+  dropoffLocation,
   acceptTerms,
 }: {
   pickup: string;
@@ -560,6 +587,10 @@ function validateBooking({
   name: string;
   email: string;
   phone: string;
+  purpose: string;
+  pickupDeliveryOption: "pickup" | "delivery";
+  pickupLocation: string;
+  dropoffLocation: string;
   acceptTerms: boolean;
 }) {
   const nextErrors: BookingErrors = {};
@@ -572,6 +603,8 @@ function validateBooking({
   if (!name.trim()) nextErrors.name = "Enter your full name.";
   if (!/^\S+@\S+\.\S+$/.test(email.trim())) nextErrors.email = "Enter a valid email address.";
   if (phone.replace(/\D/g, "").length < 10) nextErrors.phone = "Enter a valid phone number.";
+  if (!purpose.trim()) nextErrors.purpose = "Enter the purpose of use.";
+  if (pickupDeliveryOption === "delivery" && (!pickupLocation.trim() || !dropoffLocation.trim())) nextErrors.locations = "Provide pickup and drop-off locations.";
   if (!acceptTerms) nextErrors.terms = "Please accept the rental policies to continue.";
 
   return nextErrors;

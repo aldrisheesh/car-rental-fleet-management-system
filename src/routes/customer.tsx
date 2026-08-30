@@ -10,7 +10,6 @@ import { CreditCard, FileCheck2, FileUp, History, UserRound } from "lucide-react
 import { toast } from "sonner";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
-import { bookings, type Booking } from "@/data/admin";
 import { peso } from "@/data/vehicles";
 import { getAdminSession } from "@/lib/admin-auth";
 import { getCustomerSession, type CustomerSession } from "@/lib/customer-auth";
@@ -54,19 +53,11 @@ function CustomerViewPage() {
   const normalizedHash = hash?.startsWith("#") ? hash.slice(1) : (hash ?? "");
   const showRequirementsOnly = normalizedHash === "post-booking";
   const [session, setSession] = useState<CustomerSession | null | undefined>(undefined);
+  const [bookingRequests, setBookingRequests] = useState<any[]>([]);
   const [idFileName, setIdFileName] = useState("");
   const [licenseFileName, setLicenseFileName] = useState("");
   const [ltoLicenseScreenshotFileName, setLtoLicenseScreenshotFileName] = useState("");
-  const customerName = session?.name ?? "";
-  const pastCustomerBookings = useMemo(() => {
-    if (!customerName) return [];
-
-    const normalizedCustomerName = normalizeCustomerName(customerName);
-    return bookings
-      .filter((booking) => normalizeCustomerName(booking.customer) === normalizedCustomerName)
-      .filter((booking) => booking.status === "Completed" || booking.status === "Cancelled")
-      .sort((a, b) => bookingDateValue(b.to) - bookingDateValue(a.to));
-  }, [customerName]);
+  const pastCustomerBookings: never[] = [];
 
   useEffect(() => {
     const activeSession = getCustomerSession();
@@ -76,6 +67,7 @@ function CustomerViewPage() {
       return;
     }
     setSession(activeSession);
+    fetch("/api/bookings", { credentials: "same-origin" }).then((r) => r.ok ? r.json() : []).then(setBookingRequests).catch(() => undefined);
   }, [navigate]);
 
   if (session === undefined) {
@@ -278,6 +270,7 @@ function CustomerViewPage() {
           </Card>
 
           <Card title="Past bookings" icon={<History className="h-4 w-4 text-primary" />}>
+            {bookingRequests.length > 0 && <div className="mb-4 space-y-3">{bookingRequests.map((request) => <div key={request.id} className="rounded-md border border-primary/30 bg-primary/5 px-3 py-3"><div className="flex items-center justify-between gap-3"><div><p className="text-sm font-semibold">Request {request.id.slice(0, 8)}</p><p className="text-xs text-muted-foreground">{request.requested_vehicle?.name ?? "Requested vehicle"} · {new Date(request.pickup_at).toLocaleString()}</p></div><StatusPill status={request.booking_status} /></div></div>)}</div>}
             <PastBookings rows={pastCustomerBookings} />
           </Card>
         </div>
@@ -288,7 +281,7 @@ function CustomerViewPage() {
   );
 }
 
-function PastBookings({ rows }: { rows: Booking[] }) {
+function PastBookings({ rows }: { rows: never[] }) {
   if (rows.length === 0) {
     return (
       <div className="rounded-md border border-dashed border-border bg-secondary/20 px-4 py-5 text-center">
