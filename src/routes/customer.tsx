@@ -3,13 +3,13 @@ import {
   Link,
   redirect,
   useNavigate,
-  useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { CreditCard, FileCheck2, FileUp, History, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
+import type { Booking } from "@/data/admin";
 import { peso } from "@/data/vehicles";
 import { getAdminSession } from "@/lib/admin-auth";
 import { getCustomerSession, type CustomerSession } from "@/lib/customer-auth";
@@ -49,15 +49,13 @@ const paymentRows: { ref: string; amount: number; method: string; status: Paymen
 
 function CustomerViewPage() {
   const navigate = useNavigate();
-  const hash = useRouterState({ select: (s) => s.location.hash });
-  const normalizedHash = hash?.startsWith("#") ? hash.slice(1) : (hash ?? "");
-  const showRequirementsOnly = normalizedHash === "post-booking";
+  const showRequirementsOnly = false;
   const [session, setSession] = useState<CustomerSession | null | undefined>(undefined);
   const [bookingRequests, setBookingRequests] = useState<any[]>([]);
   const [idFileName, setIdFileName] = useState("");
   const [licenseFileName, setLicenseFileName] = useState("");
   const [ltoLicenseScreenshotFileName, setLtoLicenseScreenshotFileName] = useState("");
-  const pastCustomerBookings: never[] = [];
+  const pastCustomerBookings: Booking[] = [];
 
   useEffect(() => {
     const activeSession = getCustomerSession();
@@ -281,7 +279,7 @@ function CustomerViewPage() {
   );
 }
 
-function PastBookings({ rows }: { rows: never[] }) {
+function PastBookings({ rows }: { rows: Booking[] }) {
   if (rows.length === 0) {
     return (
       <div className="rounded-md border border-dashed border-border bg-secondary/20 px-4 py-5 text-center">

@@ -30,6 +30,7 @@ type Search = { vehicle?: string };
 type BookingErrors = Partial<
   Record<"pickup" | "dropoff" | "name" | "email" | "phone" | "purpose" | "locations" | "terms", string>
 >;
+type CanonicalVehicle = { id: string; name: string; seat_capacity: number | null; image_url: string | null; branch_id: string; category?: { id: string; name: string } | null };
 
 export const Route = createFileRoute("/booking")({
   beforeLoad: () => {
@@ -61,7 +62,9 @@ function BookingPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [customerSession, setCustomerSession] = useState(() => getCustomerSession());
   const initial = fallbackVehicles.find((v) => v.id === vehicle) ?? fallbackVehicles[0];
-  const [masterData, setMasterData] = useState<{ branches: { id: string; name: string }[]; vehicles: any[] }>({ branches: [], vehicles: [] });
+  const [masterData, setMasterData] = useState<{ branches: { id: string; name: string }[]; vehicles: CanonicalVehicle[] }>({ branches: [], vehicles: [] });
+  const [masterDataLoading, setMasterDataLoading] = useState(true);
+  const [masterDataError, setMasterDataError] = useState("");
 
   const [vehicleId, setVehicleId] = useState(initial.id);
   const [branch, setBranch] = useState<string>(initial.branch);
@@ -102,12 +105,20 @@ function BookingPage() {
     setErrors((current) => ({ ...current, name: undefined, email: undefined }));
   }, [customerSession]);
 
-  useEffect(() => {
+  function loadMasterData() {
+    setMasterDataLoading(true); setMasterDataError("");
     fetch("/api/booking-master-data", { credentials: "same-origin" })
-      .then((response) => response.ok ? response.json() : null)
-      .then((data) => data && setMasterData(data))
-      .catch(() => undefined);
-  }, [customerSession]);
+      .then(async (response) => { const data = await response.json().catch(() => null); if (!response.ok) throw new Error(data?.message || "Unable to load booking options."); return data; })
+      .then((data) => { setMasterData(data); setMasterDataLoading(false); })
+      .catch((error) => { setMasterDataLoading(false); setMasterDataError(error instanceof Error ? error.message : "Unable to load booking options."); });
+  }
+  useEffect(() => { loadMasterData(); }, [customerSession]);
+  useEffect(() => {
+    if (!masterData.vehicles.length) return;
+    const incoming = fallbackVehicles.find((v) => v.id === vehicle);
+    const mapped = masterData.vehicles.find((v) => v.id === vehicle) ?? (incoming && masterData.vehicles.find((v) => v.name === incoming.name));
+    setVehicleId((current) => masterData.vehicles.some((v) => v.id === current) ? current : (mapped?.id ?? masterData.vehicles[0].id));
+  }, [masterData.vehicles, vehicle]);
   useEffect(() => {
     if (!masterData.branches.length) return;
     setBranch((current) => masterData.branches.some((b) => b.id === current) ? current : masterData.branches[0].id);
@@ -115,6 +126,7 @@ function BookingPage() {
 
   const selectedCanonical = masterData.vehicles.find((v) => v.id === vehicleId);
   const selected = selectedCanonical ?? initial;
+  const bookingOptionsReady = !masterDataLoading && !masterDataError && Boolean(selectedCanonical) && masterData.branches.length > 0;
   const effectiveName = customerSession?.name ?? name;
   const effectiveEmail = customerSession?.email ?? email;
 
@@ -156,7 +168,7 @@ function BookingPage() {
     setSubmitting(true);
     fetch("/api/bookings", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestedVehicleId: vehicleId, pickupBranchId: branch, returnBranchId: returnBranch === "Same as pickup" ? branch : returnBranch, pickupAt: pickup, returnAt: dropoff, destination, purposeOfUse: purpose, pickupDeliveryOption, pickupLocation, dropoffLocation, preferredSeatCount }) })
       .then(async (response) => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Unable to submit booking request."); return data; })
-      .then((data) => { setSubmitting(false); setSubmitted(true); setSuccessNotice({ vehicleName: selected.name, days }); void data; window.setTimeout(() => void navigate({ to: "/customer", hash: "post-booking" }), 1400); })
+      .then((data) => { setSubmitting(false); setSubmitted(true); setSuccessNotice({ vehicleName: selected.name, days }); void data; window.setTimeout(() => void navigate({ to: "/customer" }), 1400); })
       .catch((error) => { setSubmitting(false); toast.error(error instanceof Error ? error.message : "Unable to submit booking request."); });
   }
 
@@ -294,7 +306,7 @@ function BookingPage() {
                   onChange={(event) => setVehicleId(event.target.value)}
                   className="input-control"
                 >
-                  {(masterData.vehicles.length ? masterData.vehicles : fallbackVehicles).map((v) => (
+                  {masterData.vehicles.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.name}
                     </option>
@@ -308,7 +320,7 @@ function BookingPage() {
                   onChange={(event) => setBranch(event.target.value as never)}
                   className="input-control"
                 >
-                  {(masterData.branches.length ? masterData.branches : [{ id: "Taft, Manila", name: "Taft, Manila" }, { id: "Antipolo, Rizal", name: "Antipolo, Rizal" }]).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  {masterData.branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </Field>
               <Field label="Return branch" id="booking-return-branch">
@@ -319,7 +331,7 @@ function BookingPage() {
                   className="input-control"
                 >
                   <option value="Same as pickup">Same as pickup</option>
-                  {(masterData.branches.length ? masterData.branches : [{ id: "Taft, Manila", name: "Taft, Manila" }, { id: "Antipolo, Rizal", name: "Antipolo, Rizal" }]).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  {masterData.branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </Field>
               <Field label="Pickup date and time" id="booking-pickup" error={errors.pickup}>
@@ -402,7 +414,9 @@ function BookingPage() {
                 )}
               </Field>
               <Field label="Phone (PH)" id="booking-phone" error={errors.phone}>
-                <input
+                {customerSession ? (
+                  <div className="input-control flex items-center bg-secondary/40 text-muted-foreground"><span className="text-foreground">{phone || "No phone number on profile"}</span></div>
+                ) : <input
                   id="booking-phone"
                   value={phone}
                   onChange={(event) => {
@@ -415,7 +429,7 @@ function BookingPage() {
                   placeholder="+63 917 000 0000"
                   autoComplete="tel"
                   required
-                />
+                />}
               </Field>
               <Field label="Destination (optional)" id="booking-destination">
                   <input
@@ -436,13 +450,17 @@ function BookingPage() {
           <div className="space-y-6">
             <div className="overflow-hidden rounded-xl border border-border bg-card shadow-soft">
               <img
-                src={selected.image}
+                src={"image_url" in selected ? (selected.image_url ?? "/assets/car-sedan.jpg") : selected.image}
                 alt={selected.name}
                 className="aspect-[4/3] w-full object-cover"
               />
               <div className="p-6">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {selected.category}
+                  {"category" in selected
+                    ? typeof selected.category === "string"
+                      ? selected.category
+                      : selected.category?.name ?? "Vehicle"
+                    : String(selected.category)}
                 </div>
                 <h3 className="font-display text-xl font-semibold">{selected.name}</h3>
                 <div className="mt-3 space-y-2 text-sm">
@@ -458,9 +476,11 @@ function BookingPage() {
                   />
                 </div>
 
+                {!masterDataLoading && masterDataError && <div className="mt-4 rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-center text-xs text-rose-200">{masterDataError} <button type="button" className="ml-2 underline" onClick={loadMasterData}>Retry</button></div>}
+                {masterDataLoading && <div className="mt-4 text-center text-xs text-muted-foreground">Loading current vehicles and branches…</div>}
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || !bookingOptionsReady}
                   className="touch-target mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -521,7 +541,7 @@ function BookingPage() {
             </p>
             <p className="mt-2 text-base text-emerald-100/90">
               {successNotice.vehicleName} - {successNotice.days} day
-              {successNotice.days > 1 ? "s" : ""}. We&apos;ll confirm by email shortly.
+              {successNotice.days > 1 ? "s" : ""}. Your request is Submitted and awaiting review.
             </p>
           </div>
         </div>
