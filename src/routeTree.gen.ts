@@ -34,6 +34,11 @@ import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
 import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
 import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
+import { Route as ApiAuthSignUpRouteImport } from './routes/api.auth.sign-up'
+import { Route as ApiAuthSignOutRouteImport } from './routes/api.auth.sign-out'
+import { Route as ApiAuthSignInRouteImport } from './routes/api.auth.sign-in'
+import { Route as ApiAuthSessionRouteImport } from './routes/api.auth.session'
+import { Route as ApiAuthProfileRouteImport } from './routes/api.auth.profile'
 
 const VehiclesRoute = VehiclesRouteImport.update({
   id: '/vehicles',
@@ -160,6 +165,31 @@ const AdminBookingsRoute = AdminBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiAuthSignUpRoute = ApiAuthSignUpRouteImport.update({
+  id: '/api/auth/sign-up',
+  path: '/api/auth/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignOutRoute = ApiAuthSignOutRouteImport.update({
+  id: '/api/auth/sign-out',
+  path: '/api/auth/sign-out',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignInRoute = ApiAuthSignInRouteImport.update({
+  id: '/api/auth/sign-in',
+  path: '/api/auth/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSessionRoute = ApiAuthSessionRouteImport.update({
+  id: '/api/auth/session',
+  path: '/api/auth/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthProfileRoute = ApiAuthProfileRouteImport.update({
+  id: '/api/auth/profile',
+  path: '/api/auth/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -187,6 +217,11 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/auth/profile': typeof ApiAuthProfileRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -213,6 +248,11 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin': typeof AdminIndexRoute
+  '/api/auth/profile': typeof ApiAuthProfileRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -241,6 +281,11 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/customer_/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/auth/profile': typeof ApiAuthProfileRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -270,6 +315,11 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/customer/profile'
     | '/admin/'
+    | '/api/auth/profile'
+    | '/api/auth/session'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-out'
+    | '/api/auth/sign-up'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -296,6 +346,11 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/customer/profile'
     | '/admin'
+    | '/api/auth/profile'
+    | '/api/auth/session'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-out'
+    | '/api/auth/sign-up'
   id:
     | '__root__'
     | '/'
@@ -323,6 +378,11 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/customer_/profile'
     | '/admin/'
+    | '/api/auth/profile'
+    | '/api/auth/session'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-out'
+    | '/api/auth/sign-up'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -337,6 +397,11 @@ export interface RootRouteChildren {
   VehiclesRoute: typeof VehiclesRoute
   ApiHealthRoute: typeof ApiHealthRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
+  ApiAuthProfileRoute: typeof ApiAuthProfileRoute
+  ApiAuthSessionRoute: typeof ApiAuthSessionRoute
+  ApiAuthSignInRoute: typeof ApiAuthSignInRoute
+  ApiAuthSignOutRoute: typeof ApiAuthSignOutRoute
+  ApiAuthSignUpRoute: typeof ApiAuthSignUpRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -516,6 +581,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/auth/sign-up': {
+      id: '/api/auth/sign-up'
+      path: '/api/auth/sign-up'
+      fullPath: '/api/auth/sign-up'
+      preLoaderRoute: typeof ApiAuthSignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-out': {
+      id: '/api/auth/sign-out'
+      path: '/api/auth/sign-out'
+      fullPath: '/api/auth/sign-out'
+      preLoaderRoute: typeof ApiAuthSignOutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-in': {
+      id: '/api/auth/sign-in'
+      path: '/api/auth/sign-in'
+      fullPath: '/api/auth/sign-in'
+      preLoaderRoute: typeof ApiAuthSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/session': {
+      id: '/api/auth/session'
+      path: '/api/auth/session'
+      fullPath: '/api/auth/session'
+      preLoaderRoute: typeof ApiAuthSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/profile': {
+      id: '/api/auth/profile'
+      path: '/api/auth/profile'
+      fullPath: '/api/auth/profile'
+      preLoaderRoute: typeof ApiAuthProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -567,6 +667,11 @@ const rootRouteChildren: RootRouteChildren = {
   VehiclesRoute: VehiclesRoute,
   ApiHealthRoute: ApiHealthRoute,
   CustomerProfileRoute: CustomerProfileRoute,
+  ApiAuthProfileRoute: ApiAuthProfileRoute,
+  ApiAuthSessionRoute: ApiAuthSessionRoute,
+  ApiAuthSignInRoute: ApiAuthSignInRoute,
+  ApiAuthSignOutRoute: ApiAuthSignOutRoute,
+  ApiAuthSignUpRoute: ApiAuthSignUpRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,6 +1,33 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
+import { getCurrentPrincipal } from "./lib/auth.server";
 import { renderErrorPage } from "./lib/error-page";
+
+const authBoundaryMiddleware = createMiddleware().server(
+  async ({ next, request }) => {
+    const pathname = new URL(request.url).pathname;
+    const isAdminArea = pathname === "/admin" || pathname.startsWith("/admin/");
+    const isCustomerArea =
+      pathname === "/customer" ||
+      pathname.startsWith("/customer/") ||
+      pathname === "/customer-landing" ||
+      pathname === "/payment-details";
+
+    if (!isAdminArea && !isCustomerArea) return next();
+
+    const principal = await getCurrentPrincipal();
+    const allowed = isAdminArea
+      ? principal?.role === "Owner/Admin" &&
+        principal.accountStatus === "Active"
+      : principal?.role === "Customer/Renter" &&
+        principal.accountStatus === "Active";
+
+    if (allowed) return next();
+
+    const destination = principal ? "/" : "/sign-in";
+    return Response.redirect(new URL(destination, request.url), 302);
+  },
+);
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -18,5 +45,5 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 });
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: [errorMiddleware],
+  requestMiddleware: [authBoundaryMiddleware, errorMiddleware],
 }));

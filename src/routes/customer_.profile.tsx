@@ -1,15 +1,20 @@
-import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  redirect,
+  useNavigate,
+} from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Mail, MapPin, Phone, Save, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { getAdminSession } from "@/lib/admin-auth";
+import { updateOwnProfile } from "@/lib/auth-client";
 import {
   getCustomerProfile,
   getCustomerSession,
   setCustomerProfile,
-  setCustomerSession,
   type CustomerProfile,
   type CustomerSession,
 } from "@/lib/customer-auth";
@@ -31,7 +36,8 @@ export const Route = createFileRoute("/customer_/profile")({
       { title: "Edit Profile - Briah's Car Rental" },
       {
         name: "description",
-        content: "Update customer profile and contact details for Briah's Car Rental.",
+        content:
+          "Update customer profile and contact details for Briah's Car Rental.",
       },
     ],
     links: [{ rel: "canonical", href: "/customer/profile" }],
@@ -43,7 +49,9 @@ type ProfileForm = Omit<CustomerProfile, "updatedAt">;
 
 function CustomerProfilePage() {
   const navigate = useNavigate();
-  const [session, setSession] = useState<CustomerSession | null | undefined>(undefined);
+  const [session, setSession] = useState<CustomerSession | null | undefined>(
+    undefined,
+  );
   const [form, setForm] = useState<ProfileForm>({
     name: "",
     email: "",
@@ -85,7 +93,9 @@ function CustomerProfilePage() {
           <div className="font-display text-lg font-semibold tracking-tight">
             Briah&apos;s Car Rental
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">Loading profile...</p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Loading profile...
+          </p>
         </div>
       </div>
     );
@@ -97,7 +107,7 @@ function CustomerProfilePage() {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (form.phone.trim() && form.phone.replace(/\D/g, "").length < 10) {
@@ -109,9 +119,19 @@ function CustomerProfilePage() {
     const activeSession = session;
 
     setSaving(true);
-    window.setTimeout(() => {
+    try {
+      const result = await updateOwnProfile({
+        fullName: form.name.trim(),
+        phoneNumber: form.phone.trim(),
+      });
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
+
       const updatedSession: CustomerSession = {
         ...activeSession,
+        name: result.data.principal.fullName,
         phone: form.phone.trim(),
         streetAddress: form.streetAddress.trim(),
         barangay: form.barangay.trim(),
@@ -121,7 +141,7 @@ function CustomerProfilePage() {
       };
       const updatedProfile: CustomerProfile = {
         ...form,
-        name: activeSession.name,
+        name: result.data.principal.fullName,
         email: activeSession.email,
         phone: form.phone.trim(),
         streetAddress: form.streetAddress.trim(),
@@ -132,11 +152,10 @@ function CustomerProfilePage() {
         updatedAt: new Date().toISOString(),
       };
 
-      setCustomerSession(updatedSession);
       setCustomerProfile(updatedProfile);
       setSession(updatedSession);
       setForm({
-        name: activeSession.name,
+        name: result.data.principal.fullName,
         email: activeSession.email,
         phone: updatedProfile.phone,
         streetAddress: updatedProfile.streetAddress,
@@ -145,11 +164,12 @@ function CustomerProfilePage() {
         province: updatedProfile.province,
         postalCode: updatedProfile.postalCode,
       });
-      setSaving(false);
       toast.success("Profile updated", {
         description: "Your customer details have been saved.",
       });
-    }, 350);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -167,7 +187,9 @@ function CustomerProfilePage() {
           </Link>
           <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Account</p>
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
+                Account
+              </p>
               <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight md:text-4xl">
                 Edit profile
               </h1>
@@ -180,11 +202,16 @@ function CustomerProfilePage() {
       </section>
 
       <section className="container-page mt-8">
-        <form onSubmit={submit} className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-[1fr_0.8fr]">
+        <form
+          onSubmit={submit}
+          className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-[1fr_0.8fr]"
+        >
           <div className="rounded-xl border border-border bg-card p-5 shadow-soft md:p-6">
             <div className="mb-5 flex items-center gap-2">
               <UserRound className="h-4 w-4 text-primary" />
-              <h2 className="font-display text-lg font-semibold">Profile details</h2>
+              <h2 className="font-display text-lg font-semibold">
+                Profile details
+              </h2>
             </div>
 
             <div className="space-y-7">
@@ -193,21 +220,33 @@ function CustomerProfilePage() {
                   Identity
                 </h3>
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="Full name" id="profile-name" icon={<UserRound />}>
+                  <Field
+                    label="Full name"
+                    id="profile-name"
+                    icon={<UserRound />}
+                  >
                     <div
                       id="profile-name"
                       className="input-control flex items-center bg-secondary/40 text-muted-foreground"
                     >
-                      <span className="truncate text-foreground">{form.name || "Customer"}</span>
+                      <span className="truncate text-foreground">
+                        {form.name || "Customer"}
+                      </span>
                     </div>
                   </Field>
 
-                  <Field label="Email address" id="profile-email" icon={<Mail />}>
+                  <Field
+                    label="Email address"
+                    id="profile-email"
+                    icon={<Mail />}
+                  >
                     <div
                       id="profile-email"
                       className="input-control flex items-center bg-secondary/40 text-muted-foreground"
                     >
-                      <span className="truncate text-foreground">{form.email}</span>
+                      <span className="truncate text-foreground">
+                        {form.email}
+                      </span>
                     </div>
                   </Field>
                 </div>
@@ -218,11 +257,17 @@ function CustomerProfilePage() {
                   Contact details
                 </h3>
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="Contact No." id="profile-phone" icon={<Phone />}>
+                  <Field
+                    label="Contact No."
+                    id="profile-phone"
+                    icon={<Phone />}
+                  >
                     <input
                       id="profile-phone"
                       value={form.phone}
-                      onChange={(event) => updateField("phone", event.target.value)}
+                      onChange={(event) =>
+                        updateField("phone", event.target.value)
+                      }
                       className="input-control"
                       autoComplete="tel"
                       placeholder="+63 917 000 0000"
@@ -244,44 +289,70 @@ function CustomerProfilePage() {
                     <input
                       id="profile-street"
                       value={form.streetAddress}
-                      onChange={(event) => updateField("streetAddress", event.target.value)}
+                      onChange={(event) =>
+                        updateField("streetAddress", event.target.value)
+                      }
                       className="input-control"
                       autoComplete="street-address"
                     />
                   </Field>
 
-                  <Field label="Barangay" id="profile-barangay" icon={<MapPin />}>
+                  <Field
+                    label="Barangay"
+                    id="profile-barangay"
+                    icon={<MapPin />}
+                  >
                     <input
                       id="profile-barangay"
                       value={form.barangay}
-                      onChange={(event) => updateField("barangay", event.target.value)}
+                      onChange={(event) =>
+                        updateField("barangay", event.target.value)
+                      }
                       className="input-control"
                     />
                   </Field>
 
-                  <Field label="City / Municipality" id="profile-city" icon={<MapPin />}>
+                  <Field
+                    label="City / Municipality"
+                    id="profile-city"
+                    icon={<MapPin />}
+                  >
                     <input
                       id="profile-city"
                       value={form.cityMunicipality}
-                      onChange={(event) => updateField("cityMunicipality", event.target.value)}
+                      onChange={(event) =>
+                        updateField("cityMunicipality", event.target.value)
+                      }
                       className="input-control"
                     />
                   </Field>
 
-                  <Field label="Province" id="profile-province" icon={<MapPin />}>
+                  <Field
+                    label="Province"
+                    id="profile-province"
+                    icon={<MapPin />}
+                  >
                     <input
                       id="profile-province"
                       value={form.province}
-                      onChange={(event) => updateField("province", event.target.value)}
+                      onChange={(event) =>
+                        updateField("province", event.target.value)
+                      }
                       className="input-control"
                     />
                   </Field>
 
-                  <Field label="Postal code" id="profile-postal" icon={<MapPin />}>
+                  <Field
+                    label="Postal code"
+                    id="profile-postal"
+                    icon={<MapPin />}
+                  >
                     <input
                       id="profile-postal"
                       value={form.postalCode}
-                      onChange={(event) => updateField("postalCode", event.target.value)}
+                      onChange={(event) =>
+                        updateField("postalCode", event.target.value)
+                      }
                       className="input-control"
                       inputMode="numeric"
                       autoComplete="postal-code"
@@ -313,11 +384,21 @@ function CustomerProfilePage() {
             <div className="flex h-14 w-14 items-center justify-center rounded-full border border-primary/25 bg-primary/15 font-display text-xl font-semibold text-primary">
               {getInitials(form.name)}
             </div>
-            <h2 className="mt-4 font-display text-xl font-semibold">{form.name || "Customer"}</h2>
-            <p className="mt-1 break-all text-sm text-muted-foreground">{form.email}</p>
+            <h2 className="mt-4 font-display text-xl font-semibold">
+              {form.name || "Customer"}
+            </h2>
+            <p className="mt-1 break-all text-sm text-muted-foreground">
+              {form.email}
+            </p>
             <div className="mt-5 space-y-3 text-sm">
-              <ProfileLine label="Contact No." value={form.phone || "Not set"} />
-              <ProfileLine label="Address" value={formatAddress(form) || "Not set"} />
+              <ProfileLine
+                label="Contact No."
+                value={form.phone || "Not set"}
+              />
+              <ProfileLine
+                label="Address"
+                value={formatAddress(form) || "Not set"}
+              />
             </div>
           </aside>
         </form>
@@ -364,7 +445,11 @@ function ProfileLine({ label, value }: { label: string; value: string }) {
 function formatAddress(
   profile: Pick<
     ProfileForm,
-    "streetAddress" | "barangay" | "cityMunicipality" | "province" | "postalCode"
+    | "streetAddress"
+    | "barangay"
+    | "cityMunicipality"
+    | "province"
+    | "postalCode"
   >,
 ) {
   return [

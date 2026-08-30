@@ -1,113 +1,118 @@
+import type { AppPrincipal } from "./auth";
+
 export type AuthProvider = "google" | "facebook" | "apple";
-
-export type CredentialLoginInput = {
-  identifier: string;
-  password: string;
-};
-
+export type CredentialLoginInput = { identifier: string; password: string };
 export type CredentialLoginResult = {
   ok: boolean;
   message?: string;
+  principal?: AppPrincipal;
 };
-
 export type SignupInput = {
-  user_type: string;
+  user_type?: string;
   full_name: string;
   email: string;
   phone_number: string;
   password: string;
   account_status?: string;
 };
-
 export type SignupResult = {
   ok: boolean;
   message?: string;
+  principal?: AppPrincipal | null;
+  requiresEmailConfirmation?: boolean;
 };
 
-const apiCredentialsEndpoint = import.meta.env.VITE_AUTH_CREDENTIALS_ENDPOINT as string | undefined;
-const apiSignupEndpoint = import.meta.env.VITE_AUTH_SIGNUP_ENDPOINT as string | undefined;
-const apiOAuthBase = (import.meta.env.VITE_AUTH_OAUTH_BASE as string | undefined) ?? "/api/auth";
-
 export function hasApiCredentialLogin() {
-  return Boolean(apiCredentialsEndpoint);
+  return true;
 }
 
 export function hasApiSignup() {
-  return Boolean(apiSignupEndpoint);
+  return true;
 }
 
 export async function signInWithCredentialsApi({
   identifier,
   password,
-}: CredentialLoginInput): Promise<CredentialLoginResult> {
-  if (!apiCredentialsEndpoint) {
-    return { ok: false, message: "API credential endpoint is not configured." };
+}: CredentialLoginInput) {
+  try {
+    const response = await fetch("/api/auth/sign-in", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ email: identifier, password }),
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      principal?: AppPrincipal;
+      message?: string;
+    } | null;
+    if (!response.ok)
+      return {
+        ok: false,
+        message: payload?.message ?? "Invalid email or password.",
+      };
+    return { ok: true, principal: payload?.principal };
+  } catch {
+    return {
+      ok: false,
+      message: "Authentication service is unavailable. Please try again.",
+    };
   }
-
-  const response = await fetch(apiCredentialsEndpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ identifier, password }),
-  });
-
-  if (!response.ok) {
-    let message = "Unable to sign in with credentials.";
-    try {
-      const payload = (await response.json()) as { message?: string };
-      if (payload?.message) message = payload.message;
-    } catch {
-      // Keep generic message when response is not JSON.
-    }
-    return { ok: false, message };
-  }
-
-  return { ok: true };
 }
 
 export async function signUpWithCredentialsApi({
-  user_type,
   full_name,
   email,
   phone_number,
   password,
-  account_status = "Active",
-}: SignupInput): Promise<SignupResult> {
-  if (!apiSignupEndpoint) {
-    return { ok: false, message: "API signup endpoint is not configured." };
+}: SignupInput) {
+  try {
+    const response = await fetch("/api/auth/sign-up", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        fullName: full_name,
+        email,
+        phoneNumber: phone_number,
+        password,
+      }),
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      principal?: AppPrincipal | null;
+      requiresEmailConfirmation?: boolean;
+      message?: string;
+    } | null;
+    if (!response.ok)
+      return {
+        ok: false,
+        message: payload?.message ?? "Unable to create account.",
+      };
+    return {
+      ok: true,
+      principal: payload?.principal,
+      requiresEmailConfirmation: payload?.requiresEmailConfirmation,
+    };
+  } catch {
+    return {
+      ok: false,
+      message: "Authentication service is unavailable. Please try again.",
+    };
   }
+}
 
-  const response = await fetch(apiSignupEndpoint, {
+export async function signOutWithCredentialsApi() {
+  await fetch("/api/auth/sign-out", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      user_type,
-      full_name,
-      email,
-      phone_number,
-      password,
-      account_status,
-    }),
-  });
-
-  if (!response.ok) {
-    let message = "Unable to sign up right now.";
-    try {
-      const payload = (await response.json()) as { message?: string };
-      if (payload?.message) message = payload.message;
-    } catch {
-      // Keep generic message when response is not JSON.
-    }
-    return { ok: false, message };
-  }
-
-  return { ok: true };
+    credentials: "same-origin",
+    body: "{}",
+  }).catch(() => undefined);
 }
 
-export function getProviderStartUrl(provider: AuthProvider) {
-  return `${apiOAuthBase}/${provider}`;
+export function getProviderStartUrl(_provider: AuthProvider) {
+  return "/sign-in";
 }
 
-export function continueWithProvider(provider: AuthProvider) {
-  if (typeof window === "undefined") return;
-  window.location.assign(getProviderStartUrl(provider));
+export function continueWithProvider(_provider: AuthProvider) {
+  // Social/OAuth authentication is intentionally out of scope for VS002.
 }
