@@ -54,21 +54,21 @@ const vehicleStatuses: VehicleStatus[] = [
   "Inactive",
 ];
 
-const vehicleCategories = [
+const defaultVehicleCategories: string[] = [
   "Economy",
   "Sedan",
   "SUV",
   "MPV",
   "Van",
   "Pickup",
-] as const;
+];
 const transmissionOptions = ["Automatic", "Manual"] as const;
 const conditionOptions: FleetVehicle["condition"][] = [
   "Excellent",
   "Good",
   "Needs service",
 ];
-const branchOptions = ["Taft, Manila", "Antipolo, Rizal"] as const;
+const defaultBranchOptions = ["Taft, Manila", "Antipolo, Rizal"];
 
 type AddVehicleDraft = {
   plate: string;
@@ -116,6 +116,31 @@ function FleetPage() {
     createAddVehicleDraft(),
   );
   const [addVehicleError, setAddVehicleError] = useState("");
+  const [branchOptions, setBranchOptions] =
+    useState<string[]>(defaultBranchOptions);
+  const [vehicleCategories, setVehicleCategories] = useState<string[]>(
+    defaultVehicleCategories,
+  );
+  const [branchUpdateError, setBranchUpdateError] = useState("");
+
+  function mapApiVehicle(vehicle: ApiMasterVehicle): FleetVehicle {
+    return {
+      id: vehicle.id,
+      name: vehicle.name,
+      plate: vehicle.license_plate ?? "",
+      make: vehicle.name.split(" ")[0] ?? vehicle.name,
+      model: vehicle.name.split(" ").slice(1).join(" "),
+      color: "",
+      category: vehicle.category?.name ?? "Uncategorized",
+      transmission: vehicle.transmission === "Manual" ? "Manual" : "Automatic",
+      seats: vehicle.seat_capacity ?? 0,
+      branch: vehicle.branch?.name ?? "",
+      pricePerDay: Number(vehicle.daily_rate ?? 0),
+      condition: "Good",
+      status: vehicle.is_active ? "Available" : "Inactive",
+      chassisNumber: "",
+    };
+  }
 
   useEffect(() => {
     void fetchMasterData<ApiMasterVehicle>("vehicles")
@@ -141,6 +166,17 @@ function FleetPage() {
         ),
       )
       .catch(() => undefined);
+    void Promise.all([
+      fetchMasterData<{ id: string; name: string }>("branches"),
+      fetchMasterData<{ id: string; name: string }>("categories"),
+    ])
+      .then(([branches, categories]) => {
+        if (branches.length)
+          setBranchOptions(branches.map((item) => item.name));
+        if (categories.length)
+          setVehicleCategories(categories.map((item) => item.name));
+      })
+      .catch(() => undefined);
   }, []);
 
   function getEffectiveStatus(vehicle: FleetVehicle) {
@@ -152,12 +188,8 @@ function FleetPage() {
     branch: FleetVehicle["branch"],
   ) {
     const vehicle = fleetRows.find((item) => item.id === vehicleId);
-    setFleetRows((prev) =>
-      prev.map((vehicle) =>
-        vehicle.id === vehicleId ? { ...vehicle, branch } : vehicle,
-      ),
-    );
     if (!vehicle) return;
+    setBranchUpdateError("");
     void Promise.all([
       fetchMasterData<{ id: string; name: string }>("branches"),
       fetchMasterData<{ id: string; name: string }>("categories"),
@@ -169,7 +201,7 @@ function FleetPage() {
         );
         if (!branchRecord || !categoryRecord)
           throw new Error("Invalid branch or category.");
-        return saveMasterData({
+        return saveMasterData<ApiMasterVehicle>({
           resource: "vehicles",
           id: vehicleId,
           input: {
@@ -184,7 +216,20 @@ function FleetPage() {
           },
         });
       })
-      .catch(() => undefined);
+      .then(() => {
+        setFleetRows((prev) =>
+          prev.map((item) =>
+            item.id === vehicleId ? { ...item, branch } : item,
+          ),
+        );
+      })
+      .catch((error: unknown) => {
+        setBranchUpdateError(
+          error instanceof Error
+            ? error.message
+            : "Unable to update vehicle branch.",
+        );
+      });
   }
 
   const countAvailable = fleetRows.filter(
@@ -299,15 +344,8 @@ function FleetPage() {
       return;
     }
 
-    const maxFleetId = fleetRows.reduce((maxId, vehicle) => {
-      const numericId = Number(vehicle.id.replace(/\D/g, ""));
-      return Number.isFinite(numericId) ? Math.max(maxId, numericId) : maxId;
-    }, 0);
-    const nextNumericId = maxFleetId + 1;
-    const generatedId = `F-${String(nextNumericId).padStart(3, "0")}`;
-
     const nextVehicle: FleetVehicle = {
-      id: generatedId,
+      id: "pending",
       name: `${addVehicleDraft.make.trim()} ${addVehicleDraft.model.trim()}`.trim(),
       plate: addVehicleDraft.plate.trim(),
       make: addVehicleDraft.make.trim(),
@@ -350,8 +388,8 @@ function FleetPage() {
           },
         });
       })
-      .then(() => {
-        setFleetRows((prev) => [...prev, nextVehicle]);
+      .then((persisted) => {
+        setFleetRows((prev) => [...prev, mapApiVehicle(persisted)]);
         setAddVehicleOpen(false);
         setAddVehicleError("");
       })
@@ -439,6 +477,11 @@ function FleetPage() {
             </button>
           </div>
         </Toolbar>
+        {branchUpdateError && (
+          <p className="mt-2 text-sm text-destructive" role="alert">
+            {branchUpdateError}
+          </p>
+        )}
       </div>
 
       {view === "grid" ? (

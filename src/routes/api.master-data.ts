@@ -156,5 +156,17 @@ async function mutate(request: Request, mode: "create" | "update") {
       duplicate || reference ? 409 : 400,
     );
   }
+  if (resource === "vehicles" && result.data?.id) {
+    const enriched = await client
+      .from("vehicles")
+      .select(
+        "*, branch:branches(id,name), category:vehicle_categories(id,name)",
+      )
+      .eq("id", result.data.id)
+      .single();
+    return Response.json(enriched.data ?? result.data, {
+      status: mode === "create" ? 201 : 200,
+    });
+  }
   return Response.json(result.data, { status: mode === "create" ? 201 : 200 });
 }
