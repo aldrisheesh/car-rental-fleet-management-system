@@ -30,14 +30,21 @@ export function calculateWma(actuals: WeeklyActual[]) {
   return { anchorWeek: d0.weekStart, forecasts: [f1, f2, f3], inputs: [inputs([["Actual", d0.weekStart, d0.demand], ["Actual", d1.weekStart, d1.demand], ["Actual", d2.weekStart, d2.demand]]), inputs([["Forecast", isoDay(addWeeks(new Date(d0.weekStart), 1)), f1], ["Actual", d0.weekStart, d0.demand], ["Actual", d1.weekStart, d1.demand]]), inputs([["Forecast", isoDay(addWeeks(new Date(d0.weekStart), 2)), f2], ["Forecast", isoDay(addWeeks(new Date(d0.weekStart), 1)), f1], ["Actual", d0.weekStart, d0.demand]])] };
 }
 
-export function extractWeeklyDemand(rows: any[], now = new Date()) {
+export function trustworthyCoverageWeekStart(trackingStartedAt: Date | string): Date {
+  const start = manilaWeekStart(trackingStartedAt);
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short", hour: "2-digit", hour12: false }).formatToParts(new Date(trackingStartedAt));
+  const hour = Number(parts.find(p => p.type === "hour")?.value ?? 0);
+  const weekday = parts.find(p => p.type === "weekday")?.value;
+  return weekday === "Mon" && hour === 24 ? start : addWeeks(start, 1);
+}
+
+export function extractWeeklyDemand(rows: any[], trackingStartedAt: Date | string, now = new Date()) {
   const current = manilaWeekStart(now);
+  const coverage = trustworthyCoverageWeekStart(trackingStartedAt);
   const qualifying = rows.filter(r => r.booking_status === "Confirmed" && r.pickup_branch_id && r.pickup_at && r.requested_vehicle?.category?.id);
-  if (!qualifying.length) return new Map<string, WeeklyActual[]>();
-  const coverage = manilaWeekStart(qualifying.reduce((a, b) => new Date(a.pickup_at) < new Date(b.pickup_at) ? a : b).pickup_at);
   const latest = addWeeks(current, -1);
   const counts = new Map<string, Map<string, number>>();
-  for (const r of qualifying) { const w = manilaWeekStart(r.pickup_at); if (w >= current) continue; const key = `${r.pickup_branch_id}:${r.requested_vehicle.category.id}`; const map = counts.get(key) ?? new Map(); map.set(isoDay(w), (map.get(isoDay(w)) ?? 0) + 1); counts.set(key, map); }
+  for (const r of qualifying) { const w = manilaWeekStart(r.pickup_at); if (w < coverage || w >= current) continue; const key = `${r.pickup_branch_id}:${r.requested_vehicle.category.id}`; const map = counts.get(key) ?? new Map(); map.set(isoDay(w), (map.get(isoDay(w)) ?? 0) + 1); counts.set(key, map); }
   const result = new Map<string, WeeklyActual[]>();
   for (const [key, map] of counts) { const values: WeeklyActual[] = []; for (let w = new Date(coverage); w <= latest; w = addWeeks(w, 1)) values.push({ weekStart: isoDay(w), weekEnd: isoDay(addWeeks(w, 1)), demand: map.get(isoDay(w)) ?? 0 }); result.set(key, values); }
   return result;
@@ -59,4 +66,11 @@ export async function loadCanonicalBookings() {
   const result = await client.from("booking_requests").select("id,booking_status,pickup_at,pickup_branch_id,requested_vehicle:vehicles!booking_requests_requested_vehicle_id(id,category:vehicle_categories(id,name))");
   if (result.error) throw result.error;
   return result.data ?? [];
+}
+
+export async function loadDemandCoverage() {
+  const client = getSupabaseServerClient() as any;
+  const result = await client.from("forecast_demand_coverage").select("tracking_started_at").eq("id", 1).single();
+  if (result.error || !result.data?.tracking_started_at) throw new Error("Demand coverage is not configured.");
+  return result.data.tracking_started_at as string;
 }
