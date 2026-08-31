@@ -4,6 +4,7 @@ export type PreventiveTargetRecord = {
   next_service_odometer: number | null;
   next_service_date: string | null;
   created_at?: string;
+  completed_at?: string | null;
 };
 
 /** Latest completed target per service type supersedes older preventive targets. */
@@ -21,7 +22,9 @@ export function selectAuthoritativePreventiveTargets(
     const previous = latest.get(key);
     if (
       !previous ||
-      String(record.created_at ?? "") > String(previous.created_at ?? "")
+      String(record.completed_at ?? "") > String(previous.completed_at ?? "") ||
+      (record.completed_at === previous.completed_at &&
+        String(record.created_at ?? "") > String(previous.created_at ?? ""))
     )
       latest.set(key, record);
   }

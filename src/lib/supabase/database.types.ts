@@ -361,6 +361,35 @@ export type Database = {
         Args: { p_vehicle_id: string; p_odometer: number };
         Returns: number;
       };
+      create_maintenance_atomic: {
+        Args: {
+          p_vehicle_id: string;
+          p_maintenance_type: string;
+          p_description: string;
+          p_blocks: boolean;
+          p_started_at: string;
+          p_odometer: number | null;
+          p_next_odometer: number | null;
+          p_next_date: string | null;
+          p_cost: number | null;
+          p_remarks: string | null;
+          p_actor: string;
+        };
+        Returns: Database["public"]["Tables"]["maintenance_records"]["Row"];
+      };
+      update_maintenance_atomic: {
+        Args: {
+          p_record_id: string;
+          p_status: string;
+          p_odometer: number | null;
+          p_next_odometer: number | null;
+          p_next_date: string | null;
+          p_cost: number | null;
+          p_remarks: string | null;
+          p_actor: string;
+        };
+        Returns: Database["public"]["Tables"]["maintenance_records"]["Row"];
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

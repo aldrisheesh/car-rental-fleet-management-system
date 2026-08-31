@@ -103,47 +103,30 @@ export const Route = createFileRoute("/api/maintenance")({
           return fail(
             "Odometer cannot be lower than the current vehicle odometer.",
           );
-        const result = await client
-          .from("maintenance_records")
-          .insert({
-            vehicle_id: body.vehicleId,
-            maintenance_type: body.maintenanceType.trim(),
-            description: body.description.trim(),
-            blocks_rental_use: body.blocksRentalUse === true,
-            service_started_at:
-              typeof body.serviceStartedAt === "string" && body.serviceStartedAt
-                ? body.serviceStartedAt
-                : new Date().toISOString(),
-            odometer_at_service: odo.value,
-            next_service_odometer: nextOdo.value,
-            next_service_date:
-              typeof body.nextServiceDate === "string" && body.nextServiceDate
-                ? body.nextServiceDate
-                : null,
-            cost_php: cost.value,
-            remarks:
-              typeof body.remarks === "string"
-                ? body.remarks.trim() || null
-                : null,
-            created_by: actor.userId,
-            updated_by: actor.userId,
-          })
-          .select()
-          .single();
+        const result = await client.rpc("create_maintenance_atomic", {
+          p_vehicle_id: body.vehicleId,
+          p_maintenance_type: body.maintenanceType.trim(),
+          p_description: body.description.trim(),
+          p_blocks: body.blocksRentalUse === true,
+          p_started_at:
+            typeof body.serviceStartedAt === "string" && body.serviceStartedAt
+              ? body.serviceStartedAt
+              : new Date().toISOString(),
+          p_odometer: odo.value ?? null,
+          p_next_odometer: nextOdo.value ?? null,
+          p_next_date:
+            typeof body.nextServiceDate === "string" && body.nextServiceDate
+              ? body.nextServiceDate
+              : null,
+          p_cost: cost.value ?? null,
+          p_remarks:
+            typeof body.remarks === "string"
+              ? body.remarks.trim() || null
+              : null,
+          p_actor: actor.userId,
+        });
         if (result.error)
           return fail("Unable to create maintenance record.", 400);
-        if (odo.value != null) {
-          const advance = await client.rpc("advance_vehicle_odometer", {
-            p_vehicle_id: body.vehicleId,
-            p_odometer: odo.value,
-          });
-          if (advance.error)
-            return fail(
-              advance.error.message.includes("odometer_regression")
-                ? "Odometer cannot be lower than the current vehicle odometer."
-                : "Unable to update vehicle odometer.",
-            );
-        }
         const activeRental = await client
           .from("rental_transactions")
           .select("id")
@@ -217,44 +200,19 @@ export const Route = createFileRoute("/api/maintenance")({
           patch.next_service_date = body.nextServiceDate || null;
         if (typeof body?.remarks === "string")
           patch.remarks = body.remarks.trim() || null;
-        if (patch.odometer_at_service != null) {
-          const vehicle = await client
-            .from("vehicles")
-            .select("current_odometer_km")
-            .eq("id", existing.data.vehicle_id)
-            .maybeSingle();
-          if (
-            vehicle.data?.current_odometer_km != null &&
-            Number(patch.odometer_at_service) <
-              Number(vehicle.data.current_odometer_km)
-          )
-            return fail(
-              "Odometer cannot be lower than the current vehicle odometer.",
-            );
-        }
-        // Dynamic maintenance update shape is validated above; generated types cannot model it.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const result = await (client as any)
-          .from("maintenance_records")
-          .update(patch)
-          .eq("id", id)
-          .eq("status", "Open")
-          .select()
-          .single();
+        const result = await client.rpc("update_maintenance_atomic", {
+          p_record_id: id,
+          p_status: status,
+          p_odometer: (patch.odometer_at_service as number | null) ?? null,
+          p_next_odometer:
+            (patch.next_service_odometer as number | null) ?? null,
+          p_next_date: (patch.next_service_date as string | null) ?? null,
+          p_cost: (patch.cost_php as number | null) ?? null,
+          p_remarks: (patch.remarks as string | null) ?? null,
+          p_actor: actor.userId,
+        });
         if (result.error)
           return fail("Unable to update maintenance record.", 400);
-        if (patch.odometer_at_service != null) {
-          const advance = await client.rpc("advance_vehicle_odometer", {
-            p_vehicle_id: existing.data.vehicle_id,
-            p_odometer: Number(patch.odometer_at_service),
-          });
-          if (advance.error)
-            return fail(
-              advance.error.message.includes("odometer_regression")
-                ? "Odometer cannot be lower than the current vehicle odometer."
-                : "Unable to update vehicle odometer.",
-            );
-        }
         return Response.json(result.data);
       },
     },

@@ -41,3 +41,22 @@ test("cancelled target is never authoritative", () => {
   ]);
   assert.equal(targets.length, 0);
 });
+
+test("completion chronology outranks creation chronology", () => {
+  const targets = selectAuthoritativePreventiveTargets([
+    record({
+      next_service_odometer: 50000,
+      created_at: "2026-01-01T00:00:00Z",
+      completed_at: "2026-03-01T00:00:00Z",
+    }),
+    record({
+      next_service_odometer: 60000,
+      created_at: "2026-02-01T00:00:00Z",
+      completed_at: "2026-02-15T00:00:00Z",
+    }),
+  ]);
+  assert.deepEqual(
+    targets.map((item) => item.next_service_odometer),
+    [50000],
+  );
+});

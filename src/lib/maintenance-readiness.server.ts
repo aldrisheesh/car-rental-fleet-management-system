@@ -31,7 +31,7 @@ export async function calculateMaintenanceReadiness(
     client
       .from("maintenance_records")
       .select(
-        "status,blocks_rental_use,next_service_odometer,next_service_date",
+        "status,maintenance_type,blocks_rental_use,next_service_odometer,next_service_date,completed_at,created_at",
       )
       .eq("vehicle_id", vehicleId),
   ]);
