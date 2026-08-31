@@ -3,7 +3,7 @@ import { test } from "node:test";
 import {
   countIntervalLocalDays,
   overlapsLocalDay,
-} from "./vehicle-analytics.server.ts";
+} from "./vehicle-analytics-intervals.ts";
 
 const d = (value: string) => new Date(value);
 
