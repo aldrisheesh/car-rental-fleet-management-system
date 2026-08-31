@@ -1,21 +1,38 @@
 # Workflows and Status Rules
 
-**Status:** Partially Frozen — booking, requirement, payment, assignment, and booking-confirmation foundations frozen; later rental/vehicle/maintenance lifecycle state machines still pending  
+**Status:** Partially Frozen — booking through rental-start foundation frozen; return/settlement and full vehicle/rental/maintenance lifecycle machines still pending  
 **Last updated:** 2026-09-01
 
 Existing repository mock statuses are not authoritative when they conflict with this document.
 
-## Frozen Ordering
+## Frozen High-Level Ordering
 
-1. Booking request submitted.
-2. Requirements submitted and reviewed.
-3. Requirements become `Verified`.
-4. Down payment submitted and manually reviewed.
-5. Payment becomes `Verified`.
-6. Owner/Admin assigns the final vehicle.
-7. Owner/Admin explicitly confirms the booking.
-8. A later vehicle-release/turnover event begins the rental lifecycle.
-9. A later return/settlement process closes the rental lifecycle.
+1. Customer submits booking request.
+2. Customer submits required renter documents.
+3. Owner/Admin reviews requirements.
+4. Requirements become `Verified`.
+5. Customer submits down payment.
+6. Owner/Admin verifies payment.
+7. Owner/Admin assigns final vehicle.
+8. Owner/Admin explicitly confirms booking.
+9. Owner/Admin explicitly records vehicle release/turnover.
+10. A canonical active rental begins.
+11. Later return/settlement closes the rental.
+
+## Separate Workflow Concerns
+
+Keep separate:
+
+- booking status;
+- requirement status;
+- payment status;
+- requested vehicle;
+- assigned vehicle;
+- rental transaction;
+- vehicle operational lifecycle;
+- maintenance lifecycle.
+
+Do not encode all processes into booking status.
 
 ## Booking Status
 
@@ -26,17 +43,7 @@ Canonical:
 - `Rejected`
 - `Cancelled`
 
-`Submitted -> Confirmed` requires:
-
-- requirement status = `Verified`;
-- payment status = `Verified`;
-- assigned canonical active vehicle;
-- no overlapping `Confirmed` booking for that vehicle;
-- explicit Owner/Admin confirmation.
-
-Where implemented canonical maintenance-readiness data exists, the assigned vehicle must also be maintenance-ready.
-
-Confirmation must recheck the gates transactionally.
+`Confirmed` is not active rental.
 
 ## Requirement Status
 
@@ -58,30 +65,32 @@ Canonical:
 - `Needs Resubmission`
 - `Verified`
 
-Payment Verified does not confirm the booking.
-
 See `13-payment-submission-and-verification.md`.
 
-## Vehicle Assignment
-
-Requested and assigned vehicles remain separate.
-
-Only Owner/Admin performs final assignment.
+## Vehicle Assignment / Confirmation
 
 See `15-vehicle-assignment-and-booking-confirmation.md`.
 
-Provisional client-specific behavior:
+## Vehicle Release / Rental Start
 
-- substitution: `CQ-007`;
-- cross-branch assignment: `CQ-017`;
-- turnaround/preparation buffer: `CQ-018`.
+A rental begins only after an explicit canonical release action on a Confirmed booking.
 
-## Rental Boundary
+VS010 does not freeze a broad rental-status enum.
 
-Booking `Confirmed` is not rental start.
+Baseline active-rental semantics are derived from the rental transaction:
 
-The exact vehicle-release/rental-start transition and later rental lifecycle remain open.
+`started_at IS NOT NULL AND ended_at IS NULL`
+
+See `16-rental-release-and-start.md`.
+
+## Return Boundary
+
+Return/settlement behavior remains open.
+
+The rental must not be marked completed/closed merely because scheduled return time has passed.
 
 ## Warning to Codex
 
-Do not infer unresolved rental, vehicle, maintenance, cancellation, settlement, or substitution-approval rules from prototype UI/statuses.
+Do not infer rental, return, vehicle, maintenance, extension, settlement, or cancellation transitions from prototype labels.
+
+See `10-open-decisions.md` and `14-client-clarification-register.md`.
