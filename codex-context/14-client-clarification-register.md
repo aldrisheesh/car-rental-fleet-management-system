@@ -3,81 +3,50 @@
 **Status:** Active Client Validation Register  
 **Last updated:** 2026-09-01
 
-Existing CQ-001 through CQ-020 remain active as previously defined.
+Existing CQ-001 through CQ-022 remain active as previously defined.
 
-## CQ-021 — Exact Vehicle Return Inspection Checklist
+## CQ-023 — Historical Operational Availability Baseline for Vehicles
 
-**Process:** Vehicle Return
-
-**Known**
-
-The manuscript indicates that upon return the vehicle is inspected for condition, fuel, late return, balances, penalties, and other settlement concerns.
-
-**Missing detail**
-
-The exact Briah checklist is not documented, including whether they systematically record:
-
-- odometer;
-- fuel;
-- exterior condition;
-- interior condition;
-- tires/glass/accessories;
-- photos;
-- missing items;
-- cleanliness;
-- signatures/acknowledgements.
-
-**Temporary implementation assumption**
-
-VS011 records a conservative return snapshot:
-
-- optional odometer;
-- provisional fuel level;
-- return condition summary;
-- observed damage/condition notes;
-- optional remarks.
-
-Do not make a larger speculative checklist mandatory.
-
-**Question for Briah's**
-
-> Pagbalik po ng vehicle, ano po ang exact inspection checklist ninyo? Ano po ang required na i-record—odometer, fuel, exterior/interior condition, pictures, missing accessories, cleanliness, signatures, etc.?
-
-**Implementation impact**
-
-May add mandatory return fields, photos/storage, or structured inspection items.
-
-**Status:** Open — Client Confirmation
-
----
-
-## CQ-022 — Physical Return vs Financial Closure
-
-**Process:** Vehicle Return / Settlement
+**Process:** Fleet Analytics / Idle Detection / Utilization
 
 **Known**
 
-The system needs both a physical vehicle-return event and later settlement of applicable balances/penalties.
+The manuscript permits the date when a never-rented vehicle became operationally available to serve as its idle-duration reference.
+
+Vehicle utilization also excludes inactive days from Eligible Operational Days.
+
+The system can begin recording canonical active/inactive state history going forward.
 
 **Missing detail**
 
-It is unclear whether Briah's considers the rental operationally ended as soon as the vehicle is physically returned, or only after all financial obligations are settled.
+For vehicles that existed before canonical system state-history tracking, the system does not know:
+
+- the exact date each vehicle first became operationally available;
+- historical periods when the vehicle may have been inactive;
+- whether Briah's has records that can establish those dates.
+
+Vehicle record creation date must not automatically be treated as business operational availability.
 
 **Temporary implementation assumption**
 
-VS011 ends the physical rental when Owner/Admin records actual vehicle return.
+VS013 records trustworthy active/inactive state history prospectively.
 
-Financial settlement remains a separate later capability.
+For historical dates lacking recorded state coverage:
 
-Do not claim this is Briah's permanent accounting/closure policy.
+- do not backdate the current active state;
+- do not fabricate an idle baseline;
+- mark utilization historical eligibility coverage as incomplete;
+- classify idle as Unable to Determine for a never-rented vehicle lacking a trustworthy operational-availability reference.
+
+Explicitly labeled demo/sample historical state data may be used for functional testing.
 
 **Question for Briah's**
 
-> Kapag physically naibalik na po ang vehicle pero may remaining balance, damage, fuel, late fee, o deposit concern pa, considered ended na po ba ang rental at settlement na lang ang pending? O saka lang po ninyo kino-close ang rental kapag fully settled na lahat?
+> Para po sa mga sasakyan na wala pang previous rental record sa system, may record po ba kayo kung kailan sila first naging available/active for rental? May records din po ba kayo kung kailan sila temporarily inactive or unavailable dati? Maaari po ba naming gamitin/import ang mga dates na iyon para sa utilization at idle monitoring?
 
 **Implementation impact**
 
-May alter lifecycle naming, reporting, and the final completion gate.
+May provide historical utilization denominator coverage and a trustworthy idle baseline for never-rented vehicles.
 
 **Status:** Open — Client Confirmation
 
@@ -85,4 +54,4 @@ May alter lifecycle naming, reporting, and the final completion gate.
 
 Demonstrate the implemented provisional flow first, explain the temporary assumption, then ask the client-specific question.
 
-After confirmation, update the authoritative specification and implementation.
+After confirmation, update the authoritative specification/data rather than silently backdating history.

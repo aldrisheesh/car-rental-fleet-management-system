@@ -8,38 +8,40 @@
 The implementation baseline covers:
 
 - booking through physical rental return;
-- secure requirements and payment verification;
+- secure requirements/payment verification;
 - vehicle assignment/confirmation;
 - canonical rental start/end intervals;
-- baseline maintenance records and deterministic maintenance-readiness rules;
+- maintenance records/readiness;
+- vehicle utilization and idle-detection rules;
 - qualifying weekly demand;
-- utilization/idle formulas;
-- WMA/MAPE forecasting specification;
+- WMA/MAPE forecasting;
 - recommendation/allocation specifications;
 - external context provider/fallback rules.
 
-## Dependency Direction
+## Fleet Intelligence Dependency Direction
 
-The recommended implementation order after physical rental return is:
+Implementation order:
 
-1. Maintenance monitoring/readiness foundation
-2. Vehicle utilization + idle detection
+1. Maintenance monitoring/readiness — completed through VS012
+2. Vehicle utilization + idle detection — VS013
 3. Demand forecasting
-4. Branch demand/projected supply
+4. Branch demand / projected supply
 5. Branch allocation recommendation
 6. Context/API enrichment
 7. Reports/dashboard consolidation
 
-Maintenance comes before utilization/idle because eligible operational days and rental-ready/idle eligibility depend on maintenance availability/readiness.
+VS013 must use canonical rental intervals and canonical maintenance readiness rather than prototype booking/vehicle status data.
 
-## Client-Specific Gaps
+## Analytics Integrity
 
-See:
+Utilization and idle are derived indicators.
 
-- `10-open-decisions.md`
-- `14-client-clarification-register.md`
+Do not store manually editable utilization percentages or idle booleans.
 
-Temporary assumptions are not client-confirmed truth.
+Historical active/inactive eligibility must not be fabricated. See:
+
+- `19-vehicle-utilization-and-idle-detection.md`
+- `CQ-023`
 
 ## Documents
 
@@ -61,4 +63,5 @@ Temporary assumptions are not client-confirmed truth.
 - `16-rental-release-and-start.md`
 - `17-rental-return-and-closure.md`
 - `18-maintenance-monitoring-and-readiness.md`
+- `19-vehicle-utilization-and-idle-detection.md`
 - `CHANGELOG.md`

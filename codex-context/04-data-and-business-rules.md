@@ -43,9 +43,9 @@ Ended rental:
 
 `started_at IS NOT NULL AND ended_at IS NOT NULL`
 
-A Confirmed booking without a release record does not count as actual rental activity.
+A Confirmed booking without a release record does not count as rental activity.
 
-Reservations that never became active rentals do not count as rental days.
+Reservations that never became active rentals do not count as Rental Days.
 
 ## 5. Vehicle Utilization
 
@@ -53,56 +53,50 @@ Vehicle utilization is analytical only.
 
 `UtilizationPercent = (RentalDays / EligibleOperationalDays) * 100`
 
-Where:
+Detailed calendar-day, coverage, active-state-history, and maintenance-interval rules are authoritative in:
 
-- `RentalDays` = calendar days within the selected reporting period during which the vehicle was in an active rental;
-- `EligibleOperationalDays` = days in the reporting period during which the vehicle was operationally eligible for rental;
-- days when the vehicle was inactive or unavailable because of maintenance are excluded from eligible operational days;
-- reservations that never became active rentals do not count as rental days.
+`19-vehicle-utilization-and-idle-detection.md`
 
-Dashboard default reporting period: **30 days**.
+Dashboard default reporting period: most recent 30 `Asia/Manila` calendar days including the current date.
 
-Reports may later support a user-selected reporting period.
+Do not assign unsupported qualitative labels to utilization.
 
 Utilization does not independently trigger branch transfer.
 
 ## 6. Idle Vehicle Detection
 
-A vehicle is considered idle when all of the following are true:
+A vehicle is idle only when:
 
-- vehicle is active and rental-ready;
-- vehicle is not currently rented;
-- vehicle is not unavailable because of maintenance;
-- vehicle is not otherwise prevented from being offered for rental;
-- it has recorded no rental activity for at least **14 consecutive days**.
+- currently active;
+- maintenance-ready;
+- not currently rented;
+- otherwise eligible for rental;
+- it has a trustworthy idle reference;
+- it has recorded no rental activity for at least 14 consecutive days.
 
-`IdleVehicle = EligibleForRental AND IdleDays >= 14`
+For a previously rented vehicle, use the latest canonical rental `ended_at`.
 
-`IdleDays` is measured from the latest completed rental end/return timestamp.
+For a never-rented vehicle, use a trustworthy recorded operational-availability baseline only when available.
 
-For a vehicle that has never been rented, use the vehicle's recorded operational availability/start date only when that value exists and is valid.
+Do not use `vehicles.created_at` as a substitute for operational availability.
 
-Do not fabricate an idle baseline for never-rented vehicles when no trustworthy operational start date exists.
+If no trustworthy baseline exists, idle state is Unable to Determine rather than Idle.
 
-Idle status is an operational indicator and does not automatically transfer the vehicle.
+Detailed rules are in `19-vehicle-utilization-and-idle-detection.md`.
+
+Idle status is advisory and does not automatically transfer a vehicle.
 
 ## 7. Maintenance Readiness
 
 Maintenance readiness is deterministic and derived.
 
-A vehicle is not maintenance-ready when any applicable condition exists:
+A vehicle is not maintenance-ready when an applicable condition exists:
 
 - active blocking maintenance;
 - preventive maintenance due/overdue;
-- recorded condition explicitly makes the vehicle unsafe/unsuitable;
-- unresolved blocking repair concern.
-
-Preventive maintenance is due/overdue when an applicable criterion is reached:
-
-- canonical current odometer >= recorded next-service odometer; or
-- current date >= recorded next-service date.
-
-Use only criteria actually recorded.
+- recorded condition explicitly blocks rental use;
+- unresolved blocking repair concern;
+- required readiness input is unavailable in a way that prevents safe determination.
 
 Detailed implementation is authoritative in `18-maintenance-monitoring-and-readiness.md`.
 
@@ -173,4 +167,5 @@ Do not invent:
 - final fuel-return charge rules;
 - long-term sensitive-upload retention;
 - final fuel-reference source priority/update workflow;
-- client-specific maintenance workflow details under `CQ-015`.
+- client-specific maintenance workflow details under `CQ-015`;
+- historical operational-availability dates for vehicles lacking authoritative records (`CQ-023`).

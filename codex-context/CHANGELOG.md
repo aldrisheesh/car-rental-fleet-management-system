@@ -1,40 +1,35 @@
 # Changelog
 
-## 2026-09-01 — Maintenance Monitoring / Readiness Foundation
+## 2026-09-01 — Vehicle Utilization / Idle Detection Baseline
 
-Prepared the Development Baseline for VS012.
+Prepared the Development Baseline for VS013.
 
 ### Frozen / Clarified
 
-- Added `18-maintenance-monitoring-and-readiness.md`.
-- Frozen a minimal canonical maintenance/service record.
-- Frozen explicit `blocks_rental_use` semantics.
-- Frozen preventive-maintenance due/overdue checks using recorded next-service odometer/date.
-- Frozen maintenance readiness as derived rather than manually editable truth.
-- Preserved `CQ-015` for Briah's final workflow/status terminology and return-to-service authority.
-- Clarified that maintenance readiness becomes a reusable dependency for utilization, idle detection, recommendation, assignment, projected supply, and branch allocation.
-- Clarified that VS012 must not implement utilization/idle analytics yet.
-
-### Context Integrity Correction
-
-- Restored previously frozen qualifying weekly demand, utilization, idle detection, maintenance readiness, reference fuel-efficiency, estimated-fuel-consumption, and projected-supply rules in `04-data-and-business-rules.md`.
-- Earlier rental-return context updates had unintentionally shortened that file and omitted several still-authoritative frozen rules.
-- No business rule was intentionally changed by the restoration.
-
----
-
-## 2026-09-01 — Rental Return and Closure Foundation
-
-Frozen physical vehicle return and canonical rental end timestamp.
+- Added `19-vehicle-utilization-and-idle-detection.md`.
+- Frozen `Asia/Manila` calendar-day reporting semantics.
+- Frozen Rental Days as distinct local calendar dates overlapped by canonical rental transactions.
+- Reaffirmed that Confirmed reservations do not count as utilization.
+- Frozen utilization formula using Rental Days / Eligible Operational Days.
+- Frozen maintenance-history treatment for analytical eligibility.
+- Required canonical prospective active/inactive state history instead of treating the current `is_active` value as historical truth.
+- Frozen incomplete historical eligibility coverage as Unavailable rather than silently computing biased utilization.
+- Frozen 30-day default dashboard interval.
+- Frozen idle eligibility requiring current active state, canonical maintenance readiness, no active rental, and a trustworthy idle reference.
+- Frozen latest canonical rental `ended_at` as the idle reference for previously rented vehicles.
+- Prohibited using vehicle record `created_at` as an invented operational-availability baseline for never-rented vehicles.
+- Added `CQ-023` for Briah's historical operational-availability/inactive-state data.
+- Reaffirmed the fixed 14-day idle threshold.
+- Reaffirmed that utilization/idle indicators never automatically transfer vehicles.
 
 ---
 
-## 2026-09-01 — Vehicle Release and Rental Start Foundation
+## 2026-09-01 — Maintenance Monitoring / Readiness Foundation
 
-Frozen canonical rental start and turnover snapshot.
+Frozen canonical maintenance records and reusable deterministic maintenance readiness.
 
 ---
 
-## 2026-09-01 — Vehicle Assignment and Booking Confirmation
+## 2026-09-01 — Rental Return / Release Foundations
 
-Frozen Owner/Admin vehicle assignment and explicit booking confirmation.
+Frozen canonical physical rental start/end intervals needed by fleet analytics.
