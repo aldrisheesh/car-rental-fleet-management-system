@@ -30,13 +30,15 @@ export function calculateWma(actuals: WeeklyActual[]) {
 
 export function trustworthyCoverageWeekStart(trackingStartedAt: Date | string): Date {
   const start = manilaWeekStart(trackingStartedAt);
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short", hour: "2-digit", hour12: false }).formatToParts(new Date(trackingStartedAt));
-  const hour = Number(parts.find(p => p.type === "hour")?.value ?? 0);
-  const weekday = parts.find(p => p.type === "weekday")?.value;
-  return weekday === "Mon" && hour === 24 ? start : addWeeks(start, 1);
+  const d = new Date(trackingStartedAt);
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).formatToParts(d);
+  const get = (type: string) => Number(parts.find(p => p.type === type)?.value ?? 0);
+  const localMidnightUtc = Date.UTC(get("year"), get("month") - 1, get("day")) - 8 * 3600000;
+  const isMonday = new Date(Date.UTC(get("year"), get("month") - 1, get("day"))).getUTCDay() === 1;
+  return isMonday && d.getTime() === localMidnightUtc ? start : addWeeks(start, 1);
 }
 
-export function extractWeeklyDemand(rows: any[], trackingStartedAt: Date | string, now = new Date()) {
+export function extractWeeklyDemand(rows: any[], trackingStartedAt: Date | string, now = new Date(), canonicalPairs: Array<{ branchId: string; categoryId: string }> = []) {
   const current = manilaWeekStart(now);
   const coverage = trustworthyCoverageWeekStart(trackingStartedAt);
   const qualifying = rows.filter(r => r.booking_status === "Confirmed" && r.pickup_branch_id && r.pickup_at && r.requested_vehicle?.category?.id);
@@ -44,6 +46,7 @@ export function extractWeeklyDemand(rows: any[], trackingStartedAt: Date | strin
   const counts = new Map<string, Map<string, number>>();
   for (const r of qualifying) { const w = manilaWeekStart(r.pickup_at); if (w < coverage || w >= current) continue; const key = `${r.pickup_branch_id}:${r.requested_vehicle.category.id}`; const map = counts.get(key) ?? new Map(); map.set(isoDay(w), (map.get(isoDay(w)) ?? 0) + 1); counts.set(key, map); }
   const result = new Map<string, WeeklyActual[]>();
+  for (const pair of canonicalPairs) counts.set(`${pair.branchId}:${pair.categoryId}`, new Map());
   for (const [key, map] of counts) { const values: WeeklyActual[] = []; for (let w = new Date(coverage); w <= latest; w = addWeeks(w, 1)) values.push({ weekStart: isoDay(w), weekEnd: isoDay(addWeeks(w, 1)), demand: map.get(isoDay(w)) ?? 0 }); result.set(key, values); }
   return result;
 }
