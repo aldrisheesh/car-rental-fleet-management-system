@@ -5,32 +5,41 @@
 
 ## Currently Frozen
 
-The implementation baseline now covers the canonical transactional chain through physical vehicle return:
+The implementation baseline covers:
 
-- booking request;
-- requirements;
-- requirement review;
-- down-payment submission/verification;
-- vehicle assignment;
-- booking confirmation;
-- vehicle release/rental start;
-- active rental;
-- vehicle return/rental end.
+- booking through physical rental return;
+- secure requirements and payment verification;
+- vehicle assignment/confirmation;
+- canonical rental start/end intervals;
+- baseline maintenance records and deterministic maintenance-readiness rules;
+- qualifying weekly demand;
+- utilization/idle formulas;
+- WMA/MAPE forecasting specification;
+- recommendation/allocation specifications;
+- external context provider/fallback rules.
 
-Rental state continues to use canonical start/end timestamps rather than a prematurely frozen lifecycle enum.
+## Dependency Direction
 
-## Still Open
+The recommended implementation order after physical rental return is:
 
-- final financial settlement;
-- security-deposit handling;
-- remaining balance;
-- late/damage/fuel charges;
-- extension workflow;
-- full vehicle operational state machine;
-- maintenance lifecycle;
-- exact Briah return/turnover checklists;
-- Operations Staff detailed scope;
-- notifications/audit details.
+1. Maintenance monitoring/readiness foundation
+2. Vehicle utilization + idle detection
+3. Demand forecasting
+4. Branch demand/projected supply
+5. Branch allocation recommendation
+6. Context/API enrichment
+7. Reports/dashboard consolidation
+
+Maintenance comes before utilization/idle because eligible operational days and rental-ready/idle eligibility depend on maintenance availability/readiness.
+
+## Client-Specific Gaps
+
+See:
+
+- `10-open-decisions.md`
+- `14-client-clarification-register.md`
+
+Temporary assumptions are not client-confirmed truth.
 
 ## Documents
 
@@ -51,4 +60,5 @@ Rental state continues to use canonical start/end timestamps rather than a prema
 - `15-vehicle-assignment-and-booking-confirmation.md`
 - `16-rental-release-and-start.md`
 - `17-rental-return-and-closure.md`
+- `18-maintenance-monitoring-and-readiness.md`
 - `CHANGELOG.md`
