@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { selectAuthoritativePreventiveTargets } from "./maintenance-readiness.server.ts";
+import { selectAuthoritativePreventiveTargets } from "./maintenance-readiness.ts";
 
 const record = (overrides: Record<string, unknown>) => ({
   status: "Completed",
