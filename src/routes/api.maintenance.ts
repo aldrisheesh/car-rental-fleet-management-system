@@ -132,15 +132,18 @@ export const Route = createFileRoute("/api/maintenance")({
           .single();
         if (result.error)
           return fail("Unable to create maintenance record.", 400);
-        if (
-          odo.value != null &&
-          (vehicle.data.current_odometer_km == null ||
-            odo.value > Number(vehicle.data.current_odometer_km))
-        )
-          await client
-            .from("vehicles")
-            .update({ current_odometer_km: odo.value })
-            .eq("id", body.vehicleId);
+        if (odo.value != null) {
+          const advance = await client.rpc("advance_vehicle_odometer", {
+            p_vehicle_id: body.vehicleId,
+            p_odometer: odo.value,
+          });
+          if (advance.error)
+            return fail(
+              advance.error.message.includes("odometer_regression")
+                ? "Odometer cannot be lower than the current vehicle odometer."
+                : "Unable to update vehicle odometer.",
+            );
+        }
         const activeRental = await client
           .from("rental_transactions")
           .select("id")
@@ -240,16 +243,18 @@ export const Route = createFileRoute("/api/maintenance")({
           .single();
         if (result.error)
           return fail("Unable to update maintenance record.", 400);
-        if (patch.odometer_at_service != null)
-          await client
-            .from("vehicles")
-            .update({
-              current_odometer_km: Number(patch.odometer_at_service),
-            })
-            .eq("id", existing.data.vehicle_id)
-            .or(
-              `current_odometer_km.is.null,current_odometer_km.lte.${Number(patch.odometer_at_service)}`,
+        if (patch.odometer_at_service != null) {
+          const advance = await client.rpc("advance_vehicle_odometer", {
+            p_vehicle_id: existing.data.vehicle_id,
+            p_odometer: Number(patch.odometer_at_service),
+          });
+          if (advance.error)
+            return fail(
+              advance.error.message.includes("odometer_regression")
+                ? "Odometer cannot be lower than the current vehicle odometer."
+                : "Unable to update vehicle odometer.",
             );
+        }
         return Response.json(result.data);
       },
     },

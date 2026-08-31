@@ -40,3 +40,19 @@ for each row execute function public.set_updated_at();
 alter table public.maintenance_records enable row level security;
 revoke all on public.maintenance_records from anon, authenticated;
 -- Trusted server handlers use the service role; no client role receives raw history.
+
+-- Serialize authoritative odometer advances at the database boundary.
+create or replace function public.advance_vehicle_odometer(
+  p_vehicle_id uuid, p_odometer numeric
+) returns numeric
+language plpgsql security definer set search_path = public as $$
+declare v numeric;
+begin
+  if p_odometer is null or p_odometer < 0 then raise exception 'invalid_odometer'; end if;
+  select current_odometer_km into v from vehicles where id = p_vehicle_id for update;
+  if not found then raise exception 'vehicle_not_found'; end if;
+  if v is not null and p_odometer < v then raise exception 'odometer_regression'; end if;
+  update vehicles set current_odometer_km = p_odometer where id = p_vehicle_id;
+  return p_odometer;
+end; $$;
+revoke all on function public.advance_vehicle_odometer(uuid,numeric) from public, anon, authenticated;

@@ -357,6 +357,10 @@ export type Database = {
         Args: Record<string, any>;
         Returns: Database["public"]["Tables"]["booking_requests"]["Row"];
       };
+      advance_vehicle_odometer: {
+        Args: { p_vehicle_id: string; p_odometer: number };
+        Returns: number;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

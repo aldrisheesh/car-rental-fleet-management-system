@@ -13,6 +13,36 @@ export type MaintenanceReadiness = {
   reasons: MaintenanceReadinessReason[];
 };
 
+type PreventiveTargetRecord = {
+  status: string;
+  maintenance_type?: string | null;
+  next_service_odometer: number | null;
+  next_service_date: string | null;
+  created_at?: string;
+};
+
+/** Latest completed target per service type supersedes older preventive targets. */
+export function selectAuthoritativePreventiveTargets(
+  records: PreventiveTargetRecord[],
+) {
+  const latest = new Map<string, PreventiveTargetRecord>();
+  for (const record of records) {
+    if (
+      record.status !== "Completed" ||
+      (record.next_service_odometer == null && record.next_service_date == null)
+    )
+      continue;
+    const key = record.maintenance_type?.trim() || "__uncategorized__";
+    const previous = latest.get(key);
+    if (
+      !previous ||
+      String(record.created_at ?? "") > String(previous.created_at ?? "")
+    )
+      latest.set(key, record);
+  }
+  return [...latest.values()];
+}
+
 export async function calculateMaintenanceReadiness(
   vehicleId: string,
 ): Promise<MaintenanceReadiness> {
@@ -42,7 +72,7 @@ export async function calculateMaintenanceReadiness(
   const active = (records ?? []).filter((r) => r.status === "Open");
   if (active.some((r) => r.blocks_rental_use))
     reasons.push("Active blocking maintenance");
-  const targetRecords = (records ?? []).filter((r) => r.status !== "Cancelled");
+  const targetRecords = selectAuthoritativePreventiveTargets(records ?? []);
   const today = new Date().toISOString().slice(0, 10);
   if (
     targetRecords.some(
