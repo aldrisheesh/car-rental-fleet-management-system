@@ -261,7 +261,7 @@ function CustomerViewPage() {
           {bookingRequests[0] && <RequirementSubmission booking={bookingRequests[0]} />}
 
           <Card title="Past bookings" icon={<History className="h-4 w-4 text-primary" />}>
-            {bookingRequests.length > 0 && <div className="mb-4 space-y-3">{bookingRequests.map((request) => <div key={request.id} className="rounded-md border border-primary/30 bg-primary/5 px-3 py-3"><div className="flex items-center justify-between gap-3"><div><p className="text-sm font-semibold">Request {request.id.slice(0, 8)}</p><p className="text-xs text-muted-foreground">{request.requested_vehicle?.name ?? "Requested vehicle"} · {new Date(request.pickup_at).toLocaleString()}</p></div><StatusPill status={request.booking_status} /></div></div>)}</div>}
+          {bookingRequests.length > 0 && <div className="mb-4 space-y-3">{bookingRequests.map((request) => <div key={request.id} className="rounded-md border border-primary/30 bg-primary/5 px-3 py-3"><div className="flex items-center justify-between gap-3"><div><p className="text-sm font-semibold">Request {request.id.slice(0, 8)}</p><p className="text-xs text-muted-foreground">Requested: {request.requested_vehicle?.name ?? "—"} · {new Date(request.pickup_at).toLocaleString()}</p>{request.assigned_vehicle && <p className="text-xs text-foreground">Assigned: {request.assigned_vehicle.name}{request.assigned_vehicle.id !== request.requested_vehicle_id ? " (substituted)" : ""}</p>}{request.assignment_note && <p className="text-xs text-muted-foreground">Note: {request.assignment_note}</p>}</div><StatusPill status={request.booking_status} /></div></div>)}</div>}
             <PastBookings rows={pastCustomerBookings} />
           </Card>
         </div>

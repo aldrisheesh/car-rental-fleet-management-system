@@ -139,14 +139,14 @@ export type Database = {
           pickup_branch_id: string; return_branch_id: string; pickup_at: string; return_at: string;
           destination: string | null; purpose_of_use: string; pickup_delivery_option: string;
           pickup_location: string | null; dropoff_location: string | null; preferred_seat_count: number | null;
-          customer_contact_number: string | null; booking_status: string; created_at: string; updated_at: string;
+          customer_contact_number: string | null; booking_status: string; assigned_by: string | null; assigned_at: string | null; assignment_note: string | null; substitution_acknowledged: boolean; cross_branch_acknowledged: boolean; confirmed_by: string | null; confirmed_at: string | null; created_at: string; updated_at: string;
         };
         Insert: {
           id?: string; customer_id: string; requested_vehicle_id: string; assigned_vehicle_id?: string | null;
           pickup_branch_id: string; return_branch_id: string; pickup_at: string; return_at: string;
           destination?: string | null; purpose_of_use: string; pickup_delivery_option: string;
           pickup_location?: string | null; dropoff_location?: string | null; preferred_seat_count?: number | null;
-          customer_contact_number?: string | null; booking_status?: string; created_at?: string; updated_at?: string;
+          customer_contact_number?: string | null; booking_status?: string; assigned_by?: string | null; assigned_at?: string | null; assignment_note?: string | null; substitution_acknowledged?: boolean; cross_branch_acknowledged?: boolean; confirmed_by?: string | null; confirmed_at?: string | null; created_at?: string; updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["booking_requests"]["Insert"]>;
         Relationships: [];
@@ -178,6 +178,8 @@ export type Database = {
       };
       record_renter_requirement_review: { Args: Record<string, any>; Returns: string };
       resubmit_renter_requirements: { Args: { p_requirement_set_id: string; p_customer_id: string }; Returns: boolean };
+      assign_booking_vehicle: { Args: Record<string, any>; Returns: Database["public"]["Tables"]["booking_requests"]["Row"] };
+      confirm_booking_atomic: { Args: Record<string, any>; Returns: Database["public"]["Tables"]["booking_requests"]["Row"] };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

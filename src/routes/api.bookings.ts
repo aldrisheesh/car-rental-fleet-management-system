@@ -7,21 +7,54 @@ const optionalText = (v: unknown) => text(v) || null;
 const errorResponse = (message: string, status = 400) => Response.json({ message }, { status });
 
 export const Route = createFileRoute("/api/bookings")({
-  server: { handlers: { GET: readBookings, POST: createBooking } },
+  server: { handlers: { GET: readBookings, POST: async ({ request }) => { const body = await request.clone().json().catch(() => null) as Record<string, unknown> | null; return body?.action === "assign" || body?.action === "confirm" ? mutateBooking({ request }) : createBooking({ request }); } } },
 });
 
 async function readBookings() {
   try {
     const principal = await requirePrincipal();
     const client = getSupabaseServerClient();
-    let query = client.from("booking_requests").select("*, customer:profiles(id,full_name,email,phone_number), requested_vehicle:vehicles!booking_requests_requested_vehicle_id_fkey(id,name,license_plate), pickup_branch:branches!booking_requests_pickup_branch_id_fkey(id,name), return_branch:branches!booking_requests_return_branch_id_fkey(id,name)").order("created_at", { ascending: false });
+    let query = (client as any).from("booking_requests").select("*, customer:profiles(id,full_name,email,phone_number), requested_vehicle:vehicles!booking_requests_requested_vehicle_id_fkey(id,name,license_plate,branch_id), assigned_vehicle:vehicles!booking_requests_assigned_vehicle_id_fkey(id,name,license_plate,branch_id,is_active), pickup_branch:branches!booking_requests_pickup_branch_id_fkey(id,name), return_branch:branches!booking_requests_return_branch_id_fkey(id,name)").order("created_at", { ascending: false });
     if (principal.role === "Customer/Renter") query = query.eq("customer_id", principal.userId);
     const result = await query;
     if (result.error) return errorResponse("Unable to load booking requests.", 503);
-    return Response.json(result.data ?? []);
+    const rows = result.data ?? [];
+    if (principal.role === "Customer/Renter") return Response.json(rows.map((b: any) => ({ ...b, assigned_by: undefined, confirmed_by: undefined, substitution_acknowledged: undefined, cross_branch_acknowledged: undefined })));
+    const bookingIds = rows.map((b: any) => b.id);
+    if (bookingIds.length) {
+      const [reqs, pays] = await Promise.all([
+        (client as any).from("renter_requirement_sets").select("booking_id,status").in("booking_id", bookingIds),
+        (client as any).from("payments").select("booking_id,status").in("booking_id", bookingIds),
+      ]);
+      const reqMap = new Map((reqs.data ?? []).map((x: any) => [x.booking_id, x.status]));
+      const payMap = new Map((pays.data ?? []).map((x: any) => [x.booking_id, x.status]));
+      rows.forEach((b: any) => { b.requirement_status = reqMap.get(b.id) ?? "Not Submitted"; b.payment_status = payMap.get(b.id) ?? "Not Submitted"; });
+    }
+    if (principal.role === "Owner/Admin") {
+      const vehicles = await (client as any).from("vehicles").select("id,name,license_plate,branch_id,is_active,branch:branches(id,name),category:vehicle_categories(id,name)").eq("is_active", true).order("name");
+      return Response.json({ bookings: rows, candidateVehicles: vehicles.data ?? [] });
+    }
+    return Response.json({ bookings: rows });
   } catch (error) {
     return errorResponse(error instanceof Error && error.message === "forbidden" ? "Forbidden." : "Authentication required.", error instanceof Error && error.message === "forbidden" ? 403 : 401);
   }
+}
+
+async function mutateBooking({ request }: { request: Request }) {
+  try {
+    const principal = await requirePrincipal();
+    if (principal.role !== "Owner/Admin") return errorResponse("Owner/Admin access is required.", 403);
+    const body = await request.json().catch(() => null) as Record<string, unknown> | null;
+    const action = text(body?.action); const bookingId = text(body?.bookingId);
+    if (!bookingId || !["assign", "confirm"].includes(action)) return errorResponse("Invalid booking action.");
+    const client = getSupabaseServerClient() as any;
+    const rpc = action === "assign" ? await client.rpc("assign_booking_vehicle", { p_booking_id: bookingId, p_vehicle_id: text(body?.vehicleId), p_actor_id: principal.userId, p_assignment_note: optionalText(body?.assignmentNote), p_substitution_acknowledged: body?.substitutionAcknowledged === true, p_cross_branch_acknowledged: body?.crossBranchAcknowledged === true }) : await client.rpc("confirm_booking_atomic", { p_booking_id: bookingId, p_actor_id: principal.userId, p_expected_vehicle_id: optionalText(body?.expectedAssignedVehicleId), p_expected_assigned_at: optionalText(body?.expectedAssignedAt) });
+    if (rpc.error) {
+      const map: Record<string,string> = { forbidden:"Forbidden.", booking_not_found:"Booking not found.", booking_not_submitted:"Booking is no longer submitted.", vehicle_unavailable:"Selected vehicle is unavailable.", vehicle_conflict:"Vehicle conflicts with another confirmed booking.", substitution_ack_required:"Substitution acknowledgement and note are required.", cross_branch_ack_required:"Cross-branch acknowledgement and note are required.", requirements_not_verified:"Requirements must be Verified before confirmation.", payment_not_verified:"Payment must be Verified before confirmation.", assignment_required:"Assign an active vehicle before confirmation.", stale_assignment:"Assignment changed; reload before confirming." };
+      return errorResponse(map[rpc.error.message] || "Unable to update booking.", 409);
+    }
+    return Response.json({ booking: rpc.data });
+  } catch (e) { return errorResponse(e instanceof Error && e.message === "forbidden" ? "Forbidden." : "Authentication required.", e instanceof Error && e.message === "forbidden" ? 403 : 401); }
 }
 
 async function createBooking({ request }: { request: Request }) {

@@ -13,7 +13,9 @@ function BookingsPage() {
   const [status, setStatus] = useState<(typeof statuses)[number]>("All");
   const [branch, setBranch] = useState<(typeof branches)[number]>("All branches");
   const [bookings, setBookings] = useState<any[]>([]);
-  useEffect(() => { fetch("/api/bookings", { credentials: "same-origin" }).then((r) => r.ok ? r.json() : []).then(setBookings).catch(() => undefined); }, []);
+  const [candidateVehicles, setCandidateVehicles] = useState<any[]>([]); const [selected, setSelected] = useState<any>(null); const [vehicleId, setVehicleId] = useState(""); const [note, setNote] = useState(""); const [subAck, setSubAck] = useState(false); const [branchAck, setBranchAck] = useState(false); const [busy, setBusy] = useState(false);
+  const load = () => fetch("/api/bookings", { credentials: "same-origin" }).then((r) => r.ok ? r.json() : null).then((d) => { setBookings(d?.bookings ?? []); setCandidateVehicles(d?.candidateVehicles ?? []); }).catch(() => undefined);
+  useEffect(() => { load(); }, []);
 
   const rows = useMemo(
     () =>
@@ -86,6 +88,7 @@ function BookingsPage() {
               {rows.map((b) => (
                 <tr
                   key={b.id}
+                  onClick={() => { setSelected(b); setVehicleId(b.assigned_vehicle_id ?? ""); setNote(b.assignment_note ?? ""); setSubAck(Boolean(b.substitution_acknowledged)); setBranchAck(Boolean(b.cross_branch_acknowledged)); }}
                   className="border-b border-border/60 transition-colors hover:bg-secondary/40"
                 >
                   <Td className="font-mono text-xs text-muted-foreground">{b.id}</Td>
@@ -107,6 +110,7 @@ function BookingsPage() {
           </table>
         </div>
       </Card>
+      {selected?.booking_status === "Submitted" && <Card><div className="space-y-3 p-4"><h2 className="font-display text-lg font-semibold">Assignment & confirmation</h2><p className="text-sm">Requested: {selected.requested_vehicle?.name ?? "—"} · {new Date(selected.pickup_at).toLocaleString()} → {new Date(selected.return_at).toLocaleString()}</p><p className="text-xs">Requirements: <b>{selected.requirement_status}</b> · Payment: <b>{selected.payment_status}</b></p><select className="input-control" value={vehicleId} onChange={(e) => setVehicleId(e.target.value)}><option value="">Select active vehicle</option>{candidateVehicles.map((v) => <option key={v.id} value={v.id}>{v.name} · {v.license_plate ?? "No plate"} · {v.branch?.name ?? ""}</option>)}</select>{vehicleId && vehicleId !== selected.requested_vehicle_id && <label className="block text-xs"><input type="checkbox" checked={subAck} onChange={(e) => setSubAck(e.target.checked)} /> I acknowledge this provisional substitution (CQ-007).</label>}{vehicleId && candidateVehicles.find((v) => v.id === vehicleId)?.branch_id !== selected.pickup_branch_id && <label className="block text-xs"><input type="checkbox" checked={branchAck} onChange={(e) => setBranchAck(e.target.checked)} /> I acknowledge this provisional cross-branch assignment (CQ-017).</label>}<textarea className="input-control" placeholder="Assignment note (required for warnings)" value={note} onChange={(e) => setNote(e.target.value)} /><div className="flex gap-2"><Btn disabled={busy || !vehicleId} onClick={async () => { setBusy(true); const r = await fetch("/api/bookings", { method:"POST", headers:{"Content-Type":"application/json"}, credentials:"same-origin", body:JSON.stringify({action:"assign",bookingId:selected.id,vehicleId,assignmentNote:note,substitutionAcknowledged:subAck,crossBranchAcknowledged:branchAck}) }); setBusy(false); if (!r.ok) { alert((await r.json()).message); return; } await load(); setSelected(null); }}>Assign / Change</Btn><Btn disabled={busy || !selected.assigned_vehicle_id || selected.requirement_status !== "Verified" || selected.payment_status !== "Verified"} onClick={async () => { setBusy(true); const r = await fetch("/api/bookings", { method:"POST", headers:{"Content-Type":"application/json"}, credentials:"same-origin", body:JSON.stringify({action:"confirm",bookingId:selected.id,expectedAssignedVehicleId:selected.assigned_vehicle_id,expectedAssignedAt:selected.assigned_at}) }); setBusy(false); if (!r.ok) { alert((await r.json()).message); return; } await load(); setSelected(null); }}>Confirm booking</Btn><Btn variant="ghost" onClick={() => setSelected(null)}>Close</Btn></div><p className="text-[11px] text-muted-foreground">Maintenance readiness is not digitally available; no readiness pass is claimed.</p></div></Card>}
       <RequirementReviewQueue />
     </div>
   );
