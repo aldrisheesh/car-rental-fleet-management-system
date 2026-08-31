@@ -19,7 +19,13 @@ async function readBookings() {
     const result = await query;
     if (result.error) return errorResponse("Unable to load booking requests.", 503);
     const rows = result.data ?? [];
-    if (principal.role === "Customer/Renter") return Response.json(rows.map((b: any) => ({ ...b, assigned_by: undefined, confirmed_by: undefined, substitution_acknowledged: undefined, cross_branch_acknowledged: undefined })));
+    if (principal.role === "Customer/Renter") {
+      return Response.json(rows.map((b: any) => {
+        const { assigned_by, assigned_at, assignment_note, substitution_acknowledged, cross_branch_acknowledged, confirmed_by, confirmed_at, ...customerBooking } = b;
+        void assigned_by; void assigned_at; void assignment_note; void substitution_acknowledged; void cross_branch_acknowledged; void confirmed_by; void confirmed_at;
+        return customerBooking;
+      }));
+    }
     const bookingIds = rows.map((b: any) => b.id);
     if (bookingIds.length) {
       const [reqs, pays] = await Promise.all([
@@ -47,10 +53,12 @@ async function mutateBooking({ request }: { request: Request }) {
     const body = await request.json().catch(() => null) as Record<string, unknown> | null;
     const action = text(body?.action); const bookingId = text(body?.bookingId);
     if (!bookingId || !["assign", "confirm"].includes(action)) return errorResponse("Invalid booking action.");
+    const expectedVehicleId = text(body?.expectedAssignedVehicleId); const expectedAssignedAt = text(body?.expectedAssignedAt);
+    if (action === "confirm" && (!expectedVehicleId || !expectedAssignedAt)) return errorResponse("Reload the current assignment before confirming.", 409);
     const client = getSupabaseServerClient() as any;
-    const rpc = action === "assign" ? await client.rpc("assign_booking_vehicle", { p_booking_id: bookingId, p_vehicle_id: text(body?.vehicleId), p_actor_id: principal.userId, p_assignment_note: optionalText(body?.assignmentNote), p_substitution_acknowledged: body?.substitutionAcknowledged === true, p_cross_branch_acknowledged: body?.crossBranchAcknowledged === true }) : await client.rpc("confirm_booking_atomic", { p_booking_id: bookingId, p_actor_id: principal.userId, p_expected_vehicle_id: optionalText(body?.expectedAssignedVehicleId), p_expected_assigned_at: optionalText(body?.expectedAssignedAt) });
+    const rpc = action === "assign" ? await client.rpc("assign_booking_vehicle", { p_booking_id: bookingId, p_vehicle_id: text(body?.vehicleId), p_actor_id: principal.userId, p_assignment_note: optionalText(body?.assignmentNote), p_substitution_acknowledged: body?.substitutionAcknowledged === true, p_cross_branch_acknowledged: body?.crossBranchAcknowledged === true }) : await client.rpc("confirm_booking_atomic", { p_booking_id: bookingId, p_actor_id: principal.userId, p_expected_vehicle_id: expectedVehicleId, p_expected_assigned_at: expectedAssignedAt });
     if (rpc.error) {
-      const map: Record<string,string> = { forbidden:"Forbidden.", booking_not_found:"Booking not found.", booking_not_submitted:"Booking is no longer submitted.", vehicle_unavailable:"Selected vehicle is unavailable.", vehicle_conflict:"Vehicle conflicts with another confirmed booking.", substitution_ack_required:"Substitution acknowledgement and note are required.", cross_branch_ack_required:"Cross-branch acknowledgement and note are required.", requirements_not_verified:"Requirements must be Verified before confirmation.", payment_not_verified:"Payment must be Verified before confirmation.", assignment_required:"Assign an active vehicle before confirmation.", stale_assignment:"Assignment changed; reload before confirming." };
+      const map: Record<string,string> = { forbidden:"Forbidden.", booking_not_found:"Booking not found.", booking_not_submitted:"Booking is no longer submitted.", vehicle_unavailable:"Selected vehicle is unavailable.", vehicle_conflict:"Vehicle conflicts with another confirmed booking.", substitution_ack_required:"Substitution acknowledgement and note are required.", cross_branch_ack_required:"Cross-branch acknowledgement and note are required.", requirements_not_verified:"Requirements must be Verified before confirmation.", payment_not_verified:"Payment must be Verified before confirmation.", assignment_required:"Assign an active vehicle before confirmation.", assignment_expectation_required:"Reload the current assignment before confirming.", stale_assignment:"Assignment changed; reload before confirming." };
       return errorResponse(map[rpc.error.message] || "Unable to update booking.", 409);
     }
     return Response.json({ booking: rpc.data });
