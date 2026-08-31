@@ -18,8 +18,24 @@ export type SupplyVehicleResult = {
   exclusion_reasons: string[];
 };
 
+/** Converts a canonical Manila calendar date boundary to its UTC instant. */
+export function manilaDateBoundaryToInstant(date: string): string | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!match) return null;
+  const [, year, month, day] = match;
+  const calendar = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  if (calendar.toISOString().slice(0, 10) !== date) return null;
+  const instant = new Date(calendar.getTime() - 8 * 60 * 60 * 1000);
+  return instant.toISOString();
+}
+
 export function overlaps(start: string, end: string, weekStart: string, weekEnd: string) {
-  return start < weekEnd && end > weekStart;
+  const startMs = Date.parse(start);
+  const endMs = Date.parse(end);
+  const weekStartMs = Date.parse(weekStart);
+  const weekEndMs = Date.parse(weekEnd);
+  if (![startMs, endMs, weekStartMs, weekEndMs].every(Number.isFinite) || endMs <= startMs || weekEndMs <= weekStartMs) return false;
+  return startMs < weekEndMs && endMs > weekStartMs;
 }
 
 export function evaluateSupplyVehicles(vehicles: SupplyVehicle[]) {

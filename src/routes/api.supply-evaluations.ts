@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AuthBoundaryError, requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import { evaluateSupplyVehicles, calculateBalance, overlaps } from "@/lib/supply-evaluation.server";
+import { evaluateSupplyVehicles, calculateBalance, overlaps, manilaDateBoundaryToInstant } from "@/lib/supply-evaluation.server";
 import { calculateMaintenanceReadiness, selectAuthoritativePreventiveTargets } from "@/lib/maintenance-readiness.server";
 
 const fail = (message: string, status = 400) => Response.json({ message }, { status });
@@ -30,6 +30,9 @@ async function generate({ request }: { request: Request }) {
     const { data: forecast, error: fe } = await c.from("forecasts").select("id,branch_id,vehicle_category_id,target_week_start,target_week_end,required_vehicle_units").eq("id", forecastId).maybeSingle();
     if (fe) return fail("Unable to load forecast.", 503);
     if (!forecast) return fail("Demand forecast unavailable.", 404);
+    const targetWeekStart = manilaDateBoundaryToInstant(forecast.target_week_start);
+    const targetWeekEnd = manilaDateBoundaryToInstant(forecast.target_week_end);
+    if (!targetWeekStart || !targetWeekEnd) return fail("Invalid canonical forecast interval.", 409);
     const { data: vehicles, error: ve } = await c.from("vehicles").select("id,branch_id,category_id,is_active").eq("branch_id", forecast.branch_id).eq("category_id", forecast.vehicle_category_id);
     if (ve) return fail("Unable to load fleet.", 503);
     const ids = (vehicles ?? []).map((v: any) => v.id);
@@ -46,8 +49,8 @@ async function generate({ request }: { request: Request }) {
       try { readiness = await calculateMaintenanceReadiness(v.id); } catch { readiness = undefined; }
       const targets = selectAuthoritativePreventiveTargets(byVehicle.get(v.id) ?? []);
       const futureMaintenanceConflict = targets.some((r: any) => r.next_service_date && r.next_service_date < forecast.target_week_end);
-      const bookingConflict = (bookings.data ?? []).filter((b: any) => b.assigned_vehicle_id === v.id).some((b: any) => overlaps(b.pickup_at, b.return_at, `${forecast.target_week_start}T00:00:00.000Z`, `${forecast.target_week_end}T00:00:00.000Z`));
-      const rentalConflict = (rentals.data ?? []).filter((r: any) => r.vehicle_id === v.id).some((r: any) => r.started_at && (!r.ended_at || overlaps(r.started_at, r.ended_at, `${forecast.target_week_start}T00:00:00.000Z`, `${forecast.target_week_end}T00:00:00.000Z`)));
+      const bookingConflict = (bookings.data ?? []).filter((b: any) => b.assigned_vehicle_id === v.id).some((b: any) => overlaps(b.pickup_at, b.return_at, targetWeekStart, targetWeekEnd));
+      const rentalConflict = (rentals.data ?? []).filter((r: any) => r.vehicle_id === v.id).some((r: any) => r.started_at && (!r.ended_at || overlaps(r.started_at, r.ended_at, targetWeekStart, targetWeekEnd)));
       return { ...v, readiness, futureMaintenanceConflict, bookingConflict, rentalConflict };
     }));
     const result = evaluateSupplyVehicles(evaluated);
