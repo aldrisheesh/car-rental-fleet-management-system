@@ -20,6 +20,26 @@ const datesBetween = (from: string, to: string) => {
   for (let d = from; d <= to; d = addDays(d, 1)) out.push(d);
   return out;
 };
+export function overlapsLocalDay(
+  intervalStart: Date,
+  intervalEnd: Date,
+  day: string,
+) {
+  const dayStart = localDate(day);
+  const dayEnd = localDate(addDays(day, 1));
+  return intervalStart < dayEnd && intervalEnd > dayStart;
+}
+
+export function countIntervalLocalDays(
+  intervalStart: Date,
+  intervalEnd: Date,
+  rangeStart: string,
+  rangeEnd: string,
+) {
+  return datesBetween(rangeStart, rangeEnd).filter((day) =>
+    overlapsLocalDay(intervalStart, intervalEnd, day),
+  ).length;
+}
 
 export type VehicleAnalyticsRow = {
   vehicleId: string;
@@ -91,8 +111,8 @@ export async function getVehicleAnalytics(
         if (!r.started_at) continue;
         const end = r.ended_at ? new Date(r.ended_at) : now;
         const start = new Date(r.started_at);
-        for (const d of datesBetween(dayKey(start), dayKey(end)))
-          if (d >= startDate && d <= endDate) rentalDaysSet.add(d);
+        for (const d of days)
+          if (overlapsLocalDay(start, end, d)) rentalDaysSet.add(d);
       }
       const vevents = (events ?? []).filter((e: any) => e.vehicle_id === v.id);
       const coverage = days.every((d) =>
@@ -114,10 +134,12 @@ export async function getVehicleAnalytics(
                 .find((e: any) => new Date(e.effective_at) <= localDate(d));
               if (!state?.is_active) return false;
               if (rentalDaysSet.has(d)) return true;
-              return !blockers.some(
-                (m: any) =>
-                  dayKey(new Date(m.service_started_at)) <= d &&
-                  (!m.completed_at || dayKey(new Date(m.completed_at)) >= d),
+              return !blockers.some((m: any) =>
+                overlapsLocalDay(
+                  new Date(m.service_started_at),
+                  m.completed_at ? new Date(m.completed_at) : now,
+                  d,
+                ),
               );
             }).length
           : null;
@@ -128,8 +150,19 @@ export async function getVehicleAnalytics(
         .sort(
           (a: any, b: any) => +new Date(b.ended_at) - +new Date(a.ended_at),
         )[0];
-      const baseline =
-        ended?.ended_at ?? (vevents.length ? vevents[0].effective_at : null);
+      let currentActiveStart: string | null = null;
+      for (const event of vevents) {
+        if (event.is_active) currentActiveStart = event.effective_at;
+        else currentActiveStart = null;
+      }
+      const baselineCandidates = [ended?.ended_at, currentActiveStart].filter(
+        (value): value is string => Boolean(value),
+      );
+      const baseline = baselineCandidates.length
+        ? new Date(
+            Math.max(...baselineCandidates.map((value) => +new Date(value))),
+          ).toISOString()
+        : null;
       const idleDays = baseline
         ? Math.max(
             0,
