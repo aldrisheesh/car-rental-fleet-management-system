@@ -129,9 +129,33 @@ async function mutate(request: Request, mode: "create" | "update") {
                 ? null
                 : Number(input.referenceFuelEfficiency),
             image_url: input.imageUrl || null,
+            current_odometer_km:
+              input.currentOdometerKm === "" || input.currentOdometerKm == null
+                ? null
+                : Number(input.currentOdometerKm),
+            condition_blocks_rental_use:
+              input.conditionBlocksRentalUse === true,
             is_active: input.isActive !== false,
           };
   const id = typeof body?.id === "string" ? body.id : null;
+  if (
+    resource === "vehicles" &&
+    mode === "update" &&
+    id &&
+    values.current_odometer_km != null
+  ) {
+    const current = await client
+      .from("vehicles")
+      .select("current_odometer_km")
+      .eq("id", id)
+      .maybeSingle();
+    if (
+      current.data?.current_odometer_km != null &&
+      Number(values.current_odometer_km) <
+        Number(current.data.current_odometer_km)
+    )
+      return errorResponse("Current odometer cannot decrease.");
+  }
   // The validated resource discriminator cannot narrow Supabase's generated
   // union type for a dynamic table name.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

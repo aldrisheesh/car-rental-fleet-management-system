@@ -287,7 +287,7 @@ function FleetPage() {
       vehicle_id: vehicle?.id ?? "",
       maintenance_type: "Preventive Maintenance",
       description: `${vehicle?.name ?? ""} (${vehicle?.plate ?? ""})`,
-      maintenance_status: "Scheduled",
+      maintenance_status: "Open",
       scheduled_date: new Date().toISOString().slice(0, 10),
       completed_date: "",
       cost: "",

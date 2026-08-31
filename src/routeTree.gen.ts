@@ -24,6 +24,7 @@ import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
 import { Route as ApiRequirementsRouteImport } from './routes/api.requirements'
 import { Route as ApiPaymentsRouteImport } from './routes/api.payments'
 import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
+import { Route as ApiMaintenanceRouteImport } from './routes/api.maintenance'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
 import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-master-data'
@@ -119,6 +120,11 @@ const ApiPaymentsRoute = ApiPaymentsRouteImport.update({
 const ApiMasterDataRoute = ApiMasterDataRouteImport.update({
   id: '/api/master-data',
   path: '/api/master-data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMaintenanceRoute = ApiMaintenanceRouteImport.update({
+  id: '/api/maintenance',
+  path: '/api/maintenance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
@@ -290,6 +297,7 @@ export interface FileRoutesByTo {
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
@@ -329,6 +337,7 @@ export interface FileRoutesById {
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
@@ -369,6 +378,7 @@ export interface FileRouteTypes {
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/health'
+    | '/api/maintenance'
     | '/api/master-data'
     | '/api/payments'
     | '/api/requirements'
@@ -406,6 +416,7 @@ export interface FileRouteTypes {
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/health'
+    | '/api/maintenance'
     | '/api/master-data'
     | '/api/payments'
     | '/api/requirements'
@@ -444,6 +455,7 @@ export interface FileRouteTypes {
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/health'
+    | '/api/maintenance'
     | '/api/master-data'
     | '/api/payments'
     | '/api/requirements'
@@ -470,6 +482,7 @@ export interface RootRouteChildren {
   ApiBookingMasterDataRoute: typeof ApiBookingMasterDataRoute
   ApiBookingsRoute: typeof ApiBookingsRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiMaintenanceRoute: typeof ApiMaintenanceRoute
   ApiMasterDataRoute: typeof ApiMasterDataRoute
   ApiPaymentsRoute: typeof ApiPaymentsRoute
   ApiRequirementsRoute: typeof ApiRequirementsRoute
@@ -587,6 +600,13 @@ declare module '@tanstack/react-router' {
       path: '/api/master-data'
       fullPath: '/api/master-data'
       preLoaderRoute: typeof ApiMasterDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/maintenance': {
+      id: '/api/maintenance'
+      path: '/api/maintenance'
+      fullPath: '/api/maintenance'
+      preLoaderRoute: typeof ApiMaintenanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -788,6 +808,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBookingMasterDataRoute: ApiBookingMasterDataRoute,
   ApiBookingsRoute: ApiBookingsRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiMaintenanceRoute: ApiMaintenanceRoute,
   ApiMasterDataRoute: ApiMasterDataRoute,
   ApiPaymentsRoute: ApiPaymentsRoute,
   ApiRequirementsRoute: ApiRequirementsRoute,

@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export type MaintenanceStatus = "Scheduled" | "In Progress" | "Completed" | "Overdue";
+export type MaintenanceStatus = "Open" | "Completed" | "Cancelled";
 
 export type MaintenanceRecordDraft = {
   maintenance_id: string;
@@ -103,7 +103,9 @@ export function MaintenanceRecordDialog({
           <Field label="Maintenance Type">
             <TSelect
               value={draft.maintenance_type}
-              onChange={(event) => updateDraft("maintenance_type", event.target.value)}
+              onChange={(event) =>
+                updateDraft("maintenance_type", event.target.value)
+              }
             >
               {typeOptions.map((option) => (
                 <option key={option} value={option}>
@@ -116,27 +118,33 @@ export function MaintenanceRecordDialog({
             <TSelect
               value={draft.maintenance_status}
               onChange={(event) =>
-                updateDraft("maintenance_status", event.target.value as MaintenanceStatus)
+                updateDraft(
+                  "maintenance_status",
+                  event.target.value as MaintenanceStatus,
+                )
               }
             >
-              <option>Scheduled</option>
-              <option>In Progress</option>
+              <option>Open</option>
               <option>Completed</option>
-              <option>Overdue</option>
+              <option>Cancelled</option>
             </TSelect>
           </Field>
           <Field label="Scheduled Date">
             <TInput
               type="date"
               value={draft.scheduled_date}
-              onChange={(event) => updateDraft("scheduled_date", event.target.value)}
+              onChange={(event) =>
+                updateDraft("scheduled_date", event.target.value)
+              }
             />
           </Field>
           <Field label="Completed Date">
             <TInput
               type="date"
               value={draft.completed_date}
-              onChange={(event) => updateDraft("completed_date", event.target.value)}
+              onChange={(event) =>
+                updateDraft("completed_date", event.target.value)
+              }
             />
           </Field>
           <Field label="Cost">
@@ -151,7 +159,9 @@ export function MaintenanceRecordDialog({
           <Field label="Performed By">
             <TInput
               value={draft.performed_by}
-              onChange={(event) => updateDraft("performed_by", event.target.value)}
+              onChange={(event) =>
+                updateDraft("performed_by", event.target.value)
+              }
               placeholder="Mechanic name"
             />
           </Field>
@@ -159,7 +169,9 @@ export function MaintenanceRecordDialog({
             <TInput
               type="number"
               value={draft.recorded_by}
-              onChange={(event) => updateDraft("recorded_by", event.target.value)}
+              onChange={(event) =>
+                updateDraft("recorded_by", event.target.value)
+              }
             />
           </Field>
           <Field label="Date recorded">
@@ -168,7 +180,9 @@ export function MaintenanceRecordDialog({
           <Field label="Description" className="sm:col-span-2">
             <textarea
               value={draft.description}
-              onChange={(event) => updateDraft("description", event.target.value)}
+              onChange={(event) =>
+                updateDraft("description", event.target.value)
+              }
               rows={4}
               className="input-control min-h-24 w-full py-2.5"
               placeholder="Service notes and findings"

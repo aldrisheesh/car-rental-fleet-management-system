@@ -49,5 +49,12 @@ export function validateMasterDataInput(
       Number(input.referenceFuelEfficiency) <= 0)
   )
     return "Reference fuel efficiency must be positive.";
+  if (
+    input.currentOdometerKm != null &&
+    input.currentOdometerKm !== "" &&
+    (!Number.isFinite(Number(input.currentOdometerKm)) ||
+      Number(input.currentOdometerKm) < 0)
+  )
+    return "Current odometer must be non-negative.";
   return null;
 }
