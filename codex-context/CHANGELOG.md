@@ -1,35 +1,34 @@
 # Changelog
 
-## 2026-09-01 — Vehicle Utilization / Idle Detection Baseline
+## 2026-09-01 — Demand Extraction / Forecasting Boundary
 
-Prepared the Development Baseline for VS013.
+Prepared the Development Baseline for VS014.
 
 ### Frozen / Clarified
 
-- Added `19-vehicle-utilization-and-idle-detection.md`.
-- Frozen `Asia/Manila` calendar-day reporting semantics.
-- Frozen Rental Days as distinct local calendar dates overlapped by canonical rental transactions.
-- Reaffirmed that Confirmed reservations do not count as utilization.
-- Frozen utilization formula using Rental Days / Eligible Operational Days.
-- Frozen maintenance-history treatment for analytical eligibility.
-- Required canonical prospective active/inactive state history instead of treating the current `is_active` value as historical truth.
-- Frozen incomplete historical eligibility coverage as Unavailable rather than silently computing biased utilization.
-- Frozen 30-day default dashboard interval.
-- Frozen idle eligibility requiring current active state, canonical maintenance readiness, no active rental, and a trustworthy idle reference.
-- Frozen latest canonical rental `ended_at` as the idle reference for previously rented vehicles.
-- Prohibited using vehicle record `created_at` as an invented operational-availability baseline for never-rented vehicles.
-- Added `CQ-023` for Briah's historical operational-availability/inactive-state data.
-- Reaffirmed the fixed 14-day idle threshold.
-- Reaffirmed that utilization/idle indicators never automatically transfer vehicles.
+- Added `20-demand-extraction-and-forecasting-boundary.md`.
+- Bound qualifying demand to canonical Confirmed bookings.
+- Frozen Asia/Manila Monday-based calendar-week aggregation.
+- Frozen demand attribution to requested pickup branch.
+- Frozen category attribution to requested vehicle/category intent rather than substituted assigned vehicle.
+- Prohibited current incomplete week from actual forecast inputs.
+- Distinguished trustworthy zero-demand completed weeks from unavailable historical data.
+- Reaffirmed three consecutive complete actual weekly observations before WMA.
+- Reaffirmed fixed 0.50 / 0.30 / 0.20 WMA and recursive 3-week horizon.
+- Reaffirmed immutable forecast run fidelity and detailed Actual/Forecast WMA inputs.
+- Reaffirmed `ceil()` required units.
+- Reaffirmed APE and horizon-1-only primary MAPE behavior.
+- Added `CQ-024` for Briah historical booking-demand data availability.
+- Explicitly prohibited fake historical bookings/zero weeks merely to make forecasting produce output.
+
+---
+
+## 2026-09-01 — Vehicle Utilization / Idle Detection Baseline
+
+Frozen canonical utilization and idle detection.
 
 ---
 
 ## 2026-09-01 — Maintenance Monitoring / Readiness Foundation
 
-Frozen canonical maintenance records and reusable deterministic maintenance readiness.
-
----
-
-## 2026-09-01 — Rental Return / Release Foundations
-
-Frozen canonical physical rental start/end intervals needed by fleet analytics.
+Frozen canonical maintenance records and reusable maintenance readiness.

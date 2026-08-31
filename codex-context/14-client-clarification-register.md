@@ -3,55 +3,52 @@
 **Status:** Active Client Validation Register  
 **Last updated:** 2026-09-01
 
-Existing CQ-001 through CQ-022 remain active as previously defined.
+Existing CQ-001 through CQ-023 remain active as previously defined.
 
-## CQ-023 — Historical Operational Availability Baseline for Vehicles
+## CQ-024 — Historical Booking Demand Data Availability
 
-**Process:** Fleet Analytics / Idle Detection / Utilization
+**Process:** Demand Forecasting / Historical Data
 
 **Known**
 
-The manuscript permits the date when a never-rented vehicle became operationally available to serve as its idle-duration reference.
+The study requires weekly demand forecasting by branch and vehicle category using qualifying booking demand.
 
-Vehicle utilization also excludes inactive days from Eligible Operational Days.
+The system can generate trustworthy booking demand prospectively from canonical Confirmed bookings.
 
-The system can begin recording canonical active/inactive state history going forward.
+WMA requires at least three complete weekly observations before forecasting can begin.
 
 **Missing detail**
 
-For vehicles that existed before canonical system state-history tracking, the system does not know:
+It is not yet confirmed whether Briah's can provide historical booking/reservation records from before the system that contain enough information to reconstruct:
 
-- the exact date each vehicle first became operationally available;
-- historical periods when the vehicle may have been inactive;
-- whether Briah's has records that can establish those dates.
-
-Vehicle record creation date must not automatically be treated as business operational availability.
+- scheduled rental start date;
+- pickup/requested branch;
+- requested vehicle or vehicle category;
+- whether the booking proceeded/was accepted versus rejected/cancelled.
 
 **Temporary implementation assumption**
 
-VS013 records trustworthy active/inactive state history prospectively.
+VS014 uses canonical system booking history prospectively.
 
-For historical dates lacking recorded state coverage:
+Do not fabricate pre-system zero-demand weeks or fake confirmed bookings merely to satisfy the three-week WMA requirement.
 
-- do not backdate the current active state;
-- do not fabricate an idle baseline;
-- mark utilization historical eligibility coverage as incomplete;
-- classify idle as Unable to Determine for a never-rented vehicle lacking a trustworthy operational-availability reference.
+If insufficient real history exists:
 
-Explicitly labeled demo/sample historical state data may be used for functional testing.
+- production/real mode returns `Insufficient historical data`;
+- clearly labeled demo/test history may validate forecasting functionality separately.
 
 **Question for Briah's**
 
-> Para po sa mga sasakyan na wala pang previous rental record sa system, may record po ba kayo kung kailan sila first naging available/active for rental? May records din po ba kayo kung kailan sila temporarily inactive or unavailable dati? Maaari po ba naming gamitin/import ang mga dates na iyon para sa utilization at idle monitoring?
+> May historical booking/reservation records po ba kayo na puwedeng gamitin para sa forecasting? Kailangan po sana namin ang rental start date, requested/pickup branch, requested vehicle or category, at kung natuloy/accepted, rejected, o cancelled ang booking. Kahit spreadsheet, logbook, chat records, or existing digital records po, available ba ito?
 
 **Implementation impact**
 
-May provide historical utilization denominator coverage and a trustworthy idle baseline for never-rented vehicles.
+May allow historical demand import and immediate real-data WMA/MAPE evaluation instead of waiting for prospective system history.
 
 **Status:** Open — Client Confirmation
 
 ## Presentation Rule
 
-Demonstrate the implemented provisional flow first, explain the temporary assumption, then ask the client-specific question.
+Demonstrate real-data behavior honestly. If real history is insufficient, show the controlled insufficient-data state and separately demonstrate WMA using explicitly labeled sample/test data.
 
-After confirmation, update the authoritative specification/data rather than silently backdating history.
+Do not describe sample forecasts as measured Briah operational performance.

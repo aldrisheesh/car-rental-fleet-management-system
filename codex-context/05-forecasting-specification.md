@@ -1,7 +1,7 @@
 # Forecasting Specification — WMA and MAPE
 
 **Status:** Frozen for Development Baseline v1  
-**Last updated:** 2026-08-29
+**Last updated:** 2026-09-01
 
 ## 1. Forecast Purpose and Granularity
 
@@ -12,179 +12,146 @@ The system uses **Weighted Moving Average (WMA)** to generate short-term weekly 
 
 Forecasting is advisory decision support and is not AI/ML.
 
-## 2. Forecast Target Variable
+Canonical extraction and repository binding are defined in:
 
-The target is the weekly count of **qualifying booking demand**.
+`20-demand-extraction-and-forecasting-boundary.md`
+
+## 2. Forecast Target Variable
 
 For branch `b`, category `c`, and completed calendar week `t`:
 
 `D[b,c,t] = count of qualifying bookings with scheduled rental start date in week t`
 
-Qualifying-demand inclusion/exclusion rules are defined in `04-data-and-business-rules.md`.
+Qualifying demand uses canonical Confirmed booking demand under the VS014 boundary.
 
-Rental duration and vehicle utilization are not direct WMA demand-count inputs.
+Rental duration and vehicle utilization are not WMA demand-count inputs.
 
 ## 3. Aggregation Period
 
-Aggregation period: **calendar week**.
+Calendar week in `Asia/Manila`:
 
-Demand is grouped by:
+Monday 00:00 through next Monday 00:00, half-open.
 
-- calendar week
-- branch
-- vehicle category
+The current incomplete week is not an actual observation.
 
 ## 4. WMA Window and Weights
 
-The study uses a **three-period WMA** with fixed descending weights:
+Three-period WMA:
 
-- most recent input: `0.50`
-- second-most recent input: `0.30`
-- third-most recent input: `0.20`
+- most recent actual/input: `0.50`
+- second-most recent: `0.30`
+- third-most recent: `0.20`
 
-Weights are fixed study-adopted parameters. Owner/Admin does not manually change computed WMA values or weights in normal operation.
+Weights are fixed study parameters.
 
 ## 5. Forecast Horizon
 
-Each forecast run generates up to **three succeeding weekly periods**: Week +1, Week +2, and Week +3.
-
-### Week +1
+Week +1:
 
 `F[t+1] = 0.50*D[t] + 0.30*D[t-1] + 0.20*D[t-2]`
 
-### Week +2
+Week +2:
 
 `F[t+2] = 0.50*F[t+1] + 0.30*D[t] + 0.20*D[t-1]`
 
-### Week +3
+Week +3:
 
 `F[t+3] = 0.50*F[t+2] + 0.30*F[t+1] + 0.20*D[t]`
 
-Week +2 and Week +3 are recursive projections. Their increasing reliance on prior forecasts means they are longer-horizon planning estimates and must not be presented as guaranteed demand.
+Week +2/+3 are recursive planning projections.
 
 ## 6. Minimum Historical Data
 
-At least **three complete actual weekly observations** are required before an initial forecast run is generated for a branch/category pair.
+At least three complete trustworthy consecutive weekly actual observations are required for a branch/category pair.
 
-If fewer than three complete actual observations are available, return/display **Insufficient historical data** rather than substituting invented values.
+A known complete zero-demand week is a valid zero.
 
-A known complete week with zero qualifying bookings is a valid zero-demand observation.
+Unknown/incomplete historical weeks must not be converted to zero.
 
 ## 7. Forecast Storage and Runs
 
-A forecast run should preserve historical forecast fidelity.
+Preserve immutable historical forecast fidelity through run/group identifiers.
 
-Use a run/group identifier so Week +1, Week +2, and Week +3 records generated together remain associated.
+Each target-week forecast preserves at minimum:
 
-Each target-week record should preserve at minimum:
+- branch;
+- vehicle category;
+- forecast run/group;
+- horizon 1/2/3;
+- target week start/end;
+- method = WMA;
+- decimal forecast demand;
+- `ceil()` required vehicle units;
+- actual demand when finalized;
+- APE when valid;
+- generation time.
 
-- branch
-- vehicle category
-- forecast run/group
-- forecast horizon number: 1, 2, or 3
-- target week start/end
-- method = WMA
-- decimal forecasted demand
-- rounded-up required vehicle units
-- actual demand once the target week is complete
-- per-record percentage error when valid
-- generation time
+Do not overwrite older runs.
 
-Do not overwrite an older forecast solely because the same target week later appears at a shorter horizon in a newer run.
+## 8. Forecast Inputs
 
-## 8. Forecast Detail Inputs
+Store/associate each calculation input:
 
-Each forecast stores the three inputs used in its WMA calculation.
-
-Because recursive forecasts may use prior forecasts, each input detail must distinguish:
-
-- `Actual`
-- `Forecast`
-
-Store the input value, input period, relative recency/order, assigned weight, and weighted contribution.
-
-Do not assume all Week +2/+3 inputs are historical actual observations.
+- Actual or Forecast;
+- period;
+- value;
+- recency/order;
+- weight;
+- weighted contribution.
 
 ## 9. Required Vehicle Units
 
-Keep the WMA result as a decimal for analytical reporting and visualization.
-
-For allocation planning:
-
 `RequiredVehicleUnits = ceil(ForecastedDemand)`
 
-Examples:
+Keep decimal forecast independently.
 
-- `4.00 -> 4`
-- `4.01 -> 5`
-- `4.80 -> 5`
+## 10. Recalculation
 
-Never round down a positive fractional vehicle requirement.
+After a new calendar week becomes complete, a later forecast run uses the newest completed actual observation and produces a new 3-week horizon.
 
-## 10. Recalculation Behavior
+Older runs remain.
 
-When a new calendar week becomes completed and its actual qualifying demand is available, the next forecast run uses the newest completed actual observation and regenerates a fresh Week +1/+2/+3 horizon.
+## 11. Visualization
 
-Historical prior forecast runs remain available for evaluation/audit/visualization.
+Completed history may display actual demand and the historical one-week-ahead forecast used for evaluation.
 
-## 11. Actual vs Forecast Visualization
+Latest projection may display horizons 1–3.
 
-Historical completed weeks may display:
+## 12. APE
 
-- Actual Demand
-- the corresponding historical one-week-ahead forecast used for evaluation
-
-The current/latest forecast series may extend through Week +1, Week +2, and Week +3, while the Actual Demand line stops where actual completed-week data end.
-
-## 12. Per-Forecast Absolute Percentage Error
-
-For a valid forecast record with actual demand `A > 0`:
+When actual demand `A > 0`:
 
 `APE = abs((A - F) / A) * 100`
 
-A single forecast record stores **percentage error / APE**, not MAPE.
-
-When `A = 0`, percentage error is undefined and must remain null/not computed.
+When `A = 0`, APE is undefined/null.
 
 ## 13. MAPE
 
-Primary study evaluation uses historical **one-week-ahead (horizon = 1)** forecasts so all observations are compared at a consistent forecast horizon.
+Primary study MAPE uses only horizon-1 forecasts with finalized `A > 0`.
 
 `MAPE = (100 / n) * sum(abs((A_i - F_i) / A_i))`
 
-Include only observations where:
+Zero actuals are excluded from the divisor but remain valid actual observations.
 
-- the forecast was originally generated as Week +1 for that target period
-- corresponding actual qualifying demand is available
-- `A_i > 0`
+Horizon 2/3 are not mixed into primary MAPE.
 
-Periods with zero actual demand:
-
-- remain valid demand observations
-- are reported separately where useful
-- are excluded from the MAPE divisor because percentage error is undefined
-
-Week +2 and Week +3 forecasts are planning projections and are not mixed into the primary MAPE unless the project later adds a separate horizon-specific evaluation.
-
-Lower MAPE means smaller observed forecasting error.
-
-Do not assign qualitative labels such as `Highly Accurate`, `Good`, or `Accurate` unless a separate verified interpretation basis is formally adopted.
+Do not assign qualitative accuracy labels.
 
 ## 14. Sample / Simulated Data
 
-Sample or simulated data may be used to test forecasting behavior when sufficient client history is unavailable.
+Clearly labeled sample/simulated data may test forecasting when real history is insufficient.
 
-Such outputs must be clearly identified as demonstration/functional-test results and must not be presented as evidence of long-term real-world predictive effectiveness.
+Do not present demo outputs as real predictive performance.
 
-## 15. Codex Guardrails
+## 15. Guardrails
 
-Codex must not:
+Do not:
 
-- change the fixed WMA weights for convenience
-- reduce the horizon to one week
-- substitute another forecasting method
-- treat Week +2/+3 as actual observations
-- overwrite historical forecast runs in a way that destroys evaluation fidelity
-- use zero-actual periods in MAPE
-- add unsupported qualitative MAPE classifications
-- allow manual editing of computed WMA results as if they were raw data
+- change fixed WMA weights;
+- reduce horizon to one week;
+- substitute another forecasting method;
+- treat recursive forecasts as actuals;
+- destroy historical runs;
+- use zero actuals in MAPE;
+- add unsupported accuracy labels;
+- permit manual editing of computed WMA values.
