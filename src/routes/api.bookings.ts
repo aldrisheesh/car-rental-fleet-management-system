@@ -19,6 +19,10 @@ async function readBookings() {
     const result = await query;
     if (result.error) return errorResponse("Unable to load booking requests.", 503);
     const rows = result.data ?? [];
+    const bookingIds = rows.map((b: any) => b.id);
+    const rentalsResult = bookingIds.length ? await (client as any).from("rental_transactions").select("*").in("booking_id", bookingIds) : { data: [], error: null };
+    const rentalMap = new Map((rentalsResult.data ?? []).map((r: any) => [r.booking_id, r]));
+    rows.forEach((b: any) => { b.rental = rentalMap.get(b.id) ?? null; });
     if (principal.role === "Customer/Renter") {
       return Response.json(rows.map((b: any) => {
         const { assigned_by, assigned_at, assignment_note, substitution_acknowledged, cross_branch_acknowledged, confirmed_by, confirmed_at, ...customerBooking } = b;
@@ -26,7 +30,6 @@ async function readBookings() {
         return customerBooking;
       }));
     }
-    const bookingIds = rows.map((b: any) => b.id);
     if (bookingIds.length) {
       const [reqs, pays] = await Promise.all([
         (client as any).from("renter_requirement_sets").select("booking_id,status").in("booking_id", bookingIds),
@@ -52,13 +55,17 @@ async function mutateBooking({ request }: { request: Request }) {
     if (principal.role !== "Owner/Admin") return errorResponse("Owner/Admin access is required.", 403);
     const body = await request.json().catch(() => null) as Record<string, unknown> | null;
     const action = text(body?.action); const bookingId = text(body?.bookingId);
-    if (!bookingId || !["assign", "confirm"].includes(action)) return errorResponse("Invalid booking action.");
+    if (!bookingId || !["assign", "confirm", "release"].includes(action)) return errorResponse("Invalid booking action.");
     const expectedVehicleId = text(body?.expectedAssignedVehicleId); const expectedAssignedAt = text(body?.expectedAssignedAt);
     if (action === "confirm" && (!expectedVehicleId || !expectedAssignedAt)) return errorResponse("Reload the current assignment before confirming.", 409);
+    if (action === "release") {
+      if (!expectedVehicleId || !text(body?.expectedConfirmedAt)) return errorResponse("Reload the confirmed booking before release.", 409);
+      if (body?.releaseOdometer != null && body.releaseOdometer !== "" && (!Number.isFinite(Number(body.releaseOdometer)) || Number(body.releaseOdometer) < 0)) return errorResponse("Release odometer must be a non-negative number.");
+    }
     const client = getSupabaseServerClient() as any;
-    const rpc = action === "assign" ? await client.rpc("assign_booking_vehicle", { p_booking_id: bookingId, p_vehicle_id: text(body?.vehicleId), p_actor_id: principal.userId, p_assignment_note: optionalText(body?.assignmentNote), p_substitution_acknowledged: body?.substitutionAcknowledged === true, p_cross_branch_acknowledged: body?.crossBranchAcknowledged === true }) : await client.rpc("confirm_booking_atomic", { p_booking_id: bookingId, p_actor_id: principal.userId, p_expected_vehicle_id: expectedVehicleId, p_expected_assigned_at: expectedAssignedAt });
+    const rpc = action === "assign" ? await client.rpc("assign_booking_vehicle", { p_booking_id: bookingId, p_vehicle_id: text(body?.vehicleId), p_actor_id: principal.userId, p_assignment_note: optionalText(body?.assignmentNote), p_substitution_acknowledged: body?.substitutionAcknowledged === true, p_cross_branch_acknowledged: body?.crossBranchAcknowledged === true }) : action === "confirm" ? await client.rpc("confirm_booking_atomic", { p_booking_id: bookingId, p_actor_id: principal.userId, p_expected_vehicle_id: expectedVehicleId, p_expected_assigned_at: expectedAssignedAt }) : await client.rpc("release_vehicle_start_rental", { p_booking_id: bookingId, p_actor_id: principal.userId, p_expected_vehicle_id: expectedVehicleId, p_expected_confirmed_at: text(body?.expectedConfirmedAt), p_release_odometer: body?.releaseOdometer == null || body.releaseOdometer === "" ? null : Number(body.releaseOdometer), p_release_fuel_level: text(body?.releaseFuelLevel) || "Other/Unknown", p_release_condition_summary: text(body?.releaseConditionSummary), p_existing_damage_notes: optionalText(body?.existingDamageNotes), p_agreement_acknowledged: body?.agreementAcknowledged === true, p_condition_acknowledged: body?.conditionAcknowledged === true, p_return_schedule_acknowledged: body?.returnScheduleAcknowledged === true });
     if (rpc.error) {
-      const map: Record<string,string> = { forbidden:"Forbidden.", booking_not_found:"Booking not found.", booking_not_submitted:"Booking is no longer submitted.", vehicle_unavailable:"Selected vehicle is unavailable.", vehicle_conflict:"Vehicle conflicts with another confirmed booking.", substitution_ack_required:"Substitution acknowledgement and note are required.", cross_branch_ack_required:"Cross-branch acknowledgement and note are required.", requirements_not_verified:"Requirements must be Verified before confirmation.", payment_not_verified:"Payment must be Verified before confirmation.", assignment_required:"Assign an active vehicle before confirmation.", assignment_expectation_required:"Reload the current assignment before confirming.", stale_assignment:"Assignment changed; reload before confirming." };
+      const map: Record<string,string> = { forbidden:"Forbidden.", booking_not_found:"Booking not found.", booking_not_submitted:"Booking is no longer submitted.", booking_not_confirmed:"Booking must be Confirmed before release.", vehicle_unavailable:"Assigned vehicle is unavailable.", vehicle_conflict:"Vehicle conflicts with another confirmed booking.", vehicle_already_rented:"Assigned vehicle already has an active rental.", booking_already_released:"This booking has already been released.", stale_release:"Assignment or confirmation changed; reload before release.", release_expectation_required:"Reload the confirmed booking before release.", invalid_odometer:"Release odometer must be a non-negative number.", invalid_fuel_level:"Invalid fuel level.", condition_required:"Release condition summary is required.", substitution_ack_required:"Substitution acknowledgement and note are required.", cross_branch_ack_required:"Cross-branch acknowledgement and note are required.", requirements_not_verified:"Requirements must be Verified before confirmation.", payment_not_verified:"Payment must be Verified before confirmation.", assignment_required:"Assign an active vehicle before confirmation.", assignment_expectation_required:"Reload the current assignment before confirming.", stale_assignment:"Assignment changed; reload before confirming." };
       return errorResponse(map[rpc.error.message] || "Unable to update booking.", 409);
     }
     return Response.json({ booking: rpc.data });
