@@ -3,57 +3,44 @@
 **Status:** Active  
 **Last updated:** 2026-09-01
 
-Codex must not invent answers to unresolved items.
-
-## Roles / Lifecycle / Maintenance
-
-Existing CQ and lifecycle decisions remain active as previously frozen, including `CQ-009`, `CQ-015`, and `CQ-016`.
+Existing client/lifecycle/payment/maintenance/return decisions remain active.
 
 ## Utilization / Idle
 
 VS013 rules remain frozen.
 
-Still open/client-data dependent:
-
-- `CQ-023` historical operational-availability baseline;
-- availability of historical inactive intervals;
-- final analytics export/report presentation.
+`CQ-023` remains open for historical operational-availability data.
 
 ## Demand Forecasting
 
-The WMA/MAPE method and canonical extraction boundary are frozen in:
+VS014 WMA/MAPE and demand coverage rules remain frozen.
 
-- `05-forecasting-specification.md`
-- `20-demand-extraction-and-forecasting-boundary.md`
+`CQ-024` remains open for historical booking-demand data.
 
-Still data-dependent:
+## Projected Supply / Demand Balance
 
-1. Availability of trustworthy pre-system historical booking demand from Briah's.
-2. Whether such historical records can be imported with enough branch/category/start-date fidelity.
-3. Final report/export layout for forecast evaluation.
+VS015 rules are frozen in:
 
-Lack of three trustworthy complete weekly observations must produce Insufficient historical data rather than invented demand.
+`21-projected-supply-and-demand-balance.md`
 
-## Return / Settlement
+Still open/client-dependent:
 
-Previously open CQ items remain unchanged, including `CQ-002`, `CQ-003`, `CQ-011` through `CQ-014`, `CQ-021`, and `CQ-022`.
-
-## Assignment / Release / Requirements / Payments
-
-Previously frozen/open CQ items remain unchanged.
+1. `CQ-018` — exact turnaround/preparation buffer between commitments.
+2. `CQ-025` — whether Briah wants any additional conservative future-supply policy/reserve beyond known commitments and maintenance eligibility.
+3. Final historical/report export presentation for supply/balance evaluations.
 
 ## Allocation
 
-Projected supply and allocation implementation remain pending after forecasting.
+Not yet frozen for implementation beyond the existing recommendation formulas.
 
-## APIs / Context
+Still pending:
 
-Context refresh/caching/quota/manual-road workflow decisions remain pending.
+4. Exact item-level approved transfer-candidate persistence.
+5. Transfer execution workflow and branch mutation.
+6. Whether approved transfer requires a separate dispatched/in-transit/received lifecycle.
+7. Cross-branch operational authority remains tied to `CQ-017`.
+8. External context integration remains a later layer.
 
-## Notifications / Audit
+## Other Open Areas
 
-Notification and expanded audit decisions remain pending.
-
-## Evaluation / Documentation
-
-Final report/evaluation presentation and diagram/TOC synchronization remain pending.
+Previously recorded settlement, extensions, notifications/audit, context API operations, fuel-reference administration, and documentation/evaluation decisions remain unchanged.

@@ -1,34 +1,33 @@
 # Changelog
 
-## 2026-09-01 — Demand Extraction / Forecasting Boundary
+## 2026-09-01 — Projected Supply / Demand Balance Baseline
 
-Prepared the Development Baseline for VS014.
+Prepared the Development Baseline for VS015.
 
 ### Frozen / Clarified
 
-- Added `20-demand-extraction-and-forecasting-boundary.md`.
-- Bound qualifying demand to canonical Confirmed bookings.
-- Frozen Asia/Manila Monday-based calendar-week aggregation.
-- Frozen demand attribution to requested pickup branch.
-- Frozen category attribution to requested vehicle/category intent rather than substituted assigned vehicle.
-- Prohibited current incomplete week from actual forecast inputs.
-- Distinguished trustworthy zero-demand completed weeks from unavailable historical data.
-- Reaffirmed three consecutive complete actual weekly observations before WMA.
-- Reaffirmed fixed 0.50 / 0.30 / 0.20 WMA and recursive 3-week horizon.
-- Reaffirmed immutable forecast run fidelity and detailed Actual/Forecast WMA inputs.
-- Reaffirmed `ceil()` required units.
-- Reaffirmed APE and horizon-1-only primary MAPE behavior.
-- Added `CQ-024` for Briah historical booking-demand data availability.
-- Explicitly prohibited fake historical bookings/zero weeks merely to make forecasting produce output.
+- Added `21-projected-supply-and-demand-balance.md`.
+- Bound projected supply to persisted VS014 forecast records.
+- Frozen supply as current branch/category vehicles that are active, maintenance-eligible, and free of applicable booking/rental conflicts.
+- Frozen half-open weekly commitment overlap.
+- Frozen Confirmed assigned bookings as specific future vehicle commitments.
+- Confirmed unassigned bookings do not block a specific vehicle.
+- Frozen conservative active-rental behavior: a currently active rental is not assumed to return on schedule for future supply.
+- Reaffirmed no invented turnaround buffer while `CQ-018` is unresolved.
+- Frozen shortage/surplus formulas directly from required units and projected supply.
+- Frozen immutable supply/balance evaluation snapshots and vehicle-level eligibility traceability.
+- Frozen Owner/Admin evaluation authority and Operations Staff read-only access.
+- Explicitly deferred source/destination pairing and transfer recommendation to the next allocation layer.
+- Added `CQ-025` for any Briah-specific extra reserve/future-supply rule.
 
 ---
 
-## 2026-09-01 — Vehicle Utilization / Idle Detection Baseline
+## 2026-09-01 — Weekly Demand Forecasting
 
-Frozen canonical utilization and idle detection.
+VS014 established canonical qualifying demand, WMA, immutable forecast runs, APE/MAPE, and prospective coverage integrity.
 
 ---
 
-## 2026-09-01 — Maintenance Monitoring / Readiness Foundation
+## 2026-09-01 — Vehicle Utilization / Idle Detection
 
-Frozen canonical maintenance records and reusable maintenance readiness.
+VS013 established canonical fleet utilization and idle analytics.

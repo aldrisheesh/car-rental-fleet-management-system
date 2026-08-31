@@ -3,69 +3,55 @@
 **Status:** Development Baseline v1 active  
 **Last updated:** 2026-09-01
 
-## Currently Frozen
+## Fleet Intelligence Progression
 
-The implementation baseline covers:
-
-- booking through physical rental return;
-- maintenance/readiness;
-- utilization/idle detection;
-- canonical qualifying weekly demand extraction;
-- three-period WMA with 0.50 / 0.30 / 0.20 weights;
-- three-week recursive forecast horizon;
-- immutable forecast-run fidelity;
-- horizon-1 MAPE evaluation;
-- recommendation/allocation specifications;
-- external context provider/fallback rules.
-
-## Fleet Intelligence Dependency Direction
+Implemented/frozen dependency direction:
 
 1. Maintenance/readiness — VS012
 2. Utilization/idle — VS013
 3. Demand forecasting — VS014
-4. Projected supply / branch demand balance
+4. Projected available supply / demand balance — VS015
 5. Branch allocation recommendation
 6. Context/API enrichment
 7. Reports/dashboard consolidation
 
-## Forecast Integrity
+## VS015 Boundary
 
-Forecasting uses canonical Confirmed booking demand by scheduled rental-start week, requested pickup branch, and requested vehicle category.
+VS015 compares canonical forecast requirements against canonical eligible fleet supply.
 
-Do not forecast from:
+It produces:
 
-- rental days;
-- utilization;
-- assigned substitution vehicle;
-- Submitted requests;
-- fabricated historical zero weeks.
+- projected available supply;
+- shortage;
+- surplus;
+- balanced state;
+- auditable per-vehicle eligibility snapshot.
+
+It does **not** transfer or recommend movement between branches yet.
 
 See:
 
 - `05-forecasting-specification.md`
-- `20-demand-extraction-and-forecasting-boundary.md`
-- `CQ-024`
-
-## Documents
-
-- `01-system-ground-truth.md`
-- `02-roles-and-permissions.md`
-- `03-workflows-and-status-rules.md`
-- `04-data-and-business-rules.md`
-- `05-forecasting-specification.md`
 - `06-recommendation-specification.md`
-- `07-external-context-and-api-rules.md`
-- `08-notifications-and-audit.md`
-- `09-implementation-constraints.md`
-- `10-open-decisions.md`
-- `11-requirements-and-secure-storage.md`
-- `12-requirement-review-and-verification.md`
-- `13-payment-submission-and-verification.md`
-- `14-client-clarification-register.md`
-- `15-vehicle-assignment-and-booking-confirmation.md`
-- `16-rental-release-and-start.md`
-- `17-rental-return-and-closure.md`
 - `18-maintenance-monitoring-and-readiness.md`
-- `19-vehicle-utilization-and-idle-detection.md`
 - `20-demand-extraction-and-forecasting-boundary.md`
-- `CHANGELOG.md`
+- `21-projected-supply-and-demand-balance.md`
+
+## Integrity Rules
+
+Do not:
+
+- treat raw fleet count as available supply;
+- count active rentals as assumed future supply;
+- ignore assigned Confirmed booking conflicts;
+- invent a turnaround buffer;
+- invent a spare/reserve threshold;
+- mutate branch assignments from shortage/surplus analytics.
+
+## Client Gaps
+
+See `14-client-clarification-register.md`, especially:
+
+- `CQ-018`
+- `CQ-024`
+- `CQ-025`
