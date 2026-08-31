@@ -7,7 +7,7 @@ const optionalText = (v: unknown) => text(v) || null;
 const errorResponse = (message: string, status = 400) => Response.json({ message }, { status });
 
 export const Route = createFileRoute("/api/bookings")({
-  server: { handlers: { GET: readBookings, POST: async ({ request }) => { const body = await request.clone().json().catch(() => null) as Record<string, unknown> | null; return body?.action === "assign" || body?.action === "confirm" ? mutateBooking({ request }) : createBooking({ request }); } } },
+  server: { handlers: { GET: readBookings, POST: async ({ request }) => { const body = await request.clone().json().catch(() => null) as Record<string, unknown> | null; return body?.action === "assign" || body?.action === "confirm" || body?.action === "release" ? mutateBooking({ request }) : createBooking({ request }); } } },
 });
 
 async function readBookings() {
@@ -20,14 +20,16 @@ async function readBookings() {
     if (result.error) return errorResponse("Unable to load booking requests.", 503);
     const rows = result.data ?? [];
     const bookingIds = rows.map((b: any) => b.id);
-    const rentalsResult = bookingIds.length ? await (client as any).from("rental_transactions").select("*").in("booking_id", bookingIds) : { data: [], error: null };
+    const rentalColumns = principal.role === "Owner/Admin" ? "*" : "id,booking_id,vehicle_id,scheduled_pickup_at,scheduled_return_at,started_at,ended_at";
+    const rentalsResult = bookingIds.length ? await (client as any).from("rental_transactions").select(rentalColumns).in("booking_id", bookingIds) : { data: [], error: null };
     const rentalMap = new Map((rentalsResult.data ?? []).map((r: any) => [r.booking_id, r]));
     rows.forEach((b: any) => { b.rental = rentalMap.get(b.id) ?? null; });
     if (principal.role === "Customer/Renter") {
       return Response.json(rows.map((b: any) => {
         const { assigned_by, assigned_at, assignment_note, substitution_acknowledged, cross_branch_acknowledged, confirmed_by, confirmed_at, ...customerBooking } = b;
         void assigned_by; void assigned_at; void assignment_note; void substitution_acknowledged; void cross_branch_acknowledged; void confirmed_by; void confirmed_at;
-        return customerBooking;
+        const rental = customerBooking.rental as Record<string, unknown> | null;
+        return { ...customerBooking, rental: rental ? { id: rental.id, booking_id: rental.booking_id, vehicle_id: rental.vehicle_id, scheduled_pickup_at: rental.scheduled_pickup_at, scheduled_return_at: rental.scheduled_return_at, started_at: rental.started_at, ended_at: rental.ended_at, active: rental.started_at != null && rental.ended_at == null } : null };
       }));
     }
     if (bookingIds.length) {
@@ -66,7 +68,8 @@ async function mutateBooking({ request }: { request: Request }) {
     const rpc = action === "assign" ? await client.rpc("assign_booking_vehicle", { p_booking_id: bookingId, p_vehicle_id: text(body?.vehicleId), p_actor_id: principal.userId, p_assignment_note: optionalText(body?.assignmentNote), p_substitution_acknowledged: body?.substitutionAcknowledged === true, p_cross_branch_acknowledged: body?.crossBranchAcknowledged === true }) : action === "confirm" ? await client.rpc("confirm_booking_atomic", { p_booking_id: bookingId, p_actor_id: principal.userId, p_expected_vehicle_id: expectedVehicleId, p_expected_assigned_at: expectedAssignedAt }) : await client.rpc("release_vehicle_start_rental", { p_booking_id: bookingId, p_actor_id: principal.userId, p_expected_vehicle_id: expectedVehicleId, p_expected_confirmed_at: text(body?.expectedConfirmedAt), p_release_odometer: body?.releaseOdometer == null || body.releaseOdometer === "" ? null : Number(body.releaseOdometer), p_release_fuel_level: text(body?.releaseFuelLevel) || "Other/Unknown", p_release_condition_summary: text(body?.releaseConditionSummary), p_existing_damage_notes: optionalText(body?.existingDamageNotes), p_agreement_acknowledged: body?.agreementAcknowledged === true, p_condition_acknowledged: body?.conditionAcknowledged === true, p_return_schedule_acknowledged: body?.returnScheduleAcknowledged === true });
     if (rpc.error) {
       const map: Record<string,string> = { forbidden:"Forbidden.", booking_not_found:"Booking not found.", booking_not_submitted:"Booking is no longer submitted.", booking_not_confirmed:"Booking must be Confirmed before release.", vehicle_unavailable:"Assigned vehicle is unavailable.", vehicle_conflict:"Vehicle conflicts with another confirmed booking.", vehicle_already_rented:"Assigned vehicle already has an active rental.", booking_already_released:"This booking has already been released.", stale_release:"Assignment or confirmation changed; reload before release.", release_expectation_required:"Reload the confirmed booking before release.", invalid_odometer:"Release odometer must be a non-negative number.", invalid_fuel_level:"Invalid fuel level.", condition_required:"Release condition summary is required.", substitution_ack_required:"Substitution acknowledgement and note are required.", cross_branch_ack_required:"Cross-branch acknowledgement and note are required.", requirements_not_verified:"Requirements must be Verified before confirmation.", payment_not_verified:"Payment must be Verified before confirmation.", assignment_required:"Assign an active vehicle before confirmation.", assignment_expectation_required:"Reload the current assignment before confirming.", stale_assignment:"Assignment changed; reload before confirming." };
-      return errorResponse(map[rpc.error.message] || "Unable to update booking.", 409);
+      const message = rpc.error.code === "23505" ? "Assigned vehicle already has an active rental." : (map[rpc.error.message] || "Unable to update booking.");
+      return errorResponse(message, 409);
     }
     return Response.json({ booking: rpc.data });
   } catch (e) { return errorResponse(e instanceof Error && e.message === "forbidden" ? "Forbidden." : "Authentication required.", e instanceof Error && e.message === "forbidden" ? 403 : 401); }
