@@ -21,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
+import { Route as ApiVehicleAnalyticsRouteImport } from './routes/api.vehicle-analytics'
 import { Route as ApiRequirementsRouteImport } from './routes/api.requirements'
 import { Route as ApiPaymentsRouteImport } from './routes/api.payments'
 import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
@@ -105,6 +106,11 @@ const CustomerProfileRoute = CustomerProfileRouteImport.update({
 const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
   id: '/api/vehicles',
   path: '/api/vehicles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVehicleAnalyticsRoute = ApiVehicleAnalyticsRouteImport.update({
+  id: '/api/vehicle-analytics',
+  path: '/api/vehicle-analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRequirementsRoute = ApiRequirementsRouteImport.update({
@@ -263,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
+  '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
+  '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin': typeof AdminIndexRoute
@@ -341,6 +349,7 @@ export interface FileRoutesById {
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
+  '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer_/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
@@ -382,6 +391,7 @@ export interface FileRouteTypes {
     | '/api/master-data'
     | '/api/payments'
     | '/api/requirements'
+    | '/api/vehicle-analytics'
     | '/api/vehicles'
     | '/customer/profile'
     | '/admin/'
@@ -420,6 +430,7 @@ export interface FileRouteTypes {
     | '/api/master-data'
     | '/api/payments'
     | '/api/requirements'
+    | '/api/vehicle-analytics'
     | '/api/vehicles'
     | '/customer/profile'
     | '/admin'
@@ -459,6 +470,7 @@ export interface FileRouteTypes {
     | '/api/master-data'
     | '/api/payments'
     | '/api/requirements'
+    | '/api/vehicle-analytics'
     | '/api/vehicles'
     | '/customer_/profile'
     | '/admin/'
@@ -486,6 +498,7 @@ export interface RootRouteChildren {
   ApiMasterDataRoute: typeof ApiMasterDataRoute
   ApiPaymentsRoute: typeof ApiPaymentsRoute
   ApiRequirementsRoute: typeof ApiRequirementsRoute
+  ApiVehicleAnalyticsRoute: typeof ApiVehicleAnalyticsRoute
   ApiVehiclesRoute: typeof ApiVehiclesRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
   ApiAuthProfileRoute: typeof ApiAuthProfileRoute
@@ -579,6 +592,13 @@ declare module '@tanstack/react-router' {
       path: '/api/vehicles'
       fullPath: '/api/vehicles'
       preLoaderRoute: typeof ApiVehiclesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vehicle-analytics': {
+      id: '/api/vehicle-analytics'
+      path: '/api/vehicle-analytics'
+      fullPath: '/api/vehicle-analytics'
+      preLoaderRoute: typeof ApiVehicleAnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/requirements': {
@@ -812,6 +832,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMasterDataRoute: ApiMasterDataRoute,
   ApiPaymentsRoute: ApiPaymentsRoute,
   ApiRequirementsRoute: ApiRequirementsRoute,
+  ApiVehicleAnalyticsRoute: ApiVehicleAnalyticsRoute,
   ApiVehiclesRoute: ApiVehiclesRoute,
   CustomerProfileRoute: CustomerProfileRoute,
   ApiAuthProfileRoute: ApiAuthProfileRoute,

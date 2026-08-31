@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -76,6 +77,16 @@ function ReportsPage() {
   const selectedBranches = branch === "both" ? (["taft", "antipolo"] as BranchKey[]) : [branch];
 
   const report = buildReport(range, selectedBranches);
+  const [analytics, setAnalytics] = useState<any[]>([]);
+  const [analyticsError, setAnalyticsError] = useState("");
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/vehicle-analytics?start=${range.from}&end=${range.to}`)
+      .then(async (response) => { const body = await response.json(); if (!response.ok) throw new Error(body.message ?? "Unable to load vehicle analytics."); return body; })
+      .then((body) => { if (!cancelled) { setAnalytics(body.vehicles ?? []); setAnalyticsError(""); } })
+      .catch((error) => { if (!cancelled) setAnalyticsError(error instanceof Error ? error.message : "Unable to load vehicle analytics."); });
+    return () => { cancelled = true; };
+  }, [range.from, range.to]);
 
   function updateFilters(next: Partial<ReportSearch>) {
     const nextRange = normalizeRange(next.from ?? range.from, next.to ?? range.to);
@@ -164,6 +175,13 @@ function ReportsPage() {
           </span>
         </div>
       </Toolbar>
+
+      <Card className="mb-6">
+        <CardHeader title="Canonical vehicle utilization & idle detection" hint="Actual rental transactions · Asia/Manila calendar days" />
+        {analyticsError ? <p className="p-5 text-sm text-destructive">{analyticsError}</p> : (
+          <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-card text-[11px] uppercase tracking-wider text-muted-foreground"><tr className="border-b border-border"><Th>Vehicle</Th><Th>Rental days</Th><Th>Eligible days</Th><Th>Utilization</Th><Th>Readiness</Th><Th>Active rental</Th><Th>Idle</Th></tr></thead><tbody>{analytics.filter((row) => !selectedBranches.length || selectedBranches.some((key) => branchKeyForName(row.branch ?? "") === key)).map((row) => <tr key={row.vehicleId} className="border-b border-border/60"><Td><div className="font-medium">{row.name}</div><div className="text-xs text-muted-foreground">{row.licensePlate ?? "No plate"}</div></Td><Td>{row.rentalDays}</Td><Td>{row.eligibleOperationalDays ?? "Unavailable"}</Td><Td>{row.utilizationPercent == null ? <span title={row.coverage}>Unavailable</span> : `${Math.round(row.utilizationPercent)}%`}</Td><Td>{row.maintenanceReady ? "Ready" : "Not ready"}</Td><Td>{row.activeRental ? "Yes" : "No"}</Td><Td><span className={row.idleClassification === "Idle" ? "text-amber-400" : ""}>{row.idleClassification}{row.idleDays != null ? ` · ${row.idleDays}d` : ""}</span></Td></tr>)}</tbody></table></div>
+        )}
+      </Card>
 
       {staffView ? (
         <StaffReports report={report} branch={branch} />
