@@ -3,75 +3,68 @@
 **Status:** Development Baseline v1 — Partially Frozen  
 **Last updated:** 2026-09-01
 
-This document contains stable data/business rules. Items marked open must not be guessed.
+## Canonical Rental Activity
 
-## Sensitive Records
+Active rental:
 
-Sensitive customer requirement files and payment proofs remain protected according to their dedicated specifications.
+`started_at IS NOT NULL AND ended_at IS NULL`
 
-## Rental Activity Source
+Ended rental:
 
-Once the canonical rental transaction foundation exists, actual active-rental activity is represented by rental transactions rather than booking status alone.
+`started_at IS NOT NULL AND ended_at IS NOT NULL`
 
-For the baseline:
+A Confirmed booking without a release record does not count as rental activity.
 
-`ActiveRental = started_at IS NOT NULL AND ended_at IS NULL`
+## Rental Days
 
-A `Confirmed` booking without a release/start record is not active rental activity.
+Once ended_at exists, rental-day analytics must use canonical rental intervals rather than booking status.
 
-Completed rental-day/utilization calculations must later use canonical rental start/end records once return/closure is implemented.
-
-Do not count a merely Confirmed booking as rental days.
+Exact day-count presentation/reporting details may be implemented by the later analytics slice.
 
 ## Vehicle Utilization
 
 `UtilizationPercent = (RentalDays / EligibleOperationalDays) * 100`
 
-RentalDays must ultimately come from canonical active/completed rental intervals, not unfulfilled reservations.
+RentalDays come from canonical rental intervals.
 
-Dashboard default reporting period remains 30 days.
+## Idle Baseline
 
-## Idle Vehicle Detection
+For a previously rented vehicle, the post-rental idle baseline should use the latest canonical rental end/return time.
 
-A vehicle is idle when it is active/rental-ready, not currently rented, not unavailable because of maintenance, otherwise eligible, and has no rental activity for at least 14 consecutive days.
+The 14-day idle rule remains frozen.
 
-The active-rental test should use canonical rental transactions when available.
+## Return Odometer
 
-The post-return idle baseline remains dependent on a completed rental end/return timestamp.
+When both release and return odometers exist:
+
+`DrivenKm = ReturnOdometer - ReleaseOdometer`
+
+Return odometer must not be lower than release odometer.
+
+Do not fabricate mileage when either reading is unavailable.
+
+## Fuel
+
+Release/return fuel snapshots are operational values only.
+
+Do not calculate fuel charges until `CQ-013` is confirmed.
+
+## Late Return
+
+Late status may be derived:
+
+`ended_at > scheduled_return_at`
+
+Do not calculate monetary late penalties until `CQ-011` is confirmed.
+
+## Damage / Settlement
+
+Return condition differences may be recorded, but do not automatically infer renter liability or monetary charges.
+
+Do not invent damage/security-deposit/final settlement calculations.
 
 ## Maintenance Readiness
 
-Maintenance readiness remains the deterministic gate previously frozen:
+Previously frozen maintenance-readiness rules remain unchanged.
 
-- no active blocking maintenance;
-- no due/overdue required preventive maintenance;
-- no unsafe/unsuitable recorded condition;
-- no unresolved blocking repair concern.
-
-Do not fabricate maintenance readiness when canonical records are absent.
-
-## Reference Fuel Efficiency
-
-Reference fuel efficiency remains km/L and may come from manufacturer or Owner/Admin-provided reference information.
-
-Fuel level recorded at vehicle turnover is a separate operational snapshot and must not be confused with reference fuel efficiency.
-
-## Estimated Fuel Consumption
-
-`EstimatedFuelLiters = TravelDistanceKm / ReferenceFuelEfficiencyKmPerLiter`
-
-This remains advisory.
-
-## Context / Forecasting / Allocation
-
-Previously frozen qualifying-demand, forecasting, supply, recommendation, and context rules remain unchanged.
-
-## Open Data-Level Decisions
-
-Do not invent:
-
-- full rental/return lifecycle enums;
-- final fuel-return charge rules;
-- exact release odometer/fuel capture policy;
-- long-term sensitive-upload retention;
-- final fuel-reference administration rules.
+Ending a rental does not automatically prove the vehicle is maintenance-ready or generally Available.

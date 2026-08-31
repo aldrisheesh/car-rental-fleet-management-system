@@ -7,101 +7,82 @@ Codex must not invent answers to these items.
 
 Client-specific operational details with safe provisional behavior are tracked in `14-client-clarification-register.md`.
 
-## Roles / Permissions
+## Roles
 
-1. Exact Operations Staff editable/action scope.
-   - `CQ-016`.
+1. Exact Operations Staff editable/action scope — `CQ-016`.
 
-## Workflow / Status
+## Lifecycle
 
-2. Full rental lifecycle statuses/transitions beyond canonical start/end timestamps.
-3. Full vehicle operational statuses/transitions.
-   - `CQ-009`.
-4. Maintenance lifecycle statuses/transitions.
-   - `CQ-015`.
-5. Detailed cancellation/rejection/reopening consequences.
-6. Exact return/settlement completion rules.
-   - `CQ-014`.
+2. Full rental lifecycle enum/state machine beyond canonical start/end timestamps.
+3. Full vehicle operational state machine — `CQ-009`.
+4. Maintenance lifecycle — `CQ-015`.
+5. Cancellation/rejection/reopening consequences.
 
-## Vehicle Release / Rental Start
+## Return / Settlement
 
-The baseline release/start foundation is frozen in `16-rental-release-and-start.md`.
+The physical return foundation is frozen in `17-rental-return-and-closure.md`.
 
-Still client-dependent:
+Still open:
 
-7. Exact turnover checklist and official business meaning of rental start.
-   - `CQ-008`.
-8. Exact pre-release remaining-balance/security-deposit prerequisites.
-   - `CQ-002`, `CQ-003`, `CQ-019`.
-9. Exact odometer/fuel recording convention at release.
-   - `CQ-020`.
+6. Exact return inspection checklist — `CQ-021`.
+7. Whether Briah operationally separates physical return from financial closure — `CQ-022`.
+8. Final settlement/completion gate — `CQ-014`.
+9. Security-deposit deduction/refund — `CQ-002`.
+10. Remaining-balance settlement — `CQ-003`.
+11. Late-return calculation — `CQ-011`.
+12. Damage charge matrix — `CQ-012`.
+13. Fuel shortage/return policy — `CQ-013`.
 
-## Assignment / Confirmation
+## Assignment / Release
 
-10. Permanent requested-vs-assigned substitution policy.
-   - `CQ-007`.
-11. Cross-branch repositioning/assignment rule.
-   - `CQ-017`.
-12. Turnaround/preparation buffer between bookings.
-   - `CQ-018`.
+14. Permanent substitution policy — `CQ-007`.
+15. Cross-branch movement — `CQ-017`.
+16. Turnaround buffer — `CQ-018`.
+17. Exact turnover checklist/start event — `CQ-008`.
+18. Pre-release financial gate — `CQ-019`.
+19. Odometer/fuel capture convention — `CQ-020`.
 
-## Requirements / Uploads
+## Requirements
 
-13. Alternate renter/driver requirements.
-   - `CQ-005`, `CQ-006`.
-14. Long-term sensitive-file retention/deletion.
-15. Exceptional reopening after requirements are Verified.
+20. Alternate renter/driver requirements — `CQ-005`, `CQ-006`.
+21. Long-term sensitive-file retention.
+22. Exceptional verified-requirement reopening.
 
-## Payment / Settlement
+## Payments
 
-16. Exact 50% down-payment charge-base composition.
-   - `CQ-001`.
-17. Security deposit.
-   - `CQ-002`.
-18. Remaining balance timing.
-   - `CQ-003`.
-19. Production payment-method/account configuration.
-   - `CQ-004`.
-20. Cancellation payment/refund handling.
+23. Exact 50% charge-base composition — `CQ-001`.
+24. Production payment methods/accounts — `CQ-004`.
+25. Cancellation refund/payment consequences.
 
-## Rental / Return / Charges
+## Rental Extension
 
-21. Rental-extension workflow.
-   - `CQ-010`.
-22. Late-return calculation.
-   - `CQ-011`.
-23. Damage-charge matrix.
-   - `CQ-012`.
-24. Fuel-return/shortage policy.
-   - `CQ-013`.
-25. Final rental settlement/completion gate.
-   - `CQ-014`.
+26. Extension request/approval workflow — `CQ-010`.
 
 ## Fuel / Vehicle Reference Data
 
-26. Final fuel-efficiency source priority.
-27. Authorized fuel-efficiency update workflow.
-28. Fuel-efficiency source-note requirement.
+27. Fuel-efficiency source priority.
+28. Fuel-efficiency update authority.
+29. Fuel-efficiency source-note rule.
 
-## Allocation Persistence
+## Allocation
 
-29. Exact item-level approved-transfer candidate persistence.
+30. Item-level approved-transfer persistence.
 
 ## APIs / Context
 
-30. Weather/context refresh timing.
-31. API caching/invalidation.
-32. Deployed quota/rate-limit/credential operational policy.
-33. Manual road/context verification/update workflow.
+31. Context refresh timing.
+32. API caching/invalidation.
+33. Quota/rate-limit/credential operational policy.
+34. Manual road/context update workflow.
 
 ## Notifications / Audit
 
-34. Exact notification triggers/timing.
-35. Delivery channels.
-36. Broader auditable-event list.
-37. Audit retention/access.
+35. Notification triggers/timing.
+36. Delivery channels.
+37. Broader auditable-event list.
+38. Audit retention/access.
 
 ## Evaluation / Documentation
 
-38. Remaining evaluation-plan details.
-39. Final use-case/activity-diagram and TOC synchronization.
+39. Remaining evaluation details.
+40. Final use-case/activity-diagram and TOC synchronization.
