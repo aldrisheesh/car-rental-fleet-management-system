@@ -1,5 +1,3 @@
-import { getSupabaseServerClient } from "./supabase/server";
-
 export type WeeklyActual = { weekStart: string; weekEnd: string; demand: number };
 export type ForecastInput = { sourceType: "Actual" | "Forecast"; sourceWeek: string; sourceValue: number; inputOrder: number; weight: number; weightedContribution: number };
 
@@ -62,6 +60,7 @@ export function mapeFromDatabaseRows(rows: any[]) {
 }
 
 export async function loadCanonicalBookings() {
+  const { getSupabaseServerClient } = await import("./supabase/server");
   const client = getSupabaseServerClient() as any;
   const result = await client.from("booking_requests").select("id,booking_status,pickup_at,pickup_branch_id,requested_vehicle:vehicles!booking_requests_requested_vehicle_id(id,category:vehicle_categories(id,name))");
   if (result.error) throw result.error;
@@ -69,6 +68,7 @@ export async function loadCanonicalBookings() {
 }
 
 export async function loadDemandCoverage() {
+  const { getSupabaseServerClient } = await import("./supabase/server");
   const client = getSupabaseServerClient() as any;
   const result = await client.from("forecast_demand_coverage").select("tracking_started_at").eq("id", 1).single();
   if (result.error || !result.data?.tracking_started_at) throw new Error("Demand coverage is not configured.");

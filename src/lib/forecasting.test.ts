@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { calculateWma, extractWeeklyDemand } from "./forecasting.server";
+import { calculateWma, extractWeeklyDemand } from "./forecasting.server.ts";
 
 const booking = (week: string, status = "Confirmed") => ({ booking_status: status, pickup_branch_id: "b", pickup_at: `${week}T04:00:00Z`, requested_vehicle: { category: { id: "c" } } });
 
