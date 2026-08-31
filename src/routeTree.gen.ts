@@ -22,6 +22,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
 import { Route as ApiVehicleAnalyticsRouteImport } from './routes/api.vehicle-analytics'
+import { Route as ApiSupplyEvaluationsRouteImport } from './routes/api.supply-evaluations'
 import { Route as ApiRequirementsRouteImport } from './routes/api.requirements'
 import { Route as ApiPaymentsRouteImport } from './routes/api.payments'
 import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
@@ -112,6 +113,11 @@ const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
 const ApiVehicleAnalyticsRoute = ApiVehicleAnalyticsRouteImport.update({
   id: '/api/vehicle-analytics',
   path: '/api/vehicle-analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSupplyEvaluationsRoute = ApiSupplyEvaluationsRouteImport.update({
+  id: '/api/supply-evaluations',
+  path: '/api/supply-evaluations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRequirementsRoute = ApiRequirementsRouteImport.update({
@@ -276,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
+  '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
@@ -316,6 +323,7 @@ export interface FileRoutesByTo {
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
+  '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
@@ -358,6 +366,7 @@ export interface FileRoutesById {
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
+  '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer_/profile': typeof CustomerProfileRoute
@@ -401,6 +410,7 @@ export interface FileRouteTypes {
     | '/api/master-data'
     | '/api/payments'
     | '/api/requirements'
+    | '/api/supply-evaluations'
     | '/api/vehicle-analytics'
     | '/api/vehicles'
     | '/customer/profile'
@@ -441,6 +451,7 @@ export interface FileRouteTypes {
     | '/api/master-data'
     | '/api/payments'
     | '/api/requirements'
+    | '/api/supply-evaluations'
     | '/api/vehicle-analytics'
     | '/api/vehicles'
     | '/customer/profile'
@@ -482,6 +493,7 @@ export interface FileRouteTypes {
     | '/api/master-data'
     | '/api/payments'
     | '/api/requirements'
+    | '/api/supply-evaluations'
     | '/api/vehicle-analytics'
     | '/api/vehicles'
     | '/customer_/profile'
@@ -511,6 +523,7 @@ export interface RootRouteChildren {
   ApiMasterDataRoute: typeof ApiMasterDataRoute
   ApiPaymentsRoute: typeof ApiPaymentsRoute
   ApiRequirementsRoute: typeof ApiRequirementsRoute
+  ApiSupplyEvaluationsRoute: typeof ApiSupplyEvaluationsRoute
   ApiVehicleAnalyticsRoute: typeof ApiVehicleAnalyticsRoute
   ApiVehiclesRoute: typeof ApiVehiclesRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
@@ -612,6 +625,13 @@ declare module '@tanstack/react-router' {
       path: '/api/vehicle-analytics'
       fullPath: '/api/vehicle-analytics'
       preLoaderRoute: typeof ApiVehicleAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/supply-evaluations': {
+      id: '/api/supply-evaluations'
+      path: '/api/supply-evaluations'
+      fullPath: '/api/supply-evaluations'
+      preLoaderRoute: typeof ApiSupplyEvaluationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/requirements': {
@@ -853,6 +873,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMasterDataRoute: ApiMasterDataRoute,
   ApiPaymentsRoute: ApiPaymentsRoute,
   ApiRequirementsRoute: ApiRequirementsRoute,
+  ApiSupplyEvaluationsRoute: ApiSupplyEvaluationsRoute,
   ApiVehicleAnalyticsRoute: ApiVehicleAnalyticsRoute,
   ApiVehiclesRoute: ApiVehiclesRoute,
   CustomerProfileRoute: CustomerProfileRoute,
