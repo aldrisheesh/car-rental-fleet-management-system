@@ -1,18 +1,13 @@
 # Changelog
 
-## 2026-09-01 — Post-VS017 client ground truth and AI navigation
-- Added `24-client-interview-ground-truth.md`.
-- Added `25-canonical-subsystem-map.md`.
-- Recorded confirmed 50% minimum down payment, requirements-before-payment, bank transfer/GCash/cash, and baseline renter-cancellation non-refund statement.
-- Recorded partial late-return evidence without inventing the full fee schedule.
-- Recorded itemized damage practice and turnover condition disclosure.
-- Recorded cross-branch fleet mismatch and tie-up partner fallback as client evidence.
-- Recorded seasonal observations as qualitative evidence only.
-- Recorded GPS as lower client priority.
-- Recorded restricted travel-area evidence; added CQ-028.
-- Added CQ-029 for late-return boundaries and CQ-030 for tie-up process.
-- Elevated responsive mobile/tablet simplicity and privacy as client-backed product concerns.
-- Added canonical implementation pointers to reduce future Codex repository rediscovery.
-
-## 2026-09-01 — Smart Vehicle Finder
-VS017 established the baseline Finder and Manila-safe requested-period handling.
+## 2026-09-01 — VS018 Finder -> Booking handoff baseline
+- Added `26-finder-booking-handoff.md`.
+- Frozen handoff into the existing Booking page instead of creating a second booking flow.
+- Frozen prefill of equivalent Finder fields.
+- Frozen separate immutable booking Finder provenance.
+- Frozen trusted server revalidation instead of trusting client rank/provenance.
+- Frozen atomic booking + Finder-context persistence.
+- Frozen Admin read-only Finder-context display.
+- Preserved normal manual booking.
+- Explicitly deferred restricted areas, external context, payment/requirements changes, Finder history/analytics, and temporary vehicle holds.
+- Tightened `25-canonical-subsystem-map.md` with exact VS018 starting files.

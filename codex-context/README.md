@@ -2,14 +2,18 @@
 **Status:** Development Baseline active
 **Last updated:** 2026-09-01
 
-Completed canonical progression includes VS012 Maintenance, VS013 Utilization/Idle, VS014 Forecasting, VS015 Supply Balance, VS016 Allocation Recommendation, and VS017 Smart Vehicle Finder.
+Completed through VS017 Smart Vehicle Finder baseline.
 
-## Navigation
-- `24-client-interview-ground-truth.md` — client-confirmed/partially-confirmed evidence.
-- `25-canonical-subsystem-map.md` — exact implementation pointers to reduce Codex rediscovery.
-- `14-client-clarification-register.md` — unresolved client boundaries.
+## VS018 next boundary
+`26-finder-booking-handoff.md` freezes a narrow Finder -> existing Booking integration:
 
-## Next boundary
-Do not begin Finder->Booking integration until the next approved slice freezes what Finder context persists, what Customer sees after selection, what Admin sees during review, and which values are evidence vs derived/display-only.
+- carry Finder selection/requirements into Booking;
+- prefill equivalent booking fields;
+- server-revalidate Finder provenance;
+- atomically persist a small immutable Finder context only with a submitted Finder-origin booking;
+- show safe read-only context to Owner/Admin;
+- preserve normal manual booking.
 
-Always distinguish CLIENT CONFIRMED, PARTIALLY CONFIRMED, RESEARCHER-DESIGNED, PROVISIONAL, and OPEN CLARIFICATION.
+No payment, requirements, restricted-area, external-context, notification, or reservation-hold work belongs to VS018.
+
+Use `25-canonical-subsystem-map.md` to avoid broad repository rediscovery.

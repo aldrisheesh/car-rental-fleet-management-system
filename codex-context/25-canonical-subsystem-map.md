@@ -2,53 +2,43 @@
 **Status:** Active AI navigation aid
 **Last updated:** 2026-09-01
 
-Purpose: reduce Codex repository rediscovery. This is a navigation aid, not a new business-rule authority.
+Purpose: reduce Codex repository rediscovery. This is navigation, not business-rule authority.
 
-## Usage
-Inspect only the smallest listed canonical files required by the current slice. Do not read every item automatically.
+## VS018 exact starting files
 
-## Shared time / duration
-- `src/lib/business-time.ts` — canonical Asia/Manila datetime-local conversion.
-- `src/lib/rental-duration.ts` — shared base rental-day convention.
+For Finder -> Booking integration, start with ONLY:
 
-## Smart Vehicle Finder — VS017
+- `src/lib/business-time.ts`
 - `src/lib/vehicle-finder.ts`
-- `src/lib/vehicle-finder.test.ts`
 - `src/routes/api.vehicle-finder.ts`
 - `src/routes/vehicles.tsx`
+- `src/routes/booking.tsx`
+- `src/routes/api.bookings.ts`
 
-## Maintenance readiness — VS012
+Only inspect:
+- `src/routes/admin.bookings.tsx`
+when implementing the approved read-only Admin Finder-context display.
+
+Do not inspect forecasting, supply, allocation, maintenance raw tables, reports, notifications, or prior sprint files unless a concrete compile/runtime dependency requires it.
+
+## Maintenance readiness
+Canonical boundary:
 - `src/lib/maintenance-readiness.server.ts`
 
-Reuse it; do not recreate readiness from raw records.
+Finder already consumes this through its server boundary. VS018 should reuse the Finder server evaluation rather than separately reading raw maintenance.
 
-## Allocation recommendation — VS016
-- `src/lib/allocation-recommendation.core.ts`
-- `src/lib/allocation-recommendation.server.ts`
-- `src/lib/allocation-recommendation.test.ts`
+## Shared time / duration
+- `src/lib/business-time.ts`
+- `src/lib/rental-duration.ts`
 
-## Behavioral context for established subsystems
-- `19-vehicle-utilization-and-idle-detection.md`
-- `20-demand-extraction-and-forecasting-boundary.md`
-- `21-projected-supply-and-demand-balance.md`
-- `22-branch-allocation-recommendation.md`
-- `23-smart-vehicle-finder.md`
-
-## Booking lifecycle context
+## Booking lifecycle behavioral context
 - `11-requirements-and-secure-storage.md`
 - `12-requirement-review-and-verification.md`
 - `13-payment-submission-and-verification.md`
 - `15-vehicle-assignment-and-booking-confirmation.md`
 - `16-rental-release-and-start.md`
 - `17-rental-return-and-closure.md`
-
-For integration work, inspect only the route/API/service directly responsible for the transition.
-
-## Authentication
-Start with `src/lib/auth.server.ts`, `src/lib/admin-auth.ts`, and the existing authorization helper used by the target route.
-
-## Migrations
-Inspect only the latest migration affecting the exact table/function. Applied migrations are history; add a new migration instead of rewriting them.
+- `26-finder-booking-handoff.md`
 
 ## Token discipline
-Future Codex prompts should name this map plus the current slice and ideally only 2–6 exact implementation files. Avoid broad instructions such as "inspect the booking system."
+For VS018, broad repository search is specifically unnecessary. The current implementation already exposes the needed handoff and booking boundaries in the files above.
