@@ -1,22 +1,52 @@
 # Open Decisions
+
 **Status:** Active
 **Last updated:** 2026-09-02
 
-## Notifications / reminders
-VS019 event-driven notifications are frozen. VS020 scheduled booking/rental semantics are frozen in `28-scheduled-booking-rental-reminders.md`.
-
-PROVISIONAL: pickup lead=24h; return lead=24h; overdue recurrence=once per Asia/Manila calendar day. Client validation may adjust these without redesigning the architecture.
-
-Deferred: maintenance awareness, low-availability alerts, Brevo/email/SMS/push, preferences, escalation/retention.
-
 ## Audit
-System-wide audit remains separate/pending.
 
-## Finder/context
-VS017/VS018 frozen. CQ-028 exact restricted-area rules remain open.
+VS021 core audit architecture and first-wave lifecycle event matrix are frozen in:
 
-## Late return
-PHP 3,000 for <6h is only partially confirmed. CQ-029 remains open; VS020 must not calculate/assert it.
+`29-canonical-audit-trail.md`
 
-## Tie-up / allocation
-CQ-030 tie-up and CQ-017/CQ-026 transfer boundaries remain open.
+Deferred:
+- forecasting audit;
+- supply evaluation audit;
+- allocation recommendation/decision audit;
+- audit export;
+- retention/purge policy;
+- Customer/Operations Staff audit visibility;
+- system-wide automated-event auditing.
+
+## Notifications / reminders
+
+VS019 and VS020 are frozen.
+
+Provisional reminder timing remains under CQ-031.
+
+Deferred:
+- maintenance awareness;
+- low-availability alerts;
+- Brevo/email/SMS/push;
+- preferences/escalation/retention.
+
+## Maintenance
+
+Canonical VS012 backend exists, but the current Admin Maintenance UI still contains prototype/mock data and should be canonicalized in a later UI-focused slice before maintenance awareness is treated as complete product functionality.
+
+## Context / Finder
+
+VS017/VS018 frozen.
+CQ-028 restricted-area rules remain open.
+
+## Late Return
+
+CQ-029 remains open. Reminders/audit do not implement late-fee settlement.
+
+## Tie-up / Allocation
+
+CQ-030 and CQ-017/CQ-026 remain open.
+
+## Remaining Product Work
+
+Operational context, reports/dashboard canonicalization, Maintenance UI canonicalization, role/mobile UX validation, demo data/E2E validation, and unresolved settlement remain pending.

@@ -1,18 +1,44 @@
 # Briah's Car Rental — Codex Context
+
 **Status:** Development Baseline active
 **Last updated:** 2026-09-02
 
-Completed through VS019 canonical event-driven in-app notifications.
+Completed through:
+- VS019 event-driven in-app notifications;
+- VS020 scheduled booking/rental reminders.
 
-Next: VS020 Scheduled Booking and Rental Reminders.
+## Next direction
+
+VS021 is the Canonical Audit Trail.
 
 Read:
+- `29-canonical-audit-trail.md`
 - `08-notifications-and-audit.md`
-- `28-scheduled-booking-rental-reminders.md`
 - `25-canonical-subsystem-map.md`
 
-Baseline: 24h pickup, 24h return, daily Manila overdue; Customer + active Owner/Admin; provider-neutral processor; existing VS019 notification persistence.
+VS021 baseline:
+- append-only semantic audit events;
+- first-wave core booking lifecycle mutations;
+- minimal safe metadata;
+- Owner/Admin read-only Audit Trail;
+- atomic audit + business mutation where approved;
+- no generic database-wide auditing.
 
-Exclude maintenance/availability alerts, Brevo/email, late fees, Operations Staff reminders, and audit.
+VS021 excludes:
+- notification/reminder audit;
+- forecasting/supply/allocation audit;
+- context APIs;
+- settlement;
+- audit analytics/export.
 
-Workflow: fresh Sol Medium implementation session; fresh exact-file correction session if needed.
+## Maintenance note
+
+VS012 backend is canonical, but Admin Maintenance UI still contains prototype/mock data. Canonicalize that UI later before treating maintenance awareness as finished product functionality.
+
+## AI workflow
+
+Implementation:
+fresh Sol Medium session -> commit/push -> end.
+
+Correction:
+new fresh Sol Medium session -> exact failing files only.

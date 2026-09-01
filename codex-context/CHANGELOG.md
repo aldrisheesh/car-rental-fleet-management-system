@@ -1,11 +1,18 @@
 # Changelog
 
-## 2026-09-02 — VS020 scheduled booking/rental reminder planning
-- Froze provisional 24-hour pickup and return reminders.
-- Froze overdue reminders once per Asia/Manila calendar day while physically unreturned.
-- Required due-at-or-before semantics and deterministic VS019 event-key deduplication.
-- Kept reminder processing provider-neutral and separate from hosting scheduler invocation.
-- Deferred Operations Staff, maintenance, and low-availability reminders.
-- Prohibited late-fee calculation.
-- Added CQ-031 for client validation.
-- Reaffirmed provider-validation cleanup discipline.
+## 2026-09-02 — VS021 canonical audit trail planning
+- Moved Audit Trail ahead of Maintenance Awareness.
+- Froze append-only semantic `audit_events` concept.
+- Froze User/System actor model.
+- Froze dotted action naming for core lifecycle events.
+- Froze first-wave booking, requirement, payment, assignment, rental, and maintenance audit events.
+- Required minimal safe metadata and prohibited sensitive document/payment snapshots.
+- Required Owner/Admin-only read access.
+- Required trusted semantic business-boundary creation rather than client logging.
+- Preferred atomic mutation + audit insertion through canonical RPCs.
+- Prohibited blanket database-wide audit triggers.
+- Deferred notification/reminder, forecasting, supply, and allocation audit.
+- Recorded that Admin Maintenance UI remains prototype-driven despite canonical VS012 backend.
+
+## 2026-09-02 — VS020 scheduled reminders
+VS020 established provider-neutral pickup, return, and overdue in-app reminders.

@@ -1,22 +1,56 @@
 # Notifications and Audit
-**Status:** Notifications frozen through VS020; Audit pending
+
+**Status:** Notifications frozen through VS020; Audit frozen for VS021
 **Last updated:** 2026-09-02
 
-VS019 established canonical recipient-specific event-driven in-app notifications.
+Notifications and audit are separate concerns.
 
-VS020 adds scheduled booking/rental reminders using the SAME notification aggregate.
+## Notifications
 
-RESEARCHER-DESIGNED / PROVISIONAL:
-- pickup: one reminder 24h before scheduled pickup;
-- return: one reminder 24h before scheduled return;
-- overdue: first eligible run after scheduled return, then at most once per Asia/Manila calendar day while physically unreturned.
+VS019:
+- canonical recipient-specific event-driven in-app notifications.
 
-Recipients: customer + all ACTIVE Owner/Admin. Operations Staff remains deferred.
+VS020:
+- scheduled pickup/return/overdue in-app reminders.
 
-Use due-at-or-before semantics, deterministic event keys, and existing `(recipient_id,event_key)` uniqueness. No separate reminder table is required.
+Notifications answer:
 
-VS019/VS020 remain in-app only. Planned future application email provider is Brevo behind a provider abstraction.
+`Who needs to know about something?`
 
-Deferred: maintenance reminders, low-availability/shortage alerts, email/SMS/push, preferences, escalation, and audit.
+Read/unread state belongs only to notifications.
 
-Overdue reminders never calculate/assert late fees; CQ-029 remains open.
+## Audit — VS021
+
+VS021 introduces append-only semantic history for meaningful core lifecycle mutations.
+
+Audit answers:
+
+`Who did what, to which entity, and when?`
+
+Canonical first-wave domains:
+
+- booking creation;
+- requirement submission/resubmission/review;
+- payment submission/resubmission/review;
+- vehicle assignment;
+- booking confirmation;
+- rental release/return;
+- maintenance create/complete/cancel;
+- rejection/cancellation only where those transitions already exist.
+
+Audit events are NOT created for:
+
+- notification creation;
+- notification read state;
+- reminder generation;
+- page views;
+- reads;
+- generic database updates;
+- forecasting/supply/allocation in VS021.
+
+Owner/Admin read only.
+
+Customer and Operations Staff have no audit access in VS021.
+
+For full audit specification see:
+`29-canonical-audit-trail.md`
