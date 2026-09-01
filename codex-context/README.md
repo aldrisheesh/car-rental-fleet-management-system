@@ -1,19 +1,21 @@
 # Briah's Car Rental — Codex Context
 **Status:** Development Baseline active
-**Last updated:** 2026-09-01
+**Last updated:** 2026-09-02
 
-Completed through VS017 Smart Vehicle Finder baseline.
+Completed through VS018 Finder -> Booking.
 
-## VS018 next boundary
-`26-finder-booking-handoff.md` freezes a narrow Finder -> existing Booking integration:
+## Next direction
+VS019 is the canonical EVENT-DRIVEN, IN-APP notification foundation.
 
-- carry Finder selection/requirements into Booking;
-- prefill equivalent booking fields;
-- server-revalidate Finder provenance;
-- atomically persist a small immutable Finder context only with a submitted Finder-origin booking;
-- show safe read-only context to Owner/Admin;
-- preserve normal manual booking.
+Read:
+- `08-notifications-and-audit.md`
+- `27-notification-foundation.md`
+- `25-canonical-subsystem-map.md`
 
-No payment, requirements, restricted-area, external-context, notification, or reservation-hold work belongs to VS018.
+VS019 excludes scheduled reminders, email/SMS/push, audit logging, operational context, and reports/dashboard redesign.
 
-Use `25-canonical-subsystem-map.md` to avoid broad repository rediscovery.
+VS020 is reserved for scheduled operational reminders after VS019 is stable.
+
+## AI workflow
+New slice: fresh Codex session -> implement -> commit/push -> end session.
+Correction: new fresh Codex session -> exact correction files only -> commit/push -> end session.

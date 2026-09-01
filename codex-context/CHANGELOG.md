@@ -1,13 +1,14 @@
 # Changelog
 
-## 2026-09-01 — VS018 Finder -> Booking handoff baseline
-- Added `26-finder-booking-handoff.md`.
-- Frozen handoff into the existing Booking page instead of creating a second booking flow.
-- Frozen prefill of equivalent Finder fields.
-- Frozen separate immutable booking Finder provenance.
-- Frozen trusted server revalidation instead of trusting client rank/provenance.
-- Frozen atomic booking + Finder-context persistence.
-- Frozen Admin read-only Finder-context display.
-- Preserved normal manual booking.
-- Explicitly deferred restricted areas, external context, payment/requirements changes, Finder history/analytics, and temporary vehicle holds.
-- Tightened `25-canonical-subsystem-map.md` with exact VS018 starting files.
+## 2026-09-02 — VS019 in-app notification foundation planning
+- Separated event-driven in-app notifications from audit logging.
+- Defined recipient-specific persistence, read state, unread count, and deterministic deduplication.
+- Frozen customer events for requirement/payment review outcomes and booking confirmation.
+- Frozen Owner/Admin events for new booking, requirement submission/resubmission, and payment proof submission/resubmission.
+- Deferred scheduled operational reminders to VS020.
+- Deferred external email/SMS/push.
+- Required reuse of the existing Notifications page.
+- Updated subsystem navigation and fresh correction-session strategy.
+
+## 2026-09-01 — VS018 Finder -> Booking
+VS018 completed canonical Finder handoff, provenance, and idempotent booking creation.
