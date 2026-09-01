@@ -12,9 +12,23 @@ Read:
 - `27-notification-foundation.md`
 - `25-canonical-subsystem-map.md`
 
-VS019 excludes scheduled reminders, email/SMS/push, audit logging, operational context, and reports/dashboard redesign.
+VS019 excludes:
+- scheduled reminders;
+- external email/SMS/push;
+- audit logging;
+- operational context;
+- reports/dashboard redesign.
 
-VS020 is reserved for scheduled operational reminders after VS019 is stable.
+## Planned email provider
+
+When external transactional email is implemented in a later approved slice:
+
+- primary application email provider: `Brevo`;
+- Supabase Auth may use Brevo SMTP as custom SMTP for authentication emails.
+
+Keep application email behind a provider abstraction. Do not call Brevo directly from business-domain transition code.
+
+VS020 remains reserved for scheduled operational reminders after VS019 is stable.
 
 ## AI workflow
 New slice: fresh Codex session -> implement -> commit/push -> end session.

@@ -7,9 +7,29 @@ Notifications and audit are separate concerns. VS019 freezes only canonical in-a
 ## Notification foundation
 Notifications are recipient-specific awareness records. They never replace or mutate the underlying booking, requirement, payment, rental, maintenance, forecast, or recommendation.
 
-VS019 is IN-APP ONLY. Do not add Resend, React Email, SMTP, SMS, push, or browser push.
+VS019 is IN-APP ONLY.
 
-Minimum canonical fields:
+Do not implement external delivery in VS019:
+- Brevo transactional email;
+- SMTP;
+- SMS;
+- push notifications;
+- browser push.
+
+## Planned external email provider
+
+For a later approved email-delivery slice, the planned primary provider is:
+
+`Brevo`
+
+Application transactional email should be integrated behind an internal email-delivery/provider boundary rather than called directly from booking/payment/requirements business logic.
+
+Supabase Auth email remains a separate concern. Where custom SMTP is configured for account confirmation/password reset, Brevo SMTP may be used without changing Supabase Auth's responsibility for those flows.
+
+This provider decision does not authorize email implementation in VS019.
+
+## Canonical notification fields
+Minimum:
 - notification ID
 - recipient user/profile ID
 - notification type
@@ -32,49 +52,17 @@ Use deterministic event keys and a database uniqueness guarantee so retries/doub
 Recipient may mark only their own notification read. Read timestamps are server-controlled. Expose recipient-specific unread count. VS019 has no automatic retention/deletion.
 
 ## VS019 customer events
-
-### NTF-001 Requirements Need Resubmission
-Trigger: successful transition to `Needs Resubmission`.
-Recipient: booking customer.
-Message: correction/replacement is required; direct customer to requirements. Do not expose internal reviewer notes.
-
-### NTF-002 Requirements Verified
-Trigger: successful transition to `Verified`.
-Recipient: booking customer.
-Message: requirements passed and the next canonical payment step is available. Do not claim booking confirmation.
-
-### NTF-003 Payment Needs Resubmission
-Trigger: successful payment transition to `Needs Resubmission`.
-Recipient: booking customer.
-Message: payment proof needs correction/review.
-
-### NTF-004 Payment Verified
-Trigger: successful payment transition to `Verified`.
-Recipient: booking customer.
-Message: payment proof was verified. Do not claim booking confirmation.
-
-### NTF-005 Booking Confirmed
-Trigger: successful booking transition to `Confirmed`.
-Recipient: booking customer.
-
-### NTF-006 Booking Rejected/Cancelled
-Trigger only for rejection/cancellation transitions that actually exist canonically.
-Recipient: booking customer.
-Use an existing customer-facing reason when available; never invent one.
+- NTF-001 Requirements Need Resubmission
+- NTF-002 Requirements Verified
+- NTF-003 Payment Needs Resubmission
+- NTF-004 Payment Verified
+- NTF-005 Booking Confirmed
+- NTF-006 Booking Rejected/Cancelled only where canonical transition exists
 
 ## VS019 Owner/Admin events
-
-### NTF-101 New Booking Request
-Trigger: successful customer booking creation.
-Recipients: all ACTIVE Owner/Admin users.
-
-### NTF-102 Requirements Submitted / Resubmitted
-Trigger: successful complete requirement submission/resubmission that is ready for review.
-Recipients: all ACTIVE Owner/Admin users.
-
-### NTF-103 Payment Proof Submitted / Resubmitted
-Trigger: successful payment-proof submission that becomes `Pending Verification`.
-Recipients: all ACTIVE Owner/Admin users.
+- NTF-101 New Booking Request
+- NTF-102 Requirements Submitted / Resubmitted
+- NTF-103 Payment Proof Submitted / Resubmitted
 
 Internal events expand to one row per active Owner/Admin at event time. Do not create role pseudo-recipients.
 
@@ -100,8 +88,6 @@ Support:
 - safe related-entity navigation where straightforward
 - empty/loading/error states
 
-Do not redesign the whole navigation.
-
 ## Authorization
 Customer reads/marks only own notifications.
 Owner/Admin reads/marks only own recipient-specific notifications.
@@ -110,6 +96,3 @@ No user may read another recipient's notifications.
 
 ## Audit boundary
 Notifications are not audit logs. System-wide audit remains a later slice.
-
-## Testing
-Test NTF-001 through NTF-005, NTF-006 only where canonical transition exists, and NTF-101 through NTF-103. Test active Admin expansion, inactive Admin exclusion, per-recipient privacy, deduplication, rollback behavior where transactionally integrated, unread count, mark-read ownership, no scheduler, no external delivery, and unchanged lifecycle behavior.
