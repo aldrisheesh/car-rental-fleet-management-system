@@ -6,9 +6,16 @@ export type NotificationType =
   | "booking_confirmed"
   | "new_booking_request"
   | "requirements_submitted"
-  | "payment_proof_submitted";
+  | "payment_proof_submitted"
+  | "upcoming_pickup"
+  | "upcoming_return"
+  | "rental_overdue";
 
-export type NotificationEntityType = "booking" | "requirements" | "payment";
+export type NotificationEntityType =
+  | "booking"
+  | "requirements"
+  | "payment"
+  | "rental";
 
 export type CanonicalNotification = {
   id: string;

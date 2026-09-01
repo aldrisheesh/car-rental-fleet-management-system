@@ -5,7 +5,9 @@ import {
   Check,
   CreditCard,
   FileCheck2,
+  RotateCcw,
   RefreshCw,
+  TriangleAlert,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -55,7 +57,7 @@ export function NotificationsPanel({
   }, [load]);
 
   const groupedCounts = useMemo(() => {
-    const counts = { booking: 0, requirements: 0, payment: 0 };
+    const counts = { booking: 0, requirements: 0, payment: 0, rental: 0 };
     for (const item of data?.notifications ?? [])
       counts[item.relatedEntityType] += 1;
     return counts;
@@ -120,7 +122,7 @@ export function NotificationsPanel({
             )}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Booking, requirement, and payment updates for your account.
+            Booking, rental, requirement, and payment updates for your account.
           </p>
         </div>
         <button
@@ -144,6 +146,9 @@ export function NotificationsPanel({
           </span>
           <span className="rounded-full border border-border px-3 py-1">
             Payments {groupedCounts.payment}
+          </span>
+          <span className="rounded-full border border-border px-3 py-1">
+            Rentals {groupedCounts.rental}
           </span>
         </div>
       )}
@@ -205,11 +210,15 @@ function NotificationRow({
 }) {
   const unread = isUnread(notification);
   const Icon =
-    notification.relatedEntityType === "payment"
-      ? CreditCard
-      : notification.relatedEntityType === "requirements"
-        ? FileCheck2
-        : CalendarRange;
+    notification.notificationType === "rental_overdue"
+      ? TriangleAlert
+      : notification.relatedEntityType === "rental"
+        ? RotateCcw
+        : notification.relatedEntityType === "payment"
+          ? CreditCard
+          : notification.relatedEntityType === "requirements"
+            ? FileCheck2
+            : CalendarRange;
   const destination = relatedRoute(notification, audience);
 
   return (

@@ -47,6 +47,7 @@ import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
 import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
 import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
+import { Route as ApiInternalRemindersRouteImport } from './routes/api.internal.reminders'
 import { Route as ApiAuthSignUpRouteImport } from './routes/api.auth.sign-up'
 import { Route as ApiAuthSignOutRouteImport } from './routes/api.auth.sign-out'
 import { Route as ApiAuthSignInRouteImport } from './routes/api.auth.sign-in'
@@ -244,6 +245,11 @@ const AdminBookingsRoute = AdminBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiInternalRemindersRoute = ApiInternalRemindersRouteImport.update({
+  id: '/api/internal/reminders',
+  path: '/api/internal/reminders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSignUpRoute = ApiAuthSignUpRouteImport.update({
   id: '/api/auth/sign-up',
   path: '/api/auth/sign-up',
@@ -314,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
+  '/api/internal/reminders': typeof ApiInternalRemindersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -358,6 +365,7 @@ export interface FileRoutesByTo {
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
+  '/api/internal/reminders': typeof ApiInternalRemindersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -404,6 +412,7 @@ export interface FileRoutesById {
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
+  '/api/internal/reminders': typeof ApiInternalRemindersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -451,6 +460,7 @@ export interface FileRouteTypes {
     | '/api/auth/sign-in'
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
+    | '/api/internal/reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -495,6 +505,7 @@ export interface FileRouteTypes {
     | '/api/auth/sign-in'
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
+    | '/api/internal/reminders'
   id:
     | '__root__'
     | '/'
@@ -540,6 +551,7 @@ export interface FileRouteTypes {
     | '/api/auth/sign-in'
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
+    | '/api/internal/reminders'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -572,6 +584,7 @@ export interface RootRouteChildren {
   ApiAuthSignInRoute: typeof ApiAuthSignInRoute
   ApiAuthSignOutRoute: typeof ApiAuthSignOutRoute
   ApiAuthSignUpRoute: typeof ApiAuthSignUpRoute
+  ApiInternalRemindersRoute: typeof ApiInternalRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -842,6 +855,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/internal/reminders': {
+      id: '/api/internal/reminders'
+      path: '/api/internal/reminders'
+      fullPath: '/api/internal/reminders'
+      preLoaderRoute: typeof ApiInternalRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/sign-up': {
       id: '/api/auth/sign-up'
       path: '/api/auth/sign-up'
@@ -946,6 +966,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSignInRoute: ApiAuthSignInRoute,
   ApiAuthSignOutRoute: ApiAuthSignOutRoute,
   ApiAuthSignUpRoute: ApiAuthSignUpRoute,
+  ApiInternalRemindersRoute: ApiInternalRemindersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

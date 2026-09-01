@@ -51,3 +51,11 @@ export function instantToManilaDateTimeLocal(instant: Date) {
     .toISOString()
     .slice(0, 16);
 }
+
+/** Return the Asia/Manila calendar date containing an instant. */
+export function instantToManilaCalendarDate(instant: Date) {
+  if (Number.isNaN(instant.getTime())) throw new Error("invalid_instant");
+  return new Date(instant.getTime() + MANILA_OFFSET_MILLISECONDS)
+    .toISOString()
+    .slice(0, 10);
+}

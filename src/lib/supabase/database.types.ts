@@ -352,6 +352,52 @@ export type Database = {
         Update: { read_at?: string | null };
         Relationships: [];
       };
+      rental_transactions: {
+        Row: {
+          id: string;
+          booking_id: string;
+          customer_id: string;
+          vehicle_id: string;
+          scheduled_pickup_at: string;
+          scheduled_return_at: string;
+          started_at: string;
+          ended_at: string | null;
+          released_by: string;
+          release_odometer: number | null;
+          release_fuel_level: string;
+          release_condition_summary: string;
+          existing_damage_notes: string | null;
+          agreement_acknowledged: boolean;
+          condition_acknowledged: boolean;
+          return_schedule_acknowledged: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          booking_id: string;
+          customer_id: string;
+          vehicle_id: string;
+          scheduled_pickup_at: string;
+          scheduled_return_at: string;
+          started_at?: string;
+          ended_at?: string | null;
+          released_by: string;
+          release_odometer?: number | null;
+          release_fuel_level: string;
+          release_condition_summary: string;
+          existing_damage_notes?: string | null;
+          agreement_acknowledged?: boolean;
+          condition_acknowledged?: boolean;
+          return_schedule_acknowledged?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["rental_transactions"]["Insert"]
+        >;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
