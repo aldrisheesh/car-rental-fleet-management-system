@@ -42,6 +42,14 @@ type FinderRecommendation = {
 
 type FinderResponse = {
   rentalDays: number;
+  criteria: {
+    requestedStart: string;
+    requestedEnd: string;
+    passengerCount: number;
+    maximumBudget: number;
+    preferredCategory: string | null;
+    destination: string | null;
+  };
   recommendations: FinderRecommendation[];
   noMatch: {
     code: "NO_ELIGIBLE_VEHICLES";
@@ -477,7 +485,20 @@ function VehiclesPage() {
                   <div className="absolute -left-2 -top-2 z-10 rounded-full bg-foreground px-3 py-1 text-xs font-bold text-background shadow-card">
                     #{recommendation.rank}
                   </div>
-                  <VehicleCard v={recommendationToVehicle(recommendation)} />
+                  <VehicleCard
+                    v={recommendationToVehicle(recommendation)}
+                    bookingLabel="Continue to booking"
+                    bookingSearch={{
+                      vehicle: recommendation.vehicleId,
+                      finderStart: finderResult.criteria.requestedStart,
+                      finderEnd: finderResult.criteria.requestedEnd,
+                      finderPassengers: String(finderResult.criteria.passengerCount),
+                      finderBudget: String(finderResult.criteria.maximumBudget),
+                      finderCategory: finderResult.criteria.preferredCategory ?? undefined,
+                      finderDestination: finderResult.criteria.destination ?? undefined,
+                      finderRank: String(recommendation.rank),
+                    }}
+                  />
                   <div className="-mt-3 rounded-b-xl border border-t-0 border-border bg-card px-5 pb-5 pt-6 shadow-soft">
                     <p className="text-sm font-semibold text-primary">
                       Estimated base rental:{" "}

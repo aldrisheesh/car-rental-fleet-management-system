@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { projectCustomerRental } from "@/lib/rental-projection";
+import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
+import { FINDER_BASELINE, revalidateFinderBookingBasis } from "@/lib/finder-booking";
+import { evaluateCanonicalVehicleFinder } from "@/lib/vehicle-finder.server";
 
 const text = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 const optionalText = (v: unknown) => text(v) || null;
@@ -25,6 +28,10 @@ async function readBookings() {
     const rentalsResult = bookingIds.length ? await (client as any).from("rental_transactions").select(rentalColumns).in("booking_id", bookingIds) : { data: [], error: null };
     const rentalMap = new Map((rentalsResult.data ?? []).map((r: any) => [r.booking_id, r]));
     rows.forEach((b: any) => { b.rental = rentalMap.get(b.id) ?? null; });
+    const finderResult = bookingIds.length ? await (client as any).from("booking_finder_context").select("booking_id,selected_vehicle_id,requested_start,requested_end,passenger_count,maximum_budget,preferred_category_id,destination,recommendation_rank,finder_baseline,created_at,preferred_category:vehicle_categories(id,name),selected_vehicle:vehicles(id,name)").in("booking_id", bookingIds) : { data: [], error: null };
+    if (finderResult.error) return errorResponse("Unable to load booking requests.", 503);
+    const finderMap = new Map((finderResult.data ?? []).map((context: any) => [context.booking_id, context]));
+    rows.forEach((booking: any) => { booking.finder_context = finderMap.get(booking.id) ?? null; });
     if (principal.role === "Customer/Renter") {
       return Response.json(rows.map((b: any) => {
         const { assigned_by, assigned_at, assignment_note, substitution_acknowledged, cross_branch_acknowledged, confirmed_by, confirmed_at, ...customerBooking } = b;
@@ -95,8 +102,8 @@ async function createBooking({ request }: { request: Request }) {
     const dropoffLocation = optionalText(body?.dropoffLocation);
     const seats = body?.preferredSeatCount == null || body?.preferredSeatCount === "" ? null : Number(body.preferredSeatCount);
     if (!requestedVehicleId || !pickupBranchId || !returnBranchId || !pickupAt || !returnAt || !purpose || !option) return errorResponse("Required booking fields are missing.");
-    const pickupDate = new Date(pickupAt), returnDate = new Date(returnAt);
-    if (Number.isNaN(pickupDate.getTime()) || Number.isNaN(returnDate.getTime()) || returnDate <= pickupDate) return errorResponse("Return must be after pickup.");
+    const pickupDate = parseBookingInstant(pickupAt), returnDate = parseBookingInstant(returnAt);
+    if (!pickupDate || !returnDate || returnDate <= pickupDate) return errorResponse("Return must be after pickup.");
     if (option !== "pickup" && option !== "delivery") return errorResponse("Invalid pickup or delivery option.");
     if (option === "delivery" && (!pickupLocation || !dropoffLocation)) return errorResponse("Pickup and drop-off locations are required for delivery.");
     if (seats !== null && (!Number.isInteger(seats) || seats <= 0)) return errorResponse("Preferred seat count must be positive.");
@@ -108,10 +115,46 @@ async function createBooking({ request }: { request: Request }) {
     ]);
     if (vehicle.error || !vehicle.data) return errorResponse("Selected vehicle is not available.", 400);
     if (pickupBranch.error || !pickupBranch.data || returnBranch.error || !returnBranch.data) return errorResponse("Selected branch is not available.", 400);
-    const result = await client.from("booking_requests").insert({ customer_id: principal.userId, requested_vehicle_id: requestedVehicleId, pickup_branch_id: pickupBranchId, return_branch_id: returnBranchId, pickup_at: pickupDate.toISOString(), return_at: returnDate.toISOString(), destination: optionalText(body?.destination), purpose_of_use: purpose, pickup_delivery_option: option, pickup_location: option === "delivery" ? pickupLocation : null, dropoff_location: option === "delivery" ? dropoffLocation : null, preferred_seat_count: seats, customer_contact_number: principal.phoneNumber }).select("*").single();
+    const destination = optionalText(body?.destination);
+    const finderContext = body?.finderContext && typeof body.finderContext === "object" && !Array.isArray(body.finderContext) ? body.finderContext as Record<string, unknown> : null;
+    if (body?.finderContext != null && !finderContext) return errorResponse("Invalid Finder context.");
+    if (finderContext) {
+      const evaluation = await evaluateCanonicalVehicleFinder(finderContext, client);
+      if (!evaluation.ok) return errorResponse(evaluation.message, evaluation.status);
+      const revalidation = revalidateFinderBookingBasis({
+        selectedVehicleId: text(finderContext.selectedVehicleId), bookingVehicleId: requestedVehicleId,
+        bookingPickupAt: pickupDate.toISOString(), bookingReturnAt: returnDate.toISOString(),
+        bookingPassengerCount: seats, bookingDestination: destination,
+        canonicalInput: evaluation.input, recommendations: evaluation.result.recommendations,
+      });
+      if (!revalidation.ok && revalidation.reason === "MISMATCH") return errorResponse("Finder details no longer match this booking. Submit it as a normal vehicle selection.", 400);
+      if (!revalidation.ok) return errorResponse("This vehicle no longer matches the Finder requirements. Please refresh your recommendations.", 409);
+      const result = await (client as any).rpc("create_booking_with_finder_context", {
+        p_customer_id: principal.userId, p_requested_vehicle_id: requestedVehicleId,
+        p_pickup_branch_id: pickupBranchId, p_return_branch_id: returnBranchId,
+        p_pickup_at: pickupDate.toISOString(), p_return_at: returnDate.toISOString(), p_destination: destination,
+        p_purpose_of_use: purpose, p_pickup_delivery_option: option,
+        p_pickup_location: option === "delivery" ? pickupLocation : null, p_dropoff_location: option === "delivery" ? dropoffLocation : null,
+        p_preferred_seat_count: seats, p_customer_contact_number: principal.phoneNumber,
+        p_finder_maximum_budget: evaluation.input.maximumBudget, p_finder_preferred_category_id: evaluation.preferredCategoryId,
+        p_finder_destination: evaluation.input.destination, p_finder_recommendation_rank: revalidation.recommendationRank,
+        p_finder_baseline: FINDER_BASELINE,
+      });
+      if (result.error) return errorResponse("Unable to create booking request.", 400);
+      return Response.json(result.data, { status: 201 });
+    }
+    const result = await client.from("booking_requests").insert({ customer_id: principal.userId, requested_vehicle_id: requestedVehicleId, pickup_branch_id: pickupBranchId, return_branch_id: returnBranchId, pickup_at: pickupDate.toISOString(), return_at: returnDate.toISOString(), destination, purpose_of_use: purpose, pickup_delivery_option: option, pickup_location: option === "delivery" ? pickupLocation : null, dropoff_location: option === "delivery" ? dropoffLocation : null, preferred_seat_count: seats, customer_contact_number: principal.phoneNumber }).select("*").single();
     if (result.error) return errorResponse("Unable to create booking request.", 400);
     return Response.json(result.data, { status: 201 });
   } catch (error) {
     return errorResponse(error instanceof Error && error.message === "forbidden" ? "Forbidden." : "Authentication required.", error instanceof Error && error.message === "forbidden" ? 403 : 401);
   }
+}
+
+function parseBookingInstant(value: string) {
+  const manilaInstant = manilaDateTimeLocalToInstant(value);
+  if (manilaInstant) return manilaInstant;
+  if (!/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value)) return null;
+  const instant = new Date(value);
+  return Number.isNaN(instant.getTime()) ? null : instant;
 }

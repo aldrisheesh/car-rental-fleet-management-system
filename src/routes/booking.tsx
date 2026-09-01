@@ -26,8 +26,9 @@ import { getCustomerProfile, getCustomerSession } from "@/lib/customer-auth";
 import { vehicles as fallbackVehicles } from "@/data/vehicles";
 import { CANCELLATION_POLICY, RENTAL_DONTS, RENTAL_DOS } from "@/data/rental-policy";
 import { calculateRentalDays } from "@/lib/rental-duration";
+import { finderBookingPrefill, finderContextForSubmission, finderProvenanceMatchesBooking, parseFinderBookingHandoff, validateFinderBookingSearch } from "@/lib/finder-booking";
+import { instantToManilaDateTimeLocal, manilaDateTimeLocalToInstant } from "@/lib/business-time";
 
-type Search = { vehicle?: string };
 type BookingErrors = Partial<
   Record<"pickup" | "dropoff" | "name" | "email" | "phone" | "purpose" | "locations" | "terms", string>
 >;
@@ -41,9 +42,7 @@ export const Route = createFileRoute("/booking")({
       throw redirect({ to: "/admin" });
     }
   },
-  validateSearch: (s: Record<string, unknown>): Search => ({
-    vehicle: typeof s.vehicle === "string" ? s.vehicle : undefined,
-  }),
+  validateSearch: validateFinderBookingSearch,
   head: () => ({
     meta: [
       { title: "Book a car - Briah's Car Rental" },
@@ -59,7 +58,10 @@ export const Route = createFileRoute("/booking")({
 
 function BookingPage() {
   const navigate = useNavigate();
-  const { vehicle } = Route.useSearch();
+  const search = Route.useSearch();
+  const { vehicle } = search;
+  const finderHandoff = useMemo(() => parseFinderBookingHandoff(search), [search]);
+  const finderPrefill = finderHandoff ? finderBookingPrefill(finderHandoff) : null;
   const [authOpen, setAuthOpen] = useState(false);
   const [customerSession, setCustomerSession] = useState(() => getCustomerSession());
   const initial = fallbackVehicles.find((v) => v.id === vehicle) ?? fallbackVehicles[0];
@@ -67,20 +69,20 @@ function BookingPage() {
   const [masterDataLoading, setMasterDataLoading] = useState(true);
   const [masterDataError, setMasterDataError] = useState("");
 
-  const [vehicleId, setVehicleId] = useState(initial.id);
+  const [vehicleId, setVehicleId] = useState(vehicle ?? initial.id);
   const [branch, setBranch] = useState<string>(initial.branch);
   const [returnBranch, setReturnBranch] = useState("Same as pickup");
-  const [pickup, setPickup] = useState("");
-  const [dropoff, setDropoff] = useState("");
+  const [pickup, setPickup] = useState(finderPrefill?.pickup ?? "");
+  const [dropoff, setDropoff] = useState(finderPrefill?.dropoff ?? "");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [destination, setDestination] = useState("");
+  const [destination, setDestination] = useState(finderPrefill?.destination ?? "");
   const [purpose, setPurpose] = useState("");
   const [pickupDeliveryOption, setPickupDeliveryOption] = useState<"pickup" | "delivery">("pickup");
   const [pickupLocation, setPickupLocation] = useState("");
   const [dropoffLocation, setDropoffLocation] = useState("");
-  const [preferredSeatCount, setPreferredSeatCount] = useState("");
+  const [preferredSeatCount, setPreferredSeatCount] = useState(finderPrefill?.passengerCount ?? "");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [errors, setErrors] = useState<BookingErrors>({});
@@ -130,16 +132,20 @@ function BookingPage() {
   const bookingOptionsReady = !masterDataLoading && !masterDataError && Boolean(selectedCanonical) && masterData.branches.length > 0;
   const effectiveName = customerSession?.name ?? name;
   const effectiveEmail = customerSession?.email ?? email;
+  const finderProvenanceValid = Boolean(finderHandoff && finderProvenanceMatchesBooking(finderHandoff, { vehicleId, pickup, dropoff, passengerCount: preferredSeatCount, destination }));
 
   const days = useMemo(() => {
     if (!pickup || !dropoff) return 1;
     try {
-      return calculateRentalDays(new Date(pickup), new Date(dropoff));
+      const pickupInstant = manilaDateTimeLocalToInstant(pickup);
+      const dropoffInstant = manilaDateTimeLocalToInstant(dropoff);
+      if (!pickupInstant || !dropoffInstant) return 1;
+      return calculateRentalDays(pickupInstant, dropoffInstant);
     } catch {
       return 1;
     }
   }, [pickup, dropoff]);
-  const minDateTime = getNowInputValue();
+  const minDateTime = instantToManilaDateTimeLocal(new Date());
 
   function performSubmit(nextAcceptTerms = acceptTerms) {
     setSubmitted(false);
@@ -170,7 +176,7 @@ function BookingPage() {
     }
 
     setSubmitting(true);
-    fetch("/api/bookings", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestedVehicleId: vehicleId, pickupBranchId: branch, returnBranchId: returnBranch === "Same as pickup" ? branch : returnBranch, pickupAt: pickup, returnAt: dropoff, destination, purposeOfUse: purpose, pickupDeliveryOption, pickupLocation, dropoffLocation, preferredSeatCount }) })
+    fetch("/api/bookings", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestedVehicleId: vehicleId, pickupBranchId: branch, returnBranchId: returnBranch === "Same as pickup" ? branch : returnBranch, pickupAt: pickup, returnAt: dropoff, destination, purposeOfUse: purpose, pickupDeliveryOption, pickupLocation, dropoffLocation, preferredSeatCount, finderContext: finderHandoff && finderProvenanceValid ? finderContextForSubmission(finderHandoff) : undefined }) })
       .then(async (response) => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Unable to submit booking request."); return data; })
       .then((data) => { setSubmitting(false); setSubmitted(true); setSuccessNotice({ vehicleName: selected.name, days }); void data; window.setTimeout(() => void navigate({ to: "/customer" }), 1400); })
       .catch((error) => { setSubmitting(false); toast.error(error instanceof Error ? error.message : "Unable to submit booking request."); });
@@ -189,7 +195,7 @@ function BookingPage() {
         open={authOpen}
         onOpenChange={setAuthOpen}
         customerSuccessTo="/booking"
-        customerSuccessSearch={vehicle ? { vehicle } : undefined}
+        customerSuccessSearch={vehicle ? search : undefined}
         customerSuccessNavigate={false}
       />
 
@@ -213,6 +219,7 @@ function BookingPage() {
                 ))}
               </ul>
             </div>
+
             <div className="rounded-lg border border-border bg-card p-4">
               <div className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-400">
                 Don&apos;ts
@@ -301,6 +308,22 @@ function BookingPage() {
                 </span>
               )}
             </div>
+
+            {finderHandoff && finderProvenanceValid && (
+              <div className="mt-6 rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm">
+                <div className="flex items-center gap-2 font-semibold text-primary"><Car className="h-4 w-4" /> Selected with Smart Vehicle Finder</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  {finderHandoff.passengerCount} passenger{finderHandoff.passengerCount === 1 ? "" : "s"} · maximum base-rental budget {formatPeso(finderHandoff.maximumBudget)}
+                  {finderHandoff.preferredCategory ? ` · ${finderHandoff.preferredCategory} preferred` : ""}
+                  {finderHandoff.destination ? ` · destination ${finderHandoff.destination}` : ""}
+                </p>
+              </div>
+            )}
+            {finderHandoff && !finderProvenanceValid && (
+              <div role="status" className="mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+                Finder details changed. This booking will be submitted as a normal vehicle selection.
+              </div>
+            )}
 
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <Field label="Vehicle" id="booking-vehicle">
@@ -621,7 +644,11 @@ function validateBooking({
 
   if (!pickup) nextErrors.pickup = "Choose a pickup date and time.";
   if (!dropoff) nextErrors.dropoff = "Choose a return date and time.";
-  if (pickup && dropoff && new Date(dropoff).getTime() <= new Date(pickup).getTime()) {
+  const pickupInstant = manilaDateTimeLocalToInstant(pickup);
+  const dropoffInstant = manilaDateTimeLocalToInstant(dropoff);
+  if (pickup && !pickupInstant) nextErrors.pickup = "Choose a valid pickup date and time.";
+  if (dropoff && !dropoffInstant) nextErrors.dropoff = "Choose a valid return date and time.";
+  if (pickupInstant && dropoffInstant && dropoffInstant <= pickupInstant) {
     nextErrors.dropoff = "Return must be after pickup.";
   }
   if (!name.trim()) nextErrors.name = "Enter your full name.";
@@ -634,8 +661,6 @@ function validateBooking({
   return nextErrors;
 }
 
-function getNowInputValue() {
-  const now = new Date();
-  const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
-  return localDate.toISOString().slice(0, 16);
+function formatPeso(value: number) {
+  return new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 2 }).format(value);
 }

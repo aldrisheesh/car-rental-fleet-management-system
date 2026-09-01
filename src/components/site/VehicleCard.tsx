@@ -2,7 +2,18 @@ import { Link } from "@tanstack/react-router";
 import { Fuel, MapPin, Settings2, Users } from "lucide-react";
 import { type Vehicle } from "@/data/vehicles";
 
-export function VehicleCard({ v }: { v: Vehicle }) {
+type BookingSearch = {
+  vehicle: string;
+  finderStart?: string;
+  finderEnd?: string;
+  finderPassengers?: string;
+  finderBudget?: string;
+  finderCategory?: string;
+  finderDestination?: string;
+  finderRank?: string;
+};
+
+export function VehicleCard({ v, bookingSearch, bookingLabel }: { v: Vehicle; bookingSearch?: BookingSearch; bookingLabel?: string }) {
   return (
     <article className="group overflow-hidden rounded-xl border border-border bg-card shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-card">
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
@@ -57,10 +68,10 @@ export function VehicleCard({ v }: { v: Vehicle }) {
 
         <Link
           to="/booking"
-          search={{ vehicle: v.id }}
+          search={bookingSearch ?? { vehicle: v.id }}
           className="touch-target mt-2 inline-flex w-full items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
         >
-          {v.available ? "Reserve" : "Join waitlist"}
+          {bookingLabel ?? (v.available ? "Reserve" : "Join waitlist")}
         </Link>
       </div>
     </article>
