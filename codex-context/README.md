@@ -5,53 +5,32 @@
 
 ## Fleet Intelligence Progression
 
-Implemented/frozen dependency direction:
-
 1. Maintenance/readiness — VS012
 2. Utilization/idle — VS013
 3. Demand forecasting — VS014
-4. Projected available supply / demand balance — VS015
-5. Branch allocation recommendation
-6. Context/API enrichment
-7. Reports/dashboard consolidation
+4. Projected supply/demand balance — VS015
+5. Internal branch allocation recommendation — VS016
+6. External context enrichment
+7. Transfer execution / final branch mutation after client clarification
+8. Reports/dashboard consolidation
 
-## VS015 Boundary
+## VS016 Boundary
 
-VS015 compares canonical forecast requirements against canonical eligible fleet supply.
+VS016 consumes immutable VS015 supply evaluations to generate deterministic advisory branch-allocation recommendations.
 
-It produces:
+It may persist:
 
-- projected available supply;
-- shortage;
-- surplus;
-- balanced state;
-- auditable per-vehicle eligibility snapshot.
+- source/destination pairing;
+- recommended quantity;
+- ranked candidate vehicles;
+- Owner/Admin Approved/Rejected decision;
+- lower approved quantity.
 
-It does **not** transfer or recommend movement between branches yet.
+It must not mutate `vehicles.branch_id`, claim approved quantity selected exact units, create transfer-execution lifecycle states, or integrate external context yet.
 
 See:
 
-- `05-forecasting-specification.md`
 - `06-recommendation-specification.md`
-- `18-maintenance-monitoring-and-readiness.md`
-- `20-demand-extraction-and-forecasting-boundary.md`
 - `21-projected-supply-and-demand-balance.md`
-
-## Integrity Rules
-
-Do not:
-
-- treat raw fleet count as available supply;
-- count active rentals as assumed future supply;
-- ignore assigned Confirmed booking conflicts;
-- invent a turnaround buffer;
-- invent a spare/reserve threshold;
-- mutate branch assignments from shortage/surplus analytics.
-
-## Client Gaps
-
-See `14-client-clarification-register.md`, especially:
-
-- `CQ-018`
-- `CQ-024`
-- `CQ-025`
+- `22-branch-allocation-recommendation.md`
+- `CQ-026`

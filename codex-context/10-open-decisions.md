@@ -3,44 +3,33 @@
 **Status:** Active  
 **Last updated:** 2026-09-01
 
-Existing client/lifecycle/payment/maintenance/return decisions remain active.
+Previously recorded client/lifecycle/payment/maintenance/return decisions remain active.
 
-## Utilization / Idle
+## Utilization / Forecasting / Supply
 
-VS013 rules remain frozen.
+Frozen through VS015.
 
-`CQ-023` remains open for historical operational-availability data.
+Still open:
 
-## Demand Forecasting
+- `CQ-023`
+- `CQ-024`
+- `CQ-018`
+- `CQ-025`
 
-VS014 WMA/MAPE and demand coverage rules remain frozen.
+## Allocation Recommendation
 
-`CQ-024` remains open for historical booking-demand data.
+Internal allocation recommendation is frozen in `22-branch-allocation-recommendation.md`.
 
-## Projected Supply / Demand Balance
+Still open:
 
-VS015 rules are frozen in:
-
-`21-projected-supply-and-demand-balance.md`
-
-Still open/client-dependent:
-
-1. `CQ-018` — exact turnaround/preparation buffer between commitments.
-2. `CQ-025` — whether Briah wants any additional conservative future-supply policy/reserve beyond known commitments and maintenance eligibility.
-3. Final historical/report export presentation for supply/balance evaluations.
-
-## Allocation
-
-Not yet frozen for implementation beyond the existing recommendation formulas.
-
-Still pending:
-
-4. Exact item-level approved transfer-candidate persistence.
-5. Transfer execution workflow and branch mutation.
-6. Whether approved transfer requires a separate dispatched/in-transit/received lifecycle.
-7. Cross-branch operational authority remains tied to `CQ-017`.
-8. External context integration remains a later layer.
+1. `CQ-017` exact cross-branch movement procedure.
+2. `CQ-026` when/how Owner/Admin chooses exact vehicle units after quantity approval.
+3. Whether transfer execution requires dispatch/in-transit/receipt states.
+4. Who may execute/acknowledge physical transfer.
+5. When branch mutation occurs.
+6. External route/weather/traffic feasibility annotation.
+7. Exact item-level approved/executed transfer persistence.
 
 ## Other Open Areas
 
-Previously recorded settlement, extensions, notifications/audit, context API operations, fuel-reference administration, and documentation/evaluation decisions remain unchanged.
+Settlement, rental extensions, notification/audit expansion, context APIs, fuel-reference administration, and final reporting/documentation remain pending.
