@@ -24,3 +24,5 @@ Use a FRESH Codex session for corrections. Read only current slice, exact failin
 
 ## Migration discipline
 Inspect only the latest migration affecting an exact transition/function. Add new migrations; never rewrite applied migrations.
+
+Provider-backed validation may create disposable data, but cleanup must happen inside validation tooling/session cleanup or explicit development cleanup commands. Never commit provider/test-fixture cleanup as a production Supabase migration. Production migrations must represent durable schema, constraints, functions, policies, grants, or intentional production data transformations.

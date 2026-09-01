@@ -157,6 +157,8 @@ Prefer explicit constraints, foreign keys, appropriate nullability, database-con
 
 Do not encode unresolved business rules into schema constraints unless the current slice explicitly freezes the rule.
 
+Provider-backed validation may create disposable data, but cleanup must happen inside validation tooling/session cleanup or explicit development cleanup commands. Never commit provider/test-fixture cleanup as a production Supabase migration. Production migrations must represent durable schema, constraints, functions, policies, grants, or intentional production data transformations.
+
 ---
 
 ## 9. Authentication and Roles
@@ -287,7 +289,7 @@ Report each relevant validation as `PASS`, `FAIL`, or `BLOCKED`.
 
 Never fabricate provider validation.
 
-Temporary test data should be clearly non-production and cleaned up where practical.
+Temporary test data should be clearly non-production and cleaned up through validation tooling/session cleanup or explicit development cleanup commands.
 
 ---
 

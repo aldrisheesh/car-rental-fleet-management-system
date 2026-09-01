@@ -709,6 +709,10 @@ Where configured, use disposable development records to validate:
 
 Clean up disposable data where practical.
 
+### Historical cleanup migration note
+
+`20260902007000_vs019_provider_validation_cleanup.sql` is historical, already-applied development migration history. Preserve it unchanged, but do not copy it as a pattern: provider/test-fixture cleanup belongs in validation tooling/session cleanup or explicit development cleanup commands, never in a normal production Supabase migration.
+
 ## Definition of Done
 
 VS019 is complete when:
