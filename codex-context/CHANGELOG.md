@@ -1,23 +1,18 @@
 # Changelog
 
-## 2026-09-01 — Internal Branch Allocation Recommendation Baseline
+## 2026-09-01 — Smart Vehicle Finder Baseline
 
-Prepared the Development Baseline for VS016.
+Prepared the Development Baseline for VS017.
 
-### Frozen / Clarified
-
-- Added `22-branch-allocation-recommendation.md`.
-- Bound allocation recommendation to immutable VS015 source/destination evaluations.
-- Frozen same-category/same-week pairing.
-- Frozen `min(destination shortage, source surplus)` quantity.
-- Added batch-level remaining shortage/surplus accounting.
-- Frozen candidates from eligible VS015 items plus current revalidation.
-- Frozen longest-idle-duration-first ranking without arbitrary scores.
-- Clarified that 14-day Idle classification is not a hard candidate requirement.
-- Frozen immutable recommendation/candidate snapshots.
-- Frozen Pending / Approved / Rejected advisory states.
-- Frozen lower positive approved quantity while preserving original recommendation.
-- Reaffirmed that approval does not mutate vehicle branch.
-- Deferred item-level approved vehicle selection and physical transfer execution.
-- Added `CQ-026`.
-- Deferred external context enrichment.
+- Added `23-smart-vehicle-finder.md`.
+- Clarified researcher-designed enhancement vs Briah's current customer self-selection process.
+- Frozen required inputs: rental period, passenger count, maximum total base-rental budget.
+- Frozen optional preferred category and destination/travel area.
+- Destination is non-blocking until context integration.
+- Frozen hard eligibility: active, VS012 maintenance-ready, period-available, capacity-sufficient, within total base-rental budget.
+- Frozen ranking: preferred category, closest sufficient capacity, lower base rental cost, stable tie-break.
+- Prohibited arbitrary match scores.
+- Frozen transparent explanations and honest no-match behavior.
+- Frozen VS017 UI scope to customer Browse.
+- Deferred Finder->Booking/Admin integration to VS018.
+- Added CQ-027 for overlooked operational restrictions rather than asking Briah to invent recommendation parameters.

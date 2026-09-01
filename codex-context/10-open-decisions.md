@@ -1,35 +1,26 @@
 # Open Decisions
 
-**Status:** Active  
+**Status:** Active
 **Last updated:** 2026-09-01
 
 Previously recorded client/lifecycle/payment/maintenance/return decisions remain active.
 
-## Utilization / Forecasting / Supply
+## Smart Vehicle Finder
 
-Frozen through VS015.
-
-Still open:
-
-- `CQ-023`
-- `CQ-024`
-- `CQ-018`
-- `CQ-025`
-
-## Allocation Recommendation
-
-Internal allocation recommendation is frozen in `22-branch-allocation-recommendation.md`.
+VS017 baseline is frozen in `23-smart-vehicle-finder.md`.
 
 Still open:
+1. CQ-027 — overlooked Briah operational restrictions on otherwise eligible customer recommendations.
+2. Exact later destination/context influence after canonical context integration.
+3. Whether Finder context should later be retained beyond booking-integration needs.
+4. Final customer-facing copy/usability refinements after evaluation.
 
-1. `CQ-017` exact cross-branch movement procedure.
-2. `CQ-026` when/how Owner/Admin chooses exact vehicle units after quantity approval.
-3. Whether transfer execution requires dispatch/in-transit/receipt states.
-4. Who may execute/acknowledge physical transfer.
-5. When branch mutation occurs.
-6. External route/weather/traffic feasibility annotation.
-7. Exact item-level approved/executed transfer persistence.
+The baseline ranking is a research/design decision and is not waiting for Briah to invent a recommendation procedure.
 
-## Other Open Areas
+## Existing Open Areas
 
-Settlement, rental extensions, notification/audit expansion, context APIs, fuel-reference administration, and final reporting/documentation remain pending.
+CQ-023, CQ-024, CQ-018, CQ-025, CQ-017, and CQ-026 remain open.
+
+Canonical notification triggers and final auditable-event coverage remain pending.
+
+Settlement, extensions, context-provider operations, final reporting, UX consolidation, and demo-data preparation remain pending.

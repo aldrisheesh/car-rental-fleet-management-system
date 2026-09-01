@@ -1,50 +1,44 @@
 # Client Clarification Register
 
-**Status:** Active Client Validation Register  
+**Status:** Active Client Validation Register
 **Last updated:** 2026-09-01
 
-Existing CQ-001 through CQ-025 remain active.
+Existing CQ-001 through CQ-026 remain active.
 
-## CQ-026 — Allocation Approval and Actual Vehicle Selection
+## CQ-027 — Smart Vehicle Finder Operational Restrictions
 
-**Process:** Branch Allocation Recommendation / Transfer Review
+**Process:** Customer Browse / Smart Vehicle Finder
 
 **Known**
 
-The system can rank eligible source vehicles for a recommended transfer quantity.
+Briah's current process primarily allows customers to choose vehicles directly rather than using a formal recommendation procedure.
 
-Owner/Admin may approve the recommended quantity or a lower quantity.
+The Smart Vehicle Finder is a researcher-designed capstone enhancement.
 
-The actual cross-branch transfer remains human-controlled.
+The baseline recommends only vehicles that are active, maintenance-ready, available for the requested period, capacity-sufficient, and within the customer's maximum total base-rental budget.
+
+Preferred category is a ranking preference. Destination/travel area is captured for later context enrichment and creates no invented restriction in VS017.
 
 **Missing detail**
 
-It is not yet known whether Briah's:
+Briah may have operational restrictions absent from the current canonical fleet model, such as particular vehicle/trip restrictions, special operational reservations, or other vehicle-specific limitations. These examples do not imply such rules exist.
 
-- approves quantity first and chooses exact vehicles later;
-- approves specific vehicle units at the same time;
-- allows replacing a recommended candidate with another eligible unit;
-- requires separate dispatcher/receiver confirmation.
+**Researcher-designed baseline**
 
-**Temporary implementation assumption**
-
-VS016 preserves:
-
-- immutable ranked candidate list;
-- recommended quantity;
-- approved quantity;
-- Approved/Rejected decision.
-
-It does not claim approval of N units automatically selects or transfers the first N ranked vehicles.
-
-No `vehicles.branch_id` mutation occurs.
+The development team determines the transparent baseline criteria/ranking from the study design, measurable customer needs, canonical fleet constraints, and related literature. Briah is not being asked to invent the algorithm.
 
 **Question for Briah's**
 
-> Kapag may recommendation po na maglipat halimbawa ng 2 SUVs from Branch A to Branch B, sa approval po ba ninyo pipiliin na agad kung aling exact 2 vehicles ang ililipat, o quantity muna ang ina-approve tapos saka pipiliin ang actual units? Puwede rin po bang palitan ang recommended vehicle ng ibang eligible unit?
+> Sa current process po ninyo, customer normally ang pumipili ng vehicle. Para sa proposed Smart Vehicle Finder namin, ire-recommend lang ng system ang active, available, maintenance-ready, kasya sa passenger count, at pasok sa stated rental budget. May actual operational restriction po ba kayo na puwedeng maging dahilan para hindi namin i-recommend ang isang vehicle kahit pasado siya sa mga conditions na iyon?
 
 **Implementation impact**
 
-Determines item-level approval persistence and later transfer execution.
+A confirmed restriction may later become an explicit canonical hard-eligibility rule if safely/deterministically representable.
 
-**Status:** Open — Client Confirmation
+Do not implement hypothetical examples until confirmed.
+
+**Status:** Open — Client Validation
+
+## Presentation Rule
+
+Explain that the Finder is a researcher-designed enhancement because the current process relies on customer self-selection. Ask Briah to validate overlooked operational constraints and usability, not to design the recommendation algorithm.
