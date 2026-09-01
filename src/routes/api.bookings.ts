@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createHash } from "node:crypto";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { projectCustomerRental } from "@/lib/rental-projection";
@@ -91,6 +92,7 @@ async function createBooking({ request }: { request: Request }) {
     const principal = await requirePrincipal();
     if (principal.role !== "Customer/Renter") return errorResponse("Customer access is required.", 403);
     const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+    const idempotencyKey = text(body?.idempotencyKey);
     const requestedVehicleId = text(body?.requestedVehicleId);
     const pickupBranchId = text(body?.pickupBranchId);
     const returnBranchId = text(body?.returnBranchId);
@@ -101,13 +103,38 @@ async function createBooking({ request }: { request: Request }) {
     const pickupLocation = optionalText(body?.pickupLocation);
     const dropoffLocation = optionalText(body?.dropoffLocation);
     const seats = body?.preferredSeatCount == null || body?.preferredSeatCount === "" ? null : Number(body.preferredSeatCount);
-    if (!requestedVehicleId || !pickupBranchId || !returnBranchId || !pickupAt || !returnAt || !purpose || !option) return errorResponse("Required booking fields are missing.");
+    if (!requestedVehicleId || !pickupBranchId || !returnBranchId || !pickupAt || !returnAt || !purpose || !option || !isUuid(idempotencyKey)) return errorResponse("Required booking fields are missing.");
     const pickupDate = parseBookingInstant(pickupAt), returnDate = parseBookingInstant(returnAt);
     if (!pickupDate || !returnDate || returnDate <= pickupDate) return errorResponse("Return must be after pickup.");
     if (option !== "pickup" && option !== "delivery") return errorResponse("Invalid pickup or delivery option.");
     if (option === "delivery" && (!pickupLocation || !dropoffLocation)) return errorResponse("Pickup and drop-off locations are required for delivery.");
     if (seats !== null && (!Number.isInteger(seats) || seats <= 0)) return errorResponse("Preferred seat count must be positive.");
+    const destination = optionalText(body?.destination);
+    const finderContext = body?.finderContext && typeof body.finderContext === "object" && !Array.isArray(body.finderContext) ? body.finderContext as Record<string, unknown> : null;
+    if (body?.finderContext != null && !finderContext) return errorResponse("Invalid Finder context.");
+    const requestFingerprint = bookingCreationFingerprint({
+      customerId: principal.userId, requestedVehicleId, pickupBranchId, returnBranchId,
+      pickupAt: pickupDate.toISOString(), returnAt: returnDate.toISOString(), destination,
+      purpose, option, pickupLocation: option === "delivery" ? pickupLocation : null,
+      dropoffLocation: option === "delivery" ? dropoffLocation : null, seats,
+      finderContext: finderContext ? {
+        selectedVehicleId: text(finderContext.selectedVehicleId), requestedStart: text(finderContext.requestedStart),
+        requestedEnd: text(finderContext.requestedEnd), passengerCount: Number(finderContext.passengerCount),
+        maximumBudget: Number(finderContext.maximumBudget), preferredCategory: optionalText(finderContext.preferredCategory),
+        destination: optionalText(finderContext.destination),
+      } : null,
+    });
     const client = getSupabaseServerClient();
+    const existing = await (client as any).rpc("lookup_booking_creation_idempotency", {
+      p_customer_id: principal.userId, p_idempotency_key: idempotencyKey,
+      p_request_fingerprint: requestFingerprint,
+    });
+    if (existing.error) {
+      if (existing.error.message?.includes("idempotency_request_mismatch")) return errorResponse("This submission key was already used for different booking details. Please submit again.", 409);
+      return errorResponse("Unable to create booking request.", 400);
+    }
+    const existingBooking = Array.isArray(existing.data) ? existing.data[0] : existing.data;
+    if (existingBooking) return Response.json(existingBooking, { status: 200 });
     const [vehicle, pickupBranch, returnBranch] = await Promise.all([
       client.from("vehicles").select("id").eq("id", requestedVehicleId).eq("is_active", true).maybeSingle(),
       client.from("branches").select("id").eq("id", pickupBranchId).eq("is_active", true).maybeSingle(),
@@ -115,9 +142,10 @@ async function createBooking({ request }: { request: Request }) {
     ]);
     if (vehicle.error || !vehicle.data) return errorResponse("Selected vehicle is not available.", 400);
     if (pickupBranch.error || !pickupBranch.data || returnBranch.error || !returnBranch.data) return errorResponse("Selected branch is not available.", 400);
-    const destination = optionalText(body?.destination);
-    const finderContext = body?.finderContext && typeof body.finderContext === "object" && !Array.isArray(body.finderContext) ? body.finderContext as Record<string, unknown> : null;
-    if (body?.finderContext != null && !finderContext) return errorResponse("Invalid Finder context.");
+    let finderMaximumBudget: number | null = null;
+    let finderPreferredCategoryId: string | null = null;
+    let finderDestination: string | null = null;
+    let finderRecommendationRank: number | null = null;
     if (finderContext) {
       const evaluation = await evaluateCanonicalVehicleFinder(finderContext, client);
       if (!evaluation.ok) return errorResponse(evaluation.message, evaluation.status);
@@ -129,22 +157,26 @@ async function createBooking({ request }: { request: Request }) {
       });
       if (!revalidation.ok && revalidation.reason === "MISMATCH") return errorResponse("Finder details no longer match this booking. Submit it as a normal vehicle selection.", 400);
       if (!revalidation.ok) return errorResponse("This vehicle no longer matches the Finder requirements. Please refresh your recommendations.", 409);
-      const result = await (client as any).rpc("create_booking_with_finder_context", {
-        p_customer_id: principal.userId, p_requested_vehicle_id: requestedVehicleId,
-        p_pickup_branch_id: pickupBranchId, p_return_branch_id: returnBranchId,
-        p_pickup_at: pickupDate.toISOString(), p_return_at: returnDate.toISOString(), p_destination: destination,
-        p_purpose_of_use: purpose, p_pickup_delivery_option: option,
-        p_pickup_location: option === "delivery" ? pickupLocation : null, p_dropoff_location: option === "delivery" ? dropoffLocation : null,
-        p_preferred_seat_count: seats, p_customer_contact_number: principal.phoneNumber,
-        p_finder_maximum_budget: evaluation.input.maximumBudget, p_finder_preferred_category_id: evaluation.preferredCategoryId,
-        p_finder_destination: evaluation.input.destination, p_finder_recommendation_rank: revalidation.recommendationRank,
-        p_finder_baseline: FINDER_BASELINE,
-      });
-      if (result.error) return errorResponse("Unable to create booking request.", 400);
-      return Response.json(result.data, { status: 201 });
+      finderMaximumBudget = evaluation.input.maximumBudget;
+      finderPreferredCategoryId = evaluation.preferredCategoryId;
+      finderDestination = evaluation.input.destination;
+      finderRecommendationRank = revalidation.recommendationRank;
     }
-    const result = await client.from("booking_requests").insert({ customer_id: principal.userId, requested_vehicle_id: requestedVehicleId, pickup_branch_id: pickupBranchId, return_branch_id: returnBranchId, pickup_at: pickupDate.toISOString(), return_at: returnDate.toISOString(), destination, purpose_of_use: purpose, pickup_delivery_option: option, pickup_location: option === "delivery" ? pickupLocation : null, dropoff_location: option === "delivery" ? dropoffLocation : null, preferred_seat_count: seats, customer_contact_number: principal.phoneNumber }).select("*").single();
-    if (result.error) return errorResponse("Unable to create booking request.", 400);
+    const result = await (client as any).rpc("create_booking_idempotent", {
+      p_customer_id: principal.userId, p_idempotency_key: idempotencyKey, p_request_fingerprint: requestFingerprint,
+      p_requested_vehicle_id: requestedVehicleId, p_pickup_branch_id: pickupBranchId, p_return_branch_id: returnBranchId,
+      p_pickup_at: pickupDate.toISOString(), p_return_at: returnDate.toISOString(), p_destination: destination,
+      p_purpose_of_use: purpose, p_pickup_delivery_option: option,
+      p_pickup_location: option === "delivery" ? pickupLocation : null, p_dropoff_location: option === "delivery" ? dropoffLocation : null,
+      p_preferred_seat_count: seats, p_customer_contact_number: principal.phoneNumber,
+      p_has_finder_context: finderContext !== null, p_finder_maximum_budget: finderMaximumBudget,
+      p_finder_preferred_category_id: finderPreferredCategoryId, p_finder_destination: finderDestination,
+      p_finder_recommendation_rank: finderRecommendationRank, p_finder_baseline: finderContext ? FINDER_BASELINE : null,
+    });
+    if (result.error) {
+      if (result.error.message?.includes("idempotency_request_mismatch")) return errorResponse("This submission key was already used for different booking details. Please submit again.", 409);
+      return errorResponse("Unable to create booking request.", 400);
+    }
     return Response.json(result.data, { status: 201 });
   } catch (error) {
     return errorResponse(error instanceof Error && error.message === "forbidden" ? "Forbidden." : "Authentication required.", error instanceof Error && error.message === "forbidden" ? 403 : 401);
@@ -157,4 +189,12 @@ function parseBookingInstant(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value)) return null;
   const instant = new Date(value);
   return Number.isNaN(instant.getTime()) ? null : instant;
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function bookingCreationFingerprint(value: Record<string, unknown>) {
+  return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }

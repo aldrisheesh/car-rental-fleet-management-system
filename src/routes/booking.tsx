@@ -1,5 +1,5 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   Calendar,
@@ -92,6 +92,7 @@ function BookingPage() {
     vehicleName: string;
     days: number;
   } | null>(null);
+  const submissionAttemptRef = useRef<{ key: string; payload: string } | null>(null);
 
   useEffect(() => {
     if (!authOpen) {
@@ -175,8 +176,13 @@ function BookingPage() {
       return;
     }
 
+    const bookingPayload = { requestedVehicleId: vehicleId, pickupBranchId: branch, returnBranchId: returnBranch === "Same as pickup" ? branch : returnBranch, pickupAt: pickup, returnAt: dropoff, destination, purposeOfUse: purpose, pickupDeliveryOption, pickupLocation, dropoffLocation, preferredSeatCount, finderContext: finderHandoff && finderProvenanceValid ? finderContextForSubmission(finderHandoff) : undefined };
+    const serializedPayload = JSON.stringify(bookingPayload);
+    if (!submissionAttemptRef.current || submissionAttemptRef.current.payload !== serializedPayload) {
+      submissionAttemptRef.current = { key: crypto.randomUUID(), payload: serializedPayload };
+    }
     setSubmitting(true);
-    fetch("/api/bookings", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestedVehicleId: vehicleId, pickupBranchId: branch, returnBranchId: returnBranch === "Same as pickup" ? branch : returnBranch, pickupAt: pickup, returnAt: dropoff, destination, purposeOfUse: purpose, pickupDeliveryOption, pickupLocation, dropoffLocation, preferredSeatCount, finderContext: finderHandoff && finderProvenanceValid ? finderContextForSubmission(finderHandoff) : undefined }) })
+    fetch("/api/bookings", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...bookingPayload, idempotencyKey: submissionAttemptRef.current.key }) })
       .then(async (response) => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Unable to submit booking request."); return data; })
       .then((data) => { setSubmitting(false); setSubmitted(true); setSuccessNotice({ vehicleName: selected.name, days }); void data; window.setTimeout(() => void navigate({ to: "/customer" }), 1400); })
       .catch((error) => { setSubmitting(false); toast.error(error instanceof Error ? error.message : "Unable to submit booking request."); });

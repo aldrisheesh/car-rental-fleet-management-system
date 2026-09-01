@@ -197,3 +197,126 @@ test("migration creates booking and immutable 1:1 Finder context in one RPC", as
     /create function public\.create_booking_with_finder_context[\s\S]*insert into public\.booking_requests[\s\S]*insert into public\.booking_finder_context/,
   );
 });
+
+test("same key and same manual request returns one canonical booking", async () => {
+  const [bookingSource, migration] = await Promise.all([
+    readFile(new URL("../routes/api.bookings.ts", import.meta.url), "utf8"),
+    readFile(
+      new URL(
+        "../../supabase/migrations/20260901101000_booking_creation_idempotency.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ]);
+  assert.match(bookingSource, /create_booking_idempotent/);
+  assert.doesNotMatch(bookingSource, /from\("booking_requests"\)\.insert/);
+  assert.match(migration, /primary key \(customer_id, idempotency_key\)/);
+  assert.match(
+    migration,
+    /pg_advisory_xact_lock[\s\S]*if found then[\s\S]*return v_booking;[\s\S]*insert into public\.booking_requests/,
+  );
+});
+
+test("same key and same Finder request creates one booking and one context", async () => {
+  const [migration, originalMigration, bookingSource] = await Promise.all(
+    [
+      "20260901101000_booking_creation_idempotency.sql",
+      "20260901100000_booking_finder_context.sql",
+    ]
+      .map((file) =>
+        readFile(
+          new URL(`../../supabase/migrations/${file}`, import.meta.url),
+          "utf8",
+        ),
+      )
+      .concat(
+        readFile(new URL("../routes/api.bookings.ts", import.meta.url), "utf8"),
+      ),
+  );
+  assert.match(
+    migration,
+    /if p_has_finder_context then[\s\S]*insert into public\.booking_finder_context/,
+  );
+  assert.match(migration, /booking_id uuid not null unique/);
+  assert.match(originalMigration, /booking_id uuid primary key/);
+  assert.ok(
+    bookingSource.indexOf("lookup_booking_creation_idempotency") <
+      bookingSource.indexOf("evaluateCanonicalVehicleFinder(finderContext"),
+  );
+});
+
+test("trusted fingerprint binds the material manual and Finder request", async () => {
+  const source = await readFile(
+    new URL("../routes/api.bookings.ts", import.meta.url),
+    "utf8",
+  );
+  const fingerprintStart = source.indexOf("bookingCreationFingerprint({");
+  const fingerprintInput = source.slice(
+    fingerprintStart,
+    source.indexOf("const client = getSupabaseServerClient();", fingerprintStart),
+  );
+  for (const field of [
+    "customerId",
+    "requestedVehicleId",
+    "pickupBranchId",
+    "returnBranchId",
+    "pickupAt",
+    "returnAt",
+    "destination",
+    "purpose",
+    "option",
+    "pickupLocation",
+    "dropoffLocation",
+    "seats",
+    "selectedVehicleId",
+    "requestedStart",
+    "requestedEnd",
+    "passengerCount",
+    "maximumBudget",
+    "preferredCategory",
+  ])
+    assert.match(fingerprintInput, new RegExp(`\\b${field}\\b`));
+  assert.match(source, /createHash\("sha256"\)/);
+});
+
+test("same key with materially different request is a controlled mismatch", async () => {
+  const [bookingSource, migration] = await Promise.all([
+    readFile(new URL("../routes/api.bookings.ts", import.meta.url), "utf8"),
+    readFile(
+      new URL(
+        "../../supabase/migrations/20260901101000_booking_creation_idempotency.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ]);
+  assert.match(migration, /raise exception 'idempotency_request_mismatch'/);
+  assert.match(bookingSource, /idempotency_request_mismatch/);
+  assert.match(bookingSource, /different booking details[\s\S]*409/);
+});
+
+test("Booking reuses a key for retries and rotates it for a changed payload", async () => {
+  const source = await readFile(
+    new URL("../routes/booking.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /submissionAttemptRef = useRef/);
+  assert.match(
+    source,
+    /submissionAttemptRef\.current\.payload !== serializedPayload[\s\S]*crypto\.randomUUID\(\)/,
+  );
+  assert.match(source, /idempotencyKey: submissionAttemptRef\.current\.key/);
+});
+
+test("a new customer-scoped key may create a later intentional booking", async () => {
+  const migration = await readFile(
+    new URL(
+      "../../supabase/migrations/20260901101000_booking_creation_idempotency.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.match(migration, /primary key \(customer_id, idempotency_key\)/);
+  assert.doesNotMatch(migration, /unique \(customer_id, request_fingerprint\)/);
+});
