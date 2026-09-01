@@ -2,27 +2,22 @@
 **Status:** Active AI navigation aid
 **Last updated:** 2026-09-02
 
-Purpose: reduce Codex repository rediscovery.
+## VS020 starting points
+Read `08-notifications-and-audit.md` and `28-scheduled-booking-rental-reminders.md`.
 
-## VS019 starting points
-Read:
-- `codex-context/08-notifications-and-audit.md`
-- `codex-context/27-notification-foundation.md`
+Inspect only:
+1. VS019 canonical notification persistence/API/helper;
+2. canonical booking state/timestamps needed for confirmed future pickup;
+3. canonical rental state/timestamps needed for scheduled return/ended_at;
+4. `src/lib/business-time.ts`;
+5. smallest server-only boundary for a trusted reminder processor.
 
-Locate only:
-1. existing Notifications route/page;
-2. canonical transition files for booking creation, requirement submit/resubmit, requirement review, payment proof submit/resubmit, payment review, and booking confirmation/rejection/cancellation where implemented;
-3. auth helpers required for current-principal notification reads.
+Do not inspect requirements, payments, Finder, forecasting, supply, allocation, maintenance, reports, or external context unless one exact dependency is required.
 
-Known booking creation boundary:
-- `src/routes/api.bookings.ts`
+Keep reminder eligibility/provider-neutral processing separate from hosting scheduler invocation.
 
-Do not inspect forecasting, supply, allocation, Finder, reports, context APIs, or maintenance unless a VS019 trigger directly requires them.
+Use additive migrations only when notification type constraints/functions require them.
 
-## Correction-session rule
-Use a FRESH Codex session for corrections. Read only current slice, exact failing files, and exact relevant migration. Do not resume the large implementation session by default.
+Provider-validation cleanup belongs in validation tooling/session cleanup or explicit development cleanup commands, never production migrations.
 
-## Migration discipline
-Inspect only the latest migration affecting an exact transition/function. Add new migrations; never rewrite applied migrations.
-
-Provider-backed validation may create disposable data, but cleanup must happen inside validation tooling/session cleanup or explicit development cleanup commands. Never commit provider/test-fixture cleanup as a production Supabase migration. Production migrations must represent durable schema, constraints, functions, policies, grants, or intentional production data transformations.
+Corrections use a FRESH Codex session with exact failing files only.

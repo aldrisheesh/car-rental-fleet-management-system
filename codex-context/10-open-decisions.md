@@ -2,44 +2,21 @@
 **Status:** Active
 **Last updated:** 2026-09-02
 
-See `24-client-interview-ground-truth.md`.
+## Notifications / reminders
+VS019 event-driven notifications are frozen. VS020 scheduled booking/rental semantics are frozen in `28-scheduled-booking-rental-reminders.md`.
 
-## Smart Vehicle Finder
-VS017 and VS018 are frozen. CQ-028 restricted-area rules and later context influence remain open.
+PROVISIONAL: pickup lead=24h; return lead=24h; overdue recurrence=once per Asia/Manila calendar day. Client validation may adjust these without redesigning the architecture.
 
-## Notifications
-VS019 event-driven in-app notification foundation is frozen in `08-notifications-and-audit.md` and `27-notification-foundation.md`.
-
-Planned future external email provider:
-- Brevo for application transactional email;
-- Brevo SMTP may also be used as Supabase Auth custom SMTP where configured.
-
-This does not move external email into VS019.
-
-Deferred:
-- scheduled pickup/return/overdue/maintenance/low-availability reminders;
-- external transactional email implementation;
-- SMS/push;
-- notification preferences;
-- escalation;
-- retention rules.
+Deferred: maintenance awareness, low-availability alerts, Brevo/email/SMS/push, preferences, escalation/retention.
 
 ## Audit
-System-wide audit coverage remains unresolved and separate from notifications.
+System-wide audit remains separate/pending.
 
-## Payment / settlement
-Confirmed: 50% minimum down payment; requirements before payment; bank transfer/GCash/cash; baseline renter-cancellation down payment stated non-refundable.
-
-Still open: total-bill composition, production account details, cancellation exceptions, final settlement, deposit handling, complete late-return schedule, and detailed damage/fuel/cleaning penalties.
+## Finder/context
+VS017/VS018 frozen. CQ-028 exact restricted-area rules remain open.
 
 ## Late return
-PARTIALLY CONFIRMED: PHP 3,000 for less than six hours. CQ-029 remains open.
+PHP 3,000 for <6h is only partially confirmed. CQ-029 remains open; VS020 must not calculate/assert it.
 
-## Tie-up fleet
-PARTIALLY CONFIRMED: partner sourcing exists and a 30/70 split was described. CQ-030 remains open.
-
-## Allocation / transfer
-VS016 remains advisory. CQ-017/CQ-026 remain open.
-
-## Remaining product work
-Scheduled reminders, audit, operational context, reports/dashboard canonicalization, role/mobile UX validation, demo data, unresolved settlement, and later external email delivery remain pending.
+## Tie-up / allocation
+CQ-030 tie-up and CQ-017/CQ-026 transfer boundaries remain open.
