@@ -32,6 +32,7 @@ export type AllocationDraft = {
   source: AllocationEvaluation;
   destination: AllocationEvaluation;
   recommendedUnits: number;
+  candidates: AllocationCandidate[];
 };
 
 export function selectLatestEvaluations(evaluations: AllocationEvaluation[]) {
@@ -49,7 +50,7 @@ export function selectLatestEvaluations(evaluations: AllocationEvaluation[]) {
 
 export function generateAllocationDrafts(
   evaluations: AllocationEvaluation[],
-  candidateCounts: ReadonlyMap<string, number>,
+  candidatesBySource: ReadonlyMap<string, AllocationCandidate[]>,
 ): AllocationDraft[] {
   const destinations = evaluations
     .filter((e) => e.shortageUnits > 0)
@@ -59,9 +60,7 @@ export function generateAllocationDrafts(
     .sort((a, b) => a.branchId.localeCompare(b.branchId) || a.id.localeCompare(b.id));
   const destinationRemaining = new Map(destinations.map((e) => [e.id, e.shortageUnits]));
   const sourceRemaining = new Map(sources.map((e) => [e.id, e.surplusUnits]));
-  const candidateRemaining = new Map(
-    sources.map((e) => [e.id, Math.max(0, candidateCounts.get(e.id) ?? 0)]),
-  );
+  const candidateCursor = new Map(sources.map((e) => [e.id, 0]));
   const drafts: AllocationDraft[] = [];
 
   for (const destination of destinations) {
@@ -73,13 +72,15 @@ export function generateAllocationDrafts(
         source.targetWeekStart !== destination.targetWeekStart ||
         source.targetWeekEnd !== destination.targetWeekEnd
       ) continue;
+      const candidates = candidatesBySource.get(source.id) ?? [];
+      const cursor = candidateCursor.get(source.id) ?? 0;
       const recommendedUnits = Math.min(
         destinationRemaining.get(destination.id) ?? 0,
         sourceRemaining.get(source.id) ?? 0,
-        candidateRemaining.get(source.id) ?? 0,
+        candidates.length - cursor,
       );
       if (recommendedUnits <= 0) continue;
-      drafts.push({ source, destination, recommendedUnits });
+      drafts.push({ source, destination, recommendedUnits, candidates: candidates.slice(cursor, cursor + recommendedUnits) });
       destinationRemaining.set(
         destination.id,
         (destinationRemaining.get(destination.id) ?? 0) - recommendedUnits,
@@ -88,10 +89,7 @@ export function generateAllocationDrafts(
         source.id,
         (sourceRemaining.get(source.id) ?? 0) - recommendedUnits,
       );
-      candidateRemaining.set(
-        source.id,
-        (candidateRemaining.get(source.id) ?? 0) - recommendedUnits,
-      );
+      candidateCursor.set(source.id, cursor + recommendedUnits);
     }
   }
   return drafts;

@@ -104,9 +104,8 @@ async function generate({ request }: { request: Request }) {
       const ids = (snapshotItems.data ?? []).filter((x: any) => x.evaluation_id === evaluation.id).map((x: any) => x.vehicle_id);
       candidatesBySource.set(evaluation.id, await revalidateSourceCandidates(evaluation, ids));
     }));
-    const candidateCounts = new Map([...candidatesBySource].map(([id, rows]) => [id, rows.length]));
-    const drafts = generateAllocationDrafts(latest, candidateCounts);
-    const payload = drafts.map(({ source, destination, recommendedUnits }) => ({
+    const drafts = generateAllocationDrafts(latest, candidatesBySource);
+    const payload = drafts.map(({ source, destination, recommendedUnits, candidates }) => ({
       source_supply_evaluation_id: source.id,
       destination_supply_evaluation_id: destination.id,
       source_branch_id: source.branchId,
@@ -122,7 +121,7 @@ async function generate({ request }: { request: Request }) {
       destination_projected_supply_snapshot: destination.projectedSupply,
       destination_shortage_snapshot: destination.shortageUnits,
       recommended_transfer_units: recommendedUnits,
-      candidates: (candidatesBySource.get(source.id) ?? []).map((candidate, index) => ({
+      candidates: candidates.map((candidate, index) => ({
         vehicle_id: candidate.vehicleId,
         vehicle_name_snapshot: candidate.vehicleName,
         license_plate_snapshot: candidate.licensePlate,

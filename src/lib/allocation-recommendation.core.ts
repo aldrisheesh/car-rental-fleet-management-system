@@ -8,14 +8,15 @@ export function selectLatestEvaluations(rows: AllocationEvaluation[]) {
   for (const row of rows) { const old = latest.get(row.forecastId); if (!old || row.evaluatedAt > old.evaluatedAt || (row.evaluatedAt === old.evaluatedAt && row.id > old.id)) latest.set(row.forecastId, row); }
   return [...latest.values()];
 }
-export function generateAllocationDrafts(evaluations: AllocationEvaluation[], candidateCounts: ReadonlyMap<string, number>) {
+export function generateAllocationDrafts(evaluations: AllocationEvaluation[], candidatesBySource: ReadonlyMap<string, AllocationCandidate[]>) {
   const destinations = evaluations.filter((e) => e.shortageUnits > 0).sort((a, b) => a.branchId.localeCompare(b.branchId) || a.id.localeCompare(b.id));
   const sources = evaluations.filter((e) => e.surplusUnits > 0).sort((a, b) => a.branchId.localeCompare(b.branchId) || a.id.localeCompare(b.id));
-  const dr = new Map(destinations.map((e) => [e.id, e.shortageUnits])); const sr = new Map(sources.map((e) => [e.id, e.surplusUnits])); const cr = new Map(sources.map((e) => [e.id, Math.max(0, candidateCounts.get(e.id) ?? 0)])); const result: any[] = [];
+  const dr = new Map(destinations.map((e) => [e.id, e.shortageUnits])); const sr = new Map(sources.map((e) => [e.id, e.surplusUnits])); const cursors = new Map(sources.map((e) => [e.id, 0])); const result: any[] = [];
   for (const destination of destinations) for (const source of sources) {
     if (source.branchId === destination.branchId || source.categoryId !== destination.categoryId || source.horizon !== destination.horizon || source.targetWeekStart !== destination.targetWeekStart || source.targetWeekEnd !== destination.targetWeekEnd) continue;
-    const units = Math.min(dr.get(destination.id) ?? 0, sr.get(source.id) ?? 0, cr.get(source.id) ?? 0); if (units <= 0) continue;
-    result.push({ source, destination, recommendedUnits: units }); dr.set(destination.id, (dr.get(destination.id) ?? 0) - units); sr.set(source.id, (sr.get(source.id) ?? 0) - units); cr.set(source.id, (cr.get(source.id) ?? 0) - units);
+    const candidates = candidatesBySource.get(source.id) ?? []; const cursor = cursors.get(source.id) ?? 0;
+    const units = Math.min(dr.get(destination.id) ?? 0, sr.get(source.id) ?? 0, candidates.length - cursor); if (units <= 0) continue;
+    result.push({ source, destination, recommendedUnits: units, candidates: candidates.slice(cursor, cursor + units) }); dr.set(destination.id, (dr.get(destination.id) ?? 0) - units); sr.set(source.id, (sr.get(source.id) ?? 0) - units); cursors.set(source.id, cursor + units);
   }
   return result;
 }
