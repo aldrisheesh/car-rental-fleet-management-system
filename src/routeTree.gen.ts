@@ -21,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
+import { Route as ApiVehicleFinderRouteImport } from './routes/api.vehicle-finder'
 import { Route as ApiVehicleAnalyticsRouteImport } from './routes/api.vehicle-analytics'
 import { Route as ApiSupplyEvaluationsRouteImport } from './routes/api.supply-evaluations'
 import { Route as ApiRequirementsRouteImport } from './routes/api.requirements'
@@ -109,6 +110,11 @@ const CustomerProfileRoute = CustomerProfileRouteImport.update({
 const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
   id: '/api/vehicles',
   path: '/api/vehicles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVehicleFinderRoute = ApiVehicleFinderRouteImport.update({
+  id: '/api/vehicle-finder',
+  path: '/api/vehicle-finder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVehicleAnalyticsRoute = ApiVehicleAnalyticsRouteImport.update({
@@ -292,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
+  '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
@@ -334,6 +341,7 @@ export interface FileRoutesByTo {
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
+  '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/admin': typeof AdminIndexRoute
@@ -378,6 +386,7 @@ export interface FileRoutesById {
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
+  '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/customer_/profile': typeof CustomerProfileRoute
   '/admin/': typeof AdminIndexRoute
@@ -423,6 +432,7 @@ export interface FileRouteTypes {
     | '/api/requirements'
     | '/api/supply-evaluations'
     | '/api/vehicle-analytics'
+    | '/api/vehicle-finder'
     | '/api/vehicles'
     | '/customer/profile'
     | '/admin/'
@@ -465,6 +475,7 @@ export interface FileRouteTypes {
     | '/api/requirements'
     | '/api/supply-evaluations'
     | '/api/vehicle-analytics'
+    | '/api/vehicle-finder'
     | '/api/vehicles'
     | '/customer/profile'
     | '/admin'
@@ -508,6 +519,7 @@ export interface FileRouteTypes {
     | '/api/requirements'
     | '/api/supply-evaluations'
     | '/api/vehicle-analytics'
+    | '/api/vehicle-finder'
     | '/api/vehicles'
     | '/customer_/profile'
     | '/admin/'
@@ -539,6 +551,7 @@ export interface RootRouteChildren {
   ApiRequirementsRoute: typeof ApiRequirementsRoute
   ApiSupplyEvaluationsRoute: typeof ApiSupplyEvaluationsRoute
   ApiVehicleAnalyticsRoute: typeof ApiVehicleAnalyticsRoute
+  ApiVehicleFinderRoute: typeof ApiVehicleFinderRoute
   ApiVehiclesRoute: typeof ApiVehiclesRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
   ApiAuthProfileRoute: typeof ApiAuthProfileRoute
@@ -632,6 +645,13 @@ declare module '@tanstack/react-router' {
       path: '/api/vehicles'
       fullPath: '/api/vehicles'
       preLoaderRoute: typeof ApiVehiclesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vehicle-finder': {
+      id: '/api/vehicle-finder'
+      path: '/api/vehicle-finder'
+      fullPath: '/api/vehicle-finder'
+      preLoaderRoute: typeof ApiVehicleFinderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/vehicle-analytics': {
@@ -897,6 +917,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRequirementsRoute: ApiRequirementsRoute,
   ApiSupplyEvaluationsRoute: ApiSupplyEvaluationsRoute,
   ApiVehicleAnalyticsRoute: ApiVehicleAnalyticsRoute,
+  ApiVehicleFinderRoute: ApiVehicleFinderRoute,
   ApiVehiclesRoute: ApiVehiclesRoute,
   CustomerProfileRoute: CustomerProfileRoute,
   ApiAuthProfileRoute: ApiAuthProfileRoute,

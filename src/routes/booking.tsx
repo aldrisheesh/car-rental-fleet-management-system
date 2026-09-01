@@ -25,6 +25,7 @@ import { getAdminSession } from "@/lib/admin-auth";
 import { getCustomerProfile, getCustomerSession } from "@/lib/customer-auth";
 import { vehicles as fallbackVehicles } from "@/data/vehicles";
 import { CANCELLATION_POLICY, RENTAL_DONTS, RENTAL_DOS } from "@/data/rental-policy";
+import { calculateRentalDays } from "@/lib/rental-duration";
 
 type Search = { vehicle?: string };
 type BookingErrors = Partial<
@@ -132,8 +133,11 @@ function BookingPage() {
 
   const days = useMemo(() => {
     if (!pickup || !dropoff) return 1;
-    const ms = new Date(dropoff).getTime() - new Date(pickup).getTime();
-    return Math.max(1, Math.ceil(ms / 86400000));
+    try {
+      return calculateRentalDays(new Date(pickup), new Date(dropoff));
+    } catch {
+      return 1;
+    }
   }, [pickup, dropoff]);
   const minDateTime = getNowInputValue();
 
