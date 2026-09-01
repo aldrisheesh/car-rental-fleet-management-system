@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { calculateMaintenanceReadiness } from "@/lib/maintenance-readiness.server";
 import {
   findVehicles,
+  hasScheduledRentalConflict,
   intervalsOverlap,
   validateFinderInput,
   type FinderCandidate,
@@ -60,9 +61,7 @@ export const Route = createFileRoute("/api/vehicle-finder")({
                 .eq("booking_status", "Confirmed"),
               client
                 .from("rental_transactions")
-                .select(
-                  "vehicle_id,scheduled_pickup_at,scheduled_return_at,started_at,ended_at",
-                ),
+                .select("vehicle_id,scheduled_pickup_at,scheduled_return_at"),
             ]);
           if (vehicleResult.error || bookingResult.error || rentalResult.error)
             return errorResponse("Unable to find vehicles right now.", 503);
@@ -85,16 +84,11 @@ export const Route = createFileRoute("/api/vehicle-finder")({
                     validation.value.requestedEnd,
                   ),
               );
-              const rentalConflict = (rentalResult.data ?? []).some(
-                (rental) =>
-                  rental.vehicle_id === vehicle.id &&
-                  ((rental.started_at !== null && rental.ended_at === null) ||
-                    intervalsOverlap(
-                      rental.scheduled_pickup_at,
-                      rental.scheduled_return_at,
-                      validation.value.requestedStart,
-                      validation.value.requestedEnd,
-                    )),
+              const rentalConflict = hasScheduledRentalConflict(
+                rentalResult.data ?? [],
+                vehicle.id,
+                validation.value.requestedStart,
+                validation.value.requestedEnd,
               );
               return {
                 id: vehicle.id,

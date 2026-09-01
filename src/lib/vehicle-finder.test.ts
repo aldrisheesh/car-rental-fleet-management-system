@@ -2,7 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
+  instantToManilaDateTimeLocal,
+  manilaDateTimeLocalToInstant,
+} from "./business-time.ts";
+import {
   findVehicles,
+  hasScheduledRentalConflict,
   intervalsOverlap,
   validateFinderInput,
   type FinderCandidate,
@@ -10,6 +15,7 @@ import {
 } from "./vehicle-finder.ts";
 
 const categories = ["Economy", "Sedan", "SUV", "MPV", "Van", "Pickup"];
+const validationNow = new Date("2026-09-01T00:00:00.000Z");
 const request = (
   overrides: Partial<VehicleFinderInput> = {},
 ): VehicleFinderInput => ({
@@ -51,9 +57,11 @@ test("valid Finder input resolves canonical category and timestamps", () => {
       destination: " Baguio City ",
     },
     categories,
+    validationNow,
   );
   assert.equal(result.ok, true);
   if (result.ok) {
+    assert.equal(result.value.requestedStart, "2026-09-10T00:00:00.000Z");
     assert.equal(result.value.preferredCategory, "SUV");
     assert.equal(result.value.destination, "Baguio City");
   }
@@ -68,6 +76,7 @@ test("invalid period is rejected", () => {
       maximumBudget: 5000,
     },
     categories,
+    validationNow,
   );
   assert.equal(result.ok, false);
   if (!result.ok) assert.ok(result.errors.requestedEnd);
@@ -82,6 +91,7 @@ test("malformed and impossible rental timestamps are rejected", () => {
       maximumBudget: 5000,
     },
     categories,
+    validationNow,
   );
   const malformed = validateFinderInput(
     {
@@ -91,6 +101,7 @@ test("malformed and impossible rental timestamps are rejected", () => {
       maximumBudget: 5000,
     },
     categories,
+    validationNow,
   );
   assert.equal(impossible.ok, false);
   assert.equal(malformed.ok, false);
@@ -106,6 +117,7 @@ test("invalid passenger count, budget, and preferred category are rejected", () 
       preferredCategory: "Motorcycle",
     },
     categories,
+    validationNow,
   );
   assert.equal(result.ok, false);
   if (!result.ok)
@@ -114,6 +126,72 @@ test("invalid passenger count, budget, and preferred category are rejected", () 
       "passengerCount",
       "preferredCategory",
     ]);
+});
+
+test("Manila datetime-local values resolve independently of process timezone", () => {
+  assert.equal(
+    manilaDateTimeLocalToInstant("2026-09-10T10:00")?.toISOString(),
+    "2026-09-10T02:00:00.000Z",
+  );
+  assert.equal(
+    manilaDateTimeLocalToInstant("2026-09-10T00:00")?.toISOString(),
+    "2026-09-09T16:00:00.000Z",
+  );
+  assert.equal(
+    instantToManilaDateTimeLocal(new Date("2026-09-10T02:00:00.000Z")),
+    "2026-09-10T10:00",
+  );
+});
+
+test("malformed Manila local datetime and timezone-bearing input are rejected", () => {
+  assert.equal(manilaDateTimeLocalToInstant("2026-09-10 10:00"), null);
+  assert.equal(manilaDateTimeLocalToInstant("2026-09-10T10:00Z"), null);
+  assert.equal(manilaDateTimeLocalToInstant("2026-02-30T10:00"), null);
+});
+
+test("requested interval ordering uses resolved Manila instants", () => {
+  const result = validateFinderInput(
+    {
+      requestedStart: "2026-09-10T10:01",
+      requestedEnd: "2026-09-10T10:00",
+      passengerCount: 5,
+      maximumBudget: 5000,
+    },
+    categories,
+    validationNow,
+  );
+  assert.equal(result.ok, false);
+  if (!result.ok)
+    assert.equal(
+      result.errors.requestedEnd,
+      "Rental end must be after the start.",
+    );
+});
+
+test("future starts are accepted and past starts are rejected by trusted time", () => {
+  const input = {
+    requestedStart: "2026-09-10T10:00",
+    requestedEnd: "2026-09-10T12:00",
+    passengerCount: 5,
+    maximumBudget: 5000,
+  };
+  const future = validateFinderInput(
+    input,
+    categories,
+    new Date("2026-09-10T01:00:00.000Z"),
+  );
+  const past = validateFinderInput(
+    input,
+    categories,
+    new Date("2026-09-10T03:01:00.000Z"),
+  );
+  assert.equal(future.ok, true);
+  assert.equal(past.ok, false);
+  if (!past.ok)
+    assert.equal(
+      past.errors.requestedStart,
+      "Rental start cannot be in the past.",
+    );
 });
 
 test("half-open availability intervals allow touching boundaries", () => {
@@ -134,6 +212,77 @@ test("half-open availability intervals allow touching boundaries", () => {
       "2026-09-12T00:00:00Z",
     ),
     true,
+  );
+});
+
+test("active rental conflicts only when its scheduled commitment overlaps", () => {
+  const activeRental = {
+    vehicle_id: "active-rental-vehicle",
+    scheduled_pickup_at: "2026-09-01T00:00:00.000Z",
+    scheduled_return_at: "2026-09-03T00:00:00.000Z",
+    started_at: "2026-09-01T00:00:00.000Z",
+    ended_at: null,
+  };
+  const overlapping = hasScheduledRentalConflict(
+    [activeRental],
+    activeRental.vehicle_id,
+    "2026-09-02T00:00:00.000Z",
+    "2026-09-04T00:00:00.000Z",
+  );
+  const future = hasScheduledRentalConflict(
+    [activeRental],
+    activeRental.vehicle_id,
+    "2026-10-10T00:00:00.000Z",
+    "2026-10-12T00:00:00.000Z",
+  );
+  assert.equal(overlapping, true);
+  assert.equal(future, false);
+  const overlappingResult = findVehicles(
+    request({
+      requestedStart: "2026-09-02T00:00:00.000Z",
+      requestedEnd: "2026-09-04T00:00:00.000Z",
+    }),
+    [vehicle({ id: "overlap", rentalConflict: overlapping })],
+  );
+  const futureResult = findVehicles(
+    request({
+      requestedStart: "2026-10-10T00:00:00.000Z",
+      requestedEnd: "2026-10-12T00:00:00.000Z",
+    }),
+    [vehicle({ id: "future", rentalConflict: future })],
+  );
+  assert.deepEqual(overlappingResult.recommendations, []);
+  assert.deepEqual(
+    futureResult.recommendations.map((item) => item.vehicleId),
+    ["future"],
+  );
+});
+
+test("scheduled rental boundaries do not overlap Finder boundaries", () => {
+  const rental = {
+    vehicle_id: "vehicle-a",
+    scheduled_pickup_at: "2026-09-01T00:00:00.000Z",
+    scheduled_return_at: "2026-09-03T00:00:00.000Z",
+    started_at: "2026-09-01T00:00:00.000Z",
+    ended_at: null,
+  };
+  assert.equal(
+    hasScheduledRentalConflict(
+      [rental],
+      rental.vehicle_id,
+      "2026-09-03T00:00:00.000Z",
+      "2026-09-04T00:00:00.000Z",
+    ),
+    false,
+  );
+  assert.equal(
+    hasScheduledRentalConflict(
+      [rental],
+      rental.vehicle_id,
+      "2026-08-31T00:00:00.000Z",
+      "2026-09-01T00:00:00.000Z",
+    ),
+    false,
   );
 });
 

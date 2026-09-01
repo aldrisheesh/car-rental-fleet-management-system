@@ -1,6 +1,8 @@
 import { calculateRentalDays } from "./rental-duration.ts";
+import { manilaDateTimeLocalToInstant } from "./business-time.ts";
 
 export const MAX_FINDER_PASSENGERS = 100;
+export const FINDER_START_PRECISION_TOLERANCE_MS = 60_000;
 
 export type VehicleFinderInput = {
   requestedStart: string;
@@ -62,47 +64,25 @@ export type FinderValidationResult =
 const cleanText = (value: unknown) =>
   typeof value === "string" ? value.trim() : "";
 
-function parseRentalTimestamp(value: string) {
-  const match =
-    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})?$/.exec(
-      value,
-    );
-  if (!match) return null;
-  const [, yearText, monthText, dayText, hourText, minuteText, secondText] =
-    match;
-  const year = Number(yearText);
-  const month = Number(monthText);
-  const day = Number(dayText);
-  const hour = Number(hourText);
-  const minute = Number(minuteText);
-  const second = Number(secondText ?? 0);
-  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  if (
-    month < 1 ||
-    month > 12 ||
-    day < 1 ||
-    day > daysInMonth ||
-    hour > 23 ||
-    minute > 59 ||
-    second > 59
-  )
-    return null;
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
 export function validateFinderInput(
   input: Record<string, unknown> | null,
   supportedCategories: string[],
+  now: Date = new Date(),
 ): FinderValidationResult {
   const errors: Record<string, string> = {};
   const requestedStart = cleanText(input?.requestedStart);
   const requestedEnd = cleanText(input?.requestedEnd);
-  const start = parseRentalTimestamp(requestedStart);
-  const end = parseRentalTimestamp(requestedEnd);
+  const start = manilaDateTimeLocalToInstant(requestedStart);
+  const end = manilaDateTimeLocalToInstant(requestedEnd);
 
   if (!start) errors.requestedStart = "Enter a valid rental start.";
   if (!end) errors.requestedEnd = "Enter a valid rental end.";
+  if (
+    start &&
+    !Number.isNaN(now.getTime()) &&
+    start.getTime() < now.getTime() - FINDER_START_PRECISION_TOLERANCE_MS
+  )
+    errors.requestedStart = "Rental start cannot be in the past.";
   if (start && end && start >= end)
     errors.requestedEnd = "Rental end must be after the start.";
 
@@ -160,6 +140,30 @@ export function intervalsOverlap(
   if ([aStart, aEnd, bStart, bEnd].some((date) => Number.isNaN(date.getTime())))
     return false;
   return aStart < bEnd && aEnd > bStart;
+}
+
+export type ScheduledRentalCommitment = {
+  vehicle_id: string;
+  scheduled_pickup_at: string;
+  scheduled_return_at: string;
+};
+
+export function hasScheduledRentalConflict(
+  rentals: ScheduledRentalCommitment[],
+  vehicleId: string,
+  requestedStart: string,
+  requestedEnd: string,
+) {
+  return rentals.some(
+    (rental) =>
+      rental.vehicle_id === vehicleId &&
+      intervalsOverlap(
+        rental.scheduled_pickup_at,
+        rental.scheduled_return_at,
+        requestedStart,
+        requestedEnd,
+      ),
+  );
 }
 
 const money = (value: number) => Math.round(value * 100) / 100;

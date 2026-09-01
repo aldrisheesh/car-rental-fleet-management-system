@@ -5,6 +5,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { VehicleCard } from "@/components/site/VehicleCard";
 import { peso, vehicles as mockVehicles, type Vehicle } from "@/data/vehicles";
+import { instantToManilaDateTimeLocal } from "@/lib/business-time";
 
 const categories = [
   "All",
@@ -125,6 +126,11 @@ function VehiclesPage() {
     Record<string, string>
   >({});
   const [finderResult, setFinderResult] = useState<FinderResponse | null>(null);
+  const [minimumFinderDateTime, setMinimumFinderDateTime] = useState("");
+
+  useEffect(() => {
+    setMinimumFinderDateTime(instantToManilaDateTimeLocal(new Date()));
+  }, []);
 
   useEffect(() => {
     void fetch("/api/vehicles")
@@ -293,6 +299,7 @@ function VehiclesPage() {
                   <input
                     className="input-control"
                     type="datetime-local"
+                    min={minimumFinderDateTime || undefined}
                     value={finderForm.requestedStart}
                     onChange={(event) =>
                       updateFinderField("requestedStart", event.target.value)
@@ -308,6 +315,11 @@ function VehiclesPage() {
                   <input
                     className="input-control"
                     type="datetime-local"
+                    min={
+                      finderForm.requestedStart ||
+                      minimumFinderDateTime ||
+                      undefined
+                    }
                     value={finderForm.requestedEnd}
                     onChange={(event) =>
                       updateFinderField("requestedEnd", event.target.value)
