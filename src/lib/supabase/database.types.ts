@@ -42,6 +42,55 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
         Relationships: [];
       };
+      audit_events: {
+        Row: {
+          id: string;
+          actor_type: "User" | "System";
+          actor_user_id: string | null;
+          action: string;
+          entity_type:
+            | "booking"
+            | "requirements"
+            | "payment"
+            | "rental"
+            | "maintenance";
+          entity_id: string;
+          booking_id: string | null;
+          metadata: Record<string, unknown>;
+          occurred_at: string;
+        };
+        Insert: {
+          id?: string;
+          actor_type: "User" | "System";
+          actor_user_id?: string | null;
+          action: string;
+          entity_type:
+            | "booking"
+            | "requirements"
+            | "payment"
+            | "rental"
+            | "maintenance";
+          entity_id: string;
+          booking_id?: string | null;
+          metadata?: Record<string, unknown>;
+          occurred_at?: string;
+        };
+        Update: never;
+        Relationships: [
+          {
+            foreignKeyName: "audit_events_actor_user_id_fkey";
+            columns: ["actor_user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "audit_events_booking_id_fkey";
+            columns: ["booking_id"];
+            referencedRelation: "booking_requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       branches: {
         Row: {
           id: string;

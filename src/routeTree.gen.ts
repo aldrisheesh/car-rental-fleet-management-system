@@ -33,6 +33,7 @@ import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as ApiForecastsRouteImport } from './routes/api.forecasts'
 import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
 import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-master-data'
+import { Route as ApiAuditEventsRouteImport } from './routes/api.audit-events'
 import { Route as ApiAllocationRecommendationsRouteImport } from './routes/api.allocation-recommendations'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -47,6 +48,7 @@ import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
 import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
 import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
+import { Route as AdminActivityRouteImport } from './routes/admin.activity'
 import { Route as ApiInternalRemindersRouteImport } from './routes/api.internal.reminders'
 import { Route as ApiAuthSignUpRouteImport } from './routes/api.auth.sign-up'
 import { Route as ApiAuthSignOutRouteImport } from './routes/api.auth.sign-out'
@@ -174,6 +176,11 @@ const ApiBookingMasterDataRoute = ApiBookingMasterDataRouteImport.update({
   path: '/api/booking-master-data',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuditEventsRoute = ApiAuditEventsRouteImport.update({
+  id: '/api/audit-events',
+  path: '/api/audit-events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAllocationRecommendationsRoute =
   ApiAllocationRecommendationsRouteImport.update({
     id: '/api/allocation-recommendations',
@@ -245,6 +252,11 @@ const AdminBookingsRoute = AdminBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminActivityRoute = AdminActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiInternalRemindersRoute = ApiInternalRemindersRouteImport.update({
   id: '/api/internal/reminders',
   path: '/api/internal/reminders',
@@ -286,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/payment-details': typeof PaymentDetailsRoute
   '/sign-in': typeof SignInRoute
   '/vehicles': typeof VehiclesRoute
+  '/admin/activity': typeof AdminActivityRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -300,6 +313,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
+  '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/forecasts': typeof ApiForecastsRoute
@@ -331,6 +345,7 @@ export interface FileRoutesByTo {
   '/payment-details': typeof PaymentDetailsRoute
   '/sign-in': typeof SignInRoute
   '/vehicles': typeof VehiclesRoute
+  '/admin/activity': typeof AdminActivityRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -345,6 +360,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
+  '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/forecasts': typeof ApiForecastsRoute
@@ -378,6 +394,7 @@ export interface FileRoutesById {
   '/payment-details': typeof PaymentDetailsRoute
   '/sign-in': typeof SignInRoute
   '/vehicles': typeof VehiclesRoute
+  '/admin/activity': typeof AdminActivityRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -392,6 +409,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
+  '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/forecasts': typeof ApiForecastsRoute
@@ -426,6 +444,7 @@ export interface FileRouteTypes {
     | '/payment-details'
     | '/sign-in'
     | '/vehicles'
+    | '/admin/activity'
     | '/admin/bookings'
     | '/admin/branches'
     | '/admin/calendar'
@@ -440,6 +459,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/users'
     | '/api/allocation-recommendations'
+    | '/api/audit-events'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/forecasts'
@@ -471,6 +491,7 @@ export interface FileRouteTypes {
     | '/payment-details'
     | '/sign-in'
     | '/vehicles'
+    | '/admin/activity'
     | '/admin/bookings'
     | '/admin/branches'
     | '/admin/calendar'
@@ -485,6 +506,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/users'
     | '/api/allocation-recommendations'
+    | '/api/audit-events'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/forecasts'
@@ -517,6 +539,7 @@ export interface FileRouteTypes {
     | '/payment-details'
     | '/sign-in'
     | '/vehicles'
+    | '/admin/activity'
     | '/admin/bookings'
     | '/admin/branches'
     | '/admin/calendar'
@@ -531,6 +554,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/users'
     | '/api/allocation-recommendations'
+    | '/api/audit-events'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/forecasts'
@@ -565,6 +589,7 @@ export interface RootRouteChildren {
   SignInRoute: typeof SignInRoute
   VehiclesRoute: typeof VehiclesRoute
   ApiAllocationRecommendationsRoute: typeof ApiAllocationRecommendationsRoute
+  ApiAuditEventsRoute: typeof ApiAuditEventsRoute
   ApiBookingMasterDataRoute: typeof ApiBookingMasterDataRoute
   ApiBookingsRoute: typeof ApiBookingsRoute
   ApiForecastsRoute: typeof ApiForecastsRoute
@@ -757,6 +782,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBookingMasterDataRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/audit-events': {
+      id: '/api/audit-events'
+      path: '/api/audit-events'
+      fullPath: '/api/audit-events'
+      preLoaderRoute: typeof ApiAuditEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/allocation-recommendations': {
       id: '/api/allocation-recommendations'
       path: '/api/allocation-recommendations'
@@ -855,6 +887,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/activity': {
+      id: '/admin/activity'
+      path: '/activity'
+      fullPath: '/admin/activity'
+      preLoaderRoute: typeof AdminActivityRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/internal/reminders': {
       id: '/api/internal/reminders'
       path: '/api/internal/reminders'
@@ -901,6 +940,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminActivityRoute: typeof AdminActivityRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
   AdminBranchesRoute: typeof AdminBranchesRoute
   AdminCalendarRoute: typeof AdminCalendarRoute
@@ -918,6 +958,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminActivityRoute: AdminActivityRoute,
   AdminBookingsRoute: AdminBookingsRoute,
   AdminBranchesRoute: AdminBranchesRoute,
   AdminCalendarRoute: AdminCalendarRoute,
@@ -947,6 +988,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignInRoute: SignInRoute,
   VehiclesRoute: VehiclesRoute,
   ApiAllocationRecommendationsRoute: ApiAllocationRecommendationsRoute,
+  ApiAuditEventsRoute: ApiAuditEventsRoute,
   ApiBookingMasterDataRoute: ApiBookingMasterDataRoute,
   ApiBookingsRoute: ApiBookingsRoute,
   ApiForecastsRoute: ApiForecastsRoute,

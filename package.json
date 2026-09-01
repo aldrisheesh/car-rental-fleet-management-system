@@ -11,6 +11,7 @@
     "sync:vercel": "powershell -ExecutionPolicy Bypass -File scripts/sync-vercel.ps1",
     "preview": "vite preview",
     "test:supabase": "node --experimental-strip-types --test src/lib/supabase/env.test.ts",
+    "test:audit": "node --experimental-strip-types --test src/lib/audit.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

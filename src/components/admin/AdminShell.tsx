@@ -22,6 +22,7 @@ import {
   MoreHorizontal,
   LogOut,
   UserRound,
+  ScrollText,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -72,6 +73,7 @@ const navDecisionSupport: NavItem[] = [
 ];
 
 const navAdminOnly: NavItem[] = [
+  { to: "/admin/activity", label: "Audit Trail", icon: ScrollText },
   { to: "/admin/users", label: "Users & Roles", icon: ShieldCheck },
   { to: "/admin/branches", label: "Branches", icon: Building2 },
 ];
