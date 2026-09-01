@@ -1,26 +1,31 @@
 # Open Decisions
-
 **Status:** Active
 **Last updated:** 2026-09-01
 
-Previously recorded client/lifecycle/payment/maintenance/return decisions remain active.
+See `24-client-interview-ground-truth.md`.
 
 ## Smart Vehicle Finder
+VS017 baseline is frozen. Still open: exact client operational/geographic restrictions, later context influence, Finder->Booking context persistence, and final usability refinement.
 
-VS017 baseline is frozen in `23-smart-vehicle-finder.md`.
+## Payment / settlement
+Confirmed: 50% minimum down payment; requirements before payment; bank transfer/GCash/cash; baseline renter-cancellation down payment stated non-refundable.
 
-Still open:
-1. CQ-027 — overlooked Briah operational restrictions on otherwise eligible customer recommendations.
-2. Exact later destination/context influence after canonical context integration.
-3. Whether Finder context should later be retained beyond booking-integration needs.
-4. Final customer-facing copy/usability refinements after evaluation.
+Still open: total-bill composition, production account details, cancellation exceptions, final settlement, deposit handling, complete late-return schedule, and detailed damage/fuel/cleaning penalties.
 
-The baseline ranking is a research/design decision and is not waiting for Briah to invent a recommendation procedure.
+## Late return
+PARTIALLY CONFIRMED: PHP 3,000 for less than six hours. CQ-029 covers remaining boundaries.
 
-## Existing Open Areas
+## Tie-up fleet
+PARTIALLY CONFIRMED: partner sourcing exists and a 30/70 Briah/partner split was described. CQ-030 covers exact scope/process.
 
-CQ-023, CQ-024, CQ-018, CQ-025, CQ-017, and CQ-026 remain open.
+## Allocation / transfer
+VS016 remains advisory. CQ-017/CQ-026 remain open for physical movement and exact approved-unit selection.
 
-Canonical notification triggers and final auditable-event coverage remain pending.
+## Context / travel restrictions
+Real restrictions exist; exact rules remain open under CQ-028. Do not hard-code transcript examples.
 
-Settlement, extensions, context-provider operations, final reporting, UX consolidation, and demo-data preparation remain pending.
+## Remaining product work
+Notifications, audit coverage, reports/dashboard canonicalization, role-based UX/mobile validation, demo data, and unresolved settlement remain pending.
+
+## GPS
+Lower client priority; future/optional.
