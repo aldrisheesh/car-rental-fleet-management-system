@@ -26,6 +26,7 @@ import { Route as ApiVehicleAnalyticsRouteImport } from './routes/api.vehicle-an
 import { Route as ApiSupplyEvaluationsRouteImport } from './routes/api.supply-evaluations'
 import { Route as ApiRequirementsRouteImport } from './routes/api.requirements'
 import { Route as ApiPaymentsRouteImport } from './routes/api.payments'
+import { Route as ApiNotificationsRouteImport } from './routes/api.notifications'
 import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
 import { Route as ApiMaintenanceRouteImport } from './routes/api.maintenance'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
@@ -135,6 +136,11 @@ const ApiRequirementsRoute = ApiRequirementsRouteImport.update({
 const ApiPaymentsRoute = ApiPaymentsRouteImport.update({
   id: '/api/payments',
   path: '/api/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
+  id: '/api/notifications',
+  path: '/api/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMasterDataRoute = ApiMasterDataRouteImport.update({
@@ -294,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
+  '/api/notifications': typeof ApiNotificationsRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
@@ -337,6 +344,7 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
+  '/api/notifications': typeof ApiNotificationsRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
@@ -382,6 +390,7 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
+  '/api/notifications': typeof ApiNotificationsRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
@@ -428,6 +437,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/maintenance'
     | '/api/master-data'
+    | '/api/notifications'
     | '/api/payments'
     | '/api/requirements'
     | '/api/supply-evaluations'
@@ -471,6 +481,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/maintenance'
     | '/api/master-data'
+    | '/api/notifications'
     | '/api/payments'
     | '/api/requirements'
     | '/api/supply-evaluations'
@@ -515,6 +526,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/maintenance'
     | '/api/master-data'
+    | '/api/notifications'
     | '/api/payments'
     | '/api/requirements'
     | '/api/supply-evaluations'
@@ -547,6 +559,7 @@ export interface RootRouteChildren {
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMaintenanceRoute: typeof ApiMaintenanceRoute
   ApiMasterDataRoute: typeof ApiMasterDataRoute
+  ApiNotificationsRoute: typeof ApiNotificationsRoute
   ApiPaymentsRoute: typeof ApiPaymentsRoute
   ApiRequirementsRoute: typeof ApiRequirementsRoute
   ApiSupplyEvaluationsRoute: typeof ApiSupplyEvaluationsRoute
@@ -680,6 +693,13 @@ declare module '@tanstack/react-router' {
       path: '/api/payments'
       fullPath: '/api/payments'
       preLoaderRoute: typeof ApiPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/notifications': {
+      id: '/api/notifications'
+      path: '/api/notifications'
+      fullPath: '/api/notifications'
+      preLoaderRoute: typeof ApiNotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/master-data': {
@@ -913,6 +933,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHealthRoute: ApiHealthRoute,
   ApiMaintenanceRoute: ApiMaintenanceRoute,
   ApiMasterDataRoute: ApiMasterDataRoute,
+  ApiNotificationsRoute: ApiNotificationsRoute,
   ApiPaymentsRoute: ApiPaymentsRoute,
   ApiRequirementsRoute: ApiRequirementsRoute,
   ApiSupplyEvaluationsRoute: ApiSupplyEvaluationsRoute,

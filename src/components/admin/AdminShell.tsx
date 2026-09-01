@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  Link,
+  Outlet,
+  useNavigate,
+  useRouterState,
+} from "@tanstack/react-router";
 import {
   LayoutDashboard,
   CalendarRange,
@@ -34,8 +39,17 @@ import {
   signOutAdmin,
 } from "@/lib/admin-auth";
 import { clearCustomerSession } from "@/lib/customer-auth";
+import {
+  NOTIFICATIONS_CHANGED_EVENT,
+  type NotificationsResponse,
+} from "@/lib/notifications";
 
-type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
+type NavItem = {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+};
 const navStaffModules: NavItem[] = [
   { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
   { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
@@ -98,7 +112,10 @@ function SidebarSection({ title, items }: { title: string; items: NavItem[] }) {
 export function AdminShell() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const [session, setSession] = useState<ReturnType<typeof getAdminSession> | undefined>();
+  const [session, setSession] = useState<
+    ReturnType<typeof getAdminSession> | undefined
+  >();
+  const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
   const role = session?.role;
   const staffView = isStaffRole(role);
   const canViewPayments = canAccessPayments(role);
@@ -114,7 +131,9 @@ export function AdminShell() {
     ? "Edit Profile"
     : (current?.label ?? "Dashboard");
   const userInitials = getInitials(session?.name ?? "");
-  const mobileNavItems = staffView ? navStaffModules : [...navDecisionSupport, ...coreOperations];
+  const mobileNavItems = staffView
+    ? navStaffModules
+    : [...navDecisionSupport, ...coreOperations];
 
   useEffect(() => {
     const activeSession = getAdminSession();
@@ -140,10 +159,41 @@ export function AdminShell() {
 
   useEffect(() => {
     if (!session) return;
-    if (!canAccessPayments(session.role) && pathname.startsWith("/admin/payments")) {
+    if (
+      !canAccessPayments(session.role) &&
+      pathname.startsWith("/admin/payments")
+    ) {
       void navigate({ to: "/admin", replace: true });
     }
   }, [navigate, pathname, session]);
+
+  useEffect(() => {
+    if (!session || isStaffRole(session.role)) {
+      setNotificationUnreadCount(0);
+      return;
+    }
+    let cancelled = false;
+    async function loadUnreadCount() {
+      try {
+        const response = await fetch("/api/notifications", {
+          credentials: "same-origin",
+        });
+        const body = (await response
+          .json()
+          .catch(() => null)) as NotificationsResponse | null;
+        if (!cancelled && response.ok && body)
+          setNotificationUnreadCount(body.unreadCount);
+      } catch {
+        if (!cancelled) setNotificationUnreadCount(0);
+      }
+    }
+    void loadUnreadCount();
+    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, loadUnreadCount);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, loadUnreadCount);
+    };
+  }, [session, pathname]);
 
   useEffect(() => {
     if (!session) return;
@@ -154,10 +204,16 @@ export function AdminShell() {
       return;
     }
 
-    const allowedPrefixes = ["/admin/bookings", "/admin/calendar", "/admin/profile"];
+    const allowedPrefixes = [
+      "/admin/bookings",
+      "/admin/calendar",
+      "/admin/profile",
+    ];
 
     if (
-      !allowedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+      !allowedPrefixes.some(
+        (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+      )
     ) {
       void navigate({ to: "/admin/bookings", replace: true });
     }
@@ -177,7 +233,9 @@ export function AdminShell() {
           <div className="font-display text-lg font-semibold tracking-tight">
             Briah&apos;s Car Rental
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">Checking admin session...</p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Checking admin session...
+          </p>
         </div>
       </div>
     );
@@ -198,7 +256,10 @@ export function AdminShell() {
     <div className="flex min-h-screen bg-background text-foreground">
       {/* Sidebar */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-surface/80 backdrop-blur lg:flex">
-        <Link to="/" className="flex h-16 items-center gap-3 border-b border-border px-5">
+        <Link
+          to="/"
+          className="flex h-16 items-center gap-3 border-b border-border px-5"
+        >
           <div className="leading-tight">
             <div className="font-display text-sm font-semibold tracking-tight">
               Briah&apos;s Car Rental
@@ -218,8 +279,14 @@ export function AdminShell() {
               <SidebarSection title="Modules" items={navStaffModules} />
             ) : (
               <>
-                <SidebarSection title="Decision Support" items={navDecisionSupport} />
-                <SidebarSection title="Core Operations" items={coreOperations} />
+                <SidebarSection
+                  title="Decision Support"
+                  items={navDecisionSupport}
+                />
+                <SidebarSection
+                  title="Core Operations"
+                  items={coreOperations}
+                />
                 <SidebarSection title="" items={navAdmin} />
               </>
             )}
@@ -233,7 +300,9 @@ export function AdminShell() {
             </span>
             <div className="leading-tight">
               <div className="text-[13px] font-medium">{session.name}</div>
-              <div className="text-[11px] text-muted-foreground">{session.role}</div>
+              <div className="text-[11px] text-muted-foreground">
+                {session.role}
+              </div>
             </div>
           </div>
         </div>
@@ -254,18 +323,26 @@ export function AdminShell() {
                 className="w-56 bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
                 placeholder="Search bookings, plates, customers"
               />
-              <kbd className="rounded border border-border px-1.5 py-0.5 text-[10px]">⌘K</kbd>
+              <kbd className="rounded border border-border px-1.5 py-0.5 text-[10px]">
+                ⌘K
+              </kbd>
             </label>
-            <Link
-              to={"/admin/notifications" as never}
-              aria-label="Notifications"
-              className="touch-target relative grid place-items-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                3
-              </span>
-            </Link>
+            {!staffView && (
+              <Link
+                to={"/admin/notifications" as never}
+                aria-label={`Notifications${notificationUnreadCount ? `, ${notificationUnreadCount} unread` : ""}`}
+                className="touch-target relative grid place-items-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <Bell className="h-4 w-4" />
+                {notificationUnreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                    {notificationUnreadCount > 99
+                      ? "99+"
+                      : notificationUnreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -280,8 +357,12 @@ export function AdminShell() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="py-2">
-                  <div className="text-sm font-medium text-foreground">{session.name}</div>
-                  <div className="text-xs font-normal text-muted-foreground">{session.role}</div>
+                  <div className="text-sm font-medium text-foreground">
+                    {session.name}
+                  </div>
+                  <div className="text-xs font-normal text-muted-foreground">
+                    {session.role}
+                  </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -304,7 +385,10 @@ export function AdminShell() {
         </header>
 
         <nav className="border-b border-border bg-surface/80 px-4 py-3 lg:hidden">
-          <div className="flex gap-2 overflow-x-auto pb-1" aria-label="Admin sections">
+          <div
+            className="flex gap-2 overflow-x-auto pb-1"
+            aria-label="Admin sections"
+          >
             {mobileNavItems.map((n) => (
               <Link
                 key={n.to}
@@ -332,11 +416,16 @@ export function AdminShell() {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>{isStaffRole(role) ? "Management" : "Admin"}</DropdownMenuLabel>
+                <DropdownMenuLabel>
+                  {isStaffRole(role) ? "Management" : "Admin"}
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {navAdmin.map((n) => (
                   <DropdownMenuItem key={n.to} asChild>
-                    <Link to={n.to as never} activeOptions={n.exact ? { exact: true } : undefined}>
+                    <Link
+                      to={n.to as never}
+                      activeOptions={n.exact ? { exact: true } : undefined}
+                    >
                       <n.icon className="h-4 w-4" />
                       {n.label}
                     </Link>

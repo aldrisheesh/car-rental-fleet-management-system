@@ -324,6 +324,34 @@ export type Database = {
         Update: Record<string, any>;
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          id: string;
+          recipient_id: string;
+          notification_type: string;
+          title: string;
+          message: string;
+          related_entity_type: string;
+          related_entity_id: string;
+          event_key: string;
+          created_at: string;
+          read_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          recipient_id: string;
+          notification_type: string;
+          title: string;
+          message: string;
+          related_entity_type: string;
+          related_entity_id: string;
+          event_key: string;
+          created_at?: string;
+          read_at?: string | null;
+        };
+        Update: { read_at?: string | null };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -348,6 +376,20 @@ export type Database = {
       resubmit_renter_requirements: {
         Args: { p_requirement_set_id: string; p_customer_id: string };
         Returns: boolean;
+      };
+      submit_payment_proof_atomic: {
+        Args: {
+          p_booking_id: string;
+          p_customer_id: string;
+          p_payment_method_id: string;
+          p_submitted_amount: number;
+          p_transaction_reference: string;
+          p_storage_path: string;
+          p_original_filename: string;
+          p_mime_type: string;
+          p_size_bytes: number;
+        };
+        Returns: Record<string, unknown>;
       };
       assign_booking_vehicle: {
         Args: Record<string, any>;

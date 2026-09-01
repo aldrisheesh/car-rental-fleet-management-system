@@ -5,10 +5,17 @@ import {
   useNavigate,
 } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { CreditCard, FileCheck2, FileUp, History, UserRound } from "lucide-react";
+import {
+  CreditCard,
+  FileCheck2,
+  FileUp,
+  History,
+  UserRound,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
+import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
 import type { Booking } from "@/data/admin";
 import { peso } from "@/data/vehicles";
 import { getAdminSession } from "@/lib/admin-auth";
@@ -31,7 +38,8 @@ export const Route = createFileRoute("/customer")({
       { title: "Customer View - Briah's Car Rental" },
       {
         name: "description",
-        content: "Customer portal for requirement uploads and payment status tracking.",
+        content:
+          "Customer portal for requirement uploads and payment status tracking.",
       },
     ],
     links: [{ rel: "canonical", href: "/customer" }],
@@ -41,7 +49,12 @@ export const Route = createFileRoute("/customer")({
 
 type PaymentStatus = "Pending" | "Verified" | "Invalid";
 
-const paymentRows: { ref: string; amount: number; method: string; status: PaymentStatus }[] = [
+const paymentRows: {
+  ref: string;
+  amount: number;
+  method: string;
+  status: PaymentStatus;
+}[] = [
   { ref: "PAY-4502", amount: 5000, method: "GCash", status: "Pending" },
   { ref: "PAY-4487", amount: 7200, method: "BDO", status: "Verified" },
   { ref: "PAY-4469", amount: 3000, method: "BPI", status: "Invalid" },
@@ -50,7 +63,9 @@ const paymentRows: { ref: string; amount: number; method: string; status: Paymen
 function CustomerViewPage() {
   const navigate = useNavigate();
   const showRequirementsOnly = false;
-  const [session, setSession] = useState<CustomerSession | null | undefined>(undefined);
+  const [session, setSession] = useState<CustomerSession | null | undefined>(
+    undefined,
+  );
   const [bookingRequests, setBookingRequests] = useState<any[]>([]);
   const [idFileName, setIdFileName] = useState("");
   const [licenseFileName, setLicenseFileName] = useState("");
@@ -64,7 +79,10 @@ function CustomerViewPage() {
       return;
     }
     setSession(activeSession);
-    fetch("/api/bookings", { credentials: "same-origin" }).then((r) => r.ok ? r.json() : []).then(setBookingRequests).catch(() => undefined);
+    fetch("/api/bookings", { credentials: "same-origin" })
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setBookingRequests)
+      .catch(() => undefined);
   }, [navigate]);
 
   if (session === undefined) {
@@ -74,7 +92,9 @@ function CustomerViewPage() {
           <div className="font-display text-lg font-semibold tracking-tight">
             Briah&apos;s Car Rental
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">Checking customer session...</p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Checking customer session...
+          </p>
         </div>
       </div>
     );
@@ -89,12 +109,15 @@ function CustomerViewPage() {
 
         <section className="border-b border-border bg-secondary/60">
           <div className="container-page py-14 text-center">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Next step</p>
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
+              Next step
+            </p>
             <h1 className="mt-2 font-display text-4xl font-semibold md:text-5xl">
               Requirement Submission
             </h1>
             <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-              Upload your valid ID and driver&apos;s license to speed up approval.
+              Upload your valid ID and driver&apos;s license to speed up
+              approval.
             </p>
           </div>
         </section>
@@ -164,7 +187,8 @@ function CustomerViewPage() {
     );
   }
 
-  const highlightedPayment = paymentRows.find((row) => row.ref === "PAY-4487") ?? paymentRows[0];
+  const highlightedPayment =
+    paymentRows.find((row) => row.ref === "PAY-4487") ?? paymentRows[0];
 
   return (
     <div>
@@ -211,7 +235,8 @@ function CustomerViewPage() {
 
               <div className="mt-4 rounded-xl border border-border bg-card px-4 py-3 text-left shadow-soft">
                 <div className="text-xs font-semibold text-foreground">
-                  {highlightedPayment.ref} {"\u2022"} {peso(highlightedPayment.amount)}
+                  {highlightedPayment.ref} {"\u2022"}{" "}
+                  {peso(highlightedPayment.amount)}
                 </div>
                 <div className="mt-2 text-xs font-semibold text-muted-foreground">
                   {highlightedPayment.method}
@@ -234,7 +259,10 @@ function CustomerViewPage() {
             </div>
           </div>
 
-          <Card title="Payment status" icon={<CreditCard className="h-4 w-4 text-primary" />}>
+          <Card
+            title="Payment status"
+            icon={<CreditCard className="h-4 w-4 text-primary" />}
+          >
             <div className="space-y-2">
               {paymentRows.map((row) => (
                 <Row
@@ -258,10 +286,74 @@ function CustomerViewPage() {
             </div>
           </Card>
 
-          {bookingRequests[0] && <RequirementSubmission booking={bookingRequests[0]} />}
+          {bookingRequests[0] && (
+            <RequirementSubmission booking={bookingRequests[0]} />
+          )}
 
-          <Card title="Past bookings" icon={<History className="h-4 w-4 text-primary" />}>
-          {bookingRequests.length > 0 && <div className="mb-4 space-y-3">{bookingRequests.map((request) => <div key={request.id} className="rounded-md border border-primary/30 bg-primary/5 px-3 py-3"><div className="flex items-center justify-between gap-3"><div><p className="text-sm font-semibold">Request {request.id.slice(0, 8)}</p><p className="text-xs text-muted-foreground">Requested: {request.requested_vehicle?.name ?? "—"} · {new Date(request.pickup_at).toLocaleString()}</p>{request.assigned_vehicle && <p className="text-xs text-foreground">Assigned: {request.assigned_vehicle.name}{request.assigned_vehicle.id !== request.requested_vehicle_id ? " (substituted)" : ""}</p>}{request.rental?.started_at && <div className="mt-2 rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-2 text-xs"><b>{request.rental.ended_at ? "Vehicle returned" : "Active rental"}</b> · Started {new Date(request.rental.started_at).toLocaleString()} · Scheduled return {new Date(request.rental.scheduled_return_at).toLocaleString()}{request.rental.ended_at && <> · Actual return {new Date(request.rental.ended_at).toLocaleString()}</>}</div>}</div><StatusPill status={request.booking_status} /></div></div>)}</div>}
+          <NotificationsPanel audience="customer" compact />
+
+          <Card
+            title="Past bookings"
+            icon={<History className="h-4 w-4 text-primary" />}
+          >
+            {bookingRequests.length > 0 && (
+              <div className="mb-4 space-y-3">
+                {bookingRequests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="rounded-md border border-primary/30 bg-primary/5 px-3 py-3"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold">
+                          Request {request.id.slice(0, 8)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Requested: {request.requested_vehicle?.name ?? "—"} ·{" "}
+                          {new Date(request.pickup_at).toLocaleString()}
+                        </p>
+                        {request.assigned_vehicle && (
+                          <p className="text-xs text-foreground">
+                            Assigned: {request.assigned_vehicle.name}
+                            {request.assigned_vehicle.id !==
+                            request.requested_vehicle_id
+                              ? " (substituted)"
+                              : ""}
+                          </p>
+                        )}
+                        {request.rental?.started_at && (
+                          <div className="mt-2 rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-2 text-xs">
+                            <b>
+                              {request.rental.ended_at
+                                ? "Vehicle returned"
+                                : "Active rental"}
+                            </b>{" "}
+                            · Started{" "}
+                            {new Date(
+                              request.rental.started_at,
+                            ).toLocaleString()}{" "}
+                            · Scheduled return{" "}
+                            {new Date(
+                              request.rental.scheduled_return_at,
+                            ).toLocaleString()}
+                            {request.rental.ended_at && (
+                              <>
+                                {" "}
+                                · Actual return{" "}
+                                {new Date(
+                                  request.rental.ended_at,
+                                ).toLocaleString()}
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <StatusPill status={request.booking_status} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             <PastBookings rows={pastCustomerBookings} />
           </Card>
         </div>
@@ -275,41 +367,188 @@ function CustomerViewPage() {
 function RequirementSubmission({ booking }: { booking: any }) {
   const [data, setData] = useState<any>(null);
   const [busy, setBusy] = useState(false);
-  const load = () => fetch(`/api/requirements?bookingId=${encodeURIComponent(booking.id)}`, { credentials: "same-origin" }).then((r) => r.ok ? r.json() : null).then(setData).catch(() => undefined);
-  useEffect(() => { load(); }, [booking.id]);
-  const current = (type: string) => data?.documents?.find((d: any) => d.requirement_type === type && d.is_current);
+  const load = () =>
+    fetch(`/api/requirements?bookingId=${encodeURIComponent(booking.id)}`, {
+      credentials: "same-origin",
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setData)
+      .catch(() => undefined);
+  useEffect(() => {
+    load();
+  }, [booking.id]);
+  const current = (type: string) =>
+    data?.documents?.find(
+      (d: any) => d.requirement_type === type && d.is_current,
+    );
   async function upload(type: string, file: File | undefined) {
     if (!file) return;
-    setBusy(true); const form = new FormData(); form.set("bookingId", booking.id); form.set("requirementType", type); form.set("file", file);
-    const response = await fetch("/api/requirements", { method: "POST", body: form, credentials: "same-origin" }); const body = await response.json().catch(() => ({})); setBusy(false);
-    if (!response.ok) { toast.error(body.message || "Unable to upload document."); return; } toast.success(`${type} uploaded`); load();
+    setBusy(true);
+    const form = new FormData();
+    form.set("bookingId", booking.id);
+    form.set("requirementType", type);
+    form.set("file", file);
+    const response = await fetch("/api/requirements", {
+      method: "POST",
+      body: form,
+      credentials: "same-origin",
+    });
+    const body = await response.json().catch(() => ({}));
+    setBusy(false);
+    if (!response.ok) {
+      toast.error(body.message || "Unable to upload document.");
+      return;
+    }
+    toast.success(`${type} uploaded`);
+    load();
   }
   async function submit() {
-    setBusy(true); const form = new FormData(); form.set("bookingId", booking.id); form.set("action", "submit"); const response = await fetch("/api/requirements", { method: "POST", body: form, credentials: "same-origin" }); const body = await response.json().catch(() => ({})); setBusy(false);
-    if (!response.ok) { toast.error(body.message || "Unable to submit requirements."); return; } toast.success("Requirements submitted", { description: "Pending Review. Payment becomes available after Owner/Admin verification." }); load();
+    setBusy(true);
+    const form = new FormData();
+    form.set("bookingId", booking.id);
+    form.set("action", "submit");
+    const response = await fetch("/api/requirements", {
+      method: "POST",
+      body: form,
+      credentials: "same-origin",
+    });
+    const body = await response.json().catch(() => ({}));
+    setBusy(false);
+    if (!response.ok) {
+      toast.error(body.message || "Unable to submit requirements.");
+      return;
+    }
+    toast.success("Requirements submitted", {
+      description:
+        "Pending Review. Payment becomes available after Owner/Admin verification.",
+    });
+    load();
   }
   async function resubmit() {
-    setBusy(true); const form = new FormData(); form.set("bookingId", booking.id); form.set("action", "resubmit"); const response = await fetch("/api/requirements", { method: "POST", body: form, credentials: "same-origin" }); const body = await response.json().catch(() => ({})); setBusy(false);
-    if (!response.ok) { toast.error(body.message || "Unable to resubmit requirements."); return; } toast.success("Requirements resubmitted for review."); load();
+    setBusy(true);
+    const form = new FormData();
+    form.set("bookingId", booking.id);
+    form.set("action", "resubmit");
+    const response = await fetch("/api/requirements", {
+      method: "POST",
+      body: form,
+      credentials: "same-origin",
+    });
+    const body = await response.json().catch(() => ({}));
+    setBusy(false);
+    if (!response.ok) {
+      toast.error(body.message || "Unable to resubmit requirements.");
+      return;
+    }
+    toast.success("Requirements resubmitted for review.");
+    load();
   }
-  const ready = Boolean(current("Valid Government ID") && current("Driver's License"));
-  return <Card title="Renter requirements" icon={<FileCheck2 className="h-4 w-4 text-primary" />}>
-    <p className="mb-3 text-xs text-muted-foreground">Request {booking.id.slice(0, 8)} · upload exactly one current file for each required document.</p>
-    <div className="grid gap-3 sm:grid-cols-2">
-      {["Valid Government ID", "Driver's License"].map((type) => { const review = data?.review; const flagged = type === "Valid Government ID" ? review?.governmentIdOutcome === "Needs Replacement" : review?.driversLicenseOutcome === "Needs Replacement"; const reason = type === "Valid Government ID" ? review?.governmentIdReason : review?.driversLicenseReason; return <label key={type} className="rounded-md border border-border bg-secondary/20 p-3 text-sm"><span className="font-medium">{type}</span>{review && <span className={`ml-2 rounded-full border px-2 py-0.5 text-[10px] ${flagged ? "text-rose-300" : "text-emerald-300"}`}>{flagged ? "Needs Replacement" : "Accepted"}</span>}<input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" disabled={busy || !(data?.requirementSet?.status === "Not Submitted" || (data?.requirementSet?.status === "Needs Resubmission" && flagged))} onChange={(e) => upload(type, e.target.files?.[0])} className="mt-2 block w-full text-xs" /><span className="mt-1 block text-xs text-muted-foreground">{current(type)?.original_filename || "Not submitted"}</span>{flagged && <span className="mt-1 block text-xs text-rose-300">{reason}</span>}</label>; })}
-    </div>
-    <div className="mt-3 flex items-center justify-between gap-3"><StatusPill status={data?.requirementSet?.status || "Not Submitted"} />{data?.requirementSet?.status === "Needs Resubmission" ? <button type="button" disabled={busy} onClick={resubmit} className="touch-target rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:opacity-50">Resubmit for Review</button> : <button type="button" disabled={!ready || busy || data?.requirementSet?.status !== "Not Submitted"} onClick={submit} className="touch-target rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50">Submit for review</button>}</div>
-    {data?.requirementSet?.status === "Pending Review" && <p className="mt-2 text-xs text-muted-foreground">Uploads are not verification. Owner/Admin review is required before payment.</p>}
-  </Card>;
+  const ready = Boolean(
+    current("Valid Government ID") && current("Driver's License"),
+  );
+  return (
+    <Card
+      title="Renter requirements"
+      icon={<FileCheck2 className="h-4 w-4 text-primary" />}
+    >
+      <p className="mb-3 text-xs text-muted-foreground">
+        Request {booking.id.slice(0, 8)} · upload exactly one current file for
+        each required document.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {["Valid Government ID", "Driver's License"].map((type) => {
+          const review = data?.review;
+          const flagged =
+            type === "Valid Government ID"
+              ? review?.governmentIdOutcome === "Needs Replacement"
+              : review?.driversLicenseOutcome === "Needs Replacement";
+          const reason =
+            type === "Valid Government ID"
+              ? review?.governmentIdReason
+              : review?.driversLicenseReason;
+          return (
+            <label
+              key={type}
+              className="rounded-md border border-border bg-secondary/20 p-3 text-sm"
+            >
+              <span className="font-medium">{type}</span>
+              {review && (
+                <span
+                  className={`ml-2 rounded-full border px-2 py-0.5 text-[10px] ${flagged ? "text-rose-300" : "text-emerald-300"}`}
+                >
+                  {flagged ? "Needs Replacement" : "Accepted"}
+                </span>
+              )}
+              <input
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                disabled={
+                  busy ||
+                  !(
+                    data?.requirementSet?.status === "Not Submitted" ||
+                    (data?.requirementSet?.status === "Needs Resubmission" &&
+                      flagged)
+                  )
+                }
+                onChange={(e) => upload(type, e.target.files?.[0])}
+                className="mt-2 block w-full text-xs"
+              />
+              <span className="mt-1 block text-xs text-muted-foreground">
+                {current(type)?.original_filename || "Not submitted"}
+              </span>
+              {flagged && (
+                <span className="mt-1 block text-xs text-rose-300">
+                  {reason}
+                </span>
+              )}
+            </label>
+          );
+        })}
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <StatusPill status={data?.requirementSet?.status || "Not Submitted"} />
+        {data?.requirementSet?.status === "Needs Resubmission" ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={resubmit}
+            className="touch-target rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:opacity-50"
+          >
+            Resubmit for Review
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={
+              !ready || busy || data?.requirementSet?.status !== "Not Submitted"
+            }
+            onClick={submit}
+            className="touch-target rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Submit for review
+          </button>
+        )}
+      </div>
+      {data?.requirementSet?.status === "Pending Review" && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Uploads are not verification. Owner/Admin review is required before
+          payment.
+        </p>
+      )}
+    </Card>
+  );
 }
 
 function PastBookings({ rows }: { rows: Booking[] }) {
   if (rows.length === 0) {
     return (
       <div className="rounded-md border border-dashed border-border bg-secondary/20 px-4 py-5 text-center">
-        <p className="text-sm font-medium text-foreground">No past bookings yet</p>
+        <p className="text-sm font-medium text-foreground">
+          No past bookings yet
+        </p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          Completed and cancelled reservations will appear here after your trips are finalized.
+          Completed and cancelled reservations will appear here after your trips
+          are finalized.
         </p>
       </div>
     );
@@ -318,14 +557,18 @@ function PastBookings({ rows }: { rows: Booking[] }) {
   return (
     <div className="space-y-3">
       {rows.map((booking) => (
-        <div key={booking.id} className="rounded-md border border-border bg-secondary/30 px-3 py-3">
+        <div
+          key={booking.id}
+          className="rounded-md border border-border bg-secondary/30 px-3 py-3"
+        >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-foreground">
                 {booking.id} - {booking.vehicle}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                {booking.branch} - {formatBookingRange(booking.from, booking.to)}
+                {booking.branch} -{" "}
+                {formatBookingRange(booking.from, booking.to)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Plate {booking.plate} - {peso(booking.amount)}
@@ -374,7 +617,9 @@ function StatusPill({ status }: { status: string }) {
           : "bg-amber-500/10 text-amber-300 border-amber-500/25";
 
   return (
-    <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${style}`}>
+    <span
+      className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${style}`}
+    >
       {status}
     </span>
   );
@@ -391,7 +636,9 @@ function UploadField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
+        {label}
+      </span>
       <input
         type="file"
         onChange={(event) => {
@@ -431,7 +678,9 @@ function Row({
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${style}`}>
+          <span
+            className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${style}`}
+          >
             {status}
           </span>
           {action}
@@ -473,7 +722,9 @@ function buildFakeQrCells(seed: string, size: number) {
         continue;
       }
 
-      const timing = (x === 6 && y >= 8 && y <= size - 9) || (y === 6 && x >= 8 && x <= size - 9);
+      const timing =
+        (x === 6 && y >= 8 && y <= size - 9) ||
+        (y === 6 && x >= 8 && x <= size - 9);
       if (timing) {
         cells[idx] = (x + y) % 2 === 0;
         continue;
@@ -505,7 +756,8 @@ function finderValue(x: number, y: number, size: number) {
     const dy = y - y0;
     if (dx < 0 || dy < 0 || dx >= finderSize || dy >= finderSize) continue;
 
-    const outer = dx === 0 || dx === finderSize - 1 || dy === 0 || dy === finderSize - 1;
+    const outer =
+      dx === 0 || dx === finderSize - 1 || dy === 0 || dy === finderSize - 1;
     const inner = dx >= 2 && dx <= 4 && dy >= 2 && dy <= 4;
     return outer || inner;
   }
