@@ -30,6 +30,47 @@ export type VehicleAnalyticsRow = {
   idleClassification: "Idle" | "Not Idle" | "Unable to Determine";
 };
 
+export type CanonicalIdleSnapshot = {
+  idleReference: string | null;
+  idleDays: number | null;
+};
+
+/** Canonical VS013 idle-duration calculation, reusable by later advisory slices. */
+export function calculateCanonicalIdleSnapshot(
+  rentals: { ended_at: string | null }[],
+  stateEvents: { is_active: boolean; effective_at: string }[],
+  now = new Date(),
+): CanonicalIdleSnapshot {
+  const ended = rentals
+    .filter((r) => r.ended_at)
+    .sort(
+      (a, b) =>
+        +new Date(b.ended_at as string) - +new Date(a.ended_at as string),
+    )[0];
+  let currentActiveStart: string | null = null;
+  for (const event of stateEvents) {
+    if (event.is_active) currentActiveStart = event.effective_at;
+    else currentActiveStart = null;
+  }
+  const baselineCandidates = [ended?.ended_at, currentActiveStart].filter(
+    (value): value is string => Boolean(value),
+  );
+  const idleReference = baselineCandidates.length
+    ? new Date(
+        Math.max(...baselineCandidates.map((value) => +new Date(value))),
+      ).toISOString()
+    : null;
+  return {
+    idleReference,
+    idleDays: idleReference
+      ? Math.max(
+          0,
+          datesBetween(dayKey(new Date(idleReference)), dayKey(now)).length - 1,
+        )
+      : null,
+  };
+}
+
 export async function getVehicleAnalytics(
   startDate: string,
   endDate: string,
@@ -69,7 +110,6 @@ export async function getVehicleAnalytics(
       .order("effective_at", { ascending: true }),
   ]);
   if (ve || re || me || ee) throw ve ?? re ?? me ?? ee;
-  const nowKey = dayKey(now);
   return await Promise.all(
     (vehicles ?? []).map(async (v: any) => {
       const vr = (rentals ?? []).filter((r: any) => r.vehicle_id === v.id);
@@ -112,30 +152,8 @@ export async function getVehicleAnalytics(
           : null;
       const readiness = await calculateMaintenanceReadiness(v.id);
       const activeRental = vr.some((r: any) => r.started_at && !r.ended_at);
-      const ended = vr
-        .filter((r: any) => r.ended_at)
-        .sort(
-          (a: any, b: any) => +new Date(b.ended_at) - +new Date(a.ended_at),
-        )[0];
-      let currentActiveStart: string | null = null;
-      for (const event of vevents) {
-        if (event.is_active) currentActiveStart = event.effective_at;
-        else currentActiveStart = null;
-      }
-      const baselineCandidates = [ended?.ended_at, currentActiveStart].filter(
-        (value): value is string => Boolean(value),
-      );
-      const baseline = baselineCandidates.length
-        ? new Date(
-            Math.max(...baselineCandidates.map((value) => +new Date(value))),
-          ).toISOString()
-        : null;
-      const idleDays = baseline
-        ? Math.max(
-            0,
-            datesBetween(dayKey(new Date(baseline)), nowKey).length - 1,
-          )
-        : null;
+      const { idleReference: baseline, idleDays } =
+        calculateCanonicalIdleSnapshot(vr, vevents, now);
       const idleEligible = Boolean(
         v.is_active && readiness.maintenanceReady && !activeRental,
       );

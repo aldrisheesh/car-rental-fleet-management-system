@@ -1,5 +1,4 @@
-﻿import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ResponsiveContainer,
@@ -21,22 +20,14 @@ import {
   Brain,
   AlertTriangle,
   ArrowRight,
-  CloudRain,
-  Fuel,
-  Route as RouteIcon,
 } from "lucide-react";
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
-import {
-  getBranchAllocationRecommendations,
-  type BranchAllocationRecommendation,
-} from "@/lib/branch-allocation-context";
 
 export const Route = createFileRoute("/admin/decisions")({
   beforeLoad: () => {
     if (typeof window === "undefined") return;
     const session = getAdminSession();
-    if (!session) throw redirect({ to: "/sign-in" });
-    if (isStaffRole(session.role)) throw redirect({ to: "/admin" });
+    if (!session) return;
   },
   component: DecisionPage,
 });
@@ -76,24 +67,44 @@ const radar = [
 ];
 
 function DecisionPage() {
-  const navigate = useNavigate();
-  const [allocationRows, setAllocationRows] = useState<BranchAllocationRecommendation[]>([]);
+  const session = getAdminSession();
+  const staffView = isStaffRole(session?.role);
+  const [allocationRows, setAllocationRows] = useState<any[]>([]);
+  const [allocationError, setAllocationError] = useState("");
+  const [allocationBusy, setAllocationBusy] = useState(false);
 
   useEffect(() => {
     let active = true;
-    void getBranchAllocationRecommendations()
-      .then((rows) => {
-        if (!active) return;
-        setAllocationRows(rows);
-      })
-      .catch(() => {
-        if (!active) return;
-        setAllocationRows([]);
-      });
+    fetch("/api/allocation-recommendations", { credentials: "same-origin" })
+      .then(async (response) => { const body = await response.json(); if (!response.ok) throw new Error(body.message ?? "Unable to load recommendations."); return body; })
+      .then((body) => { if (active) { setAllocationRows(body.recommendations ?? []); setAllocationError(""); } })
+      .catch((error) => { if (active) setAllocationError(error instanceof Error ? error.message : "Unable to load recommendations."); });
     return () => {
       active = false;
     };
   }, []);
+
+  async function generateAllocations() {
+    setAllocationBusy(true);
+    try {
+      const response = await fetch("/api/allocation-recommendations", { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }) });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.message ?? "Unable to generate recommendations.");
+      setAllocationRows(body.recommendations ?? []); setAllocationError("");
+    } catch (error) { setAllocationError(error instanceof Error ? error.message : "Unable to generate recommendations."); }
+    finally { setAllocationBusy(false); }
+  }
+
+  async function decideAllocation(recommendationId: string, state: "Approved" | "Rejected", approvedTransferUnits?: number) {
+    setAllocationBusy(true);
+    try {
+      const response = await fetch("/api/allocation-recommendations", { method: "PATCH", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ recommendationId, state, approvedTransferUnits }) });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.message ?? "Unable to record decision.");
+      setAllocationRows((rows) => rows.map((row) => row.id === recommendationId ? { ...row, ...body.recommendation } : row)); setAllocationError("");
+    } catch (error) { setAllocationError(error instanceof Error ? error.message : "Unable to record decision."); }
+    finally { setAllocationBusy(false); }
+  }
 
   return (
     <div>
@@ -319,117 +330,20 @@ function DecisionPage() {
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_1fr]">
         <Card>
-          <CardHeader
-            title="Branch allocation recommendation"
-            hint="Weather, road condition, and fuel-adjusted recommendations."
-          />
-          <ul className="divide-y divide-border text-sm">
-            {allocationRows.map((row) => (
-              <li key={row.id} className="flex items-center justify-between gap-4 px-5 py-4">
-                <div className="flex items-center gap-3">
-                  <span className="grid h-9 w-9 place-items-center rounded-md bg-primary/15 text-primary">
-                    <ArrowRight className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <div className="font-medium">{row.unit}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {row.from} ? {row.to}
-                    </div>
-                    <div className="mt-0.5 text-xs text-muted-foreground">
-                      {row.reason} • score {row.urgencyScore}
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px]">
-                      <span className="inline-flex items-center gap-1 rounded-full border border-sky-400/30 bg-sky-500/10 px-2 py-0.5 text-sky-300">
-                        <CloudRain className="h-3 w-3" />
-                        Weather +{row.breakdown.weather}
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/30 bg-violet-500/10 px-2 py-0.5 text-violet-300">
-                        <RouteIcon className="h-3 w-3" />
-                        Road condition +{row.breakdown.traffic}
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-amber-300">
-                        <Fuel className="h-3 w-3" />
-                        Fuel {row.breakdown.fuel >= 0 ? "+" : ""}
-                        {row.breakdown.fuel}
-                      </span>
-                    </div>
-                    <div className="mt-1 text-[10px] text-muted-foreground">
-                      Updated{" "}
-                      {new Date(row.updatedAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={
-                      row.confidence === "High"
-                        ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
-                        : row.confidence === "Medium"
-                          ? "border-orange-400/30 bg-orange-500/10 text-orange-300"
-                          : "border-red-400/30 bg-red-500/10 text-red-300"
-                    }
-                  >
-                    {row.confidence} confidence
-                  </Badge>
-                  <Btn
-                    variant="primary"
-                    className="h-6 rounded-full px-2.5 text-[11px] font-medium"
-                    onClick={() => navigate({ to: "/admin/fleet" })}
-                  >
-                    Approve transfer
-                  </Btn>
-                </div>
-              </li>
-            ))}
-            {allocationRows.length === 0 ? (
-              <li className="px-5 py-6 text-sm text-muted-foreground">
-                No allocation recommendations available right now.
-              </li>
-            ) : null}
-          </ul>
+          <CardHeader title="Branch allocation recommendations" hint="Canonical VS015 shortage/surplus · advisory only" right={!staffView ? <Btn variant="primary" disabled={allocationBusy} onClick={generateAllocations}>{allocationBusy ? "Working…" : "Generate recommendations"}</Btn> : <Badge>Read only</Badge>} />
+          {allocationError ? <p className="px-5 py-3 text-sm text-destructive">{allocationError}</p> : null}
+          {!allocationRows.length && !allocationError ? <p className="px-5 py-6 text-sm text-muted-foreground">No persisted recommendations. Generate from the latest VS015 evaluations.</p> : null}
+          <ul className="divide-y divide-border text-sm">{allocationRows.map((row) => <li key={row.id} className="space-y-3 px-5 py-4">
+            <div className="flex flex-wrap items-start justify-between gap-3"><div><div className="font-medium">{row.destination_branch_name} ← {row.source_branch_name} · {row.vehicle_category_name}</div><div className="text-xs text-muted-foreground">Week {row.target_week_start} to {row.target_week_end} · Horizon {row.forecast_horizon}</div></div><Badge>{row.decision_state}</Badge></div>
+            <div className="grid gap-2 text-xs sm:grid-cols-3"><span>Destination shortage: <strong>{row.destination_shortage_snapshot}</strong></span><span>Source surplus: <strong>{row.source_surplus_snapshot}</strong></span><span>Recommended: <strong>{row.recommended_transfer_units}</strong></span></div>
+            <p className="text-xs text-muted-foreground">Required/supply: destination {row.destination_required_units_snapshot}/{row.destination_projected_supply_snapshot}; source {row.source_required_units_snapshot}/{row.source_projected_supply_snapshot}. Quantity is min(remaining shortage, remaining surplus, eligible candidates).</p>
+            <p className="text-[11px] text-muted-foreground">VS015 evaluated: destination {row.destination_evaluated_at ? new Date(row.destination_evaluated_at).toLocaleString() : "unknown"}; source {row.source_evaluated_at ? new Date(row.source_evaluated_at).toLocaleString() : "unknown"}</p>
+            <div className="space-y-1">{(row.candidates ?? []).map((candidate: any) => <div key={candidate.id} className="flex justify-between text-xs"><span>#{candidate.candidate_rank} {candidate.vehicle_name_snapshot} · {candidate.license_plate_snapshot ?? "No plate"}</span><span>{candidate.idle_days_snapshot == null ? "Idle unknown" : `${candidate.idle_days_snapshot}d idle`}</span></div>)}</div>
+            {!staffView && row.decision_state === "Pending" ? <div className="flex flex-wrap gap-2"><Btn disabled={allocationBusy} variant="primary" onClick={() => decideAllocation(row.id, "Approved", row.recommended_transfer_units)}>Approve full ({row.recommended_transfer_units})</Btn><Btn disabled={allocationBusy} variant="ghost" onClick={() => { const value = window.prompt(`Approve a positive quantity up to ${row.recommended_transfer_units}`, String(row.recommended_transfer_units)); const units = Number(value); if (Number.isInteger(units) && units > 0) void decideAllocation(row.id, "Approved", units); }}>Approve lower quantity</Btn><Btn disabled={allocationBusy} variant="danger" onClick={() => decideAllocation(row.id, "Rejected")}>Reject</Btn></div> : null}
+          </li>)}</ul>
         </Card>
 
-        <Card>
-          <CardHeader
-            title="Context-aware insights"
-            hint="Weather, road condition & fuel context"
-          />
-          <ul className="divide-y divide-border text-sm">
-            <Insight
-              icon={<CloudRain className="h-4 w-4" />}
-              title="Typhoon advisory Signal 1 • Rizal"
-              body="Recommend SUVs for Antipolo bookings May 27–29. Defer self-drive issuances to AT vehicles only."
-            />
-            <Insight
-              icon={<RouteIcon className="h-4 w-4" />}
-              title="NLEX road condition advisory"
-              body="Reported lane repairs and rough patches near Valenzuela. Assign higher-clearance units and allow extra inspection time before Baguio trips."
-            />
-            <Insight
-              icon={<Fuel className="h-4 w-4" />}
-              title="Diesel rollback +?0.85/L"
-              body="Adjust van pricing band by +?150/day to preserve margin starting June 1."
-            />
-          </ul>
-        </Card>
       </div>
     </div>
-  );
-}
-
-function Insight({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
-  return (
-    <li className="flex gap-3 px-5 py-4">
-      <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-primary/15 text-primary">
-        {icon}
-      </span>
-      <div>
-        <div className="font-medium">{title}</div>
-        <div className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{body}</div>
-      </div>
-    </li>
   );
 }

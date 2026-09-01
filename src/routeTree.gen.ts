@@ -31,6 +31,7 @@ import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as ApiForecastsRouteImport } from './routes/api.forecasts'
 import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
 import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-master-data'
+import { Route as ApiAllocationRecommendationsRouteImport } from './routes/api.allocation-recommendations'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
@@ -160,6 +161,12 @@ const ApiBookingMasterDataRoute = ApiBookingMasterDataRouteImport.update({
   path: '/api/booking-master-data',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAllocationRecommendationsRoute =
+  ApiAllocationRecommendationsRouteImport.update({
+    id: '/api/allocation-recommendations',
+    path: '/api/allocation-recommendations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -274,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/forecasts': typeof ApiForecastsRoute
@@ -315,6 +323,7 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/forecasts': typeof ApiForecastsRoute
@@ -358,6 +367,7 @@ export interface FileRoutesById {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/forecasts': typeof ApiForecastsRoute
@@ -402,6 +412,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/allocation-recommendations'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/forecasts'
@@ -443,6 +454,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/allocation-recommendations'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/forecasts'
@@ -485,6 +497,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/allocation-recommendations'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/forecasts'
@@ -515,6 +528,7 @@ export interface RootRouteChildren {
   PaymentDetailsRoute: typeof PaymentDetailsRoute
   SignInRoute: typeof SignInRoute
   VehiclesRoute: typeof VehiclesRoute
+  ApiAllocationRecommendationsRoute: typeof ApiAllocationRecommendationsRoute
   ApiBookingMasterDataRoute: typeof ApiBookingMasterDataRoute
   ApiBookingsRoute: typeof ApiBookingsRoute
   ApiForecastsRoute: typeof ApiForecastsRoute
@@ -688,6 +702,13 @@ declare module '@tanstack/react-router' {
       path: '/api/booking-master-data'
       fullPath: '/api/booking-master-data'
       preLoaderRoute: typeof ApiBookingMasterDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/allocation-recommendations': {
+      id: '/api/allocation-recommendations'
+      path: '/api/allocation-recommendations'
+      fullPath: '/api/allocation-recommendations'
+      preLoaderRoute: typeof ApiAllocationRecommendationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
@@ -865,6 +886,7 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentDetailsRoute: PaymentDetailsRoute,
   SignInRoute: SignInRoute,
   VehiclesRoute: VehiclesRoute,
+  ApiAllocationRecommendationsRoute: ApiAllocationRecommendationsRoute,
   ApiBookingMasterDataRoute: ApiBookingMasterDataRoute,
   ApiBookingsRoute: ApiBookingsRoute,
   ApiForecastsRoute: ApiForecastsRoute,
