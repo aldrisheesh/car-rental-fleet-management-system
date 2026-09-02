@@ -60,6 +60,7 @@ test("all primary adapters normalize only their required provider data", async (
         {
           title: "Manila, Philippines",
           position: { type: "Point", coordinates: [121, 14.6] },
+          address: { municipality: "Manila" },
         },
       ],
     });
@@ -68,8 +69,10 @@ test("all primary adapters normalize only their required provider data", async (
     query: "Manila",
   });
   let routeUrl: URL | undefined;
-  const routeHttp: ExternalContextHttpClient = async (input) => {
+  let routeInit: RequestInit | undefined;
+  const routeHttp: ExternalContextHttpClient = async (input, init) => {
     routeUrl = new URL(String(input));
+    routeInit = init;
     return json({
       routes: [
         { summary: { lengthInMeters: 12000, travelTimeInSeconds: 1800 } },
@@ -111,6 +114,7 @@ test("all primary adapters normalize only their required provider data", async (
     "https://api.tomtom.com/maps/orbis/places/geocode",
   );
   assert.equal(geocodeUrl?.searchParams.get("query"), "Manila");
+  assert.equal(geocodeUrl?.searchParams.get("countryCodesIso2"), "PH");
   assert.equal(
     new Headers(geocodeInit?.headers).get("TomTom-Api-Version"),
     "2",
@@ -121,7 +125,7 @@ test("all primary adapters normalize only their required provider data", async (
   );
   assert.equal(
     new Headers(geocodeInit?.headers).get("Attributes"),
-    "results.title,results.position",
+    "results.title,results.position,results.address.municipality,results.address.municipalitySubdivision,results.address.municipalitySecondarySubdivision,results.address.countrySubdivision,results.address.countrySecondarySubdivision,results.address.countryTertiarySubdivision,results.address.street,results.address.neighborhood",
   );
   assert.equal(route.data?.distanceMeters, 12000);
   assert.ok(routeUrl);
@@ -131,8 +135,11 @@ test("all primary adapters normalize only their required provider data", async (
   );
   assert.equal(routeUrl?.searchParams.get("key"), env.tomtomApiKey);
   assert.equal(routeUrl?.searchParams.get("traffic"), "historical");
+  assert.equal(routeInit?.method, undefined);
+  assert.equal(routeInit?.body, undefined);
+  assert.equal(new Headers(routeInit?.headers).get("TomTom-Api-Version"), "2");
   assert.equal(incidents.data?.[0]?.providerIncidentId, "t1");
-  assert.equal(incidents.data?.[0]?.category, 8);
+  assert.equal(incidents.data?.[0]?.category, "road_closure");
   assert.equal(incidents.data?.[0]?.isRoadClosed, true);
   assert.deepEqual(incidents.data?.[0]?.location, {
     latitude: 14.6,
@@ -204,10 +211,12 @@ test("all fallback adapters normalize their mandated provider data", async () =>
   assert.equal(incidents.data?.[0]?.location, undefined);
 });
 
-test("TomTom routing uses live traffic when traffic-aware", async () => {
+test("TomTom routing uses the v2 coordinate GET contract with live traffic", async () => {
   let routeUrl: URL | undefined;
-  const client: ExternalContextHttpClient = async (input) => {
+  let routeInit: RequestInit | undefined;
+  const client: ExternalContextHttpClient = async (input, init) => {
     routeUrl = new URL(String(input));
+    routeInit = init;
     return json({
       routes: [
         { summary: { lengthInMeters: 12000, travelTimeInSeconds: 1800 } },
@@ -222,6 +231,70 @@ test("TomTom routing uses live traffic when traffic-aware", async () => {
   assert.equal(result.status, "available");
   assert.equal(routeUrl?.searchParams.get("key"), env.tomtomApiKey);
   assert.equal(routeUrl?.searchParams.get("traffic"), "live");
+  assert.equal(routeInit?.method, undefined);
+  assert.equal(routeInit?.body, undefined);
+});
+
+test("TomTom geocoding scopes Philippine queries, selects a match, and rejects mismatches", async () => {
+  let url: URL | undefined;
+  const client: ExternalContextHttpClient = async (input) => {
+    url = new URL(String(input));
+    return json({
+      results: [
+        {
+          title: "Tagaytay, Cupang, Muntinlupa City, Metro Manila",
+          position: { type: "Point", coordinates: [121.0364, 14.4295] },
+          address: { municipality: "Muntinlupa City" },
+        },
+        {
+          title: "Tagaytay City, Cavite, Philippines",
+          position: { type: "Point", coordinates: [120.951, 14.115] },
+          address: { municipality: "Tagaytay City" },
+        },
+      ],
+    });
+  };
+  const result = await new TomTomGeocodingProvider(env, client).geocode({
+    query: "Tagaytay City, Philippines",
+  });
+  assert.equal(url?.searchParams.get("query"), "Tagaytay City, Philippines");
+  assert.equal(url?.searchParams.get("countryCodesIso2"), "PH");
+  assert.equal(result.status, "available");
+  assert.equal(result.data?.label, "Tagaytay City, Cavite, Philippines");
+
+  const mismatch = await new TomTomGeocodingProvider(
+    env,
+    http({
+      results: [
+        {
+          title: "Tagaytay, Cupang, Muntinlupa City, Metro Manila",
+          position: { type: "Point", coordinates: [121.0364, 14.4295] },
+          address: { municipality: "Muntinlupa City" },
+        },
+      ],
+    }),
+  ).geocode({ query: "Tagaytay City, Philippines" });
+  assert.equal(mismatch.status, "unavailable");
+  assert.equal(mismatch.failureCategory, "coverage");
+});
+
+test("TomTom traffic numeric icon categories normalize to provider-neutral semantics", async () => {
+  const result = await new TomTomTrafficIncidentProvider(
+    env,
+    http({
+      incidents: [
+        { properties: { iconCategory: 1 } },
+        { properties: { iconCategory: 7 } },
+        { properties: { iconCategory: 9 } },
+        { properties: { iconCategory: 11 } },
+        { properties: { iconCategory: 99 } },
+      ],
+    }),
+  ).getIncidents({ center: coordinates });
+  assert.deepEqual(
+    result.data?.map((incident) => incident.category),
+    ["accident", "lane_restriction", "roadworks", "flooding", "other"],
+  );
 });
 
 test("a valid TomTom road closure remains available without HERE fallback", async () => {
@@ -420,6 +493,12 @@ test("server-only credential parsing and result shapes never expose keys", () =>
     OPENWEATHER_API_KEY: "weather-secret",
   });
   assert.equal(parsed.tomtomApiKey, "tomtom-secret");
+  const placeholders = getExternalContextEnv({
+    HERE_API_KEY: "your-here-api-key",
+    OPENWEATHER_API_KEY: "your-openweather-one-call-api-key",
+  });
+  assert.equal(placeholders.hereApiKey, undefined);
+  assert.equal(placeholders.openWeatherApiKey, undefined);
   const output = JSON.stringify({
     status: "not_configured",
     fallbackUsed: false,

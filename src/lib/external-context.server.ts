@@ -101,9 +101,21 @@ export type ExternalContextHttpClient = (
 const DEFAULT_TIMEOUT_MS = 7_500;
 const now = () => new Date().toISOString();
 
+function placeholder(value: string): boolean {
+  const normalized = value.trim().toLocaleLowerCase();
+  return (
+    normalized === "placeholder" ||
+    normalized === "changeme" ||
+    normalized === "example" ||
+    normalized.startsWith("your-") ||
+    normalized.startsWith("replace-") ||
+    /^<[^>]+>$/.test(normalized)
+  );
+}
+
 function configured(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
-  return trimmed || undefined;
+  return trimmed && !placeholder(trimmed) ? trimmed : undefined;
 }
 
 export function getExternalContextEnv(
@@ -174,6 +186,65 @@ function numberValue(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value)
     ? value
     : undefined;
+}
+
+const PHILIPPINE_GEOCODE_STOP_WORDS = new Set([
+  "address",
+  "barangay",
+  "city",
+  "district",
+  "municipality",
+  "philippine",
+  "philippines",
+  "province",
+  "road",
+  "street",
+]);
+
+function locationTerms(value: string): string[] {
+  return (
+    value
+      .toLocaleLowerCase()
+      .match(/[\p{L}\p{N}]+/gu)
+      ?.filter(
+        (term) => term.length > 2 && !PHILIPPINE_GEOCODE_STOP_WORDS.has(term),
+      ) ?? []
+  );
+}
+
+function geocodeMatchesQuery(
+  query: string,
+  result: Record<string, unknown>,
+): boolean {
+  const queryTerms = locationTerms(query);
+  if (queryTerms.length === 0) return true;
+  const address = objectValue(result.address);
+  const localityText = [
+    address?.municipality,
+    address?.municipalitySubdivision,
+    address?.municipalitySecondarySubdivision,
+    address?.countrySubdivision,
+    address?.countrySecondarySubdivision,
+    address?.countryTertiarySubdivision,
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ")
+    .toLocaleLowerCase();
+  // A query explicitly naming a city/municipality must match the returned
+  // locality, not merely a street or neighborhood that happens to share a name.
+  if (/\b(city|municipality)\b/i.test(query)) {
+    return queryTerms.some((term) => localityText.includes(term));
+  }
+  const candidateText = [
+    result.title,
+    localityText,
+    address?.street,
+    address?.neighborhood,
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ")
+    .toLocaleLowerCase();
+  return queryTerms.some((term) => candidateText.includes(term));
 }
 
 function objectValue(value: unknown): Record<string, unknown> | undefined {
@@ -381,6 +452,9 @@ export class TomTomGeocodingProvider implements GeocodingProvider {
       return failure("not_configured", "tomtom");
     const url = new URL("https://api.tomtom.com/maps/orbis/places/geocode");
     url.searchParams.set("query", request.query);
+    // All canonical branches and destinations in this system are Philippine.
+    // Scope provider search rather than replacing the canonical destination text.
+    url.searchParams.set("countryCodesIso2", "PH");
     const response = await requestJson(
       this.http,
       url,
@@ -388,7 +462,8 @@ export class TomTomGeocodingProvider implements GeocodingProvider {
         headers: {
           "TomTom-Api-Version": "2",
           "TomTom-Api-Key": this.env.tomtomApiKey!,
-          Attributes: "results.title,results.position",
+          Attributes:
+            "results.title,results.position,results.address.municipality,results.address.municipalitySubdivision,results.address.municipalitySecondarySubdivision,results.address.countrySubdivision,results.address.countrySecondarySubdivision,results.address.countryTertiarySubdivision,results.address.street,results.address.neighborhood",
         },
       },
       this.env.timeoutMs ?? DEFAULT_TIMEOUT_MS,
@@ -396,7 +471,12 @@ export class TomTomGeocodingProvider implements GeocodingProvider {
     if (!response.ok) return failure(response.category, "tomtom");
     const body = objectValue(response.body);
     const results = Array.isArray(body?.results) ? body.results : [];
-    const first = objectValue(results[0]);
+    const first = results
+      .map(objectValue)
+      .find(
+        (candidate) =>
+          candidate && geocodeMatchesQuery(request.query, candidate),
+      );
     const position = objectValue(first?.position);
     const coordinates = Array.isArray(position?.coordinates)
       ? position.coordinates
@@ -480,14 +560,7 @@ export class TomTomRoutingProvider implements RoutingProvider {
     const response = await requestJson(
       this.http,
       url,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "TomTom-Api-Version": "2",
-        },
-        body: "{}",
-      },
+      { headers: { "TomTom-Api-Version": "2" } },
       this.env.timeoutMs ?? DEFAULT_TIMEOUT_MS,
     );
     if (!response.ok) return failure(response.category, "tomtom");
@@ -571,6 +644,24 @@ export class HereRoutingProvider implements RoutingProvider {
   }
 }
 
+const TOMTOM_INCIDENT_CATEGORIES: Readonly<
+  Record<number, { category: string; isRoadClosed?: boolean }>
+> = {
+  0: { category: "other" },
+  1: { category: "accident" },
+  2: { category: "dangerous_condition" },
+  3: { category: "dangerous_condition" },
+  4: { category: "dangerous_condition" },
+  5: { category: "dangerous_condition" },
+  6: { category: "traffic_congestion" },
+  7: { category: "lane_restriction" },
+  8: { category: "road_closure", isRoadClosed: true },
+  9: { category: "roadworks" },
+  10: { category: "dangerous_condition" },
+  11: { category: "flooding" },
+  14: { category: "disabled_vehicle" },
+};
+
 function trafficIncidentFromTomTom(
   value: unknown,
 ): NormalizedTrafficIncident | undefined {
@@ -589,16 +680,21 @@ function trafficIncidentFromTomTom(
   const longitude = Array.isArray(point) ? numberValue(point[0]) : undefined;
   const latitude = Array.isArray(point) ? numberValue(point[1]) : undefined;
   if (!properties) return undefined;
-  const category =
+  const iconCategory =
     typeof properties.iconCategory === "number" &&
     Number.isFinite(properties.iconCategory)
       ? properties.iconCategory
       : undefined;
+  const normalizedCategory =
+    iconCategory === undefined
+      ? undefined
+      : (TOMTOM_INCIDENT_CATEGORIES[iconCategory]?.category ?? "other");
   return {
     providerIncidentId:
       typeof properties.id === "string" ? properties.id : undefined,
-    category,
-    isRoadClosed: category === 8,
+    category: normalizedCategory,
+    isRoadClosed:
+      TOMTOM_INCIDENT_CATEGORIES[iconCategory ?? -1]?.isRoadClosed === true,
     severity:
       typeof properties.magnitudeOfDelay === "number"
         ? properties.magnitudeOfDelay

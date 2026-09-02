@@ -211,6 +211,15 @@ test("classifies unavailable, empty, cautionary, and closed incident context wit
   );
   assert.equal(
     interpreted({
+      trafficIncidents: available(
+        [{ category: "traffic_congestion" }],
+        "tomtom",
+      ),
+    }).roadCondition.classification,
+    "Caution",
+  );
+  assert.equal(
+    interpreted({
       trafficIncidents: available([{ isRoadClosed: true }], "tomtom"),
     }).roadCondition.classification,
     "Closed/Impassable",

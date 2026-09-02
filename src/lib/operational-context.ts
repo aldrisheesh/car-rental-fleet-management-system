@@ -202,9 +202,12 @@ const cautionTerms = [
   "crash",
   "lane closure",
   "lane restriction",
+  "lane_restriction",
   "flood",
   "dangerous",
   "restriction",
+  "traffic_congestion",
+  "disabled_vehicle",
 ];
 
 function incidentTerms(incident: NormalizedTrafficIncident): string {
