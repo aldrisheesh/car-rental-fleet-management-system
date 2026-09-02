@@ -51,10 +51,10 @@ const sources: DashboardSources = {
     { vehicle_id: "not-started", started_at: null, ended_at: null },
   ],
   vehicles: [
-    { vehicleId: "available", isActive: true },
-    { vehicleId: "inactive", isActive: false },
-    { vehicleId: "active-rental", isActive: true },
-    { vehicleId: "maintenance", isActive: true },
+    { vehicleId: "available", branchId: "branch-1", isActive: true },
+    { vehicleId: "inactive", branchId: "branch-1", isActive: false },
+    { vehicleId: "active-rental", branchId: "branch-1", isActive: true },
+    { vehicleId: "maintenance", branchId: "branch-1", isActive: true },
   ],
   readiness: [
     {

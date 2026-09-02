@@ -51,6 +51,7 @@ export type FleetMaintenanceReadinessItem = {
 
 export type FleetMaintenanceReadinessVehicle = {
   vehicleId: string;
+  branchId: string;
   isActive: boolean;
 };
 
@@ -67,7 +68,7 @@ export async function calculateFleetMaintenanceSnapshot(
     client
       .from("vehicles")
       .select(
-        "id,name,license_plate,is_active,current_odometer_km,condition_blocks_rental_use",
+        "id,name,license_plate,branch_id,is_active,current_odometer_km,condition_blocks_rental_use",
       )
       .order("name"),
     client
@@ -101,6 +102,7 @@ export async function calculateFleetMaintenanceSnapshot(
     readiness,
     vehicles: (vehiclesResult.data ?? []).map((vehicle) => ({
       vehicleId: vehicle.id,
+      branchId: vehicle.branch_id,
       isActive: vehicle.is_active,
     })),
   };

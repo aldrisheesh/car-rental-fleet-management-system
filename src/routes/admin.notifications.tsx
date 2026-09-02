@@ -11,7 +11,7 @@ function NotificationsPage() {
     <div className="mx-auto max-w-7xl space-y-6">
       <PageHeader
         title="Notifications"
-        subtitle="Recipient-specific booking, requirement, and payment updates."
+        subtitle="Recipient-specific booking, rental, maintenance, fleet, requirement, and payment updates."
       />
       <NotificationsPanel audience="admin" />
     </div>

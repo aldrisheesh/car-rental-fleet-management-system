@@ -401,6 +401,42 @@ export type Database = {
         Update: { read_at?: string | null };
         Relationships: [];
       };
+      notification_preferences: {
+        Row: {
+          recipient_id: string;
+          maintenance_attention_enabled: boolean;
+          low_availability_enabled: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          recipient_id: string;
+          maintenance_attention_enabled?: boolean;
+          low_availability_enabled?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          maintenance_attention_enabled?: boolean;
+          low_availability_enabled?: boolean;
+        };
+        Relationships: [];
+      };
+      operational_notification_conditions: {
+        Row: {
+          condition_type: string;
+          related_entity_type: string;
+          related_entity_id: string;
+          is_active: boolean;
+          occurrence_count: number;
+          title: string;
+          message: string;
+          activated_at: string | null;
+          resolved_at: string | null;
+          last_evaluated_at: string;
+        };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       rental_transactions: {
         Row: {
           id: string;
@@ -526,6 +562,10 @@ export type Database = {
           p_actor: string;
         };
         Returns: Database["public"]["Tables"]["maintenance_records"]["Row"];
+      };
+      reconcile_operational_notification_conditions: {
+        Args: { p_conditions: unknown };
+        Returns: Record<string, unknown>;
       };
     };
     Enums: Record<string, never>;

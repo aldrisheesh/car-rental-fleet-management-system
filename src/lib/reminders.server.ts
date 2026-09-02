@@ -7,6 +7,20 @@ import {
 } from "./reminders.ts";
 import type { Database } from "./supabase/database.types";
 import { getSupabaseServerClient } from "./supabase/server";
+import { processOperationalNotifications } from "./operational-notifications.server";
+
+export async function processScheduledNotificationCycle(options?: {
+  now?: Date;
+  client?: SupabaseClient<Database>;
+}) {
+  const now = options?.now ?? new Date();
+  const client = options?.client ?? getSupabaseServerClient();
+  const [reminders, operational] = await Promise.all([
+    processScheduledReminders({ now, client }),
+    processOperationalNotifications({ now, client }),
+  ]);
+  return { ...reminders, operational };
+}
 
 export async function processScheduledReminders(options?: {
   now?: Date;

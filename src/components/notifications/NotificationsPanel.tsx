@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Bell,
+  Car,
   CalendarRange,
   Check,
   CreditCard,
@@ -8,11 +9,13 @@ import {
   RotateCcw,
   RefreshCw,
   TriangleAlert,
+  Wrench,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
   isUnread,
   NOTIFICATIONS_CHANGED_EVENT,
+  notificationRoute,
   type CanonicalNotification,
   type NotificationsResponse,
 } from "@/lib/notifications";
@@ -57,7 +60,14 @@ export function NotificationsPanel({
   }, [load]);
 
   const groupedCounts = useMemo(() => {
-    const counts = { booking: 0, requirements: 0, payment: 0, rental: 0 };
+    const counts: Record<CanonicalNotification["relatedEntityType"], number> = {
+      booking: 0,
+      requirements: 0,
+      payment: 0,
+      rental: 0,
+      vehicle: 0,
+      branch: 0,
+    };
     for (const item of data?.notifications ?? [])
       counts[item.relatedEntityType] += 1;
     return counts;
@@ -122,7 +132,9 @@ export function NotificationsPanel({
             )}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Booking, rental, requirement, and payment updates for your account.
+            {audience === "admin"
+              ? "Booking, rental, payment, maintenance, and fleet updates for your account."
+              : "Booking, rental, requirement, and payment updates for your account."}
           </p>
         </div>
         <button
@@ -150,6 +162,16 @@ export function NotificationsPanel({
           <span className="rounded-full border border-border px-3 py-1">
             Rentals {groupedCounts.rental}
           </span>
+          {audience === "admin" && (
+            <>
+              <span className="rounded-full border border-border px-3 py-1">
+                Maintenance {groupedCounts.vehicle}
+              </span>
+              <span className="rounded-full border border-border px-3 py-1">
+                Fleet {groupedCounts.branch}
+              </span>
+            </>
+          )}
         </div>
       )}
 
@@ -210,16 +232,20 @@ function NotificationRow({
 }) {
   const unread = isUnread(notification);
   const Icon =
-    notification.notificationType === "rental_overdue"
-      ? TriangleAlert
-      : notification.relatedEntityType === "rental"
-        ? RotateCcw
-        : notification.relatedEntityType === "payment"
-          ? CreditCard
-          : notification.relatedEntityType === "requirements"
-            ? FileCheck2
-            : CalendarRange;
-  const destination = relatedRoute(notification, audience);
+    notification.notificationType === "maintenance_attention"
+      ? Wrench
+      : notification.notificationType === "low_availability"
+        ? Car
+        : notification.notificationType === "rental_overdue"
+          ? TriangleAlert
+          : notification.relatedEntityType === "rental"
+            ? RotateCcw
+            : notification.relatedEntityType === "payment"
+              ? CreditCard
+              : notification.relatedEntityType === "requirements"
+                ? FileCheck2
+                : CalendarRange;
+  const destination = notificationRoute(notification, audience);
 
   return (
     <article
@@ -275,19 +301,6 @@ function NotificationRow({
       </div>
     </article>
   );
-}
-
-function relatedRoute(
-  notification: CanonicalNotification,
-  audience: "admin" | "customer",
-) {
-  if (audience === "customer")
-    return notification.relatedEntityType === "payment"
-      ? "/payment-details"
-      : "/customer";
-  return notification.relatedEntityType === "payment"
-    ? "/admin/payments"
-    : "/admin/bookings";
 }
 
 function formatEntity(entity: CanonicalNotification["relatedEntityType"]) {

@@ -55,6 +55,7 @@ const navStaffModules: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
   { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+  { to: "/admin/notifications", label: "Notifications", icon: Bell },
   { to: "/admin/reports", label: "Reports & Analytics", icon: BarChart3 },
 ];
 
@@ -172,7 +173,7 @@ export function AdminShell() {
   }, [navigate, pathname, session]);
 
   useEffect(() => {
-    if (!session || isStaffRole(session.role)) {
+    if (!session) {
       setNotificationUnreadCount(0);
       return;
     }
@@ -206,6 +207,7 @@ export function AdminShell() {
     const allowedPrefixes = [
       "/admin/bookings",
       "/admin/calendar",
+      "/admin/notifications",
       "/admin/reports",
       "/admin/profile",
     ];

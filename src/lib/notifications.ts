@@ -9,13 +9,17 @@ export type NotificationType =
   | "payment_proof_submitted"
   | "upcoming_pickup"
   | "upcoming_return"
-  | "rental_overdue";
+  | "rental_overdue"
+  | "maintenance_attention"
+  | "low_availability";
 
 export type NotificationEntityType =
   | "booking"
   | "requirements"
   | "payment"
-  | "rental";
+  | "rental"
+  | "vehicle"
+  | "branch";
 
 export type CanonicalNotification = {
   id: string;
@@ -63,4 +67,20 @@ export function projectNotification(
     createdAt: String(row.created_at),
     readAt: row.read_at == null ? null : String(row.read_at),
   };
+}
+
+export function notificationRoute(
+  notification: CanonicalNotification,
+  audience: "admin" | "customer",
+) {
+  if (audience === "customer")
+    return notification.relatedEntityType === "payment"
+      ? "/payment-details"
+      : "/customer";
+  if (notification.notificationType === "maintenance_attention")
+    return "/admin/maintenance";
+  if (notification.notificationType === "low_availability") return "/admin";
+  return notification.relatedEntityType === "payment"
+    ? "/admin/payments"
+    : "/admin/bookings";
 }

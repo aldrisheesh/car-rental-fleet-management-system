@@ -3,7 +3,11 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { isUnread, projectNotification } from "./notifications.ts";
+import {
+  isUnread,
+  notificationRoute,
+  projectNotification,
+} from "./notifications.ts";
 
 const migrationPath = fileURLToPath(
   new URL(
@@ -16,6 +20,16 @@ const apiPath = fileURLToPath(
 );
 const migration = readFileSync(migrationPath, "utf8");
 const api = readFileSync(apiPath, "utf8");
+
+const operationalMigration = readFileSync(
+  fileURLToPath(
+    new URL(
+      "../../supabase/migrations/20260902023000_operational_notifications.sql",
+      import.meta.url,
+    ),
+  ),
+  "utf8",
+);
 
 test("notification projection exposes only UI-safe fields", () => {
   const providerRow = {
@@ -105,6 +119,51 @@ test("notification API scopes every read/update to the principal and returns new
   assert.match(api, /\.is\("read_at", null\)/);
   assert.doesNotMatch(api, /\.insert\(/);
   assert.doesNotMatch(api, /\.delete\(/);
+});
+
+test("operational types project and route without changing existing destinations", () => {
+  const base = {
+    id: "notification-operational",
+    title: "Operational attention",
+    message: "Review current operations.",
+    created_at: "2026-09-02T01:00:00.000Z",
+    read_at: null,
+  };
+  const maintenance = projectNotification({
+    ...base,
+    notification_type: "maintenance_attention",
+    related_entity_type: "vehicle",
+    related_entity_id: "vehicle-1",
+  });
+  const availability = projectNotification({
+    ...base,
+    notification_type: "low_availability",
+    related_entity_type: "branch",
+    related_entity_id: "branch-1",
+  });
+  assert.equal(maintenance.notificationType, "maintenance_attention");
+  assert.equal(availability.notificationType, "low_availability");
+  assert.equal(notificationRoute(maintenance, "admin"), "/admin/maintenance");
+  assert.equal(notificationRoute(availability, "admin"), "/admin");
+
+  const payment = projectNotification({
+    ...base,
+    notification_type: "payment_verified",
+    related_entity_type: "payment",
+    related_entity_id: "payment-1",
+  });
+  const booking = projectNotification({
+    ...base,
+    notification_type: "booking_confirmed",
+    related_entity_type: "booking",
+    related_entity_id: "booking-1",
+  });
+  assert.equal(notificationRoute(payment, "admin"), "/admin/payments");
+  assert.equal(notificationRoute(booking, "admin"), "/admin/bookings");
+  assert.equal(notificationRoute(payment, "customer"), "/payment-details");
+  assert.equal(notificationRoute(booking, "customer"), "/customer");
+  assert.match(operationalMigration, /'maintenance_attention'/);
+  assert.match(operationalMigration, /'low_availability'/);
 });
 
 test("VS019 contains no external delivery, scheduler, or audit implementation", () => {

@@ -53,6 +53,7 @@ export function canAccessAdminPath(
     pathname.startsWith("/admin/bookings/") ||
     pathname === "/admin/calendar" ||
     pathname.startsWith("/admin/calendar/") ||
+    pathname === "/admin/notifications" ||
     pathname === "/admin/reports" ||
     pathname.startsWith("/admin/reports/")
   );
