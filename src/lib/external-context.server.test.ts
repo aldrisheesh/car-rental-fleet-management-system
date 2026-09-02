@@ -50,25 +50,33 @@ test("all primary adapters normalize only their required provider data", async (
       },
     }),
   ).getWeather({ ...coordinates, targetTime });
-  const geocode = await new TomTomGeocodingProvider(
-    env,
-    http({
+  let geocodeUrl: URL | undefined;
+  let geocodeInit: RequestInit | undefined;
+  const geocodeHttp: ExternalContextHttpClient = async (input, init) => {
+    geocodeUrl = new URL(String(input));
+    geocodeInit = init;
+    return json({
       results: [
         {
-          position: { lat: 14.6, lon: 121 },
-          address: { freeformAddress: "Manila" },
+          title: "Manila, Philippines",
+          position: { type: "Point", coordinates: [121, 14.6] },
         },
       ],
-    }),
-  ).geocode({ query: "Manila" });
-  const route = await new TomTomRoutingProvider(
-    env,
-    http({
+    });
+  };
+  const geocode = await new TomTomGeocodingProvider(env, geocodeHttp).geocode({
+    query: "Manila",
+  });
+  let routeUrl: URL | undefined;
+  const routeHttp: ExternalContextHttpClient = async (input) => {
+    routeUrl = new URL(String(input));
+    return json({
       routes: [
         { summary: { lengthInMeters: 12000, travelTimeInSeconds: 1800 } },
       ],
-    }),
-  ).getRoute({
+    });
+  };
+  const route = await new TomTomRoutingProvider(env, routeHttp).getRoute({
     origin: coordinates,
     destination: { latitude: 14.6, longitude: 121 },
   });
@@ -77,20 +85,59 @@ test("all primary adapters normalize only their required provider data", async (
     http({
       incidents: [
         {
-          geometry: { coordinates: [121, 14.6] },
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [121, 14.6],
+              [121.1, 14.7],
+            ],
+          },
           properties: {
             id: "t1",
-            iconCategory: "roadClosed",
+            iconCategory: 8,
             magnitudeOfDelay: 4,
+            startTime: "2026-09-03T10:00:00Z",
+            endTime: "2026-09-03T11:00:00Z",
           },
         },
       ],
     }),
   ).getIncidents({ center: coordinates });
   assert.equal(weather.data?.weatherCode, 95);
-  assert.equal(geocode.data?.label, "Manila");
+  assert.equal(geocode.data?.label, "Manila, Philippines");
+  assert.ok(geocodeUrl);
+  assert.equal(
+    geocodeUrl.origin + geocodeUrl.pathname,
+    "https://api.tomtom.com/maps/orbis/places/geocode",
+  );
+  assert.equal(geocodeUrl?.searchParams.get("query"), "Manila");
+  assert.equal(
+    new Headers(geocodeInit?.headers).get("TomTom-Api-Version"),
+    "2",
+  );
+  assert.equal(
+    new Headers(geocodeInit?.headers).get("TomTom-Api-Key"),
+    env.tomtomApiKey,
+  );
+  assert.equal(
+    new Headers(geocodeInit?.headers).get("Attributes"),
+    "results.title,results.position",
+  );
   assert.equal(route.data?.distanceMeters, 12000);
+  assert.ok(routeUrl);
+  assert.equal(
+    routeUrl.origin + routeUrl.pathname,
+    "https://api.tomtom.com/maps/orbis/routing/calculateRoute/14.5995,120.9842:14.6,121/json",
+  );
+  assert.equal(routeUrl?.searchParams.get("key"), env.tomtomApiKey);
+  assert.equal(routeUrl?.searchParams.get("traffic"), "historical");
   assert.equal(incidents.data?.[0]?.providerIncidentId, "t1");
+  assert.equal(incidents.data?.[0]?.category, 8);
+  assert.equal(incidents.data?.[0]?.isRoadClosed, true);
+  assert.deepEqual(incidents.data?.[0]?.location, {
+    latitude: 14.6,
+    longitude: 121,
+  });
 });
 
 test("all fallback adapters normalize their mandated provider data", async () => {
@@ -102,6 +149,8 @@ test("all fallback adapters normalize their mandated provider data", async () =>
           dt: Date.parse(targetTime) / 1000,
           temp: 30,
           pop: 0.5,
+          rain: { "1h": 1.2 },
+          snow: { "1h": 0.3 },
           wind_speed: 4,
           wind_deg: 90,
           weather: [{ id: 502 }],
@@ -134,20 +183,76 @@ test("all fallback adapters normalize their mandated provider data", async () =>
     http({
       results: [
         {
-          id: "h1",
-          details: {
+          incidentDetails: {
+            id: "h1",
             type: "roadClosure",
             criticality: "critical",
             roadClosed: true,
+            startTime: "2026-09-03T10:00:00Z",
+            endTime: "2026-09-03T11:00:00Z",
           },
         },
       ],
     }),
   ).getIncidents({ center: coordinates });
   assert.equal(weather.data?.weatherCode, 502);
+  assert.equal(weather.data?.precipitationMillimeters, 1.2);
   assert.equal(geocode.data?.latitude, 14.6);
   assert.equal(route.data?.durationSeconds, 1800);
   assert.equal(incidents.data?.[0]?.isRoadClosed, true);
+  assert.equal(incidents.data?.[0]?.providerIncidentId, "h1");
+  assert.equal(incidents.data?.[0]?.location, undefined);
+});
+
+test("TomTom routing uses live traffic when traffic-aware", async () => {
+  let routeUrl: URL | undefined;
+  const client: ExternalContextHttpClient = async (input) => {
+    routeUrl = new URL(String(input));
+    return json({
+      routes: [
+        { summary: { lengthInMeters: 12000, travelTimeInSeconds: 1800 } },
+      ],
+    });
+  };
+  const result = await new TomTomRoutingProvider(env, client).getRoute({
+    origin: coordinates,
+    destination: { latitude: 14.6, longitude: 121 },
+    trafficAware: true,
+  });
+  assert.equal(result.status, "available");
+  assert.equal(routeUrl?.searchParams.get("key"), env.tomtomApiKey);
+  assert.equal(routeUrl?.searchParams.get("traffic"), "live");
+});
+
+test("a valid TomTom road closure remains available without HERE fallback", async () => {
+  let fallbackCalls = 0;
+  const primary = new TomTomTrafficIncidentProvider(
+    env,
+    http({
+      incidents: [
+        {
+          geometry: { type: "LineString", coordinates: [[121, 14.6]] },
+          properties: {
+            id: "road-closed",
+            iconCategory: 8,
+            magnitudeOfDelay: 4,
+            startTime: "2026-09-03T10:00:00Z",
+            endTime: "2026-09-03T11:00:00Z",
+          },
+        },
+      ],
+    }),
+  );
+  const result = await withFallback(
+    () => primary.getIncidents({ center: coordinates }),
+    async () => {
+      fallbackCalls++;
+      throw new Error("must not call fallback");
+    },
+  );
+  assert.equal(result.status, "available");
+  assert.equal(result.data?.[0]?.isRoadClosed, true);
+  assert.equal(fallbackCalls, 0);
 });
 
 test("failure-eligible primary invokes fallback, but a valid adverse result never does", async () => {

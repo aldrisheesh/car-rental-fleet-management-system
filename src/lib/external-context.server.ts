@@ -61,7 +61,7 @@ export type TrafficIncidentRequest = {
 };
 export type NormalizedTrafficIncident = {
   providerIncidentId?: string;
-  category?: string;
+  category?: string | number;
   severity?: string | number;
   isRoadClosed?: boolean;
   startTime?: string;
@@ -349,7 +349,8 @@ export class OpenWeatherWeatherProvider implements WeatherProvider {
       weatherCode: code,
       temperatureCelsius: numberValue(entry.temp),
       precipitationMillimeters:
-        numberValue(entry.rain) ?? numberValue(entry.snow),
+        numberValue(objectValue(entry.rain)?.["1h"]) ??
+        numberValue(objectValue(entry.snow)?.["1h"]),
       precipitationProbabilityPercent:
         numberValue(entry.pop) === undefined
           ? undefined
@@ -387,6 +388,7 @@ export class TomTomGeocodingProvider implements GeocodingProvider {
         headers: {
           "TomTom-Api-Version": "2",
           "TomTom-Api-Key": this.env.tomtomApiKey!,
+          Attributes: "results.title,results.position",
         },
       },
       this.env.timeoutMs ?? DEFAULT_TIMEOUT_MS,
@@ -396,15 +398,12 @@ export class TomTomGeocodingProvider implements GeocodingProvider {
     const results = Array.isArray(body?.results) ? body.results : [];
     const first = objectValue(results[0]);
     const position = objectValue(first?.position);
-    const address = objectValue(first?.address);
-    const latitude = numberValue(position?.lat);
-    const longitude = numberValue(position?.lon);
-    const label =
-      typeof address?.freeformAddress === "string"
-        ? address.freeformAddress
-        : typeof first?.name === "string"
-          ? first.name
-          : undefined;
+    const coordinates = Array.isArray(position?.coordinates)
+      ? position.coordinates
+      : undefined;
+    const longitude = coordinates ? numberValue(coordinates[0]) : undefined;
+    const latitude = coordinates ? numberValue(coordinates[1]) : undefined;
+    const label = typeof first?.title === "string" ? first.title : undefined;
     return latitude === undefined || longitude === undefined || !label
       ? failure("coverage", "tomtom")
       : available("tomtom", { latitude, longitude, label });
@@ -473,7 +472,11 @@ export class TomTomRoutingProvider implements RoutingProvider {
         `${request.origin.latitude},${request.origin.longitude}:${request.destination.latitude},${request.destination.longitude}/json`,
     );
     url.searchParams.set("apiVersion", "2");
-    url.searchParams.set("traffic", request.trafficAware ? "true" : "false");
+    url.searchParams.set("key", this.env.tomtomApiKey!);
+    url.searchParams.set(
+      "traffic",
+      request.trafficAware ? "live" : "historical",
+    );
     const response = await requestJson(
       this.http,
       url,
@@ -482,7 +485,6 @@ export class TomTomRoutingProvider implements RoutingProvider {
         headers: {
           "Content-Type": "application/json",
           "TomTom-Api-Version": "2",
-          "TomTom-Api-Key": this.env.tomtomApiKey!,
         },
         body: "{}",
       },
@@ -575,21 +577,28 @@ function trafficIncidentFromTomTom(
   const incident = objectValue(value);
   const properties = objectValue(incident?.properties);
   const geometry = objectValue(incident?.geometry);
-  const point = Array.isArray(geometry?.coordinates)
+  const coordinates = Array.isArray(geometry?.coordinates)
     ? geometry.coordinates
     : undefined;
+  const point =
+    geometry?.type === "Point"
+      ? coordinates
+      : geometry?.type === "LineString" && Array.isArray(coordinates?.[0])
+        ? coordinates[0]
+        : undefined;
   const longitude = Array.isArray(point) ? numberValue(point[0]) : undefined;
   const latitude = Array.isArray(point) ? numberValue(point[1]) : undefined;
   if (!properties) return undefined;
   const category =
-    typeof properties.iconCategory === "string"
+    typeof properties.iconCategory === "number" &&
+    Number.isFinite(properties.iconCategory)
       ? properties.iconCategory
       : undefined;
   return {
     providerIncidentId:
       typeof properties.id === "string" ? properties.id : undefined,
     category,
-    isRoadClosed: category?.toLocaleLowerCase() === "roadclosed",
+    isRoadClosed: category === 8,
     severity:
       typeof properties.magnitudeOfDelay === "number"
         ? properties.magnitudeOfDelay
@@ -694,13 +703,10 @@ export class HereTrafficIncidentProvider implements TrafficIncidentProvider {
       "here",
       results.map((item) => {
         const incident = objectValue(item);
-        const details = objectValue(incident?.details);
-        const location = objectValue(incident?.location);
-        const latitude = numberValue(location?.lat);
-        const longitude = numberValue(location?.lng);
+        const details = objectValue(incident?.incidentDetails);
         return {
           providerIncidentId:
-            typeof incident?.id === "string" ? incident.id : undefined,
+            typeof details?.id === "string" ? details.id : undefined,
           category:
             typeof details?.type === "string" ? details.type : undefined,
           severity:
@@ -714,10 +720,6 @@ export class HereTrafficIncidentProvider implements TrafficIncidentProvider {
               : undefined,
           endTime:
             typeof details?.endTime === "string" ? details.endTime : undefined,
-          location:
-            latitude === undefined || longitude === undefined
-              ? undefined
-              : { latitude, longitude },
         };
       }),
     );
