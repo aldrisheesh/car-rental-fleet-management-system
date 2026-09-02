@@ -48,6 +48,6 @@ test("coarse admin route access follows the frozen role matrix", () => {
   assert.equal(canAccessAdminPath(staff, "/admin/payments"), false);
   assert.equal(canAccessAdminPath(staff, "/admin/customers"), false);
   assert.equal(canAccessAdminPath(staff, "/admin/fleet"), false);
-  assert.equal(canAccessAdminPath(staff, "/admin/reports"), false);
+  assert.equal(canAccessAdminPath(staff, "/admin/reports"), true);
   assert.equal(canAccessAdminPath(customer, "/admin/bookings"), false);
 });

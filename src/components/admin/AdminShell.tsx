@@ -55,6 +55,7 @@ const navStaffModules: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
   { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+  { to: "/admin/reports", label: "Reports & Analytics", icon: BarChart3 },
 ];
 
 const navCoreOperations: NavItem[] = [
@@ -205,6 +206,7 @@ export function AdminShell() {
     const allowedPrefixes = [
       "/admin/bookings",
       "/admin/calendar",
+      "/admin/reports",
       "/admin/profile",
     ];
 

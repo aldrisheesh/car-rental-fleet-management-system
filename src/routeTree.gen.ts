@@ -36,6 +36,7 @@ import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
 import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-master-data'
 import { Route as ApiAuditEventsRouteImport } from './routes/api.audit-events'
 import { Route as ApiAllocationRecommendationsRouteImport } from './routes/api.allocation-recommendations'
+import { Route as ApiAdminReportsRouteImport } from './routes/api.admin-reports'
 import { Route as ApiAdminDashboardRouteImport } from './routes/api.admin-dashboard'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -194,6 +195,11 @@ const ApiAllocationRecommendationsRoute =
     path: '/api/allocation-recommendations',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiAdminReportsRoute = ApiAdminReportsRouteImport.update({
+  id: '/api/admin-reports',
+  path: '/api/admin-reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminDashboardRoute = ApiAdminDashboardRouteImport.update({
   id: '/api/admin-dashboard',
   path: '/api/admin-dashboard',
@@ -325,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
@@ -374,6 +381,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
@@ -425,6 +433,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
@@ -477,6 +486,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/users'
     | '/api/admin-dashboard'
+    | '/api/admin-reports'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/booking-master-data'
@@ -526,6 +536,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/users'
     | '/api/admin-dashboard'
+    | '/api/admin-reports'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/booking-master-data'
@@ -576,6 +587,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/users'
     | '/api/admin-dashboard'
+    | '/api/admin-reports'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/booking-master-data'
@@ -613,6 +625,7 @@ export interface RootRouteChildren {
   SignInRoute: typeof SignInRoute
   VehiclesRoute: typeof VehiclesRoute
   ApiAdminDashboardRoute: typeof ApiAdminDashboardRoute
+  ApiAdminReportsRoute: typeof ApiAdminReportsRoute
   ApiAllocationRecommendationsRoute: typeof ApiAllocationRecommendationsRoute
   ApiAuditEventsRoute: typeof ApiAuditEventsRoute
   ApiBookingMasterDataRoute: typeof ApiBookingMasterDataRoute
@@ -829,6 +842,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAllocationRecommendationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin-reports': {
+      id: '/api/admin-reports'
+      path: '/api/admin-reports'
+      fullPath: '/api/admin-reports'
+      preLoaderRoute: typeof ApiAdminReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin-dashboard': {
       id: '/api/admin-dashboard'
       path: '/api/admin-dashboard'
@@ -1028,6 +1048,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignInRoute: SignInRoute,
   VehiclesRoute: VehiclesRoute,
   ApiAdminDashboardRoute: ApiAdminDashboardRoute,
+  ApiAdminReportsRoute: ApiAdminReportsRoute,
   ApiAllocationRecommendationsRoute: ApiAllocationRecommendationsRoute,
   ApiAuditEventsRoute: ApiAuditEventsRoute,
   ApiBookingMasterDataRoute: ApiBookingMasterDataRoute,

@@ -12,7 +12,9 @@ export type VehicleAnalyticsRow = {
   vehicleId: string;
   name: string;
   licensePlate: string | null;
+  branchId: string | null;
   branch: string | null;
+  categoryId: string | null;
   category: string | null;
   isActive: boolean;
   reportingStart: string;
@@ -96,7 +98,7 @@ export async function getVehicleAnalytics(
     db
       .from("vehicles")
       .select(
-        "id,name,license_plate,is_active,branch:branches(name),category:vehicle_categories(name)",
+        "id,name,license_plate,is_active,branch_id,category_id,branch:branches(name),category:vehicle_categories(name)",
       ),
     db.from("rental_transactions").select("vehicle_id,started_at,ended_at"),
     db
@@ -166,7 +168,9 @@ export async function getVehicleAnalytics(
         vehicleId: v.id,
         name: v.name,
         licensePlate: v.license_plate,
+        branchId: v.branch_id,
         branch: v.branch?.name ?? null,
+        categoryId: v.category_id,
         category: v.category?.name ?? null,
         isActive: v.is_active,
         reportingStart: startDate,
