@@ -1,81 +1,48 @@
 # VS022 Manuscript Traceability
 
-**Status:** Frozen planning traceability
+**Status:** Updated after MIC-025
 **Last updated:** 2026-09-02
 
-## Supports
+## Original manuscript provider design
 
-### Specific Objectives
+The proposal originally defined:
+- TomTom Orbis Geocoding primary
+- HERE Geocoding/Search v7 fallback
 
-Supports the system objective concerned with contextual decision-support information used alongside fleet availability, maintenance readiness, forecasting, projected supply, and allocation/assignment decisions.
+## Superseding implementation evidence
 
-It does not redefine the Customer Smart Vehicle Finder baseline.
+Live Philippine geocoding validation showed materially unsafe false-positive destination resolution from TomTom.
 
-### Requirements / Feature Matrix
+MIC-025 supersedes only the geocoding provider row.
 
-Supports manuscript requirements for:
-- contextual weather information;
-- destination coordinate resolution;
-- travel distance/time;
-- route feasibility/accessibility inputs;
-- road/traffic incident information;
-- reference fuel efficiency;
-- estimated fuel consumption;
-- primary/fallback external API architecture.
+## Current authoritative geocoding architecture
 
-### Use Cases
+- Geoapify Geocoding primary
+- LocationIQ Geocoding fallback
 
-VS022 itself is infrastructure and does not add a new end-user business action.
+## Unchanged provider architecture
 
-It supports later contextual display/decision-support use cases.
+Weather:
+- Open-Meteo -> OpenWeather One Call 3.0
 
-### Scope / Operational Logic
+Routing:
+- TomTom Orbis -> HERE Routing v8
 
-Must follow the manuscript's External API Selection and Fallback Strategy.
+Traffic/incidents:
+- TomTom -> HERE Traffic v7
 
-Fallback occurs for provider failure/insufficiency, not because a valid result is adverse.
+Fuel:
+- internal calculation
 
-### Data Dictionary / ERD
+## Manuscript action
 
-VS022 may add only derived provider-cache persistence if needed.
+Update the final External API Selection and Fallback Strategy to show Geoapify -> LocationIQ for destination coordinates/geocoding.
 
-It must not automatically implement obsolete/conceptual Trip Context or Monitoring tables solely because they appear in an older data dictionary.
+## Must not contradict
 
-Any new persistent context entity must be added to the Manuscript–Implementation Change Register and later reconciled with the final ERD.
-
-### Development Tools / APIs
-
-Authoritative:
-- Open-Meteo;
-- OpenWeather One Call 3.0;
-- TomTom Orbis Geocoding;
-- HERE Geocoding/Search v7;
-- TomTom Orbis Routing;
-- HERE Routing v8;
-- TomTom Traffic Incidents;
-- HERE Traffic API v7.
-
-### Implementation changes requiring manuscript update
-
-None expected for VS022 if the provider stack and acquisition-only boundary are followed.
-
-### Must not contradict
-
-- manuscript provider table;
-- fallback semantics;
-- Customer Finder baseline;
-- advisory/human-in-the-loop allocation;
-- CQ-028 unresolved client travel restrictions;
-- internal reference fuel-efficiency formula;
-- Scope and Limitations.
-
-## Post-Implementation Review Checklist
-
-- [ ] Providers match manuscript.
-- [ ] Fallback was not used for result shopping.
-- [ ] No Finder ranking changed.
-- [ ] No allocation decision changed.
-- [ ] No client restriction was invented.
-- [ ] Any new cache table is added to manuscript alignment backlog.
-- [ ] Provider credentials remain server-only.
-- [ ] MIC entry added if implementation materially deviated.
+- customer destination remains canonical text;
+- provider coordinates are derived;
+- fallback is resilience/coverage recovery;
+- Finder unchanged;
+- allocation scoring unchanged;
+- CQ-028 unchanged.

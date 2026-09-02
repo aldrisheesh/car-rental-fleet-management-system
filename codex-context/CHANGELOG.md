@@ -1,14 +1,13 @@
 # Changelog
 
-## 2026-09-02 — VS024 Admin context integration planning
-- Cross-checked latest manuscript R11 and allocation use case.
-- Froze context display in both booking assignment and branch-allocation review.
-- Defined booking context as pickup branch -> booking destination at pickup time.
-- Defined allocation context as current source-branch -> destination-branch transfer-review context because no exact transfer timestamp exists.
-- Kept all context advisory; no ranking/scoring/quantity mutation.
-- Kept new context endpoint Owner/Admin-only.
-- Identified obsolete prototype Admin vehicle-recommendation card for replacement, following the Customer Finder move.
-- Deferred context persistence/snapshotting, Finder integration, and CQ-028 rules.
+## 2026-09-02 — MIC-025 geocoding provider reassessment
 
-## 2026-09-02 — VS023 interpretation
-VS023 established pure manuscript-aligned operational context interpretation.
+- Compared TomTom, Geoapify, and LocationIQ using identical Philippine destinations.
+- Found TomTom produced multiple false-positive destinations.
+- Selected Geoapify as primary geocoder for stronger semantic accuracy.
+- Selected LocationIQ as fallback for broader coverage and zero observed false positives.
+- Removed TomTom/HERE from the active geocoding pair only.
+- Preserved TomTom/HERE routing and traffic architecture.
+- Preserved Open-Meteo/OpenWeather weather architecture.
+- Required provider-neutral semantic quality checks before accepting geocodes.
+- Required final manuscript provider-table revision through MIC-025.

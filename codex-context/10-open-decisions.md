@@ -3,24 +3,28 @@
 **Status:** Active
 **Last updated:** 2026-09-02
 
-## VS024 Admin Context Integration
+## Geocoding
 
-Context belongs in both:
-- booking vehicle-assignment review;
-- branch-allocation recommendation review.
+Resolved by MIC-025:
 
-This follows R11.
+Primary:
+- Geoapify Geocoding
 
-Researcher-designed gap resolution:
-- booking context targets booking pickup time;
-- allocation context is explicitly current review-time route context because no exact transfer time exists.
+Fallback:
+- LocationIQ Geocoding
+
+TomTom geocoding is no longer part of active geocoding orchestration due to weak Philippine semantic quality and false positives in controlled live validation.
 
 Still open:
-- whether context should later be persisted as a decision snapshot;
-- whether Customer Finder should ever display context;
-- CQ-028 exact client geographic restrictions;
-- manual/API conflict policy beyond preserving/reporting conflict.
+- whether final UI should add explicit destination confirmation/autocomplete;
+- whether context snapshots should be persisted.
 
-## Route Accessibility Unknown
+## Unchanged providers
 
-VS023 uses a safe internal Unknown state when reliable accessibility evidence is unavailable. Add this to manuscript reconciliation if it becomes a public final vocabulary.
+- TomTom -> HERE routing
+- TomTom -> HERE traffic
+- Open-Meteo -> OpenWeather weather
+
+## Other open items
+
+CQ-028, CQ-029, CQ-030, CQ-031, notification configuration, maintenance UI canonicalization, reports/dashboard, backup/recovery.

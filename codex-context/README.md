@@ -3,20 +3,24 @@
 **Status:** Development Baseline active
 **Last updated:** 2026-09-02
 
-Completed through VS023 Operational Context Interpretation.
+Completed through VS024, with a live-provider correction pending for VS022 geocoding.
 
-## Next — VS024 Administrative Context-Aware Decision Support
+## Active geocoding correction
 
-Integrate interpreted context into:
-1. Owner/Admin booking assignment review;
-2. Owner/Admin branch-allocation recommendation review.
+Controlled Philippine validation superseded the original TomTom -> HERE geocoding pair.
 
-Booking context:
-pickup branch -> customer destination, target booking pickup time, selected candidate fuel estimate.
+Current authoritative geocoding:
+- Geoapify primary
+- LocationIQ fallback
 
-Allocation context:
-source branch -> destination branch, current review-time operational context, candidate reference fuel estimates.
+Unchanged:
+- TomTom -> HERE routing
+- TomTom -> HERE traffic
+- Open-Meteo -> OpenWeather weather
+- internal fuel estimate
 
-Context remains advisory and must not change assignment ranking, allocation scoring, quantities, or business state.
+See:
+- `36-geocoding-provider-reassessment.md`
+- MIC-025
 
-The obsolete prototype Admin vehicle-recommendation card may be replaced with canonical context-aware decision support.
+Do not proceed to the next feature slice until corrected geocoding is implemented and real-provider validated.

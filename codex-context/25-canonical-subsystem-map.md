@@ -3,40 +3,37 @@
 **Status:** Active AI navigation aid
 **Last updated:** 2026-09-02
 
-## VS024 starting points
+## Geocoding correction starting points
 
 Read:
-- codex-context/34-admin-context-aware-decision-support.md
-- codex-context/35-manuscript-traceability-vs024.md
+- `codex-context/36-geocoding-provider-reassessment.md`
+- `codex-context/30-external-context-provider-foundation.md`
+- `codex-context/31-manuscript-traceability-vs022.md`
 
 Inspect only:
-1. `src/routes/admin.bookings.tsx` assignment section;
-2. canonical booking API/read fields necessary to resolve destination/pickup branch/candidate;
-3. `src/routes/admin.decisions.tsx` allocation recommendation section;
-4. `/api/allocation-recommendations` view shape;
-5. VS022 `getTrustedTripContext`;
-6. VS023 `interpretOperationalContext`;
-7. smallest Owner/Admin server route for context.
+1. existing geocoding provider-neutral types/orchestration in `src/lib/external-context.server.ts`;
+2. external-context tests;
+3. `.env.example`;
+4. the shared geocoding path used for customer destinations and branch addresses.
 
-Do not inspect/modify:
+Do not modify:
+- TomTom routing;
+- TomTom traffic;
+- HERE routing/traffic fallback;
+- Open-Meteo/OpenWeather weather;
+- VS023 interpretation except compile-only imports;
 - Finder;
-- allocation generation/scoring library;
-- forecasting/supply algorithms;
-- notification/reminder;
-- audit;
-- maintenance;
-- payment/requirements except compile-only booking fields.
+- allocation scoring;
+- booking lifecycle.
 
-## Important UI reality
+## Current geocoding authority
 
-`admin.decisions.tsx` still contains prototype/mock analytical UI and an obsolete hard-coded Admin vehicle-recommendation card.
+Geoapify primary -> LocationIQ fallback.
 
-VS024 may replace only the obsolete Admin recommendation card/context area.
+## Quality
 
-Do not canonicalize the entire Decision Support page in this slice.
+HTTP success does not equal semantic geocode success.
 
-## Security
+Reject obvious false positives and permit fallback.
 
-New operational-context endpoint: Owner/Admin only.
-
-Resolve canonical branch/destination/vehicle inputs server-side.
+Do not hard-code special cases for the six validation queries.
