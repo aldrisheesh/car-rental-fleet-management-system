@@ -9,19 +9,11 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
 } from "recharts";
 import { Card, CardHeader, PageHeader, Badge, Btn } from "@/components/admin/ui";
-import {
-  Brain,
-  AlertTriangle,
-  ArrowRight,
-} from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
+import { OperationalContextPanel, type OperationalContextView } from "@/components/admin/operational-context-panel";
 
 export const Route = createFileRoute("/admin/decisions")({
   beforeLoad: () => {
@@ -58,31 +50,38 @@ const utilRows = [
   { name: "Toyota Wigo", plate: "AAJ 2231", branch: "Taft, Manila", util: 72, trend: "+3%" },
 ];
 
-const radar = [
-  { dim: "Seats", v: 90 },
-  { dim: "Fuel eff.", v: 65 },
-  { dim: "Availability", v: 80 },
-  { dim: "Distance fit", v: 88 },
-  { dim: "Condition", v: 92 },
-];
-
 function DecisionPage() {
   const session = getAdminSession();
   const staffView = isStaffRole(session?.role);
   const [allocationRows, setAllocationRows] = useState<any[]>([]);
   const [allocationError, setAllocationError] = useState("");
   const [allocationBusy, setAllocationBusy] = useState(false);
+  const [contextRecommendationId, setContextRecommendationId] = useState("");
+  const [allocationContext, setAllocationContext] = useState<(OperationalContextView & { recommendation?: { recommendedTransferUnits: number; candidates: Array<{ vehicleId: string; candidateRank: number; referenceEfficiencyKmPerLiter: number | null; estimatedFuelLiters: number | null }> } }) | null>(null);
+  const [allocationContextLoading, setAllocationContextLoading] = useState(false);
+  const [allocationContextError, setAllocationContextError] = useState("");
 
   useEffect(() => {
     let active = true;
     fetch("/api/allocation-recommendations", { credentials: "same-origin" })
       .then(async (response) => { const body = await response.json(); if (!response.ok) throw new Error(body.message ?? "Unable to load recommendations."); return body; })
-      .then((body) => { if (active) { setAllocationRows(body.recommendations ?? []); setAllocationError(""); } })
+      .then((body) => { if (active) { const rows = body.recommendations ?? []; setAllocationRows(rows); setContextRecommendationId((current) => current && rows.some((row: any) => row.id === current) ? current : (rows[0]?.id ?? "")); setAllocationError(""); } })
       .catch((error) => { if (active) setAllocationError(error instanceof Error ? error.message : "Unable to load recommendations."); });
     return () => {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (staffView || !contextRecommendationId) { setAllocationContext(null); setAllocationContextError(""); setAllocationContextLoading(false); return; }
+    const controller = new AbortController();
+    setAllocationContextLoading(true); setAllocationContextError("");
+    fetch("/api/operational-context", { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "allocation_review", recommendationId: contextRecommendationId }), signal: controller.signal })
+      .then(async (response) => { const body = await response.json(); if (!response.ok) throw new Error(body.message ?? "Operational context could not be loaded."); return body; })
+      .then((body) => { setAllocationContext(body); setAllocationContextLoading(false); })
+      .catch((error) => { if (error instanceof DOMException && error.name === "AbortError") return; setAllocationContext(null); setAllocationContextError("Operational context could not be verified."); setAllocationContextLoading(false); });
+    return () => controller.abort();
+  }, [contextRecommendationId, staffView]);
 
   async function generateAllocations() {
     setAllocationBusy(true);
@@ -284,48 +283,7 @@ function DecisionPage() {
           </div>
         </Card>
 
-        <Card>
-          <CardHeader
-            title="Vehicle recommendation"
-            hint="For trip: 6 pax, Manila ? Baguio (250 km)"
-            right={<Brain className="h-4 w-4 text-primary" />}
-          />
-          <div className="grid gap-4 p-5 md:grid-cols-[1fr_1.2fr]">
-            <ResponsiveContainer width="100%" height={200}>
-              <RadarChart data={radar}>
-                <PolarGrid stroke="rgba(255,255,255,0.08)" />
-                <PolarAngleAxis
-                  dataKey="dim"
-                  tick={{ fill: "oklch(0.72 0.015 250)", fontSize: 10 }}
-                />
-                <PolarRadiusAxis tick={false} axisLine={false} />
-                <Radar
-                  dataKey="v"
-                  stroke="oklch(0.84 0.16 92)"
-                  fill="oklch(0.84 0.16 92)"
-                  fillOpacity={0.35}
-                  strokeWidth={2}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
-            <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                Top match
-              </div>
-              <div className="mt-1 font-display text-xl font-semibold">Toyota Innova</div>
-              <div className="text-xs text-muted-foreground">ABM 9921 • Taft, Manila</div>
-              <ul className="mt-4 space-y-1.5 text-xs text-muted-foreground">
-                <li>• 8 seats — fits 6 pax with luggage</li>
-                <li>• Diesel, 12 km/L — efficient for 250 km</li>
-                <li>• Available May 26 ? 30</li>
-                <li>• Excellent condition (last service 2 wks)</li>
-              </ul>
-              <Btn variant="primary" className="mt-4">
-                Recommend vehicle <ArrowRight className="h-4 w-4" />
-              </Btn>
-            </div>
-          </div>
-        </Card>
+        {!staffView ? <OperationalContextPanel title="Current route context for transfer review" context={allocationContext} loading={allocationContextLoading} error={allocationContextError} advisoryNote="Current operational context — not part of the original allocation score/snapshot. Select a recommendation to review its source-to-destination route." /> : null}
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_1fr]">
@@ -338,7 +296,8 @@ function DecisionPage() {
             <div className="grid gap-2 text-xs sm:grid-cols-3"><span>Destination shortage: <strong>{row.destination_shortage_snapshot}</strong></span><span>Source surplus: <strong>{row.source_surplus_snapshot}</strong></span><span>Recommended: <strong>{row.recommended_transfer_units}</strong></span></div>
             <p className="text-xs text-muted-foreground">Required/supply: destination {row.destination_required_units_snapshot}/{row.destination_projected_supply_snapshot}; source {row.source_required_units_snapshot}/{row.source_projected_supply_snapshot}. Quantity is min(remaining shortage, remaining surplus, eligible candidates).</p>
             <p className="text-[11px] text-muted-foreground">VS015 evaluated: destination {row.destination_evaluated_at ? new Date(row.destination_evaluated_at).toLocaleString() : "unknown"}; source {row.source_evaluated_at ? new Date(row.source_evaluated_at).toLocaleString() : "unknown"}</p>
-            <div className="space-y-1">{(row.candidates ?? []).map((candidate: any) => <div key={candidate.id} className="flex justify-between text-xs"><span>#{candidate.candidate_rank} {candidate.vehicle_name_snapshot} · {candidate.license_plate_snapshot ?? "No plate"}</span><span>{candidate.idle_days_snapshot == null ? "Idle unknown" : `${candidate.idle_days_snapshot}d idle`}</span></div>)}</div>
+            <div className="space-y-1">{(row.candidates ?? []).map((candidate: any) => { const fuel = allocationContext?.recommendation && contextRecommendationId === row.id ? allocationContext.recommendation.candidates.find((item) => item.vehicleId === candidate.vehicle_id) : undefined; return <div key={candidate.id} className="flex justify-between gap-3 text-xs"><span>#{candidate.candidate_rank} {candidate.vehicle_name_snapshot} · {candidate.license_plate_snapshot ?? "No plate"}</span><span>{fuel ? `${fuel.referenceEfficiencyKmPerLiter == null ? "Efficiency unavailable" : `${fuel.referenceEfficiencyKmPerLiter.toFixed(1)} km/L`} · ${fuel.estimatedFuelLiters == null ? "Fuel unavailable" : `${fuel.estimatedFuelLiters.toFixed(1)} L`}` : (candidate.idle_days_snapshot == null ? "Idle unknown" : `${candidate.idle_days_snapshot}d idle`)}</span></div>; })}</div>
+            {!staffView ? <Btn variant="ghost" disabled={allocationContextLoading && contextRecommendationId === row.id} onClick={() => setContextRecommendationId(row.id)}>{contextRecommendationId === row.id ? "Reviewing current context" : "Review current route context"}</Btn> : null}
             {!staffView && row.decision_state === "Pending" ? <div className="flex flex-wrap gap-2"><Btn disabled={allocationBusy} variant="primary" onClick={() => decideAllocation(row.id, "Approved", row.recommended_transfer_units)}>Approve full ({row.recommended_transfer_units})</Btn><Btn disabled={allocationBusy} variant="ghost" onClick={() => { const value = window.prompt(`Approve a positive quantity up to ${row.recommended_transfer_units}`, String(row.recommended_transfer_units)); const units = Number(value); if (Number.isInteger(units) && units > 0) void decideAllocation(row.id, "Approved", units); }}>Approve lower quantity</Btn><Btn disabled={allocationBusy} variant="danger" onClick={() => decideAllocation(row.id, "Rejected")}>Reject</Btn></div> : null}
           </li>)}</ul>
         </Card>

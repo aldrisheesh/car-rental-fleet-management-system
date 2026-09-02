@@ -13,6 +13,7 @@
     "test:supabase": "node --experimental-strip-types --test src/lib/supabase/env.test.ts",
     "test:audit": "node --experimental-strip-types --test src/lib/audit.test.ts",
     "test:external-context": "node --experimental-strip-types --test src/lib/external-context.server.test.ts",
+    "test:operational-context-admin": "node --experimental-strip-types --test src/lib/admin-operational-context.server.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

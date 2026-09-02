@@ -26,6 +26,7 @@ import { Route as ApiVehicleAnalyticsRouteImport } from './routes/api.vehicle-an
 import { Route as ApiSupplyEvaluationsRouteImport } from './routes/api.supply-evaluations'
 import { Route as ApiRequirementsRouteImport } from './routes/api.requirements'
 import { Route as ApiPaymentsRouteImport } from './routes/api.payments'
+import { Route as ApiOperationalContextRouteImport } from './routes/api.operational-context'
 import { Route as ApiNotificationsRouteImport } from './routes/api.notifications'
 import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
 import { Route as ApiMaintenanceRouteImport } from './routes/api.maintenance'
@@ -139,6 +140,11 @@ const ApiRequirementsRoute = ApiRequirementsRouteImport.update({
 const ApiPaymentsRoute = ApiPaymentsRouteImport.update({
   id: '/api/payments',
   path: '/api/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOperationalContextRoute = ApiOperationalContextRouteImport.update({
+  id: '/api/operational-context',
+  path: '/api/operational-context',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
@@ -321,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/notifications': typeof ApiNotificationsRoute
+  '/api/operational-context': typeof ApiOperationalContextRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
@@ -368,6 +375,7 @@ export interface FileRoutesByTo {
   '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/notifications': typeof ApiNotificationsRoute
+  '/api/operational-context': typeof ApiOperationalContextRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
@@ -417,6 +425,7 @@ export interface FileRoutesById {
   '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/notifications': typeof ApiNotificationsRoute
+  '/api/operational-context': typeof ApiOperationalContextRoute
   '/api/payments': typeof ApiPaymentsRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
@@ -467,6 +476,7 @@ export interface FileRouteTypes {
     | '/api/maintenance'
     | '/api/master-data'
     | '/api/notifications'
+    | '/api/operational-context'
     | '/api/payments'
     | '/api/requirements'
     | '/api/supply-evaluations'
@@ -514,6 +524,7 @@ export interface FileRouteTypes {
     | '/api/maintenance'
     | '/api/master-data'
     | '/api/notifications'
+    | '/api/operational-context'
     | '/api/payments'
     | '/api/requirements'
     | '/api/supply-evaluations'
@@ -562,6 +573,7 @@ export interface FileRouteTypes {
     | '/api/maintenance'
     | '/api/master-data'
     | '/api/notifications'
+    | '/api/operational-context'
     | '/api/payments'
     | '/api/requirements'
     | '/api/supply-evaluations'
@@ -597,6 +609,7 @@ export interface RootRouteChildren {
   ApiMaintenanceRoute: typeof ApiMaintenanceRoute
   ApiMasterDataRoute: typeof ApiMasterDataRoute
   ApiNotificationsRoute: typeof ApiNotificationsRoute
+  ApiOperationalContextRoute: typeof ApiOperationalContextRoute
   ApiPaymentsRoute: typeof ApiPaymentsRoute
   ApiRequirementsRoute: typeof ApiRequirementsRoute
   ApiSupplyEvaluationsRoute: typeof ApiSupplyEvaluationsRoute
@@ -731,6 +744,13 @@ declare module '@tanstack/react-router' {
       path: '/api/payments'
       fullPath: '/api/payments'
       preLoaderRoute: typeof ApiPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/operational-context': {
+      id: '/api/operational-context'
+      path: '/api/operational-context'
+      fullPath: '/api/operational-context'
+      preLoaderRoute: typeof ApiOperationalContextRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/notifications': {
@@ -996,6 +1016,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMaintenanceRoute: ApiMaintenanceRoute,
   ApiMasterDataRoute: ApiMasterDataRoute,
   ApiNotificationsRoute: ApiNotificationsRoute,
+  ApiOperationalContextRoute: ApiOperationalContextRoute,
   ApiPaymentsRoute: ApiPaymentsRoute,
   ApiRequirementsRoute: ApiRequirementsRoute,
   ApiSupplyEvaluationsRoute: ApiSupplyEvaluationsRoute,
