@@ -1,18 +1,11 @@
 # Changelog
 
-## 2026-09-02 — VS022 manuscript-aligned external context planning
-
-- Froze manuscript-authoritative Open-Meteo -> OpenWeather weather fallback.
-- Froze TomTom -> HERE geocoding fallback.
-- Froze TomTom -> HERE routing fallback.
-- Froze TomTom Traffic Incidents -> HERE Traffic fallback.
-- Preserved internal reference fuel efficiency and route-distance fuel estimate.
-- Defined fallback as provider resilience, not result shopping.
-- Separated provider acquisition from later operational interpretation.
-- Required provider-neutral adapters, server-only credentials, bounded timeouts, caching, safe diagnostics, and normalized failure categories.
-- Preserved CQ-028 separately from external provider route data.
-- Recorded that Geoapify/WeatherAPI planning was rejected before commit/implementation.
-- Added mandatory manuscript-alignment/provider-change discipline.
-
-## 2026-09-02 — VS021 audit
-VS021 established the canonical semantic append-only Audit Trail.
+## 2026-09-02 — VS023 operational context interpretation planning
+- Froze manuscript-defined weather, road-condition, route-feasibility, and route-accessibility labels.
+- Prohibited arbitrary numerical thresholds not present in the manuscript.
+- Defined road condition as incident-based operational state, not pavement roughness.
+- Required interpretation over VS022 normalized data only.
+- Required blocking-condition precedence and conservative Unavailable/Unknown handling.
+- Preserved authorized manual context as separately attributed from API data.
+- Preserved advisory-only behavior and CQ-028.
+- Deferred Finder/allocation integration.
