@@ -16,7 +16,13 @@ export type ProviderStatus =
   | "timeout"
   | "provider_error";
 
-export type ProviderName = "open_meteo" | "openweather" | "tomtom" | "here";
+export type ProviderName =
+  | "open_meteo"
+  | "openweather"
+  | "geoapify"
+  | "locationiq"
+  | "tomtom"
+  | "here";
 
 export type ProviderResult<T> = {
   status: ProviderStatus;
@@ -42,7 +48,16 @@ export type NormalizedWeather = {
 };
 
 export type GeocodeRequest = { query: string };
-export type NormalizedGeocode = Coordinates & { label: string };
+export type NormalizedGeocode = Coordinates & {
+  /** The canonical customer or branch address submitted to the provider. */
+  originalQuery: string;
+  label: string;
+  locality?: string;
+  country?: string;
+  countryCode?: string;
+  /** Provider-neutral attribution details; raw provider payloads never leave this module. */
+  providerMetadata: { resultType?: string; name?: string };
+};
 
 export type RouteRequest = {
   origin: Coordinates;
@@ -87,6 +102,8 @@ export interface TrafficIncidentProvider {
 }
 
 export type ExternalContextEnv = {
+  geoapifyApiKey?: string;
+  locationIqApiKey?: string;
   tomtomApiKey?: string;
   hereApiKey?: string;
   openWeatherApiKey?: string;
@@ -129,6 +146,8 @@ export function getExternalContextEnv(
       : undefined;
   const rawTimeout = Number(read("EXTERNAL_CONTEXT_TIMEOUT_MS"));
   return {
+    geoapifyApiKey: read("GEOAPIFY_API_KEY"),
+    locationIqApiKey: read("LOCATIONIQ_API_KEY"),
     tomtomApiKey: read("TOMTOM_API_KEY"),
     hereApiKey: read("HERE_API_KEY"),
     openWeatherApiKey: read("OPENWEATHER_API_KEY"),
@@ -201,10 +220,13 @@ const PHILIPPINE_GEOCODE_STOP_WORDS = new Set([
   "street",
 ]);
 
+function normalizedText(value: string): string {
+  return value.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase();
+}
+
 function locationTerms(value: string): string[] {
   return (
-    value
-      .toLocaleLowerCase()
+    normalizedText(value)
       .match(/[\p{L}\p{N}]+/gu)
       ?.filter(
         (term) => term.length > 2 && !PHILIPPINE_GEOCODE_STOP_WORDS.has(term),
@@ -212,39 +234,46 @@ function locationTerms(value: string): string[] {
   );
 }
 
-function geocodeMatchesQuery(
+function explicitLocalityTerms(query: string): string[] {
+  return query.split(",").flatMap((part) => {
+    const match = part.trim().match(/^(.+?)\s+(?:city|municipality)$/i);
+    return match ? locationTerms(match[1]) : [];
+  });
+}
+
+/**
+ * One provider-neutral semantic boundary for every normalized geocode. It is
+ * intentionally conservative: an unprovable POI/entity match is unavailable,
+ * never an invented or silently unrelated coordinate.
+ */
+function geocodePassesQualityGuard(
   query: string,
-  result: Record<string, unknown>,
+  candidate: NormalizedGeocode,
 ): boolean {
-  const queryTerms = locationTerms(query);
-  if (queryTerms.length === 0) return true;
-  const address = objectValue(result.address);
-  const localityText = [
-    address?.municipality,
-    address?.municipalitySubdivision,
-    address?.municipalitySecondarySubdivision,
-    address?.countrySubdivision,
-    address?.countrySecondarySubdivision,
-    address?.countryTertiarySubdivision,
-  ]
-    .filter((value): value is string => typeof value === "string")
-    .join(" ")
-    .toLocaleLowerCase();
-  // A query explicitly naming a city/municipality must match the returned
-  // locality, not merely a street or neighborhood that happens to share a name.
-  if (/\b(city|municipality)\b/i.test(query)) {
-    return queryTerms.some((term) => localityText.includes(term));
-  }
-  const candidateText = [
-    result.title,
-    localityText,
-    address?.street,
-    address?.neighborhood,
-  ]
-    .filter((value): value is string => typeof value === "string")
-    .join(" ")
-    .toLocaleLowerCase();
-  return queryTerms.some((term) => candidateText.includes(term));
+  if (candidate.countryCode?.toLocaleUpperCase() !== "PH") return false;
+  const localityTerms = explicitLocalityTerms(query);
+  const locality = normalizedText(candidate.locality ?? "");
+  if (
+    localityTerms.length > 0 &&
+    !localityTerms.every((term) => locality.includes(term))
+  )
+    return false;
+
+  const entityTerms = locationTerms(query).filter(
+    (term) => !localityTerms.includes(term),
+  );
+  if (entityTerms.length === 0) return true;
+  const candidateText = normalizedText(
+    [candidate.label, candidate.providerMetadata.name]
+      .filter((value): value is string => typeof value === "string")
+      .join(" "),
+  );
+  const matched = entityTerms.filter((term) => candidateText.includes(term));
+  // A named POI needs enough of its distinctive name to establish that it is
+  // the requested entity, rather than an unrelated same-city street or POI.
+  return entityTerms.length === 1
+    ? matched.length === 1
+    : matched.length >= Math.min(2, entityTerms.length);
 }
 
 function objectValue(value: unknown): Record<string, unknown> | undefined {
@@ -435,7 +464,7 @@ export class OpenWeatherWeatherProvider implements WeatherProvider {
   }
 }
 
-export class TomTomGeocodingProvider implements GeocodingProvider {
+export class GeoapifyGeocodingProvider implements GeocodingProvider {
   private readonly env: ExternalContextEnv;
   private readonly http: ExternalContextHttpClient;
   constructor(
@@ -448,67 +477,13 @@ export class TomTomGeocodingProvider implements GeocodingProvider {
   async geocode(
     request: GeocodeRequest,
   ): Promise<ProviderResult<NormalizedGeocode>> {
-    if (!configured(this.env.tomtomApiKey))
-      return failure("not_configured", "tomtom");
-    const url = new URL("https://api.tomtom.com/maps/orbis/places/geocode");
-    url.searchParams.set("query", request.query);
-    // All canonical branches and destinations in this system are Philippine.
-    // Scope provider search rather than replacing the canonical destination text.
-    url.searchParams.set("countryCodesIso2", "PH");
-    const response = await requestJson(
-      this.http,
-      url,
-      {
-        headers: {
-          "TomTom-Api-Version": "2",
-          "TomTom-Api-Key": this.env.tomtomApiKey!,
-          Attributes:
-            "results.title,results.position,results.address.municipality,results.address.municipalitySubdivision,results.address.municipalitySecondarySubdivision,results.address.countrySubdivision,results.address.countrySecondarySubdivision,results.address.countryTertiarySubdivision,results.address.street,results.address.neighborhood",
-        },
-      },
-      this.env.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-    );
-    if (!response.ok) return failure(response.category, "tomtom");
-    const body = objectValue(response.body);
-    const results = Array.isArray(body?.results) ? body.results : [];
-    const first = results
-      .map(objectValue)
-      .find(
-        (candidate) =>
-          candidate && geocodeMatchesQuery(request.query, candidate),
-      );
-    const position = objectValue(first?.position);
-    const coordinates = Array.isArray(position?.coordinates)
-      ? position.coordinates
-      : undefined;
-    const longitude = coordinates ? numberValue(coordinates[0]) : undefined;
-    const latitude = coordinates ? numberValue(coordinates[1]) : undefined;
-    const label = typeof first?.title === "string" ? first.title : undefined;
-    return latitude === undefined || longitude === undefined || !label
-      ? failure("coverage", "tomtom")
-      : available("tomtom", { latitude, longitude, label });
-  }
-}
-
-export class HereGeocodingProvider implements GeocodingProvider {
-  private readonly env: ExternalContextEnv;
-  private readonly http: ExternalContextHttpClient;
-  constructor(
-    env: ExternalContextEnv,
-    http: ExternalContextHttpClient = fetch,
-  ) {
-    this.env = env;
-    this.http = http;
-  }
-  async geocode(
-    request: GeocodeRequest,
-  ): Promise<ProviderResult<NormalizedGeocode>> {
-    if (!configured(this.env.hereApiKey))
-      return failure("not_configured", "here");
-    const url = new URL("https://geocode.search.hereapi.com/v1/geocode");
+    if (!configured(this.env.geoapifyApiKey))
+      return failure("not_configured", "geoapify");
+    const url = new URL("https://api.geoapify.com/v1/geocode/search");
     url.search = new URLSearchParams({
-      q: request.query,
-      apiKey: this.env.hereApiKey!,
+      text: request.query,
+      filter: "countrycode:ph",
+      apiKey: this.env.geoapifyApiKey!,
     }).toString();
     const response = await requestJson(
       this.http,
@@ -516,19 +491,123 @@ export class HereGeocodingProvider implements GeocodingProvider {
       {},
       this.env.timeoutMs ?? DEFAULT_TIMEOUT_MS,
     );
-    if (!response.ok) return failure(response.category, "here");
+    if (!response.ok) return failure(response.category, "geoapify");
     const body = objectValue(response.body);
-    const items = Array.isArray(body?.items) ? body.items : [];
-    const first = objectValue(items[0]);
-    const position = objectValue(first?.position);
-    const address = objectValue(first?.address);
-    const latitude = numberValue(position?.lat);
-    const longitude = numberValue(position?.lng);
+    const features =
+      body?.type === "FeatureCollection" && Array.isArray(body.features)
+        ? body.features
+        : undefined;
+    if (!features) return failure("malformed_response", "geoapify");
+    const properties = objectValue(objectValue(features[0])?.properties);
+    const latitude = numberValue(properties?.lat);
+    const longitude = numberValue(properties?.lon);
     const label =
-      typeof address?.label === "string" ? address.label : undefined;
+      typeof properties?.formatted === "string"
+        ? properties.formatted
+        : undefined;
     return latitude === undefined || longitude === undefined || !label
-      ? failure("coverage", "here")
-      : available("here", { latitude, longitude, label });
+      ? failure("coverage", "geoapify")
+      : available("geoapify", {
+          latitude,
+          longitude,
+          originalQuery: request.query,
+          label,
+          locality:
+            typeof properties?.city === "string"
+              ? properties.city
+              : typeof properties?.municipality === "string"
+                ? properties.municipality
+                : typeof properties?.county === "string"
+                  ? properties.county
+                  : undefined,
+          country:
+            typeof properties?.country === "string"
+              ? properties.country
+              : undefined,
+          countryCode:
+            typeof properties?.country_code === "string"
+              ? properties.country_code.toLocaleUpperCase()
+              : undefined,
+          providerMetadata: {
+            resultType:
+              typeof properties?.result_type === "string"
+                ? properties.result_type
+                : undefined,
+            name:
+              typeof properties?.name === "string"
+                ? properties.name
+                : undefined,
+          },
+        });
+  }
+}
+
+export class LocationIqGeocodingProvider implements GeocodingProvider {
+  private readonly env: ExternalContextEnv;
+  private readonly http: ExternalContextHttpClient;
+  constructor(
+    env: ExternalContextEnv,
+    http: ExternalContextHttpClient = fetch,
+  ) {
+    this.env = env;
+    this.http = http;
+  }
+  async geocode(
+    request: GeocodeRequest,
+  ): Promise<ProviderResult<NormalizedGeocode>> {
+    if (!configured(this.env.locationIqApiKey))
+      return failure("not_configured", "locationiq");
+    const url = new URL("https://us1.locationiq.com/v1/search");
+    url.search = new URLSearchParams({
+      q: request.query,
+      key: this.env.locationIqApiKey!,
+      format: "json",
+      countrycodes: "ph",
+    }).toString();
+    const response = await requestJson(
+      this.http,
+      url,
+      {},
+      this.env.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+    );
+    if (!response.ok) return failure(response.category, "locationiq");
+    if (!Array.isArray(response.body))
+      return failure("malformed_response", "locationiq");
+    const first = objectValue(response.body[0]);
+    const address = objectValue(first?.address);
+    const latitude = numberValue(Number(first?.lat));
+    const longitude = numberValue(Number(first?.lon));
+    const label =
+      typeof first?.display_name === "string" ? first.display_name : undefined;
+    return latitude === undefined || longitude === undefined || !label
+      ? failure("coverage", "locationiq")
+      : available("locationiq", {
+          latitude,
+          longitude,
+          originalQuery: request.query,
+          label,
+          locality:
+            typeof address?.city === "string"
+              ? address.city
+              : typeof address?.town === "string"
+                ? address.town
+                : typeof address?.municipality === "string"
+                  ? address.municipality
+                  : typeof address?.county === "string"
+                    ? address.county
+                    : undefined,
+          country:
+            typeof address?.country === "string" ? address.country : undefined,
+          countryCode:
+            typeof address?.country_code === "string"
+              ? address.country_code.toLocaleUpperCase()
+              : undefined,
+          providerMetadata: {
+            resultType:
+              typeof first?.type === "string" ? first.type : undefined,
+            name: typeof first?.name === "string" ? first.name : undefined,
+          },
+        });
   }
 }
 
@@ -886,8 +965,8 @@ export function createExternalContextProviders(
   return {
     weather: new OpenMeteoWeatherProvider(http, timeout),
     weatherFallback: new OpenWeatherWeatherProvider(env, http),
-    geocoding: new TomTomGeocodingProvider(env, http),
-    geocodingFallback: new HereGeocodingProvider(env, http),
+    geocoding: new GeoapifyGeocodingProvider(env, http),
+    geocodingFallback: new LocationIqGeocodingProvider(env, http),
     routing: new TomTomRoutingProvider(env, http),
     routingFallback: new HereRoutingProvider(env, http),
     traffic: new TomTomTrafficIncidentProvider(env, http),
@@ -920,11 +999,19 @@ export class ExternalContextService {
     return this.cache.getOrLoad(
       `geocode:v1:${request.query.trim().toLocaleLowerCase()}`,
       TTL.geocode,
-      () =>
-        withFallback(
-          () => this.providers.geocoding.geocode(request),
-          () => this.providers.geocodingFallback.geocode(request),
-        ),
+      () => {
+        const guarded = (provider: GeocodingProvider) => async () => {
+          const result = await provider.geocode(request);
+          return usable(result) &&
+            !geocodePassesQualityGuard(request.query, result.data)
+            ? failure<NormalizedGeocode>("coverage", result.providerUsed)
+            : result;
+        };
+        return withFallback(
+          guarded(this.providers.geocoding),
+          guarded(this.providers.geocodingFallback),
+        );
+      },
     );
   }
   route(request: RouteRequest) {

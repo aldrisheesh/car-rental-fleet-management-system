@@ -4,22 +4,27 @@ import test from "node:test";
 import {
   DerivedContextCache,
   ExternalContextService,
-  HereGeocodingProvider,
   HereRoutingProvider,
   HereTrafficIncidentProvider,
+  GeoapifyGeocodingProvider,
+  LocationIqGeocodingProvider,
   OpenMeteoWeatherProvider,
   OpenWeatherWeatherProvider,
-  TomTomGeocodingProvider,
   TomTomRoutingProvider,
   TomTomTrafficIncidentProvider,
   estimateReferenceFuelLiters,
   getExternalContextEnv,
   withFallback,
+  type ExternalContextProviders,
   type ExternalContextHttpClient,
+  type GeocodingProvider,
+  type NormalizedGeocode,
   type ProviderResult,
 } from "./external-context.server.ts";
 
 const env = {
+  geoapifyApiKey: "geoapify-secret",
+  locationIqApiKey: "locationiq-secret",
   tomtomApiKey: "tomtom-secret",
   hereApiKey: "here-secret",
   openWeatherApiKey: "weather-secret",
@@ -35,8 +40,27 @@ const http =
   async () =>
     json(body);
 const coordinates = { latitude: 14.5995, longitude: 120.9842 };
+const unused = async (): Promise<never> => {
+  throw new Error("unused");
+};
+const providersForGeocoding = (
+  geocoding: GeocodingProvider,
+  geocodingFallback: GeocodingProvider,
+): ExternalContextProviders => ({
+  weather: { getWeather: unused },
+  weatherFallback: { getWeather: unused },
+  geocoding,
+  geocodingFallback,
+  routing: { getRoute: unused },
+  routingFallback: { getRoute: unused },
+  traffic: { getIncidents: unused },
+  trafficFallback: { getIncidents: unused },
+});
+const geocodingProvider = (
+  result: ProviderResult<NormalizedGeocode>,
+): GeocodingProvider => ({ geocode: async () => result });
 
-test("all primary adapters normalize only their required provider data", async () => {
+test("primary adapters normalize only their required provider data", async () => {
   const weather = await new OpenMeteoWeatherProvider(
     http({
       hourly: {
@@ -56,18 +80,27 @@ test("all primary adapters normalize only their required provider data", async (
     geocodeUrl = new URL(String(input));
     geocodeInit = init;
     return json({
-      results: [
+      type: "FeatureCollection",
+      features: [
         {
-          title: "Manila, Philippines",
-          position: { type: "Point", coordinates: [121, 14.6] },
-          address: { municipality: "Manila" },
+          properties: {
+            formatted: "Manila, Philippines",
+            lat: 14.6,
+            lon: 121,
+            city: "Manila",
+            country: "Philippines",
+            country_code: "ph",
+            result_type: "city",
+          },
         },
       ],
     });
   };
-  const geocode = await new TomTomGeocodingProvider(env, geocodeHttp).geocode({
-    query: "Manila",
-  });
+  const geocode = await new GeoapifyGeocodingProvider(env, geocodeHttp).geocode(
+    {
+      query: "Manila",
+    },
+  );
   let routeUrl: URL | undefined;
   let routeInit: RequestInit | undefined;
   const routeHttp: ExternalContextHttpClient = async (input, init) => {
@@ -111,22 +144,12 @@ test("all primary adapters normalize only their required provider data", async (
   assert.ok(geocodeUrl);
   assert.equal(
     geocodeUrl.origin + geocodeUrl.pathname,
-    "https://api.tomtom.com/maps/orbis/places/geocode",
+    "https://api.geoapify.com/v1/geocode/search",
   );
-  assert.equal(geocodeUrl?.searchParams.get("query"), "Manila");
-  assert.equal(geocodeUrl?.searchParams.get("countryCodesIso2"), "PH");
-  assert.equal(
-    new Headers(geocodeInit?.headers).get("TomTom-Api-Version"),
-    "2",
-  );
-  assert.equal(
-    new Headers(geocodeInit?.headers).get("TomTom-Api-Key"),
-    env.tomtomApiKey,
-  );
-  assert.equal(
-    new Headers(geocodeInit?.headers).get("Attributes"),
-    "results.title,results.position,results.address.municipality,results.address.municipalitySubdivision,results.address.municipalitySecondarySubdivision,results.address.countrySubdivision,results.address.countrySecondarySubdivision,results.address.countryTertiarySubdivision,results.address.street,results.address.neighborhood",
-  );
+  assert.equal(geocodeUrl?.searchParams.get("text"), "Manila");
+  assert.equal(geocodeUrl?.searchParams.get("filter"), "countrycode:ph");
+  assert.equal(geocodeUrl?.searchParams.get("apiKey"), env.geoapifyApiKey);
+  assert.equal(geocodeInit?.method, undefined);
   assert.equal(route.data?.distanceMeters, 12000);
   assert.ok(routeUrl);
   assert.equal(
@@ -147,7 +170,7 @@ test("all primary adapters normalize only their required provider data", async (
   });
 });
 
-test("all fallback adapters normalize their mandated provider data", async () => {
+test("fallback adapters normalize their mandated provider data", async () => {
   const weather = await new OpenWeatherWeatherProvider(
     env,
     http({
@@ -165,17 +188,19 @@ test("all fallback adapters normalize their mandated provider data", async () =>
       ],
     }),
   ).getWeather({ ...coordinates, targetTime });
-  const geocode = await new HereGeocodingProvider(
-    env,
-    http({
-      items: [
-        {
-          position: { lat: 14.6, lng: 121 },
-          address: { label: "Manila, Philippines" },
-        },
-      ],
-    }),
-  ).geocode({ query: "Manila" });
+  let geocodeUrl: URL | undefined;
+  const geocode = await new LocationIqGeocodingProvider(env, async (input) => {
+    geocodeUrl = new URL(String(input));
+    return json([
+      {
+        lat: "14.6",
+        lon: "121",
+        display_name: "Manila, Philippines",
+        type: "city",
+        address: { city: "Manila", country: "Philippines", country_code: "ph" },
+      },
+    ]);
+  }).geocode({ query: "Manila" });
   const route = await new HereRoutingProvider(
     env,
     http({
@@ -205,6 +230,8 @@ test("all fallback adapters normalize their mandated provider data", async () =>
   assert.equal(weather.data?.weatherCode, 502);
   assert.equal(weather.data?.precipitationMillimeters, 1.2);
   assert.equal(geocode.data?.latitude, 14.6);
+  assert.equal(geocodeUrl?.searchParams.get("countrycodes"), "ph");
+  assert.equal(geocodeUrl?.searchParams.get("key"), env.locationIqApiKey);
   assert.equal(route.data?.durationSeconds, 1800);
   assert.equal(incidents.data?.[0]?.isRoadClosed, true);
   assert.equal(incidents.data?.[0]?.providerIncidentId, "h1");
@@ -235,47 +262,177 @@ test("TomTom routing uses the v2 coordinate GET contract with live traffic", asy
   assert.equal(routeInit?.body, undefined);
 });
 
-test("TomTom geocoding scopes Philippine queries, selects a match, and rejects mismatches", async () => {
-  let url: URL | undefined;
-  const client: ExternalContextHttpClient = async (input) => {
-    url = new URL(String(input));
-    return json({
-      results: [
-        {
-          title: "Tagaytay, Cupang, Muntinlupa City, Metro Manila",
-          position: { type: "Point", coordinates: [121.0364, 14.4295] },
-          address: { municipality: "Muntinlupa City" },
-        },
-        {
-          title: "Tagaytay City, Cavite, Philippines",
-          position: { type: "Point", coordinates: [120.951, 14.115] },
-          address: { municipality: "Tagaytay City" },
-        },
-      ],
-    });
-  };
-  const result = await new TomTomGeocodingProvider(env, client).geocode({
-    query: "Tagaytay City, Philippines",
-  });
-  assert.equal(url?.searchParams.get("query"), "Tagaytay City, Philippines");
-  assert.equal(url?.searchParams.get("countryCodesIso2"), "PH");
-  assert.equal(result.status, "available");
-  assert.equal(result.data?.label, "Tagaytay City, Cavite, Philippines");
-
-  const mismatch = await new TomTomGeocodingProvider(
+test("Geoapify normalizes malformed and empty responses safely", async () => {
+  const malformed = await new GeoapifyGeocodingProvider(
     env,
-    http({
-      results: [
-        {
-          title: "Tagaytay, Cupang, Muntinlupa City, Metro Manila",
-          position: { type: "Point", coordinates: [121.0364, 14.4295] },
-          address: { municipality: "Muntinlupa City" },
+    http({ features: [] }),
+  ).geocode({
+    query: "Generic Place, Manila City, Philippines",
+  });
+  const empty = await new GeoapifyGeocodingProvider(
+    env,
+    http({ type: "FeatureCollection", features: [] }),
+  ).geocode({ query: "Generic Place, Manila City, Philippines" });
+  assert.equal(malformed.failureCategory, "malformed_response");
+  assert.equal(empty.failureCategory, "coverage");
+});
+
+test("Geoapify timeout and provider failures normalize for fallback", async () => {
+  const timeoutClient: ExternalContextHttpClient = async (_input, init) =>
+    new Promise((_resolve, reject) =>
+      init?.signal?.addEventListener("abort", () =>
+        reject(new DOMException("aborted", "AbortError")),
+      ),
+    );
+  const timeout = await new GeoapifyGeocodingProvider(
+    { ...env, timeoutMs: 1 },
+    timeoutClient,
+  ).geocode({ query: "Central Library, Manila City, Philippines" });
+  const providerError = await new GeoapifyGeocodingProvider(
+    env,
+    async () => new Response(null, { status: 503 }),
+  ).geocode({ query: "Central Library, Manila City, Philippines" });
+  assert.equal(timeout.failureCategory, "timeout");
+  assert.equal(providerError.failureCategory, "provider_error");
+});
+
+test("geocoding orchestration uses LocationIQ only after Geoapify is unusable or rejected", async () => {
+  const valid = {
+    latitude: 14.6,
+    longitude: 121,
+    originalQuery: "Central Library, Manila City, Philippines",
+    label: "Central Library, Manila, Philippines",
+    locality: "Manila",
+    country: "Philippines",
+    countryCode: "PH",
+    providerMetadata: { resultType: "amenity", name: "Central Library" },
+  };
+  const fallbackData = {
+    ...valid,
+    label: "Central Library fallback, Manila, Philippines",
+  };
+  let fallbackCalls = 0;
+  const service = new ExternalContextService(
+    providersForGeocoding(
+      geocodingProvider({
+        status: "available",
+        data: valid,
+        providerUsed: "geoapify",
+        fallbackUsed: false,
+        fetchedAt: targetTime,
+      }),
+      {
+        geocode: async () => {
+          fallbackCalls++;
+          return {
+            status: "available",
+            data: fallbackData,
+            providerUsed: "locationiq" as const,
+            fallbackUsed: false,
+            fetchedAt: targetTime,
+          };
         },
-      ],
-    }),
-  ).geocode({ query: "Tagaytay City, Philippines" });
-  assert.equal(mismatch.status, "unavailable");
-  assert.equal(mismatch.failureCategory, "coverage");
+      },
+    ),
+    new DerivedContextCache(),
+  );
+  const success = await service.geocode({ query: valid.originalQuery });
+  assert.equal(success.providerUsed, "geoapify");
+  assert.equal(fallbackCalls, 0);
+  assert.equal(success.data?.originalQuery, valid.originalQuery);
+
+  const failureCases = [
+    {
+      status: "timeout",
+      fallbackUsed: false,
+      fetchedAt: targetTime,
+      failureCategory: "timeout",
+    },
+    {
+      status: "unavailable",
+      fallbackUsed: false,
+      fetchedAt: targetTime,
+      failureCategory: "coverage",
+    },
+    {
+      status: "available",
+      data: {
+        ...valid,
+        label: "Unrelated Park, Manila, Philippines",
+        providerMetadata: { name: "Unrelated Park" },
+      },
+      providerUsed: "geoapify",
+      fallbackUsed: false,
+      fetchedAt: targetTime,
+    },
+  ] as const;
+  for (const primaryResult of failureCases) {
+    const recover = new ExternalContextService(
+      providersForGeocoding(
+        geocodingProvider(primaryResult),
+        geocodingProvider({
+          status: "available",
+          data: fallbackData,
+          providerUsed: "locationiq",
+          fallbackUsed: false,
+          fetchedAt: targetTime,
+        }),
+      ),
+      new DerivedContextCache(),
+    );
+    const recovered = await recover.geocode({ query: valid.originalQuery });
+    assert.equal(recovered.providerUsed, "locationiq");
+    assert.equal(recovered.fallbackUsed, true);
+  }
+});
+
+test("LocationIQ malformed, empty, and quality-rejected results return normalized coverage", async () => {
+  const malformed = await new LocationIqGeocodingProvider(
+    env,
+    http({}),
+  ).geocode({ query: "Central Library, Manila City, Philippines" });
+  const empty = await new LocationIqGeocodingProvider(env, http([])).geocode({
+    query: "Central Library, Manila City, Philippines",
+  });
+  assert.equal(malformed.failureCategory, "malformed_response");
+  assert.equal(empty.failureCategory, "coverage");
+  const rejected = new ExternalContextService(
+    providersForGeocoding(
+      {
+        geocode: async () => ({
+          status: "unavailable" as const,
+          fallbackUsed: false,
+          fetchedAt: targetTime,
+          failureCategory: "coverage" as const,
+        }),
+      },
+      {
+        geocode: async () => ({
+          status: "available" as const,
+          data: {
+            latitude: 14.6,
+            longitude: 121,
+            originalQuery: "Central Library, Manila City, Philippines",
+            label: "Unrelated Park, Manila, Philippines",
+            locality: "Manila",
+            country: "Philippines",
+            countryCode: "PH",
+            providerMetadata: { name: "Unrelated Park" },
+          },
+          providerUsed: "locationiq" as const,
+          fallbackUsed: false,
+          fetchedAt: targetTime,
+        }),
+      },
+    ),
+    new DerivedContextCache(),
+  );
+  const result = await rejected.geocode({
+    query: "Central Library, Manila City, Philippines",
+  });
+  assert.equal(result.status, "unavailable");
+  assert.equal(result.failureCategory, "coverage");
+  assert.equal(result.fallbackUsed, true);
 });
 
 test("TomTom traffic numeric icon categories normalize to provider-neutral semantics", async () => {
@@ -488,10 +645,14 @@ test("fuel estimate is pure, reference-only, and guards invalid inputs", () => {
 
 test("server-only credential parsing and result shapes never expose keys", () => {
   const parsed = getExternalContextEnv({
+    GEOAPIFY_API_KEY: " geoapify-secret ",
+    LOCATIONIQ_API_KEY: "locationiq-secret",
     TOMTOM_API_KEY: " tomtom-secret ",
     HERE_API_KEY: "here-secret",
     OPENWEATHER_API_KEY: "weather-secret",
   });
+  assert.equal(parsed.geoapifyApiKey, "geoapify-secret");
+  assert.equal(parsed.locationIqApiKey, "locationiq-secret");
   assert.equal(parsed.tomtomApiKey, "tomtom-secret");
   const placeholders = getExternalContextEnv({
     HERE_API_KEY: "your-here-api-key",
