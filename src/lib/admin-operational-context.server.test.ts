@@ -91,10 +91,11 @@ function repository(): OperationalContextRepository {
           ? { id, name: "Antipolo, Rizal", address: "Antipolo, Rizal" }
           : null;
     },
-    async findActiveVehicle(id) {
-      return id === "vehicle-1"
+    async findBookingAssignmentCandidate(bookingId, vehicleId) {
+      if (bookingId !== "booking-1" || vehicleId !== "vehicle-1") return null;
+      return vehicleId === "vehicle-1"
         ? {
-            id,
+            id: vehicleId,
             name: "Toyota Innova",
             licensePlate: "ABC 123",
             referenceEfficiencyKmPerLiter: 12,
@@ -181,7 +182,7 @@ test("booking with no destination is not applicable and never calls a provider",
   assert.equal(calls, 0);
 });
 
-test("booking rejects invalid records and arbitrary assignment candidates", async () => {
+test("booking rejects nonexistent, inactive, and active out-of-scope assignment candidates", async () => {
   await assert.rejects(
     () =>
       resolveOperationalContext(
@@ -196,11 +197,35 @@ test("booking rejects invalid records and arbitrary assignment candidates", asyn
         {
           kind: "booking_assignment",
           bookingId: "booking-1",
-          vehicleId: "not-a-candidate",
+          vehicleId: "active-conflicting-vehicle",
         },
         dependencies(),
       ),
-    /not an active assignment candidate/,
+    /not a booking assignment candidate/,
+  );
+  await assert.rejects(
+    () =>
+      resolveOperationalContext(
+        {
+          kind: "booking_assignment",
+          bookingId: "booking-1",
+          vehicleId: "inactive-vehicle",
+        },
+        dependencies(),
+      ),
+    /not a booking assignment candidate/,
+  );
+  await assert.rejects(
+    () =>
+      resolveOperationalContext(
+        {
+          kind: "booking_assignment",
+          bookingId: "booking-1",
+          vehicleId: "missing-vehicle",
+        },
+        dependencies(),
+      ),
+    /not a booking assignment candidate/,
   );
 });
 
@@ -329,6 +354,12 @@ test("Admin UI contains advisory booking and current allocation context without 
     readFile(new URL("../routes/admin.decisions.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(bookings, /OperationalContextPanel/);
+  assert.match(bookings, /getAdminSession/);
+  assert.match(bookings, /staffView \|\| !selected\?\.id/);
+  assert.match(
+    bookings,
+    /!staffView && selected\?\.booking_status === "Submitted"/,
+  );
   assert.match(bookings, /vehicleId/);
   assert.match(decisions, /Current route context for transfer review/);
   assert.match(
@@ -337,4 +368,10 @@ test("Admin UI contains advisory booking and current allocation context without 
   );
   assert.doesNotMatch(decisions, /Vehicle recommendation/);
   assert.doesNotMatch(decisions, /RadarChart/);
+  assert.match(
+    decisions,
+    /setContextRecommendationId\(rows\[0\]\?\.id \?\? ""\)/,
+  );
+  assert.match(decisions, /setAllocationContext\(null\)/);
+  assert.match(decisions, /allocationContextVersion/);
 });

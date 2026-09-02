@@ -95,7 +95,10 @@ export type AllocationCandidateContextRecord = VehicleContextRecord & {
 export interface OperationalContextRepository {
   findBooking(id: string): Promise<BookingContextRecord | null>;
   findBranch(id: string): Promise<BranchContextRecord | null>;
-  findActiveVehicle(id: string): Promise<VehicleContextRecord | null>;
+  findBookingAssignmentCandidate(
+    bookingId: string,
+    vehicleId: string,
+  ): Promise<VehicleContextRecord | null>;
   findAllocation(id: string): Promise<AllocationContextRecord | null>;
   findAllocationCandidates(
     recommendationId: string,
@@ -316,13 +319,14 @@ export async function resolveOperationalContext(
       throw new OperationalContextRequestError(404, "Pickup branch not found.");
     let vehicle: VehicleContextRecord | null = null;
     if (request.vehicleId) {
-      vehicle = await dependencies.repository.findActiveVehicle(
+      vehicle = await dependencies.repository.findBookingAssignmentCandidate(
+        bookingId,
         request.vehicleId,
       );
       if (!vehicle) {
         throw new OperationalContextRequestError(
           400,
-          "Vehicle is not an active assignment candidate.",
+          "Vehicle is not a booking assignment candidate.",
         );
       }
     }

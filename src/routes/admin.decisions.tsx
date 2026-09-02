@@ -60,6 +60,7 @@ function DecisionPage() {
   const [allocationContext, setAllocationContext] = useState<(OperationalContextView & { recommendation?: { recommendedTransferUnits: number; candidates: Array<{ vehicleId: string; candidateRank: number; referenceEfficiencyKmPerLiter: number | null; estimatedFuelLiters: number | null }> } }) | null>(null);
   const [allocationContextLoading, setAllocationContextLoading] = useState(false);
   const [allocationContextError, setAllocationContextError] = useState("");
+  const [allocationContextVersion, setAllocationContextVersion] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -81,7 +82,7 @@ function DecisionPage() {
       .then((body) => { setAllocationContext(body); setAllocationContextLoading(false); })
       .catch((error) => { if (error instanceof DOMException && error.name === "AbortError") return; setAllocationContext(null); setAllocationContextError("Operational context could not be verified."); setAllocationContextLoading(false); });
     return () => controller.abort();
-  }, [contextRecommendationId, staffView]);
+  }, [contextRecommendationId, staffView, allocationContextVersion]);
 
   async function generateAllocations() {
     setAllocationBusy(true);
@@ -89,7 +90,14 @@ function DecisionPage() {
       const response = await fetch("/api/allocation-recommendations", { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }) });
       const body = await response.json();
       if (!response.ok) throw new Error(body.message ?? "Unable to generate recommendations.");
-      setAllocationRows(body.recommendations ?? []); setAllocationError("");
+      const rows = body.recommendations ?? [];
+      setAllocationRows(rows);
+      setContextRecommendationId(rows[0]?.id ?? "");
+      setAllocationContext(null);
+      setAllocationContextError("");
+      setAllocationContextLoading(false);
+      setAllocationContextVersion((version) => version + 1);
+      setAllocationError("");
     } catch (error) { setAllocationError(error instanceof Error ? error.message : "Unable to generate recommendations."); }
     finally { setAllocationBusy(false); }
   }

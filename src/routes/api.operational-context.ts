@@ -38,25 +38,43 @@ function repository(client: any): OperationalContextRepository {
       );
       return row ?? null;
     },
-    async findActiveVehicle(id) {
-      const row = await one(
-        client
-          .from("vehicles")
-          .select(
-            "id,name,license_plate,reference_fuel_efficiency_km_per_liter",
-          )
-          .eq("id", id)
-          .eq("is_active", true),
-      );
-      return row
-        ? {
-            id: row.id,
-            name: row.name,
-            licensePlate: row.license_plate,
-            referenceEfficiencyKmPerLiter:
-              row.reference_fuel_efficiency_km_per_liter,
-          }
-        : null;
+    async findBookingAssignmentCandidate(bookingId, vehicleId) {
+      const [booking, vehicle] = await Promise.all([
+        one(
+          client
+            .from("booking_requests")
+            .select("id,pickup_at,return_at")
+            .eq("id", bookingId),
+        ),
+        one(
+          client
+            .from("vehicles")
+            .select(
+              "id,name,license_plate,reference_fuel_efficiency_km_per_liter",
+            )
+            .eq("id", vehicleId)
+            .eq("is_active", true),
+        ),
+      ]);
+      if (!booking || !vehicle) return null;
+      const conflicts = await client
+        .from("booking_requests")
+        .select("id")
+        .neq("id", bookingId)
+        .eq("booking_status", "Confirmed")
+        .eq("assigned_vehicle_id", vehicleId)
+        .lt("pickup_at", booking.return_at)
+        .gt("return_at", booking.pickup_at)
+        .limit(1);
+      if (conflicts.error) throw new Error("canonical_read_failed");
+      if ((conflicts.data ?? []).length) return null;
+      return {
+        id: vehicle.id,
+        name: vehicle.name,
+        licensePlate: vehicle.license_plate,
+        referenceEfficiencyKmPerLiter:
+          vehicle.reference_fuel_efficiency_km_per_liter,
+      };
     },
     async findAllocation(id) {
       const row = await one(
