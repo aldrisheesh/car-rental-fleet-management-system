@@ -8,6 +8,7 @@ import {
 import type { Database } from "./supabase/database.types";
 import { getSupabaseServerClient } from "./supabase/server";
 import { processOperationalNotifications } from "./operational-notifications.server";
+import { processTransactionalEmailQueue } from "./transactional-email.server";
 
 export async function processScheduledNotificationCycle(options?: {
   now?: Date;
@@ -19,7 +20,13 @@ export async function processScheduledNotificationCycle(options?: {
     processScheduledReminders({ now, client }),
     processOperationalNotifications({ now, client }),
   ]);
-  return { ...reminders, operational };
+  let email;
+  try {
+    email = await processTransactionalEmailQueue({ now, client });
+  } catch {
+    email = { processingFailed: true };
+  }
+  return { ...reminders, operational, email };
 }
 
 export async function processScheduledReminders(options?: {

@@ -240,10 +240,10 @@ Ensure PayMongo/payment-gateway wording is either:
 
 ---
 
-## MIC-007 — Planned Email Provider Changed from Resend to Brevo
+## MIC-007 — Email Provider Changed from Resend to Brevo
 
-**Classification:** MANUSCRIPT CORRECTION REQUIRED — PLANNED PROVIDER CHANGE  
-**Implementation status:** External transactional email not yet implemented.
+**Classification:** MANUSCRIPT CORRECTION REQUIRED — IMPLEMENTED PROVIDER CHANGE
+**Implementation status:** Application transactional email implemented in VS029.
 
 ### Manuscript state
 Latest manuscript still references:
@@ -251,15 +251,28 @@ Latest manuscript still references:
 - React Email;
 - custom SMTP for Supabase Auth.
 
-### Current implementation decision
-Planned provider is now:
-- **Brevo** for future application transactional email;
-- Brevo SMTP may be used as Supabase Auth custom SMTP.
+### Current implementation
+- **Brevo** delivers application transactional email through a provider-neutral
+  `EmailProvider` boundary.
+- Eligible customer events are requirement resubmission/verification, payment
+  proof resubmission/verification, booking confirmation, upcoming pickup,
+  upcoming return, and rental overdue.
+- `email_notifications_enabled` is an independent, default-enabled customer
+  preference that remains user-controllable and is rechecked before delivery.
+- Durable `email_deliveries` rows use a deterministic notification/recipient
+  delivery key, explicit delivery states, and a four-attempt maximum with
+  1/5/15-minute transient retry backoff.
+- Sender credentials and `APP_BASE_URL` are server environment configuration.
+- Live provider validation was deferred during VS029 because controlled Brevo
+  configuration was unavailable.
+- Brevo SMTP may separately be configured for Supabase Auth email.
 
-Application business logic will use a provider abstraction rather than calling Brevo directly.
+Application business logic uses the provider abstraction rather than calling Brevo directly.
 
 ### Important boundary
-VS019/VS020 are in-app only. Brevo has not yet been integrated.
+Canonical in-app Notifications remain authoritative. VS029 application email
+uses the Brevo API; Supabase Auth confirmation and password-reset email remains
+a separate Supabase Auth SMTP deployment configuration path.
 
 ### Manuscript impact
 Update:
@@ -271,7 +284,7 @@ Update:
 Remove Resend/React Email as the planned provider unless deliberately retained for a separate purpose.
 
 ### Status
-**Open manuscript correction.**
+**Implementation complete; manuscript correction remains open.**
 
 ---
 

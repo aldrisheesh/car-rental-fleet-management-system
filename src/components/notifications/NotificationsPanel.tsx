@@ -34,6 +34,7 @@ export function NotificationsPanel({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [markingId, setMarkingId] = useState<string | null>(null);
+  const [savingEmailPreference, setSavingEmailPreference] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -94,6 +95,7 @@ export function NotificationsPanel({
       setData((current) =>
         current
           ? {
+              ...current,
               unreadCount: Math.max(0, current.unreadCount - 1),
               notifications: current.notifications.map((item) =>
                 item.id === notification.id
@@ -108,6 +110,33 @@ export function NotificationsPanel({
       setError("The notification could not be marked read. Please try again.");
     } finally {
       setMarkingId(null);
+    }
+  }
+
+  async function updateEmailPreference(enabled: boolean) {
+    if (!data || savingEmailPreference) return;
+    const previous = data.emailNotificationsEnabled;
+    setSavingEmailPreference(true);
+    setError(null);
+    setData({ ...data, emailNotificationsEnabled: enabled });
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          action: "updateEmailPreference",
+          emailNotificationsEnabled: enabled,
+        }),
+      });
+      if (!response.ok) throw new Error("Unable to update email preference.");
+    } catch {
+      setData((current) =>
+        current ? { ...current, emailNotificationsEnabled: previous } : current,
+      );
+      setError("The email preference could not be updated. Please try again.");
+    } finally {
+      setSavingEmailPreference(false);
     }
   }
 
@@ -147,6 +176,29 @@ export function NotificationsPanel({
           Refresh
         </button>
       </div>
+
+      {audience === "customer" && data && (
+        <label className="flex items-start gap-3 rounded-xl border border-border bg-card/60 p-4 text-sm">
+          <input
+            type="checkbox"
+            className="mt-1 h-4 w-4 accent-primary"
+            checked={data.emailNotificationsEnabled}
+            disabled={savingEmailPreference}
+            onChange={(event) =>
+              void updateEmailPreference(event.target.checked)
+            }
+          />
+          <span>
+            <span className="block font-medium text-foreground">
+              Transactional email notifications
+            </span>
+            <span className="text-muted-foreground">
+              Receive booking, requirement, payment, pickup, return, and overdue
+              updates by email.
+            </span>
+          </span>
+        </label>
+      )}
 
       {!loading && data && data.notifications.length > 0 && (
         <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">

@@ -35,6 +35,7 @@ export type CanonicalNotification = {
 export type NotificationsResponse = {
   notifications: CanonicalNotification[];
   unreadCount: number;
+  emailNotificationsEnabled: boolean;
 };
 
 type NotificationRow = {

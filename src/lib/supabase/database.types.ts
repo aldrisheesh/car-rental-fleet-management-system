@@ -3,7 +3,7 @@
  *
  *   npx supabase gen types typescript --project-id <project-ref> > src/lib/supabase/database.types.ts
  *
- * The checked-in shape covers the canonical tables established through VS005.
+ * The checked-in shape covers the canonical tables established through VS029.
  */
 export type Database = {
   public: {
@@ -406,18 +406,57 @@ export type Database = {
           recipient_id: string;
           maintenance_attention_enabled: boolean;
           low_availability_enabled: boolean;
+          email_notifications_enabled: boolean;
           updated_at: string;
         };
         Insert: {
           recipient_id: string;
           maintenance_attention_enabled?: boolean;
           low_availability_enabled?: boolean;
+          email_notifications_enabled?: boolean;
           updated_at?: string;
         };
         Update: {
           maintenance_attention_enabled?: boolean;
           low_availability_enabled?: boolean;
+          email_notifications_enabled?: boolean;
         };
+        Relationships: [];
+      };
+      email_deliveries: {
+        Row: {
+          id: string;
+          recipient_user_id: string;
+          notification_id: string;
+          delivery_key: string;
+          email_type: string;
+          status: string;
+          attempt_count: number;
+          provider_message_id: string | null;
+          last_error_code: string | null;
+          next_attempt_at: string | null;
+          created_at: string;
+          last_attempt_at: string | null;
+          sent_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          recipient_user_id: string;
+          notification_id: string;
+          delivery_key: string;
+          email_type: string;
+          status?: string;
+          attempt_count?: number;
+          provider_message_id?: string | null;
+          last_error_code?: string | null;
+          next_attempt_at?: string | null;
+          created_at?: string;
+          last_attempt_at?: string | null;
+          sent_at?: string | null;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["email_deliveries"]["Insert"]
+        >;
         Relationships: [];
       };
       operational_notification_conditions: {
@@ -566,6 +605,22 @@ export type Database = {
       reconcile_operational_notification_conditions: {
         Args: { p_conditions: unknown };
         Returns: Record<string, unknown>;
+      };
+      claim_email_deliveries: {
+        Args: { p_limit: number; p_now: string };
+        Returns: Array<{
+          id: string;
+          recipient_user_id: string;
+          notification_id: string;
+          email_type: string;
+          attempt_count: number;
+          recipient_email: string | null;
+          recipient_name: string | null;
+          email_notifications_enabled: boolean;
+          related_entity_type: string;
+          related_entity_id: string;
+          scheduled_at: string | null;
+        }>;
       };
     };
     Enums: Record<string, never>;

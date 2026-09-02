@@ -14,7 +14,7 @@ async function readNotifications() {
   try {
     const principal = await requirePrincipal();
     const client = getSupabaseServerClient();
-    const [items, unread] = await Promise.all([
+    const [items, unread, preference] = await Promise.all([
       client
         .from("notifications")
         .select(
@@ -28,15 +28,22 @@ async function readNotifications() {
         .select("id", { count: "exact", head: true })
         .eq("recipient_id", principal.userId)
         .is("read_at", null),
+      client
+        .from("notification_preferences")
+        .select("email_notifications_enabled")
+        .eq("recipient_id", principal.userId)
+        .maybeSingle(),
     ]);
 
-    if (items.error || unread.error) {
+    if (items.error || unread.error || preference.error) {
       return errorResponse("Unable to load notifications.", 503);
     }
 
     return Response.json({
       notifications: (items.data ?? []).map(projectNotification),
       unreadCount: unread.count ?? 0,
+      emailNotificationsEnabled:
+        preference.data?.email_notifications_enabled ?? true,
     });
   } catch {
     return errorResponse("Authentication required.", 401);
@@ -50,6 +57,28 @@ async function markNotificationRead({ request }: { request: Request }) {
       string,
       unknown
     > | null;
+    if (body?.action === "updateEmailPreference") {
+      if (typeof body.emailNotificationsEnabled !== "boolean")
+        return errorResponse("Invalid notification preference.", 400);
+      const client = getSupabaseServerClient();
+      const updated = await client
+        .from("notification_preferences")
+        .upsert(
+          {
+            recipient_id: principal.userId,
+            email_notifications_enabled: body.emailNotificationsEnabled,
+          },
+          { onConflict: "recipient_id" },
+        )
+        .select("email_notifications_enabled")
+        .single();
+      if (updated.error)
+        return errorResponse("Unable to update notification preference.", 503);
+      return Response.json({
+        emailNotificationsEnabled: updated.data.email_notifications_enabled,
+      });
+    }
+
     const notificationId =
       typeof body?.notificationId === "string" ? body.notificationId : "";
     if (body?.action !== "markRead" || !isUuid(notificationId)) {
