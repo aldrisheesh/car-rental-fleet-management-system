@@ -11,7 +11,8 @@ export type NotificationType =
   | "upcoming_return"
   | "rental_overdue"
   | "maintenance_attention"
-  | "low_availability";
+  | "low_availability"
+  | "backup_attention";
 
 export type NotificationEntityType =
   | "booking"
@@ -19,7 +20,8 @@ export type NotificationEntityType =
   | "payment"
   | "rental"
   | "vehicle"
-  | "branch";
+  | "branch"
+  | "backup_run";
 
 export type CanonicalNotification = {
   id: string;
@@ -81,6 +83,8 @@ export function notificationRoute(
   if (notification.notificationType === "maintenance_attention")
     return "/admin/maintenance";
   if (notification.notificationType === "low_availability") return "/admin";
+  if (notification.notificationType === "backup_attention")
+    return "/admin/notifications";
   return notification.relatedEntityType === "payment"
     ? "/admin/payments"
     : "/admin/bookings";

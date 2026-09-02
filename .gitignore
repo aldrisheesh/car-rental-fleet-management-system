@@ -6,6 +6,9 @@ node_modules/
 dist/
 .tanstack/
 .vite/
+backup-artifacts/
+*.dump
+*.backup
 
 # Environment
 .env

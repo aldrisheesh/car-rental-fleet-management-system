@@ -15,10 +15,14 @@
     "test:external-context": "node --experimental-strip-types --test src/lib/external-context.server.test.ts",
     "test:operational-context-admin": "node --experimental-strip-types --test src/lib/admin-operational-context.server.test.ts",
     "test:dashboard": "node --experimental-strip-types --test src/lib/admin-dashboard.test.ts",
+    "test:backup": "node --experimental-strip-types --test src/lib/backup/*.test.ts",
+    "backup:run": "node --experimental-strip-types scripts/backup-run.ts",
+    "backup:restore-drill": "node --experimental-strip-types scripts/backup-restore-drill.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1124.0",
     "@cloudflare/vite-plugin": "^1.25.5",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",

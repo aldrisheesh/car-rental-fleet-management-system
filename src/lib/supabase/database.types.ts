@@ -3,7 +3,7 @@
  *
  *   npx supabase gen types typescript --project-id <project-ref> > src/lib/supabase/database.types.ts
  *
- * The checked-in shape covers the canonical tables established through VS029.
+ * The checked-in shape covers the canonical tables established through VS030.
  */
 export type Database = {
   public: {
@@ -371,6 +371,90 @@ export type Database = {
         };
         Insert: Record<string, any>;
         Update: Record<string, any>;
+        Relationships: [];
+      };
+      backup_runs: {
+        Row: {
+          id: string;
+          trigger: "Scheduled" | "Manual";
+          status: "Running" | "Completed" | "Partial" | "Failed";
+          started_at: string;
+          completed_at: string | null;
+          retention_until: string;
+          error_code: string | null;
+          remarks: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          trigger: "Scheduled" | "Manual";
+          status?: "Running" | "Completed" | "Partial" | "Failed";
+          started_at?: string;
+          completed_at?: string | null;
+          retention_until: string;
+          error_code?: string | null;
+          remarks?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["backup_runs"]["Insert"]>;
+        Relationships: [];
+      };
+      backup_artifacts: {
+        Row: {
+          id: string;
+          backup_run_id: string;
+          artifact_type: "Database" | "Storage";
+          artifact_key: string;
+          status: "Completed" | "Failed";
+          size_bytes: number | null;
+          sha256: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          backup_run_id: string;
+          artifact_type: "Database" | "Storage";
+          artifact_key: string;
+          status: "Completed" | "Failed";
+          size_bytes?: number | null;
+          sha256?: string | null;
+          created_at?: string;
+        };
+        Update: never;
+        Relationships: [];
+      };
+      recovery_drills: {
+        Row: {
+          id: string;
+          backup_run_id: string;
+          target_environment: "NonProduction";
+          status: "Running" | "Passed" | "Failed";
+          started_at: string;
+          completed_at: string | null;
+          database_validation: "Pending" | "Passed" | "Failed" | null;
+          storage_validation: "Pending" | "Passed" | "Failed" | null;
+          error_code: string | null;
+          remarks: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          backup_run_id: string;
+          target_environment?: "NonProduction";
+          status?: "Running" | "Passed" | "Failed";
+          started_at?: string;
+          completed_at?: string | null;
+          database_validation?: "Pending" | "Passed" | "Failed" | null;
+          storage_validation?: "Pending" | "Passed" | "Failed" | null;
+          error_code?: string | null;
+          remarks?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["recovery_drills"]["Insert"]
+        >;
         Relationships: [];
       };
       notifications: {

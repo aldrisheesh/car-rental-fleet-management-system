@@ -34,6 +34,7 @@ import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as ApiForecastsRouteImport } from './routes/api.forecasts'
 import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
 import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-master-data'
+import { Route as ApiBackupStatusRouteImport } from './routes/api.backup-status'
 import { Route as ApiAuditEventsRouteImport } from './routes/api.audit-events'
 import { Route as ApiAllocationRecommendationsRouteImport } from './routes/api.allocation-recommendations'
 import { Route as ApiAdminReportsRouteImport } from './routes/api.admin-reports'
@@ -182,6 +183,11 @@ const ApiBookingsRoute = ApiBookingsRouteImport.update({
 const ApiBookingMasterDataRoute = ApiBookingMasterDataRouteImport.update({
   id: '/api/booking-master-data',
   path: '/api/booking-master-data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBackupStatusRoute = ApiBackupStatusRouteImport.update({
+  id: '/api/backup-status',
+  path: '/api/backup-status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuditEventsRoute = ApiAuditEventsRouteImport.update({
@@ -334,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
+  '/api/backup-status': typeof ApiBackupStatusRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/forecasts': typeof ApiForecastsRoute
@@ -384,6 +391,7 @@ export interface FileRoutesByTo {
   '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
+  '/api/backup-status': typeof ApiBackupStatusRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/forecasts': typeof ApiForecastsRoute
@@ -436,6 +444,7 @@ export interface FileRoutesById {
   '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
+  '/api/backup-status': typeof ApiBackupStatusRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/forecasts': typeof ApiForecastsRoute
@@ -489,6 +498,7 @@ export interface FileRouteTypes {
     | '/api/admin-reports'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
+    | '/api/backup-status'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/forecasts'
@@ -539,6 +549,7 @@ export interface FileRouteTypes {
     | '/api/admin-reports'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
+    | '/api/backup-status'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/forecasts'
@@ -590,6 +601,7 @@ export interface FileRouteTypes {
     | '/api/admin-reports'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
+    | '/api/backup-status'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/forecasts'
@@ -628,6 +640,7 @@ export interface RootRouteChildren {
   ApiAdminReportsRoute: typeof ApiAdminReportsRoute
   ApiAllocationRecommendationsRoute: typeof ApiAllocationRecommendationsRoute
   ApiAuditEventsRoute: typeof ApiAuditEventsRoute
+  ApiBackupStatusRoute: typeof ApiBackupStatusRoute
   ApiBookingMasterDataRoute: typeof ApiBookingMasterDataRoute
   ApiBookingsRoute: typeof ApiBookingsRoute
   ApiForecastsRoute: typeof ApiForecastsRoute
@@ -826,6 +839,13 @@ declare module '@tanstack/react-router' {
       path: '/api/booking-master-data'
       fullPath: '/api/booking-master-data'
       preLoaderRoute: typeof ApiBookingMasterDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/backup-status': {
+      id: '/api/backup-status'
+      path: '/api/backup-status'
+      fullPath: '/api/backup-status'
+      preLoaderRoute: typeof ApiBackupStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/audit-events': {
@@ -1051,6 +1071,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminReportsRoute: ApiAdminReportsRoute,
   ApiAllocationRecommendationsRoute: ApiAllocationRecommendationsRoute,
   ApiAuditEventsRoute: ApiAuditEventsRoute,
+  ApiBackupStatusRoute: ApiBackupStatusRoute,
   ApiBookingMasterDataRoute: ApiBookingMasterDataRoute,
   ApiBookingsRoute: ApiBookingsRoute,
   ApiForecastsRoute: ApiForecastsRoute,

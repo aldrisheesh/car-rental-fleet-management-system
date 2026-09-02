@@ -68,6 +68,7 @@ export function NotificationsPanel({
       rental: 0,
       vehicle: 0,
       branch: 0,
+      backup_run: 0,
     };
     for (const item of data?.notifications ?? [])
       counts[item.relatedEntityType] += 1;
@@ -222,6 +223,9 @@ export function NotificationsPanel({
               <span className="rounded-full border border-border px-3 py-1">
                 Fleet {groupedCounts.branch}
               </span>
+              <span className="rounded-full border border-border px-3 py-1">
+                Backup {groupedCounts.backup_run}
+              </span>
             </>
           )}
         </div>
@@ -284,19 +288,21 @@ function NotificationRow({
 }) {
   const unread = isUnread(notification);
   const Icon =
-    notification.notificationType === "maintenance_attention"
-      ? Wrench
-      : notification.notificationType === "low_availability"
-        ? Car
-        : notification.notificationType === "rental_overdue"
-          ? TriangleAlert
-          : notification.relatedEntityType === "rental"
-            ? RotateCcw
-            : notification.relatedEntityType === "payment"
-              ? CreditCard
-              : notification.relatedEntityType === "requirements"
-                ? FileCheck2
-                : CalendarRange;
+    notification.notificationType === "backup_attention"
+      ? TriangleAlert
+      : notification.notificationType === "maintenance_attention"
+        ? Wrench
+        : notification.notificationType === "low_availability"
+          ? Car
+          : notification.notificationType === "rental_overdue"
+            ? TriangleAlert
+            : notification.relatedEntityType === "rental"
+              ? RotateCcw
+              : notification.relatedEntityType === "payment"
+                ? CreditCard
+                : notification.relatedEntityType === "requirements"
+                  ? FileCheck2
+                  : CalendarRange;
   const destination = notificationRoute(notification, audience);
 
   return (
@@ -356,9 +362,11 @@ function NotificationRow({
 }
 
 function formatEntity(entity: CanonicalNotification["relatedEntityType"]) {
-  return entity === "requirements"
-    ? "Requirements"
-    : entity[0].toUpperCase() + entity.slice(1);
+  return entity === "backup_run"
+    ? "Backup run"
+    : entity === "requirements"
+      ? "Requirements"
+      : entity[0].toUpperCase() + entity.slice(1);
 }
 
 function formatCreatedAt(value: string) {
