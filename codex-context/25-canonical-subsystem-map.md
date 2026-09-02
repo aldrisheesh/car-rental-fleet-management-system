@@ -3,37 +3,43 @@
 **Status:** Active AI navigation aid
 **Last updated:** 2026-09-02
 
-## Geocoding correction starting points
+## VS025 starting points
 
 Read:
-- `codex-context/36-geocoding-provider-reassessment.md`
-- `codex-context/30-external-context-provider-foundation.md`
-- `codex-context/31-manuscript-traceability-vs022.md`
+- `codex-context/37-canonical-maintenance-admin-ui.md`
+- `codex-context/38-manuscript-traceability-vs025.md`
 
 Inspect only:
-1. existing geocoding provider-neutral types/orchestration in `src/lib/external-context.server.ts`;
-2. external-context tests;
-3. `.env.example`;
-4. the shared geocoding path used for customer destinations and branch addresses.
+1. `src/routes/admin.maintenance.tsx`;
+2. `src/components/admin/MaintenanceRecordDialog.tsx`;
+3. `src/routes/api.maintenance.ts`;
+4. `src/lib/maintenance-readiness.server.ts`;
+5. shared pure maintenance readiness helper if required;
+6. canonical vehicle list/read API already used by Admin UI;
+7. exact maintenance schema/migrations/RPC definitions only if needed to verify field support.
 
-Do not modify:
-- TomTom routing;
-- TomTom traffic;
-- HERE routing/traffic fallback;
-- Open-Meteo/OpenWeather weather;
-- VS023 interpretation except compile-only imports;
+Do not inspect/modify:
 - Finder;
-- allocation scoring;
-- booking lifecycle.
+- booking lifecycle except compile-only vehicle API use;
+- allocation;
+- forecasting/supply;
+- notification/reminder;
+- external context providers;
+- audit architecture;
+- reports/dashboard.
 
-## Current geocoding authority
+## Canonical maintenance rule
 
-Geoapify primary -> LocationIQ fallback.
+Statuses:
+- Open
+- Completed
+- Cancelled
 
-## Quality
+Due/overdue:
+derived readiness/presentation state.
 
-HTTP success does not equal semantic geocode success.
+Do not reintroduce prototype Scheduled/In Progress/Overdue persisted statuses.
 
-Reject obvious false positives and permit fallback.
+## Prototype removal
 
-Do not hard-code special cases for the six validation queries.
+`admin.maintenance.tsx` must no longer depend on `@/data/admin` maintenance/fleet arrays or hard-coded downtime data after VS025.

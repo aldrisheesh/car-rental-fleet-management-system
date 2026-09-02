@@ -3,24 +3,25 @@
 **Status:** Development Baseline active
 **Last updated:** 2026-09-02
 
-Completed through VS024, with a live-provider correction pending for VS022 geocoding.
+Completed through VS024 plus MIC-025 geocoding correction.
 
-## Active geocoding correction
+## Next — VS025 Canonical Maintenance Administration UI
 
-Controlled Philippine validation superseded the original TomTom -> HERE geocoding pair.
+The maintenance backend/readiness model is already canonical.
 
-Current authoritative geocoding:
-- Geoapify primary
-- LocationIQ fallback
+VS025 replaces the prototype Admin Maintenance page with canonical:
+- maintenance records;
+- PMS/readiness;
+- odometer/next-service targets;
+- blocking maintenance;
+- create/complete/cancel actions;
+- real history.
 
-Unchanged:
-- TomTom -> HERE routing
-- TomTom -> HERE traffic
-- Open-Meteo -> OpenWeather weather
-- internal fuel estimate
+Do not introduce a second maintenance status model.
 
-See:
-- `36-geocoding-provider-reassessment.md`
-- MIC-025
+Canonical statuses:
+Open / Completed / Cancelled.
 
-Do not proceed to the next feature slice until corrected geocoding is implemented and real-provider validated.
+Due/overdue is derived.
+
+Maintenance notifications remain a later slice.

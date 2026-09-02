@@ -1,13 +1,12 @@
 # Changelog
 
-## 2026-09-02 — MIC-025 geocoding provider reassessment
+## 2026-09-02 — VS025 Maintenance Admin UI planning
 
-- Compared TomTom, Geoapify, and LocationIQ using identical Philippine destinations.
-- Found TomTom produced multiple false-positive destinations.
-- Selected Geoapify as primary geocoder for stronger semantic accuracy.
-- Selected LocationIQ as fallback for broader coverage and zero observed false positives.
-- Removed TomTom/HERE from the active geocoding pair only.
-- Preserved TomTom/HERE routing and traffic architecture.
-- Preserved Open-Meteo/OpenWeather weather architecture.
-- Required provider-neutral semantic quality checks before accepting geocodes.
-- Required final manuscript provider-table revision through MIC-025.
+- Audited the current Admin Maintenance page and confirmed it remains prototype-backed.
+- Confirmed canonical maintenance backend already supports create/complete/cancel, PMS targets, odometer values, blocking maintenance, cost, remarks, and readiness.
+- Froze canonical maintenance statuses as Open / Completed / Cancelled.
+- Defined due/overdue as derived presentation/readiness state, not persisted status.
+- Required removal of `@/data/admin` maintenance/fleet data from the Maintenance page.
+- Required removal of hard-coded downtime analytics unless canonically supportable.
+- Preserved MIC-019 maintenance/low-availability notifications as a later slice.
+- Deferred manuscript-only condition-before/after and service-provider fields unless verified in canonical schema.

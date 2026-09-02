@@ -6,14 +6,8 @@
 ## Geocoding
 
 Resolved by MIC-025:
-
-Primary:
-- Geoapify Geocoding
-
-Fallback:
-- LocationIQ Geocoding
-
-TomTom geocoding is no longer part of active geocoding orchestration due to weak Philippine semantic quality and false positives in controlled live validation.
+- Primary: Geoapify Geocoding
+- Fallback: LocationIQ Geocoding
 
 Still open:
 - whether final UI should add explicit destination confirmation/autocomplete;
@@ -21,36 +15,27 @@ Still open:
 
 ## CQ-032 — Canonical Operational Origin Locations
 
-**Status:** OPEN — CLIENT CLARIFICATION REQUIRED
+OPEN — CLIENT CLARIFICATION REQUIRED.
 
-For route, distance, traffic, weather, and estimated-fuel calculations, the system needs a client-approved operational origin/reference location for:
-
+Need a client-approved routing origin/reference location for:
 - Manila / Taft fleet;
 - Antipolo fleet.
 
-The current canonical branch records do not contain verified addresses.
+Do not infer or fabricate addresses.
 
-Because Briah operates from home-based/private locations, do not infer or fabricate an exact address from the branch display names.
+## VS025 Maintenance UI
 
-Acceptable client answer:
-1. actual pickup/operational address; or
-2. a nearby public/reference pickup location Briah is comfortable storing and using for routing.
+Resolved implementation baseline:
+- canonical maintenance statuses remain Open / Completed / Cancelled;
+- due/overdue is derived, not persisted;
+- Admin Maintenance page must use canonical records/API;
+- mock downtime analytics are removed unless backed by canonical data.
 
-Until resolved:
-- branch-origin composed external context remains unavailable;
-- no coordinates should be hard-coded;
-- unrelated vertical-slice development may continue.
-
-When resolved:
-- update the canonical branch address values through the normal trusted data path;
-- rerun composed VS022 -> VS023 -> VS024 real-provider validation.
-
-## Unchanged providers
-
-- TomTom -> HERE routing
-- TomTom -> HERE traffic
-- Open-Meteo -> OpenWeather weather
+Still open for manuscript reconciliation:
+- whether service provider / `performed_by` exists canonically and should be exposed;
+- final mapping/removal of manuscript-only `condition_before` / `condition_after`;
+- exact final Maintenance_Records data-dictionary wording after VS025.
 
 ## Other open items
 
-CQ-028, CQ-029, CQ-030, CQ-031, notification configuration, maintenance UI canonicalization, reports/dashboard, backup/recovery.
+CQ-028, CQ-029, CQ-030, CQ-031, maintenance/low-availability notifications, notification configuration, reports/dashboard, backup/recovery.
