@@ -2,7 +2,7 @@
 **Status:** Development Baseline active
 **Last updated:** 2026-09-02
 
-Completed through VS027 plus MIC-025.
+Completed through VS028.
 
-## Next — VS028 Maintenance & Low-Availability Notifications
-Extend existing canonical in-app Notifications with preference-aware, deduplicated maintenance-attention and low-availability operational notifications. Do not redesign Notifications or implement Brevo.
+## Next — VS029 Brevo Transactional Email Delivery
+Add durable provider-neutral application email delivery backed by Brevo. In-app Notifications remain canonical. Email must be preference-aware, idempotent, retryable, and must never make successful business mutations depend on provider availability.

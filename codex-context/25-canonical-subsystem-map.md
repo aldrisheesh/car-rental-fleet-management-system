@@ -1,11 +1,12 @@
 # Canonical Subsystem Map
 **Status:** Active
+**Last updated:** 2026-09-02
 
-## VS028
-Read `43-maintenance-low-availability-notifications.md` and `44-manuscript-traceability-vs028.md`.
+## VS029
+Read `45-brevo-transactional-email.md` and `46-manuscript-traceability-vs029.md`.
 
-Inspect canonical notification schema/types/API/generation helpers, preferences, reminder/scheduled processing, maintenance readiness, VS026 availability helpers, roles/recipient resolution, and NotificationsPanel.
+Inspect canonical notification generation/types/preferences, lifecycle event creation points, trusted reminder processor, user/profile email resolution, Supabase database types/migrations, and environment conventions.
 
-Do not alter existing booking/payment/requirements notification semantics except shared compatibility. Do not implement Brevo, Reports, external context, allocation, or backup/recovery.
+Do not redesign Notifications, business lifecycles, VS028 operational conditions, Reports, external context, or backup/recovery.
 
-Generate server-side, recipient-specific, preference-aware, deduplicated notifications from canonical conditions.
+Rule: email is a secondary durable delivery channel. Business mutation success must not depend on Brevo.

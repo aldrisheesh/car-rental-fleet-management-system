@@ -4,15 +4,17 @@
 
 Geocoding resolved by MIC-025. CQ-032 remains open.
 
-VS025 Maintenance, VS026 Dashboard, and VS027 operational Reports are canonicalized.
+VS025 Maintenance, VS026 Dashboard, VS027 operational Reports, and VS028 operational Notifications are canonicalized.
 
-Financial Reports remain omitted because settlement/refund/reversal semantics are insufficient; track through MIC-026.
+Financial reporting remains deferred under MIC-026.
 
-## VS028
-Maintenance + low-availability in-app notifications are next.
+VS028 low-availability threshold remains configurable/provisional: LOW_AVAILABILITY_THRESHOLD fallback 1 (alert at zero rentable vehicles).
 
-Open: exact low-availability threshold if no authoritative manuscript/client value exists. Any default must be configurable and documented as provisional, not Briah-confirmed.
+## VS029
+Brevo is the approved planned application transactional-email provider per MIC-007.
 
-Brevo/external email remains later.
+Implementation must determine the exact defensible email categories and explicit email-channel preference mapping from existing canonical notification/lifecycle semantics.
 
-Other open items: CQ-028, CQ-029, CQ-030, CQ-031, transactional email delivery, backup/recovery.
+Supabase Auth SMTP is deployment configuration and is not the same as application transactional-email delivery.
+
+Other open items: CQ-028, CQ-029, CQ-030, CQ-031, CQ-032, backup/recovery.
