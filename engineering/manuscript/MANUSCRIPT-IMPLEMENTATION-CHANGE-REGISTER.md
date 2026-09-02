@@ -617,10 +617,10 @@ Do not add an external fuel-consumption API.
 
 ---
 
-## MIC-018 — Maintenance Backend Is Canonical but Admin Maintenance UI Still Contains Prototype Data
+## MIC-018 — Maintenance Administration Is Canonical
 
-**Classification:** PARTIAL IMPLEMENTATION  
-**Implementation status:** Backend implemented; UI canonicalization pending.
+**Classification:** IMPLEMENTATION IMPROVEMENT — IMPLEMENTED  
+**Implementation status:** Implemented and fully canonicalized through VS025.
 
 ### Implemented backend
 Canonical maintenance supports:
@@ -631,14 +631,43 @@ Canonical maintenance supports:
 - readiness calculation;
 - create/complete/cancel transitions.
 
-### Remaining gap
-Current Admin Maintenance UI still contains mock/prototype-derived dashboard/schedule values.
+### Implemented Admin UI
+VS025 replaced the prototype Admin Maintenance UI with canonical:
+- maintenance records;
+- real vehicle data;
+- `Open` / `Completed` / `Cancelled` lifecycle;
+- blocking-maintenance visibility;
+- canonical PMS/readiness attention;
+- odometer and next-service targets;
+- create, complete, and cancel workflows;
+- canonical maintenance history;
+- honest loading, empty, error, and mutation states.
+
+The hard-coded downtime chart, mock maintenance/fleet arrays, fabricated KPIs, and local-only status overrides were removed.
+
+### Canonical maintenance boundary
+Persisted maintenance statuses remain:
+- `Open`;
+- `Completed`;
+- `Cancelled`.
+
+PMS due/overdue and maintenance-readiness attention are derived from canonical maintenance/readiness data rather than stored as separate maintenance statuses.
+
+The canonical schema does not currently contain the manuscript-described `performed_by`, `condition_before`, or `condition_after` fields. VS025 did not invent replacement fields or migrations solely for manuscript parity.
 
 ### Manuscript impact
-Do not claim the entire maintenance user interface is fully canonical until the later UI consolidation slice is complete.
+Review/update:
+- Maintenance Records data dictionary;
+- maintenance status vocabulary;
+- PMS date/mileage field mapping;
+- Admin maintenance workflow/use case;
+- vehicle condition/readiness description;
+- diagrams or UI descriptions that still show prototype maintenance states or fields.
+
+Do not rewrite the implementation back to the legacy manuscript schema. Reconcile the manuscript to the verified canonical implementation.
 
 ### Status
-**Planned canonicalization.**
+**IMPLEMENTED — maintenance UI gap closed. Manuscript data-dictionary/status reconciliation remains required.**
 
 ---
 
@@ -844,7 +873,7 @@ READY FOR MANUSCRIPT REVISION.
 
 **Date:** 2026-09-02
 **Classification:** RESEARCHER-DESIGNED DECISION / MANUSCRIPT GAP RESOLUTION
-**Implementation status:** Implemented in VS024.
+**Implementation status:** Planned for VS024
 
 ## Manuscript state
 R11 and the allocation use case require contextual review, but the allocation recommendation has a target week rather than an exact vehicle-transfer date/time.
@@ -861,7 +890,7 @@ Treating the target forecast-week start as the exact transfer time would introdu
 Document that time-sensitive context shown during allocation review reflects the current context check unless an exact planned transfer time is introduced later.
 
 ## Status
-IMPLEMENTED — manuscript revision required.
+PLANNED — verify after VS024 implementation.
 
 ---
 
