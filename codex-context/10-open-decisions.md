@@ -19,6 +19,32 @@ Still open:
 - whether final UI should add explicit destination confirmation/autocomplete;
 - whether context snapshots should be persisted.
 
+## CQ-032 — Canonical Operational Origin Locations
+
+**Status:** OPEN — CLIENT CLARIFICATION REQUIRED
+
+For route, distance, traffic, weather, and estimated-fuel calculations, the system needs a client-approved operational origin/reference location for:
+
+- Manila / Taft fleet;
+- Antipolo fleet.
+
+The current canonical branch records do not contain verified addresses.
+
+Because Briah operates from home-based/private locations, do not infer or fabricate an exact address from the branch display names.
+
+Acceptable client answer:
+1. actual pickup/operational address; or
+2. a nearby public/reference pickup location Briah is comfortable storing and using for routing.
+
+Until resolved:
+- branch-origin composed external context remains unavailable;
+- no coordinates should be hard-coded;
+- unrelated vertical-slice development may continue.
+
+When resolved:
+- update the canonical branch address values through the normal trusted data path;
+- rerun composed VS022 -> VS023 -> VS024 real-provider validation.
+
 ## Unchanged providers
 
 - TomTom -> HERE routing

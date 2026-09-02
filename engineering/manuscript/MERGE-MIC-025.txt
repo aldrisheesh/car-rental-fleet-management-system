@@ -1,4 +1,0 @@
-Merge `MIC-025-ENTRY.md` into:
-`engineering/manuscript/MANUSCRIPT-IMPLEMENTATION-CHANGE-REGISTER.md`
-
-After merging, the standalone entry file may be removed if your repository convention keeps one canonical register.

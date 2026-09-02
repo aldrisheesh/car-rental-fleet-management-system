@@ -807,3 +807,126 @@ After each completed slice:
 - **LIMITATION / PENDING** — manuscript feature not yet fully implemented.
 - **CLIENT VALIDATION REQUIRED** — cannot finalize until client confirms.
 - **REJECTED DESIGN** — never implemented; do not add to manuscript.
+
+---
+
+# MIC-023 — Route Accessibility Adds a Safe Unknown State
+
+**Date:** 2026-09-02
+**Classification:** IMPLEMENTATION IMPROVEMENT
+**Implementation status:** Implemented in VS023
+
+## Manuscript state
+The current Route Accessibility vocabulary lists:
+- Accessible
+- Limited
+- Closed/Restricted
+
+## Implemented state
+VS023 additionally uses:
+- Unknown
+
+when route/incident evidence is unavailable or insufficient.
+
+## Reason
+Without Unknown, provider failure or insufficient context would force the system to classify missing evidence as Accessible, which would be an unjustified favorable assumption.
+
+## Manuscript action
+Update the final Route Accessibility classification/data-dictionary wording to include Unknown/Unavailable as a safe missing-information state.
+
+## Status
+READY FOR MANUSCRIPT REVISION.
+
+
+---
+
+# MIC-024 — Allocation Context Uses Current Review-Time Conditions
+
+**Date:** 2026-09-02
+**Classification:** RESEARCHER-DESIGNED DECISION / MANUSCRIPT GAP RESOLUTION
+**Implementation status:** Implemented in VS024.
+
+## Manuscript state
+R11 and the allocation use case require contextual review, but the allocation recommendation has a target week rather than an exact vehicle-transfer date/time.
+
+## Planned implementation
+For branch-allocation review, time-sensitive weather/traffic/road context is labeled as current context at the time Owner/Admin reviews the recommendation.
+
+Stable route distance and candidate reference fuel estimates remain route/candidate advisory facts.
+
+## Reason
+Treating the target forecast-week start as the exact transfer time would introduce false precision and could present unsupported future traffic/weather information.
+
+## Manuscript action
+Document that time-sensitive context shown during allocation review reflects the current context check unless an exact planned transfer time is introduced later.
+
+## Status
+IMPLEMENTED — manuscript revision required.
+
+---
+
+## MIC-025 — Geocoding Provider Reassessment Due to Philippine Coverage
+
+**Classification:** IMPLEMENTATION FEASIBILITY / PROVIDER CHANGE  
+**Implementation status:** Implemented and live-provider validated in the VS022 correction.
+
+### Original manuscript/provider state
+Destination coordinates / geocoding:
+- Primary: TomTom Orbis Geocoding API
+- Fallback: HERE Geocoding and Search API v7
+
+### Implementation evidence
+A controlled Philippine geocoding comparison used the same six realistic destination inputs across TomTom, Geoapify, and LocationIQ.
+
+Observed results:
+
+**TomTom**
+- 2 plausible successes;
+- 4 false-positive/wrong destination results.
+
+**Geoapify**
+- 5 plausible/intended results;
+- 0 false positives;
+- 1 safe no-result/generalized result.
+
+**LocationIQ**
+- usable results for all six;
+- 0 false positives;
+- some generalized/nearby results.
+
+False-positive coordinates were treated as more serious than safe unavailable results because incorrect coordinates can silently invalidate route distance, travel time, traffic relevance, weather location, route feasibility/accessibility, and estimated fuel consumption.
+
+### Implemented state
+Geocoding now uses:
+- **Primary: Geoapify Geocoding API**
+- **Fallback: LocationIQ Geocoding API**
+
+The implementation uses a provider-neutral semantic quality guard. A successful HTTP response is not automatically accepted as a usable destination. Clearly mismatched results are rejected and may trigger fallback.
+
+The original customer-entered destination remains canonical; provider labels and coordinates remain derived data.
+
+### Unchanged provider families
+- Routing: TomTom Orbis -> HERE Routing v8 fallback.
+- Traffic/incidents: TomTom -> HERE Traffic v7 fallback.
+- Weather: Open-Meteo -> OpenWeather One Call 3.0 fallback.
+- Fuel estimate: internal route-distance/reference-efficiency calculation.
+
+### Manuscript impact
+Update:
+- External API Selection and Fallback Strategy;
+- Development Tools/API descriptions;
+- System Architecture where geocoding providers are named;
+- contextual-data source/provider table;
+- diagrams that specifically show TomTom/HERE for destination coordinates.
+
+Replace only the geocoding provider row:
+
+**OLD:** TomTom Orbis Geocoding -> HERE Geocoding/Search v7  
+**NEW:** Geoapify Geocoding -> LocationIQ Geocoding
+
+Document the controlled Philippine provider comparison as implementation-feasibility evidence.
+
+### Status
+**IMPLEMENTED — manuscript correction required before final manuscript freeze.**
+
+---
