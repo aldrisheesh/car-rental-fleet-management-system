@@ -1,12 +1,11 @@
 # Changelog
 
-## 2026-09-02 — VS025 Maintenance Admin UI planning
+## 2026-09-02 — VS026 Canonical Admin Dashboard planning
 
-- Audited the current Admin Maintenance page and confirmed it remains prototype-backed.
-- Confirmed canonical maintenance backend already supports create/complete/cancel, PMS targets, odometer values, blocking maintenance, cost, remarks, and readiness.
-- Froze canonical maintenance statuses as Open / Completed / Cancelled.
-- Defined due/overdue as derived presentation/readiness state, not persisted status.
-- Required removal of `@/data/admin` maintenance/fleet data from the Maintenance page.
-- Required removal of hard-coded downtime analytics unless canonically supportable.
-- Preserved MIC-019 maintenance/low-availability notifications as a later slice.
-- Deferred manuscript-only condition-before/after and service-provider fields unless verified in canonical schema.
+- Audited `/admin/` and confirmed the dashboard remains prototype-backed through `@/data/admin`.
+- Identified mock KPIs, revenue trend, booking volume, branch demand, utilization, alerts, activity, and latest bookings.
+- Froze VS026 as current operational dashboard canonicalization.
+- Required removal of static `Systems healthy` and non-functional `Export report` unless real backing exists.
+- Required role-safe Owner/Admin vs Operations Staff financial visibility.
+- Deferred deeper historical analytics and exports to VS027 Reports.
+- Preserved MIC-019 maintenance/low-availability notification generation as a later slice.

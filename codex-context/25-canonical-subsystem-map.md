@@ -3,43 +3,36 @@
 **Status:** Active AI navigation aid
 **Last updated:** 2026-09-02
 
-## VS025 starting points
+## VS026 starting points
 
 Read:
-- `codex-context/37-canonical-maintenance-admin-ui.md`
-- `codex-context/38-manuscript-traceability-vs025.md`
+- `codex-context/39-canonical-admin-dashboard.md`
+- `codex-context/40-manuscript-traceability-vs026.md`
 
-Inspect only:
-1. `src/routes/admin.maintenance.tsx`;
-2. `src/components/admin/MaintenanceRecordDialog.tsx`;
-3. `src/routes/api.maintenance.ts`;
-4. `src/lib/maintenance-readiness.server.ts`;
-5. shared pure maintenance readiness helper if required;
-6. canonical vehicle list/read API already used by Admin UI;
-7. exact maintenance schema/migrations/RPC definitions only if needed to verify field support.
+Inspect:
+1. `src/routes/admin.index.tsx`;
+2. `src/data/admin.ts` only to identify prototype dependencies to remove;
+3. canonical booking APIs/services;
+4. canonical rental APIs/services;
+5. canonical vehicle/readiness APIs/services;
+6. canonical maintenance/readiness API from VS025;
+7. canonical notifications/audit/payment services only if used by the final dashboard;
+8. existing vehicle analytics service only if a current-snapshot metric can reuse it.
 
-Do not inspect/modify:
+Do not modify:
+- Reports page beyond compile-only shared helper changes;
 - Finder;
-- booking lifecycle except compile-only vehicle API use;
 - allocation;
-- forecasting/supply;
-- notification/reminder;
-- external context providers;
-- audit architecture;
-- reports/dashboard.
+- forecasting;
+- external context;
+- maintenance lifecycle;
+- notification generation;
+- backup/recovery.
 
-## Canonical maintenance rule
+## Dashboard rule
 
-Statuses:
-- Open
-- Completed
-- Cancelled
+Current snapshot only.
 
-Due/overdue:
-derived readiness/presentation state.
+No fabricated KPI, chart, delta, health indicator, alert, activity, booking, or revenue value.
 
-Do not reintroduce prototype Scheduled/In Progress/Overdue persisted statuses.
-
-## Prototype removal
-
-`admin.maintenance.tsx` must no longer depend on `@/data/admin` maintenance/fleet arrays or hard-coded downtime data after VS025.
+Historical/deep analytics belong to VS027.

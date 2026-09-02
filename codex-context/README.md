@@ -3,25 +3,16 @@
 **Status:** Development Baseline active
 **Last updated:** 2026-09-02
 
-Completed through VS024 plus MIC-025 geocoding correction.
+Completed through VS025 plus MIC-025 geocoding correction.
 
-## Next — VS025 Canonical Maintenance Administration UI
+## Next — VS026 Canonical Administrative Dashboard
 
-The maintenance backend/readiness model is already canonical.
+The current Admin landing dashboard is prototype-backed.
 
-VS025 replaces the prototype Admin Maintenance page with canonical:
-- maintenance records;
-- PMS/readiness;
-- odometer/next-service targets;
-- blocking maintenance;
-- create/complete/cancel actions;
-- real history.
+VS026 replaces fabricated KPIs/charts/alerts/activity/latest bookings with a smaller truthful current operational snapshot derived from canonical system data.
 
-Do not introduce a second maintenance status model.
+Owner/Admin and Operations Staff visibility must remain role-appropriate.
 
-Canonical statuses:
-Open / Completed / Cancelled.
+Historical/deep analytics and exports remain VS027 Reports.
 
-Due/overdue is derived.
-
-Maintenance notifications remain a later slice.
+Maintenance/low-availability notification generation remains pending.

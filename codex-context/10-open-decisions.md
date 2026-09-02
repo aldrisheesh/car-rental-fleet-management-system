@@ -6,36 +6,40 @@
 ## Geocoding
 
 Resolved by MIC-025:
-- Primary: Geoapify Geocoding
-- Fallback: LocationIQ Geocoding
-
-Still open:
-- whether final UI should add explicit destination confirmation/autocomplete;
-- whether context snapshots should be persisted.
+- Geoapify primary
+- LocationIQ fallback
 
 ## CQ-032 — Canonical Operational Origin Locations
 
 OPEN — CLIENT CLARIFICATION REQUIRED.
 
-Need a client-approved routing origin/reference location for:
-- Manila / Taft fleet;
-- Antipolo fleet.
+Need client-approved routing origin/reference locations for Manila/Taft and Antipolo fleets.
 
-Do not infer or fabricate addresses.
+## VS025 Maintenance
 
-## VS025 Maintenance UI
+Canonicalized.
 
-Resolved implementation baseline:
-- canonical maintenance statuses remain Open / Completed / Cancelled;
-- due/overdue is derived, not persisted;
-- Admin Maintenance page must use canonical records/API;
-- mock downtime analytics are removed unless backed by canonical data.
+Persisted statuses:
+- Open
+- Completed
+- Cancelled
 
-Still open for manuscript reconciliation:
-- whether service provider / `performed_by` exists canonically and should be exposed;
-- final mapping/removal of manuscript-only `condition_before` / `condition_after`;
-- exact final Maintenance_Records data-dictionary wording after VS025.
+Manuscript-only performed_by / condition_before / condition_after remain reconciliation gaps.
+
+## VS026 Dashboard
+
+Resolved baseline:
+- remove prototype dashboard data;
+- current operational snapshot only;
+- Owner/Admin financial visibility only when canonically supported;
+- Operations Staff must not see restricted financial aggregates;
+- no static health claim;
+- no fake export;
+- deeper historical analytics remain VS027.
+
+Open implementation detail:
+- exact canonical KPI set depends on existing reusable APIs/services discovered during VS026 inspection.
 
 ## Other open items
 
-CQ-028, CQ-029, CQ-030, CQ-031, maintenance/low-availability notifications, notification configuration, reports/dashboard, backup/recovery.
+CQ-028, CQ-029, CQ-030, CQ-031, maintenance/low-availability notifications, transactional email delivery, reports canonicalization, backup/recovery.
