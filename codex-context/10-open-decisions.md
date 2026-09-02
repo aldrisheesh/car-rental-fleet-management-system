@@ -1,45 +1,18 @@
 # Open Decisions
-
 **Status:** Active
 **Last updated:** 2026-09-02
 
-## Geocoding
+Geocoding resolved by MIC-025: Geoapify -> LocationIQ.
 
-Resolved by MIC-025:
-- Geoapify primary
-- LocationIQ fallback
+CQ-032 remains open for client-approved operational route origins.
 
-## CQ-032 — Canonical Operational Origin Locations
+VS025 Maintenance is canonicalized; manuscript-only performed_by / condition_before / condition_after remain reconciliation gaps.
 
-OPEN — CLIENT CLARIFICATION REQUIRED.
+VS026 Dashboard is canonicalized as a current operational snapshot; financial KPI was intentionally omitted.
 
-Need client-approved routing origin/reference locations for Manila/Taft and Antipolo fleets.
+## VS027 Reports
+Resolved baseline: historical reports use canonical records; preserve canonical vehicle utilization/idle analytics; branch filters use canonical branches; remove prototype report business arrays; Operations Staff receives no restricted finance.
 
-## VS025 Maintenance
+Open definition: Revenue / Average Ticket may be implemented only if canonical payment amount, acceptance timestamp, multiple-payment, cancellation/refund semantics are unambiguous. Otherwise omit and record the gap.
 
-Canonicalized.
-
-Persisted statuses:
-- Open
-- Completed
-- Cancelled
-
-Manuscript-only performed_by / condition_before / condition_after remain reconciliation gaps.
-
-## VS026 Dashboard
-
-Resolved baseline:
-- remove prototype dashboard data;
-- current operational snapshot only;
-- Owner/Admin financial visibility only when canonically supported;
-- Operations Staff must not see restricted financial aggregates;
-- no static health claim;
-- no fake export;
-- deeper historical analytics remain VS027.
-
-Open implementation detail:
-- exact canonical KPI set depends on existing reusable APIs/services discovered during VS026 inspection.
-
-## Other open items
-
-CQ-028, CQ-029, CQ-030, CQ-031, maintenance/low-availability notifications, transactional email delivery, reports canonicalization, backup/recovery.
+Other open items: CQ-028, CQ-029, CQ-030, CQ-031, maintenance/low-availability notifications, transactional email delivery, backup/recovery.
