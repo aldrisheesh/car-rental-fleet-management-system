@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { selectAuthoritativePreventiveTargets } from "./maintenance-readiness.ts";
+import {
+  evaluateMaintenanceReadiness,
+  selectAuthoritativePreventiveTargets,
+} from "./maintenance-readiness.ts";
 
 const record = (overrides: Record<string, unknown>) => ({
   status: "Completed",
@@ -59,4 +62,60 @@ test("completion chronology outranks creation chronology", () => {
     targets.map((item) => item.next_service_odometer),
     [50000],
   );
+});
+
+test("canonical readiness reports every deterministic blocking reason", () => {
+  const readiness = evaluateMaintenanceReadiness(
+    {
+      is_active: false,
+      current_odometer_km: 60_000,
+      condition_blocks_rental_use: true,
+    },
+    [
+      record({ status: "Open", blocks_rental_use: true }),
+      record({
+        next_service_date: "2026-08-31",
+        next_service_odometer: 59_000,
+      }),
+    ],
+    "2026-09-02",
+  );
+
+  assert.equal(readiness.maintenanceReady, false);
+  assert.deepEqual(readiness.reasons, [
+    "Vehicle inactive",
+    "Active blocking maintenance",
+    "Preventive maintenance due by date",
+    "Preventive maintenance due by odometer",
+    "Vehicle condition blocks rental use",
+  ]);
+});
+
+test("readiness identifies an unavailable odometer without inventing a score", () => {
+  const readiness = evaluateMaintenanceReadiness(
+    {
+      is_active: true,
+      current_odometer_km: null,
+      condition_blocks_rental_use: false,
+    },
+    [record({ next_service_odometer: 59_000 })],
+    "2026-09-02",
+  );
+  assert.deepEqual(readiness, {
+    maintenanceReady: false,
+    reasons: ["Current odometer unavailable for recorded service target"],
+  });
+});
+
+test("cancelled blocking records do not block readiness", () => {
+  const readiness = evaluateMaintenanceReadiness(
+    {
+      is_active: true,
+      current_odometer_km: 10_000,
+      condition_blocks_rental_use: false,
+    },
+    [record({ status: "Cancelled", blocks_rental_use: true })],
+    "2026-09-02",
+  );
+  assert.deepEqual(readiness, { maintenanceReady: true, reasons: [] });
 });

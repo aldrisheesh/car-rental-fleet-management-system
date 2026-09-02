@@ -1,5 +1,9 @@
 import { Btn, TInput, TSelect } from "@/components/admin/ui";
 import {
+  isMaintenanceDraftValid,
+  type MaintenanceDraft,
+} from "@/lib/maintenance-admin";
+import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -7,27 +11,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export type MaintenanceStatus = "Open" | "Completed" | "Cancelled";
-
-export type MaintenanceRecordDraft = {
-  maintenance_id: string;
-  vehicle_id: string;
-  maintenance_type: string;
-  description: string;
-  maintenance_status: MaintenanceStatus;
-  scheduled_date: string;
-  completed_date: string;
-  cost: string;
-  performed_by: string;
-  recorded_by: string;
-  created_at: string;
-};
+export type { MaintenanceDraft as MaintenanceRecordDraft };
 
 export type MaintenanceVehicleOption = {
   id: string;
   name: string;
   plate: string;
-  branch: string;
+  branch?: string;
 };
 
 const typeOptions = [
@@ -44,69 +34,65 @@ export function MaintenanceRecordDialog({
   open,
   draft,
   vehicles,
+  saving,
+  error,
   onDraftChange,
   onOpenChange,
   onSave,
 }: {
   open: boolean;
-  draft: MaintenanceRecordDraft;
+  draft: MaintenanceDraft;
   vehicles: MaintenanceVehicleOption[];
-  onDraftChange: (draft: MaintenanceRecordDraft) => void;
+  saving: boolean;
+  error?: string | null;
+  onDraftChange: (draft: MaintenanceDraft) => void;
   onOpenChange: (open: boolean) => void;
-  onSave?: () => void;
+  onSave: () => void;
 }) {
-  function updateDraft<K extends keyof MaintenanceRecordDraft>(
+  function updateDraft<K extends keyof MaintenanceDraft>(
     key: K,
-    value: MaintenanceRecordDraft[K],
+    value: MaintenanceDraft[K],
   ) {
     onDraftChange({ ...draft, [key]: value });
   }
 
-  const canSave = Boolean(draft.vehicle_id);
-  const saveTitle = canSave ? "Save record" : "Select a vehicle first";
+  const canSave = isMaintenanceDraftValid(draft);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => !saving && onOpenChange(nextOpen)}
+    >
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Service now</DialogTitle>
+          <DialogTitle>Add maintenance record</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4 py-2 sm:grid-cols-2">
-          <Field label="Vehicle">
+          <Field label="Vehicle *">
             <TSelect
-              value={draft.vehicle_id}
-              onChange={(event) => {
-                const nextVehicleId = event.target.value;
-                const selected = vehicles.find((v) => v.id === nextVehicleId);
-
-                onDraftChange({
-                  ...draft,
-                  vehicle_id: nextVehicleId,
-                  description:
-                    draft.description.trim() || !selected
-                      ? draft.description
-                      : `${selected.name} (${selected.plate}) - ${draft.maintenance_type}`,
-                });
-              }}
+              value={draft.vehicleId}
+              onChange={(event) => updateDraft("vehicleId", event.target.value)}
+              required
             >
-              <option value="" disabled>
-                Select vehicle
-              </option>
-              {vehicles.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name} ({v.plate}) — {v.branch}
+              <option value="">Select vehicle</option>
+              {vehicles.map((vehicle) => (
+                <option key={vehicle.id} value={vehicle.id}>
+                  {vehicle.name} ({vehicle.plate})
+                  {vehicle.branch ? ` — ${vehicle.branch}` : ""}
                 </option>
               ))}
             </TSelect>
           </Field>
-          <Field label="Maintenance Type">
+          <Field label="Maintenance type *">
             <TSelect
-              value={draft.maintenance_type}
+              value={draft.maintenanceType}
               onChange={(event) =>
-                updateDraft("maintenance_type", event.target.value)
+                updateDraft("maintenanceType", event.target.value)
               }
+              required
             >
+              <option value="">Select maintenance type</option>
               {typeOptions.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -114,94 +100,105 @@ export function MaintenanceRecordDialog({
               ))}
             </TSelect>
           </Field>
-          <Field label="Maintenance Status">
-            <TSelect
-              value={draft.maintenance_status}
-              onChange={(event) =>
-                updateDraft(
-                  "maintenance_status",
-                  event.target.value as MaintenanceStatus,
-                )
-              }
-            >
-              <option>Open</option>
-              <option>Completed</option>
-              <option>Cancelled</option>
-            </TSelect>
-          </Field>
-          <Field label="Scheduled Date">
+          <Field label="Service started">
             <TInput
-              type="date"
-              value={draft.scheduled_date}
+              type="datetime-local"
+              value={draft.serviceStartedAt}
               onChange={(event) =>
-                updateDraft("scheduled_date", event.target.value)
+                updateDraft("serviceStartedAt", event.target.value)
               }
             />
           </Field>
-          <Field label="Completed Date">
+          <Field label="Odometer at service (km)">
             <TInput
-              type="date"
-              value={draft.completed_date}
+              type="number"
+              min="0"
+              step="0.1"
+              value={draft.odometerAtService}
               onChange={(event) =>
-                updateDraft("completed_date", event.target.value)
+                updateDraft("odometerAtService", event.target.value)
               }
             />
           </Field>
-          <Field label="Cost">
+          <Field label="Next service date">
+            <TInput
+              type="date"
+              value={draft.nextServiceDate}
+              onChange={(event) =>
+                updateDraft("nextServiceDate", event.target.value)
+              }
+            />
+          </Field>
+          <Field label="Next service odometer (km)">
+            <TInput
+              type="number"
+              min="0"
+              step="0.1"
+              value={draft.nextServiceOdometer}
+              onChange={(event) =>
+                updateDraft("nextServiceOdometer", event.target.value)
+              }
+            />
+          </Field>
+          <Field label="Cost (PHP)">
             <TInput
               type="number"
               min="0"
               step="0.01"
-              value={draft.cost}
-              onChange={(event) => updateDraft("cost", event.target.value)}
+              value={draft.costPhp}
+              onChange={(event) => updateDraft("costPhp", event.target.value)}
             />
           </Field>
-          <Field label="Performed By">
-            <TInput
-              value={draft.performed_by}
+          <label className="flex min-h-11 items-center gap-3 self-end rounded-md border border-border px-3 text-sm">
+            <input
+              type="checkbox"
+              checked={draft.blocksRentalUse}
               onChange={(event) =>
-                updateDraft("performed_by", event.target.value)
-              }
-              placeholder="Mechanic name"
-            />
-          </Field>
-          <Field label="Recorded By">
-            <TInput
-              type="number"
-              value={draft.recorded_by}
-              onChange={(event) =>
-                updateDraft("recorded_by", event.target.value)
+                updateDraft("blocksRentalUse", event.target.checked)
               }
             />
-          </Field>
-          <Field label="Date recorded">
-            <TInput value={draft.created_at} readOnly />
-          </Field>
-          <Field label="Description" className="sm:col-span-2">
+            Blocks rental use
+          </label>
+          <Field label="Description *" className="sm:col-span-2">
             <textarea
               value={draft.description}
               onChange={(event) =>
                 updateDraft("description", event.target.value)
               }
-              rows={4}
-              className="input-control min-h-24 w-full py-2.5"
-              placeholder="Service notes and findings"
+              rows={3}
+              className="input-control min-h-20 w-full py-2.5"
+              placeholder="Describe the maintenance work required"
+              required
+            />
+          </Field>
+          <Field label="Remarks" className="sm:col-span-2">
+            <textarea
+              value={draft.remarks}
+              onChange={(event) => updateDraft("remarks", event.target.value)}
+              rows={3}
+              className="input-control min-h-20 w-full py-2.5"
+              placeholder="Optional observations or service notes"
             />
           </Field>
         </div>
 
+        {error && (
+          <p role="alert" className="text-sm text-rose-400">
+            {error}
+          </p>
+        )}
+
         <DialogFooter>
-          <Btn onClick={() => onOpenChange(false)}>Cancel</Btn>
+          <Btn disabled={saving} onClick={() => onOpenChange(false)}>
+            Cancel
+          </Btn>
           <Btn
             variant="primary"
-            disabled={!canSave}
-            title={saveTitle}
-            onClick={() => {
-              onSave?.();
-              onOpenChange(false);
-            }}
+            disabled={!canSave || saving}
+            title={canSave ? "Save record" : "Complete all required fields"}
+            onClick={onSave}
           >
-            Save record
+            {saving ? "Saving…" : "Save record"}
           </Btn>
         </DialogFooter>
       </DialogContent>

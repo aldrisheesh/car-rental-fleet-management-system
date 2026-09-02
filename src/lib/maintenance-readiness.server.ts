@@ -1,19 +1,13 @@
 import { getSupabaseServerClient } from "./supabase/server";
-import { selectAuthoritativePreventiveTargets } from "./maintenance-readiness";
-export { selectAuthoritativePreventiveTargets } from "./maintenance-readiness";
-
-export type MaintenanceReadinessReason =
-  | "Vehicle inactive"
-  | "Active blocking maintenance"
-  | "Preventive maintenance due by date"
-  | "Preventive maintenance due by odometer"
-  | "Vehicle condition blocks rental use"
-  | "Current odometer unavailable for recorded service target";
-
-export type MaintenanceReadiness = {
-  maintenanceReady: boolean;
-  reasons: MaintenanceReadinessReason[];
-};
+import { evaluateMaintenanceReadiness } from "./maintenance-readiness";
+export {
+  evaluateMaintenanceReadiness,
+  selectAuthoritativePreventiveTargets,
+} from "./maintenance-readiness";
+export type {
+  MaintenanceReadiness,
+  MaintenanceReadinessReason,
+} from "./maintenance-readiness";
 
 export async function calculateMaintenanceReadiness(
   vehicleId: string,
@@ -37,38 +31,55 @@ export async function calculateMaintenanceReadiness(
   ]);
   if (vehicleError) throw vehicleError;
   if (recordsError) throw recordsError;
-  if (!vehicle)
-    return { maintenanceReady: false, reasons: ["Vehicle inactive"] };
-  const reasons: MaintenanceReadinessReason[] = [];
-  if (!vehicle.is_active) reasons.push("Vehicle inactive");
-  const active = (records ?? []).filter((r) => r.status === "Open");
-  if (active.some((r) => r.blocks_rental_use))
-    reasons.push("Active blocking maintenance");
-  const targetRecords = selectAuthoritativePreventiveTargets(records ?? []);
-  const today = new Date().toISOString().slice(0, 10);
-  if (
-    targetRecords.some(
-      (r) => r.next_service_date && r.next_service_date <= today,
-    )
-  )
-    reasons.push("Preventive maintenance due by date");
-  const odometerTargets = targetRecords.filter(
-    (r) => r.next_service_odometer != null,
-  );
-  if (odometerTargets.some((r) => vehicle.current_odometer_km == null))
-    reasons.push("Current odometer unavailable for recorded service target");
-  else if (
-    odometerTargets.some(
-      (r) =>
-        Number(vehicle.current_odometer_km) >= Number(r.next_service_odometer),
-    )
-  )
-    reasons.push("Preventive maintenance due by odometer");
-  if (vehicle.condition_blocks_rental_use)
-    reasons.push("Vehicle condition blocks rental use");
-  return { maintenanceReady: reasons.length === 0, reasons };
+  return evaluateMaintenanceReadiness(vehicle, records ?? []);
 }
 
 export async function getVehicleMaintenanceReadiness(vehicleId: string) {
   return calculateMaintenanceReadiness(vehicleId);
+}
+
+export type FleetMaintenanceReadinessItem = {
+  vehicleId: string;
+  vehicleName: string;
+  licensePlate: string;
+  maintenanceReady: boolean;
+  reasons: import("./maintenance-readiness").MaintenanceReadinessReason[];
+};
+
+export async function calculateFleetMaintenanceReadiness(): Promise<
+  FleetMaintenanceReadinessItem[]
+> {
+  const client = getSupabaseServerClient();
+  const [vehiclesResult, recordsResult] = await Promise.all([
+    client
+      .from("vehicles")
+      .select(
+        "id,name,license_plate,is_active,current_odometer_km,condition_blocks_rental_use",
+      )
+      .order("name"),
+    client
+      .from("maintenance_records")
+      .select(
+        "vehicle_id,status,maintenance_type,blocks_rental_use,next_service_odometer,next_service_date,completed_at,created_at",
+      ),
+  ]);
+  if (vehiclesResult.error) throw vehiclesResult.error;
+  if (recordsResult.error) throw recordsResult.error;
+
+  const recordsByVehicle = new Map<string, typeof recordsResult.data>();
+  for (const record of recordsResult.data ?? []) {
+    const records = recordsByVehicle.get(record.vehicle_id) ?? [];
+    records.push(record);
+    recordsByVehicle.set(record.vehicle_id, records);
+  }
+
+  return (vehiclesResult.data ?? []).map((vehicle) => ({
+    vehicleId: vehicle.id,
+    vehicleName: vehicle.name,
+    licensePlate: vehicle.license_plate,
+    ...evaluateMaintenanceReadiness(
+      vehicle,
+      recordsByVehicle.get(vehicle.id) ?? [],
+    ),
+  }));
 }

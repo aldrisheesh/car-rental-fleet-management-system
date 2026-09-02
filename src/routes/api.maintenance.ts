@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireRole, requirePrincipal } from "@/lib/auth.server";
-import { calculateMaintenanceReadiness } from "@/lib/maintenance-readiness.server";
+import {
+  calculateFleetMaintenanceReadiness,
+  calculateMaintenanceReadiness,
+} from "@/lib/maintenance-readiness.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 function fail(message: string, status = 400) {
@@ -22,6 +25,15 @@ export const Route = createFileRoute("/api/maintenance")({
           const principal = await requirePrincipal();
           const url = new URL(request.url);
           const vehicleId = url.searchParams.get("vehicleId");
+          if (url.searchParams.get("readiness") === "summary") {
+            if (principal.role !== "Owner/Admin")
+              return fail("Forbidden.", 403);
+            try {
+              return Response.json(await calculateFleetMaintenanceReadiness());
+            } catch {
+              return fail("Unable to load maintenance readiness.", 503);
+            }
+          }
           if (url.searchParams.get("readiness") === "true") {
             if (principal.role === "Customer/Renter")
               return fail("Forbidden.", 403);
