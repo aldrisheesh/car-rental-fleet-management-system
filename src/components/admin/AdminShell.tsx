@@ -52,6 +52,7 @@ type NavItem = {
   exact?: boolean;
 };
 const navStaffModules: NavItem[] = [
+  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
   { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
 ];
@@ -201,11 +202,6 @@ export function AdminShell() {
     if (!session) return;
     if (!isStaffRole(session.role)) return;
 
-    if (pathname === "/admin") {
-      void navigate({ to: "/admin/bookings", replace: true });
-      return;
-    }
-
     const allowedPrefixes = [
       "/admin/bookings",
       "/admin/calendar",
@@ -213,6 +209,7 @@ export function AdminShell() {
     ];
 
     if (
+      pathname !== "/admin" &&
       !allowedPrefixes.some(
         (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
       )

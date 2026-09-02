@@ -48,6 +48,7 @@ export function canAccessAdminPath(
   if (principal.role !== "Operations Staff") return false;
 
   return (
+    pathname === "/admin" ||
     pathname === "/admin/bookings" ||
     pathname.startsWith("/admin/bookings/") ||
     pathname === "/admin/calendar" ||

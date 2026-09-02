@@ -1,4 +1,7 @@
 import { getSupabaseServerClient } from "./supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "./supabase/database.types";
+import { instantToManilaCalendarDate } from "./business-time";
 import { evaluateMaintenanceReadiness } from "./maintenance-readiness";
 export {
   evaluateMaintenanceReadiness,
@@ -46,10 +49,20 @@ export type FleetMaintenanceReadinessItem = {
   reasons: import("./maintenance-readiness").MaintenanceReadinessReason[];
 };
 
-export async function calculateFleetMaintenanceReadiness(): Promise<
-  FleetMaintenanceReadinessItem[]
-> {
-  const client = getSupabaseServerClient();
+export type FleetMaintenanceReadinessVehicle = {
+  vehicleId: string;
+  isActive: boolean;
+};
+
+export type FleetMaintenanceReadiness = {
+  readiness: FleetMaintenanceReadinessItem[];
+  vehicles: FleetMaintenanceReadinessVehicle[];
+};
+
+export async function calculateFleetMaintenanceSnapshot(
+  client: SupabaseClient<Database> = getSupabaseServerClient(),
+  now = new Date(),
+): Promise<FleetMaintenanceReadiness> {
   const [vehiclesResult, recordsResult] = await Promise.all([
     client
       .from("vehicles")
@@ -73,13 +86,28 @@ export async function calculateFleetMaintenanceReadiness(): Promise<
     recordsByVehicle.set(record.vehicle_id, records);
   }
 
-  return (vehiclesResult.data ?? []).map((vehicle) => ({
+  const today = instantToManilaCalendarDate(now);
+  const readiness = (vehiclesResult.data ?? []).map((vehicle) => ({
     vehicleId: vehicle.id,
     vehicleName: vehicle.name,
     licensePlate: vehicle.license_plate,
     ...evaluateMaintenanceReadiness(
       vehicle,
       recordsByVehicle.get(vehicle.id) ?? [],
+      today,
     ),
   }));
+  return {
+    readiness,
+    vehicles: (vehiclesResult.data ?? []).map((vehicle) => ({
+      vehicleId: vehicle.id,
+      isActive: vehicle.is_active,
+    })),
+  };
+}
+
+export async function calculateFleetMaintenanceReadiness(): Promise<
+  FleetMaintenanceReadinessItem[]
+> {
+  return (await calculateFleetMaintenanceSnapshot()).readiness;
 }

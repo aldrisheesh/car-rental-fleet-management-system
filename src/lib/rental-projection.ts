@@ -1,3 +1,10 @@
+export function isActiveRental(rental: {
+  started_at?: unknown;
+  ended_at?: unknown;
+}) {
+  return rental.started_at != null && rental.ended_at == null;
+}
+
 export function projectCustomerRental(rental: Record<string, unknown> | null) {
   if (!rental) return null;
   return {
@@ -8,6 +15,6 @@ export function projectCustomerRental(rental: Record<string, unknown> | null) {
     scheduled_return_at: rental.scheduled_return_at,
     started_at: rental.started_at,
     ended_at: rental.ended_at,
-    active: rental.started_at != null && rental.ended_at == null,
+    active: isActiveRental(rental),
   };
 }
