@@ -355,10 +355,10 @@ Update:
 - data dictionary;
 - notification requirements.
 
-The manuscript's maintenance and low-availability alerts are still **not yet implemented**.
+Maintenance and low-availability operational notifications were subsequently implemented in VS028; see MIC-019.
 
 ### Status
-**Partial manuscript requirement implementation.**
+**IMPLEMENTED across VS019, VS020, and VS028 — manuscript notification wording/data dictionary still requires reconciliation.**
 
 ---
 
@@ -552,10 +552,10 @@ Context-aware sections may acknowledge route/accessibility assessment, but exact
 
 ---
 
-## MIC-016 — External API Provider Stack Must Follow Manuscript Primary/Fallback Architecture
+## MIC-016 — External API Provider Stack Was Implemented with a Later Geocoding Correction
 
-**Classification:** MANUSCRIPT-AUTHORITATIVE DESIGN — NOT YET IMPLEMENTED  
-**Implementation status:** VS022 has NOT been implemented.
+**Classification:** MANUSCRIPT-AUTHORITATIVE DESIGN / IMPLEMENTED WITH MIC-025 SUPERSESSION  
+**Implementation status:** VS022 implemented; original geocoding provider selection was subsequently superseded by MIC-025.
 
 ### Manuscript-authoritative stack
 
@@ -590,7 +590,7 @@ Geoapify + WeatherAPI.com was briefly proposed during planning but was rejected 
 Future implementation must trace to the manuscript provider table unless the team formally approves a manuscript/provider change first.
 
 ### Status
-**Keep manuscript authoritative.**
+**IMPLEMENTED — retain the original provider stack here as historical traceability; MIC-025 is authoritative for the final geocoding provider pair.**
 
 ---
 
@@ -671,21 +671,95 @@ Do not rewrite the implementation back to the legacy manuscript schema. Reconcil
 
 ---
 
-## MIC-019 — Maintenance and Low-Availability Notifications Are Not Yet Implemented
+## MIC-019 — Maintenance and Low-Availability Notifications Are Canonical
 
-**Classification:** PLANNED / NOT YET IMPLEMENTED
+**Classification:** IMPLEMENTATION IMPROVEMENT / PROVISIONAL POLICY — IMPLEMENTED  
+**Implementation status:** Implemented and validated in VS028.
 
 ### Manuscript expectation
-Notifications include maintenance alerts and low-availability alerts.
+The manuscript requires operational notification support for maintenance/PMS attention and low vehicle availability.
 
-### Current system
-VS019/VS020 implemented core lifecycle notifications and booking/rental reminders only.
+### Implemented state
+VS028 extends the existing recipient-specific in-app Notifications subsystem with two canonical operational notification types:
+
+**Maintenance attention**
+- notification type: `maintenance_attention`;
+- related entity: canonical vehicle;
+- recipients: active Owner/Admin users only;
+- condition authority: canonical maintenance-readiness/PMS logic;
+- may represent blocking maintenance, PMS due by date, PMS due by odometer, condition-blocked rental use, or missing odometer when a canonical service target requires it;
+- a merely Open non-blocking maintenance record does not independently trigger an alert.
+
+**Low availability**
+- notification type: `low_availability`;
+- related entity: canonical branch;
+- recipients: active Owner/Admin and Operations Staff;
+- availability reuses the canonical current-availability rule: active vehicle, maintenance-ready, and without an active physical rental;
+- branch identities are canonical and not hard-coded.
+
+### Preferences
+Recipient preferences were extended narrowly with:
+- `maintenance_attention_enabled`;
+- `low_availability_enabled`.
+
+Both default enabled, remain per-user, are protected by own-row access rules, and are rechecked during atomic notification creation so opt-outs are respected.
+
+### Low-availability threshold
+The server configuration key is:
+
+`LOW_AVAILABILITY_THRESHOLD`
+
+No authoritative Briah-confirmed threshold was found.
+
+Current fallback/default:
+- **1 available vehicle threshold**, meaning the alert condition becomes true when a branch has **0 rentable vehicles**.
+
+This is a **provisional configurable implementation value**, not a client-confirmed business rule.
+
+### Deduplication and recurrence
+Operational conditions are stored durably in `operational_notification_conditions`.
+
+Condition state is keyed by notification-condition type plus canonical vehicle/branch identity.
+
+Behavior:
+- false -> true: create one notification;
+- remains true: no duplicate;
+- true -> false: condition resolves while notification history remains;
+- resolved condition later recurs: a new historical notification is allowed.
+
+Concurrent processing is protected using atomic reconciliation, a transaction advisory lock, composite condition identity, and the existing recipient/event-key uniqueness safeguard.
+
+### Processing trigger
+The trusted reminder processor now evaluates:
+- scheduled booking/rental reminders; and
+- operational maintenance/availability conditions
+
+on each invocation of the existing internal reminder-processing cycle.
+
+The hosting/scheduler cadence remains deployment-managed and must be configured in the deployed environment.
+
+### UI
+The existing Notifications UI was extended rather than redesigned:
+- maintenance notifications route to `/admin/maintenance`;
+- low-availability notifications route to `/admin`;
+- Operations Staff can access their notification panel;
+- Customer/Renter users are never recipients of these management/operations notification families.
 
 ### Manuscript impact
-Do not mark the complete notification requirement as fully implemented yet.
+Review/update:
+- Notification requirements/use cases;
+- Notifications data dictionary and supported types/entities;
+- notification-preference fields;
+- Admin/Operations Staff role capabilities;
+- maintenance/PMS notification description;
+- low-availability alert description;
+- deployment/scheduler description;
+- any wording that still says maintenance or low-availability alerts are pending.
+
+The low-availability threshold must be described as configurable/provisional unless later confirmed by Briah.
 
 ### Status
-**Remaining roadmap item.**
+**IMPLEMENTED — MIC-019 closed. Low-availability threshold remains a provisional client-validation item.**
 
 ---
 
@@ -777,13 +851,13 @@ Do not freeze a complete late-fee algorithm until CQ-029 is resolved.
 
 ## Priority B — Partial implementation claims
 
-5. Clearly mark Maintenance UI canonicalization as pending until mock data is removed.
+5. Update Maintenance UI/data-dictionary wording to the VS025 canonical implementation and remove prototype status/schema claims.
 
-6. Do not claim maintenance and low-availability notifications are implemented yet.
+6. Update notification requirements/preferences to include the implemented VS028 maintenance-attention and low-availability notification families; preserve the low-availability threshold as provisional/configurable.
 
 7. Do not claim Backup Logs / backup workflow is implemented yet.
 
-8. Keep external API providers exactly aligned to the manuscript while VS022 is being developed.
+8. Update external API provider documentation to the implemented stack, including MIC-025's Geoapify -> LocationIQ geocoding correction.
 
 ## Priority C — Technical implementation improvements worth documenting
 
@@ -873,12 +947,12 @@ READY FOR MANUSCRIPT REVISION.
 
 **Date:** 2026-09-02
 **Classification:** RESEARCHER-DESIGNED DECISION / MANUSCRIPT GAP RESOLUTION
-**Implementation status:** Planned for VS024
+**Implementation status:** Implemented and validated in VS024.
 
 ## Manuscript state
 R11 and the allocation use case require contextual review, but the allocation recommendation has a target week rather than an exact vehicle-transfer date/time.
 
-## Planned implementation
+## Implemented state
 For branch-allocation review, time-sensitive weather/traffic/road context is labeled as current context at the time Owner/Admin reviews the recommendation.
 
 Stable route distance and candidate reference fuel estimates remain route/candidate advisory facts.
@@ -890,7 +964,7 @@ Treating the target forecast-week start as the exact transfer time would introdu
 Document that time-sensitive context shown during allocation review reflects the current context check unless an exact planned transfer time is introduced later.
 
 ## Status
-PLANNED — verify after VS024 implementation.
+IMPLEMENTED — manuscript revision required.
 
 ---
 
@@ -959,3 +1033,80 @@ Document the controlled Philippine provider comparison as implementation-feasibi
 **IMPLEMENTED — manuscript correction required before final manuscript freeze.**
 
 ---
+
+## MIC-026 — Financial Reporting Deferred Until Payment Settlement Semantics Are Canonical
+
+**Date:** 2026-09-02  
+**Classification:** MANUSCRIPT CORRECTION REQUIRED / IMPLEMENTATION SCOPE REFINEMENT  
+**Implementation status:** VS027 operational Reports implemented; financial analytics deliberately omitted.
+
+### Manuscript/reporting intent
+The manuscript and earlier prototype Reports surface imply management financial analytics such as:
+- Revenue;
+- Average Ticket;
+- Revenue Trend.
+
+### VS027 implementation finding
+The current canonical payment workflow supports operational payment submission and manual verification, including a reviewed submitted amount and `reviewed_at`.
+
+However, the implemented payment model does not yet define enough accounting/settlement semantics to treat those records as recognized revenue.
+
+Observed gaps include:
+- required payment amount may be null in some canonical states;
+- one mutable payment exists per booking while multiple proof versions may exist;
+- cancellation does not canonically settle payment records;
+- refund lifecycle is not represented;
+- accepted/verified payments do not have a canonical reversal or invalid-after-acceptance lifecycle;
+- partial-payment/final-settlement semantics are not sufficiently complete for reporting;
+- there is no canonical recognized-revenue lifecycle.
+
+### Decision
+VS027 intentionally does **not** calculate:
+- Revenue;
+- Average Ticket;
+- Revenue Trend.
+
+Do not derive recognized revenue from:
+- booking quote/base rental price;
+- estimated rental amount;
+- merely verified payment-proof amount
+
+without a later canonical settlement/accounting rule.
+
+This omission is a correctness decision, not an implementation failure.
+
+### Implemented Reports state
+VS027 provides canonical operational analytics for:
+- booking requests created in the selected range;
+- canonical booking-status breakdown;
+- rental starts/completions/active-at-period-end semantics;
+- coverage-gated vehicle utilization;
+- idle classification;
+- maintenance workload;
+- canonical branch comparison;
+- canonical category analytics.
+
+Financial fields are absent server-side for both Owner/Admin and Operations Staff while the financial-reporting gate remains unresolved.
+
+### Manuscript impact
+Review/update:
+- Reports & Analytics descriptions;
+- Revenue KPI claims;
+- Average Ticket claims;
+- Revenue Trend figures/charts;
+- screenshots containing prototype financial values;
+- financial-reporting requirement wording;
+- limitations/future-enhancement discussion.
+
+If financial reporting remains in final scope, a later implementation must first define canonical:
+- final accepted/settled amount;
+- partial-payment handling;
+- cancellation settlement;
+- refunds;
+- reversals;
+- recognized-financial timestamp/lifecycle.
+
+Until then, describe financial analytics as unavailable/not implemented rather than presenting estimated booking amounts as revenue.
+
+### Status
+**IMPLEMENTED SCOPE BOUNDARY — operational Reports are canonical; financial reporting is deferred pending settlement/accounting semantics.**
