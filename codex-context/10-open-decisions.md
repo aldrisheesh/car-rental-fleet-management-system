@@ -1,20 +1,35 @@
 # Open Decisions
+
 **Status:** Active
-**Last updated:** 2026-09-02
+**Last updated:** 2026-09-03
 
-Geocoding resolved by MIC-025. CQ-032 remains open.
-
-VS025 Maintenance, VS026 Dashboard, VS027 operational Reports, and VS028 operational Notifications are canonicalized.
+Geocoding resolved by MIC-025.
 
 Financial reporting remains deferred under MIC-026.
 
-VS028 low-availability threshold remains configurable/provisional: LOW_AVAILABILITY_THRESHOLD fallback 1 (alert at zero rentable vehicles).
+VS028 low-availability threshold remains configurable/provisional:
+- LOW_AVAILABILITY_THRESHOLD fallback 1;
+- alert at zero rentable vehicles.
 
-## VS029
-Brevo is the approved planned application transactional-email provider per MIC-007.
+VS029 Brevo application transactional email is implemented and live-provider validated. Deployment scheduler invocation remains required.
 
-Implementation must determine the exact defensible email categories and explicit email-channel preference mapping from existing canonical notification/lifecycle semantics.
+## VS030 Backup & Recovery — resolved baseline
 
-Supabase Auth SMTP is deployment configuration and is not the same as application transactional-email delivery.
+- Supabase Free baseline.
+- Daily automated backup.
+- Optional trusted manual pre-maintenance/deployment backup.
+- 14-day rolling retention while preserving latest known-good recovery set.
+- Database + canonical private Storage object protection.
+- Private Cloudflare R2 Standard off-site storage.
+- SHA-256 + size integrity metadata.
+- BackupRun / BackupArtifact / RecoveryDrill canonical model.
+- Owner/Admin may inspect status.
+- Technical Recovery Operator performs actual recovery.
+- No browser backup/restore controls.
+- RPO target 24 hours.
+- RTO target 4 hours.
+- Non-production restore drill required for final validation.
+- Production scheduler/R2 credentials remain deployment configuration.
 
-Other open items: CQ-028, CQ-029, CQ-030, CQ-031, CQ-032, backup/recovery.
+Other open items:
+CQ-028, CQ-029, CQ-030, CQ-031, CQ-032.

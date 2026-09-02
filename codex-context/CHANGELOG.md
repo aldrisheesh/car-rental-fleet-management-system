@@ -1,8 +1,15 @@
 # Changelog
-## 2026-09-02 — VS029 Brevo email planning
-- Confirmed no existing application Brevo/Resend delivery implementation.
-- Preserved MIC-007 provider decision: Brevo.
-- Froze email as a secondary durable delivery channel, not a replacement for in-app Notifications.
-- Required provider abstraction, server-only credentials, durable outbox/idempotency, preference-aware eligibility, bounded retry, and provider-failure isolation.
-- Distinguished application email from Supabase Auth SMTP deployment configuration.
-- Required live validation only with controlled recipient/configuration.
+
+## 2026-09-03 — VS030 Backup & Recovery design
+
+- Used structured design grilling to resolve the backup/recovery domain before implementation.
+- Defined BackupRun, BackupArtifact, RecoverySet, RecoveryDrill, and Technical Recovery Operator terminology.
+- Selected Supabase Free-compatible logical backup procedure.
+- Selected private Cloudflare R2 Standard for off-site artifacts.
+- Required separate protection for database and canonical private Storage objects.
+- Set 14-day retention while preserving latest known-good recovery set.
+- Set RPO target 24h and RTO target 4h.
+- Required SHA-256 and byte-size integrity metadata.
+- Kept backup/restore execution outside normal browser/application actions.
+- Allowed narrow Owner/Admin read-only status visibility.
+- Required non-production recovery drill evidence.
