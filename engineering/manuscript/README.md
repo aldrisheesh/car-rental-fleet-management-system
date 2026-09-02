@@ -1,11 +1,18 @@
-# Manuscript Alignment Tracking Package
-
-Use `MANUSCRIPT-IMPLEMENTATION-CHANGE-REGISTER.md` as the canonical running record of implementation decisions that affect the paper.
-
-Use `CHANGE-ENTRY-TEMPLATE.md` for future changes.
+# Manuscript Alignment Audit Package
 
 Recommended repository location:
 
-`engineering/manuscript/MANUSCRIPT-IMPLEMENTATION-CHANGE-REGISTER.md`
+`engineering/manuscript/`
 
-The register should be updated after implementation review and before manuscript edits.
+Files:
+- `MANUSCRIPT-IMPLEMENTATION-ALIGNMENT-MATRIX.md`
+- `MANUSCRIPT-REVISION-BACKLOG.md`
+- `VERTICAL-SLICE-MANUSCRIPT-TRACEABILITY-TEMPLATE.md`
+
+Use together with:
+- `MANUSCRIPT-IMPLEMENTATION-CHANGE-REGISTER.md`
+
+The Change Register records **what changed and why**.
+The Alignment Matrix records **whether the manuscript and current system agree**.
+The Revision Backlog records **what must be edited and when**.
+The Traceability Template prevents future silent drift.
