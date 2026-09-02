@@ -3,50 +3,54 @@
 **Status:** Active
 **Last updated:** 2026-09-02
 
-## Audit
+## External Context
 
-VS021 core audit architecture and first-wave lifecycle event matrix are frozen in:
+VS022 provider acquisition stack is frozen according to the manuscript:
 
-`29-canonical-audit-trail.md`
+Weather:
+- Open-Meteo primary;
+- OpenWeather One Call 3.0 fallback.
 
-Deferred:
-- forecasting audit;
-- supply evaluation audit;
-- allocation recommendation/decision audit;
-- audit export;
-- retention/purge policy;
-- Customer/Operations Staff audit visibility;
-- system-wide automated-event auditing.
+Geocoding:
+- TomTom Orbis primary;
+- HERE Geocoding and Search v7 fallback.
 
-## Notifications / reminders
+Routing:
+- TomTom Orbis primary;
+- HERE Routing v8 fallback.
 
-VS019 and VS020 are frozen.
+Traffic/incidents:
+- TomTom primary;
+- HERE Traffic API v7 fallback.
 
-Provisional reminder timing remains under CQ-031.
+Fuel:
+- internal reference efficiency and route-distance calculation.
 
-Deferred:
-- maintenance awareness;
-- low-availability alerts;
-- Brevo/email/SMS/push;
-- preferences/escalation/retention.
+Fallback is used for provider failure/insufficiency, not to override valid adverse primary results.
 
-## Maintenance
+Still open:
+- final normalized operational classification rules;
+- context snapshot persistence;
+- context influence on Finder;
+- context influence on assignment/allocation;
+- CQ-028 client restricted-area rules.
 
-Canonical VS012 backend exists, but the current Admin Maintenance UI still contains prototype/mock data and should be canonicalized in a later UI-focused slice before maintenance awareness is treated as complete product functionality.
+## Manuscript Alignment
 
-## Context / Finder
+Any future provider substitution requires:
+1. explicit technical justification;
+2. a MIC entry;
+3. manuscript review before implementation.
 
-VS017/VS018 frozen.
-CQ-028 restricted-area rules remain open.
+The rejected Geoapify/WeatherAPI planning was never committed or implemented and is not part of system history.
 
-## Late Return
+## Other Open Items
 
-CQ-029 remains open. Reminders/audit do not implement late-fee settlement.
-
-## Tie-up / Allocation
-
-CQ-030 and CQ-017/CQ-026 remain open.
-
-## Remaining Product Work
-
-Operational context, reports/dashboard canonicalization, Maintenance UI canonicalization, role/mobile UX validation, demo data/E2E validation, and unresolved settlement remain pending.
+CQ-029 late-return schedule;
+CQ-030 tie-up fleet;
+CQ-031 reminder timing;
+CQ-017/CQ-026 transfer execution;
+maintenance UI/alerts;
+reports/dashboard;
+backup/recovery;
+notification configuration/external delivery.

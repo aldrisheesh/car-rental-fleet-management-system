@@ -3,59 +3,59 @@
 **Status:** Active AI navigation aid
 **Last updated:** 2026-09-02
 
-## VS021 Audit starting points
+## VS022 External Context starting points
 
 Read:
-- `codex-context/29-canonical-audit-trail.md`
-- `codex-context/08-notifications-and-audit.md`
+- `codex-context/30-external-context-provider-foundation.md`
+- `engineering/manuscript/MANUSCRIPT-IMPLEMENTATION-ALIGNMENT-MATRIX.md`
+- current VS022 manuscript traceability section when created.
 
-Locate only the exact canonical mutation boundaries for:
-1. booking creation;
-2. requirement submit/resubmit;
-3. requirement review;
-4. payment submit/resubmit;
-5. payment review;
-6. vehicle assignment;
-7. booking confirmation/rejection/cancellation where implemented;
-8. rental release;
-9. rental return;
-10. maintenance create/update.
-
-Known entry points include:
-- `src/routes/api.bookings.ts`
-- `src/routes/api.maintenance.ts`
-
-Use search only to find the exact route/RPC file for a listed transition.
+Inspect only:
+1. canonical branch model/address read boundary;
+2. canonical vehicle reference fuel-efficiency field/type;
+3. existing server environment/fetch conventions;
+4. existing Supabase/server cache patterns if persistence is used;
+5. smallest server-only location for provider adapters/orchestration.
 
 Do not inspect:
-- notifications implementation except to ensure it is not audited;
-- reminder processor except to ensure it is not audited;
-- forecasting;
-- supply;
+- Finder ranking;
 - allocation;
-- Finder;
-- reports;
-- external context.
+- forecasting/supply;
+- notifications/reminders;
+- audit internals;
+- maintenance workflows;
+- payment/requirements
 
-## Audit architecture rule
+unless one exact compilation dependency requires it.
 
-Prefer semantic audit insertion inside trusted canonical business transactions/RPCs.
+## Manuscript-authoritative provider rule
 
-Do not build a generic database-wide audit trigger.
+VS022 providers:
+- Open-Meteo -> OpenWeather;
+- TomTom geocoding -> HERE geocoding;
+- TomTom routing -> HERE routing;
+- TomTom traffic/incidents -> HERE traffic.
+
+Do not substitute providers without a MIC entry and manuscript review.
+
+## Fallback rule
+
+Fallback is for provider failure/insufficiency.
+
+A valid adverse primary result is still a successful primary result.
+
+## Domain boundary
+
+Provider adapters return normalized acquisition data.
+
+They do not modify Finder/allocation/business rules in VS022.
 
 ## Migration discipline
 
-Extend existing RPCs only through NEW additive migrations.
+Use additive migrations only if a derived provider cache requires persistence.
 
-Do not rewrite applied migrations.
-
-Provider-validation cleanup belongs in validation tooling/session cleanup or explicit development cleanup commands, never production migrations.
+Provider-validation cleanup never belongs in production migrations.
 
 ## Correction sessions
 
-Use a FRESH Codex session with:
-- current slice;
-- exact failing files;
-- exact migration(s) involved.
-
-Do not resume a large implementation session by default.
+Use a fresh exact-file Codex session.

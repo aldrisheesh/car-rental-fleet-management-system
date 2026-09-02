@@ -3,42 +3,27 @@
 **Status:** Development Baseline active
 **Last updated:** 2026-09-02
 
-Completed through:
-- VS019 event-driven in-app notifications;
-- VS020 scheduled booking/rental reminders.
+Completed through VS021 Canonical Audit Trail.
 
-## Next direction
+## Next — VS022 External Context Provider Foundation
 
-VS021 is the Canonical Audit Trail.
+Manuscript-authoritative stack:
 
-Read:
-- `29-canonical-audit-trail.md`
-- `08-notifications-and-audit.md`
-- `25-canonical-subsystem-map.md`
+- Open-Meteo -> OpenWeather One Call 3.0 for weather;
+- TomTom Orbis -> HERE v7 for geocoding;
+- TomTom Orbis -> HERE v8 for routing;
+- TomTom Traffic Incidents -> HERE Traffic v7 for incidents/road context;
+- internal vehicle km/L + route distance for estimated fuel.
 
-VS021 baseline:
-- append-only semantic audit events;
-- first-wave core booking lifecycle mutations;
-- minimal safe metadata;
-- Owner/Admin read-only Audit Trail;
-- atomic audit + business mutation where approved;
-- no generic database-wide auditing.
+VS022 implements provider acquisition/fallback infrastructure only.
 
-VS021 excludes:
-- notification/reminder audit;
-- forecasting/supply/allocation audit;
-- context APIs;
-- settlement;
-- audit analytics/export.
+It does not yet implement:
+- final weather/route/road classification;
+- context-aware Finder;
+- context-aware allocation;
+- restricted-area rules;
+- pricing changes.
 
-## Maintenance note
+## Manuscript Traceability
 
-VS012 backend is canonical, but Admin Maintenance UI still contains prototype/mock data. Canonicalize that UI later before treating maintenance awareness as finished product functionality.
-
-## AI workflow
-
-Implementation:
-fresh Sol Medium session -> commit/push -> end.
-
-Correction:
-new fresh Sol Medium session -> exact failing files only.
+Future slices must include the Manuscript Traceability section and update the Change Register/Alignment Matrix when implementation changes manuscript-level design.
