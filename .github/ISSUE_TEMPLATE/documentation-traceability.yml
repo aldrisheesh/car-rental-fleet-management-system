@@ -1,0 +1,57 @@
+name: Documentation / Traceability Finding
+description: Report a manuscript, Revision Matrix, evidence, or documentation mismatch
+title: "[DOC] "
+labels:
+  - "status:needs-triage"
+  - "type:documentation"
+  - "priority:P4"
+body:
+  - type: input
+    id: source
+    attributes:
+      label: Source document / section
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current statement / representation
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Verified implementation / repository evidence
+    validations:
+      required: true
+
+  - type: textarea
+    id: mismatch
+    attributes:
+      label: Exact mismatch
+    validations:
+      required: true
+
+  - type: textarea
+    id: traceability
+    attributes:
+      label: Affected traceability
+      placeholder: MIC, Revision Matrix item, figure, table, defense evidence...
+
+  - type: dropdown
+    id: lead
+    attributes:
+      label: Lead decision required?
+      options:
+        - Yes
+        - No — clearly stale documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: wording
+    attributes:
+      label: Optional proposed wording
+      description: Draft only; Lead approval is still required.

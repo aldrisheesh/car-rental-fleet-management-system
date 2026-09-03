@@ -1,55 +1,27 @@
 # Final System Validation & Stabilization
 
-**Status:** Active after VS030  
-**Feature development:** Frozen  
-**Production:** https://briahscarrental.site  
-**Integration branch:** `main`  
-**Merge authority:** Lead Developer only
+Feature development through VS030 is frozen.
 
-## Control model
+Team:
+- Aldrich — Lead Developer / Architecture / Integration
+- Seb — UI/UX & Accessibility QA
+- Arron — Functional & Business Rules QA
+- Shane — Reliability, Security & Adversarial QA
+- Mica — Project Manager, Manuscript & Traceability QA
 
-GitHub is the canonical work-tracking and integration layer.
+Each QA lane covers the entire system.
 
-```text
-Discovery
-→ GitHub Finding Issue
-→ Lead triage
-→ Confirmed/assigned Issue
-→ ChatGPT planning
-→ Codex manages branch/Git/implementation
-→ Pull Request
-→ CI + Preview validation
-→ Lead review
-→ Lead merge
-→ Issue closes
-```
+Workflow:
+Discovery → ChatGPT Project → GitHub Finding → Lead triage → Confirmed Issue → Codex-managed branch/implementation → PR → CI/Preview → Lead review → Merge.
 
-Contributors discover and execute. The Lead Developer assigns canonical behavior, priority, implementation authority, production authority, and merge approval.
+Rules:
+- Findings are not permission to fix.
+- Contributors may notice cross-scope issues but must route them rather than silently solve them.
+- Ordinary questions stay in the contributor's own ChatGPT Project first.
+- Unresolved contradictions, reproducible defects, and team-visible problems go to GitHub Issues.
+- Architecture/domain/schema/production decisions go to the Lead.
+- Production is evidence, not a casual sandbox.
+- Initially, one active implementation Issue per contributor.
 
-## Severity
+ChatGPT Skills are optional assistive workflows within each contributor Project. They never override lane ownership, canonical repository/context, GitHub Finding/Issue workflow, security restrictions, or Lead authority. See `CHATGPT-PROJECT-SETUP.md` and each file under `project-instructions/` for the approved shared Skill set and lane-specific usage.
 
-- **P0:** critical blocker
-- **P1:** materially incorrect business/security/data behavior
-- **P2:** UX/workflow/accessibility problem
-- **P3:** visual/polish problem
-- **P4:** documentation/manuscript mismatch
-
-Contributor severity is a suggestion until Lead triage.
-
-## Discovery vs implementation
-
-A Finding is not permission to fix.
-
-Round 1 is discovery-only. Contributors create structured GitHub Finding Issues. The Lead decides whether each Finding is expected behavior, duplicate, documentation-only, blocked by a domain/client decision, or confirmed implementation work.
-
-## Production
-
-Production is evidence, not a sandbox.
-
-Read-only discovery may run in parallel. Stateful workflows that create or mutate canonical production data require Lead coordination.
-
-## Git
-
-Contributors should understand the branch → commit → PR model, but Codex should perform routine Git/GitHub operations for assigned implementation work.
-
-No contributor or contributor Codex session may push to or merge `main`.

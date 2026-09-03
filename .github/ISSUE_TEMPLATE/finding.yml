@@ -4,11 +4,18 @@ title: "[FINDING] "
 labels:
   - "status:needs-triage"
 body:
-  - type: markdown
+  - type: dropdown
+    id: lane
     attributes:
-      value: |
-        Discovery only. A Finding is not authorization to modify code.
-        Never include passwords, API keys, tokens, or private customer document contents.
+      label: Quality lane
+      options:
+        - UI/UX & Accessibility — Seb
+        - Functional & Business Rules — Arron
+        - Reliability & Security — Shane
+        - Manuscript & Traceability — Mica
+        - Cross-functional / Lead triage needed
+    validations:
+      required: true
 
   - type: dropdown
     id: role
@@ -19,6 +26,7 @@ body:
         - Customer/Renter
         - Operations Staff
         - Owner/Admin
+        - Multiple / not role-specific
     validations:
       required: true
 
@@ -26,7 +34,6 @@ body:
     id: area
     attributes:
       label: Area
-      placeholder: Booking, Requirements, Reports, Fleet, Auth...
     validations:
       required: true
 
@@ -34,7 +41,6 @@ body:
     id: severity
     attributes:
       label: Suggested severity
-      description: Advisory only; Lead triage determines final priority.
       options:
         - P0 — Blocker
         - P1 — Incorrect behavior
@@ -69,10 +75,6 @@ body:
     id: reproduce
     attributes:
       label: Steps to reproduce
-      placeholder: |
-        1.
-        2.
-        3.
     validations:
       required: true
 
@@ -80,7 +82,6 @@ body:
     id: evidence
     attributes:
       label: Evidence
-      description: Screenshots and sanitized console/network observations.
 
   - type: dropdown
     id: reproducibility
@@ -95,23 +96,23 @@ body:
       required: true
 
   - type: textarea
-    id: impact
-    attributes:
-      label: Potential impact
-
-  - type: textarea
     id: conflict
     attributes:
       label: Context/manuscript conflict
-      description: Write NONE or describe the ambiguity without resolving it.
+      value: "NONE"
+
+  - type: textarea
+    id: handoff
+    attributes:
+      label: Cross-scope handoff
       value: "NONE"
 
   - type: checkboxes
     id: confirmation
     attributes:
-      label: Discovery confirmation
+      label: Confirmation
       options:
         - label: I did not modify source code as part of this Finding.
           required: true
-        - label: I did not include secrets or private customer document contents.
+        - label: I did not include secrets or private customer data.
           required: true
