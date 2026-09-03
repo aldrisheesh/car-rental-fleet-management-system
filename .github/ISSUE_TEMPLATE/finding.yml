@@ -1,0 +1,117 @@
+name: Validation Finding
+description: Report a problem discovered during Final System Validation
+title: "[FINDING] "
+labels:
+  - "status:needs-triage"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Discovery only. A Finding is not authorization to modify code.
+        Never include passwords, API keys, tokens, or private customer document contents.
+
+  - type: dropdown
+    id: role
+    attributes:
+      label: Role tested
+      options:
+        - Unauthenticated
+        - Customer/Renter
+        - Operations Staff
+        - Owner/Admin
+    validations:
+      required: true
+
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      placeholder: Booking, Requirements, Reports, Fleet, Auth...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Suggested severity
+      description: Advisory only; Lead triage determines final priority.
+      options:
+        - P0 — Blocker
+        - P1 — Incorrect behavior
+        - P2 — UX/workflow/accessibility
+        - P3 — Visual/polish
+        - P4 — Documentation/manuscript
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Screenshots and sanitized console/network observations.
+
+  - type: dropdown
+    id: reproducibility
+    attributes:
+      label: Reproducibility
+      options:
+        - Always
+        - Sometimes
+        - Once
+        - Unable to reproduce again
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential impact
+
+  - type: textarea
+    id: conflict
+    attributes:
+      label: Context/manuscript conflict
+      description: Write NONE or describe the ambiguity without resolving it.
+      value: "NONE"
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Discovery confirmation
+      options:
+        - label: I did not modify source code as part of this Finding.
+          required: true
+        - label: I did not include secrets or private customer document contents.
+          required: true

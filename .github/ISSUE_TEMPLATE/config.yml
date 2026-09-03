@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Domain or requirement ambiguity
+    url: https://github.com/aldrisheesh/car-rental-fleet-management-system/issues
+    about: Escalate to the Lead Developer instead of inventing a business rule.

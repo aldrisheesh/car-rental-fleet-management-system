@@ -1,0 +1,49 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        run: npm run build
+
+      - name: Backup/recovery tests
+        run: npm run test:backup
+
+      - name: Supabase environment tests
+        run: npm run test:supabase
+
+      - name: Dashboard tests
+        run: npm run test:dashboard
+
+      - name: External-context tests
+        run: npm run test:external-context
+
+      - name: Operational-context tests
+        run: npm run test:operational-context-admin
+
+      - name: Audit tests
+        run: npm run test:audit
