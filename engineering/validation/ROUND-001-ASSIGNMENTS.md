@@ -1,56 +1,23 @@
-# Final Validation Round 001
+# Final Validation Round 001 — Aspect-Based Baseline
 
-**Mode:** Discovery only  
-**Code changes:** Forbidden
+Mode: Discovery only. No code changes until a Lead-confirmed Issue exists.
 
-## Contributor A — Customer/Renter
+## Seb — UI/UX & Accessibility
+Audit the entire system for global consistency, navigation, typography/spacing, forms/dialogs, loading/error/empty/success states, accessibility, keyboard/focus behavior, responsive/mobile behavior, wording/clarity, and role-to-role design consistency.
 
-Inspect:
-- public homepage/navigation;
-- signup/login/logout;
-- Customer Dashboard;
-- profile/account;
-- Vehicles;
-- Smart Vehicle Finder;
-- Booking;
-- Requirements;
-- Payment;
-- Customer Notifications.
+## Arron — Functional & Business Rules
+Audit the entire system for happy-path workflows, lifecycle/state transitions, role behavior, requirements/payment/booking/allocation/rental integration, maintenance/readiness/availability logic, notifications/calendar/reports/decision-support behavior, and canonical-vs-fabricated data behavior.
 
-Avoid stateful production actions unless the Lead explicitly coordinates them.
+Stateful production flows require Lead coordination.
 
-## Contributor B — Owner/Admin
+## Shane — Reliability & Adversarial
+Audit the entire system safely for authorization boundaries, direct routes/APIs, invalid/missing input, duplicate actions, stale/refresh/back behavior, error states, runtime/network failures, sensitive-data exposure, and safe negative paths.
 
-Inspect:
-- Dashboard;
-- Bookings;
-- Customers;
-- Payments;
-- Fleet Management;
-- Calendar;
-- Maintenance;
-- Notifications;
-- Reports & Analytics;
-- Decision Support;
-- Audit Trail;
-- Users & Roles;
-- Branches.
+Break the workflow, not production. Potentially destructive tests require preview/isolated approval.
 
-Do not fabricate data to populate empty screens.
+## Mica — Manuscript & Traceability
+Audit Proposal Paper, Revision Matrix, MIC/change register, codex-context traceability, provider descriptions, role descriptions, data dictionary/ERD, screenshots/figures, requirements/scope/limitations, testing/deployment claims, and accumulated implementation reconciliation notes.
 
-## Contributor C — Operations Staff + authorization
+Create P4 Findings for real documentation/manuscript mismatches. Do not edit application source.
 
-Inspect:
-- Dashboard;
-- Bookings;
-- Calendar;
-- Notifications;
-- Reports & Analytics.
-
-Perform safe negative authorization checks against known Owner/Admin-only routes. No exploit development, brute force, destructive testing, or role mutation.
-
-## Deliverable
-
-Create GitHub Finding Issues using the repository Issue Form. One distinct problem per Issue.
-
-The Lead Developer performs triage and assigns confirmed implementation work.
+Shared deliverable: GitHub Validation Finding Issues for team-visible problems. Ordinary questions stay in the member's own ChatGPT Project unless unresolved.

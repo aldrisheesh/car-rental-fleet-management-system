@@ -1,65 +1,42 @@
 # Codex Issue Implementation Prompt
 
-Replace `<ISSUE_NUMBER>` and use for a Lead-confirmed Issue.
+Replace <ISSUE_NUMBER>.
 
-```text
 CONTRIBUTOR MODE.
 
-Implement GitHub Issue #<ISSUE_NUMBER> for the Briah's Car Rental repository.
+Implement GitHub Issue #<ISSUE_NUMBER> for Briah's Car Rental.
 
 The Lead Developer is the integration authority.
 
-GIT / GITHUB
+Read the assigned contributor quality-lane instructions first.
 
-Manage Git and GitHub for me.
-
-Before modifying code:
-1. inspect Issue #<ISSUE_NUMBER>;
-2. inspect only relevant canonical repository context;
-3. verify repository/working-tree state;
+Manage Git/GitHub:
+1. inspect Issue;
+2. inspect relevant canonical context;
+3. verify repository state;
 4. fetch latest origin/main;
-5. create a fresh short-lived branch FROM current origin/main using an Issue-number name;
+5. create a fresh short-lived Issue-number branch FROM origin/main;
 6. verify you are NOT on main before editing.
 
-NEVER push to main.
-NEVER merge a Pull Request.
-NEVER deploy production.
-NEVER change production DNS/environment/secrets.
-NEVER perform unrelated cleanup/refactoring.
+Never push to main.
+Never merge a PR.
+Never deploy production.
+Never change production DNS/environment/secrets.
+Never perform unrelated cleanup/refactoring.
 
-SCOPE
+Implement only the confirmed Issue. If root cause belongs to another quality lane, or an unapproved domain/schema/production decision is required, STOP and report the mismatch.
 
-Implement ONLY the confirmed Issue.
+Before completion:
+- reproduce;
+- implement smallest correct fix;
+- focused tests;
+- focused lint where applicable;
+- npm run build;
+- browser retest if relevant;
+- allowed/forbidden role checks if relevant;
+- verification-before-completion;
+- self-review;
+- sync/rebase if main advanced;
+- rerun affected validation.
 
-If the Issue conflicts with CONTEXT.md, codex-context, canonical lifecycle/security rules, manuscript traceability, or requires an unapproved domain/schema decision:
-STOP and report the conflict.
-
-VERIFICATION
-
-Before claiming completion:
-1. reproduce the original issue;
-2. implement the smallest correct fix;
-3. run focused tests;
-4. run focused lint where applicable;
-5. run npm run build;
-6. browser-retest if user-facing;
-7. test allowed/forbidden roles when authorization is relevant;
-8. use verification-before-completion;
-9. self-review the diff;
-10. sync/rebase against current origin/main if main advanced;
-11. rerun affected validation after syncing.
-
-PULL REQUEST
-
-After validation:
-1. commit focused changes;
-2. push ONLY the contributor branch;
-3. create a Pull Request targeting main;
-4. include `Fixes #<ISSUE_NUMBER>` in the PR body when the Issue should close on merge;
-5. fill the repository PR template;
-6. include fresh evidence;
-7. DO NOT merge;
-8. return the PR URL and concise validation summary.
-
-Never expose secrets or private customer document contents.
-```
+Then commit, push only the contributor branch, create PR targeting main, include Fixes #<ISSUE_NUMBER> when appropriate, fill PR template, include evidence, and DO NOT merge.

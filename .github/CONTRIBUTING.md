@@ -1,46 +1,20 @@
 # Contributing to Briah's Car Rental
 
-The repository is in Final System Validation and Stabilization.
+Quality lanes:
+- Seb — UI/UX & Accessibility
+- Arron — Functional & Business Rules
+- Shane — Reliability & Security
+- Mica — Manuscript & Project Traceability
+- Aldrich — Lead Developer / Architecture / Integration
 
-## Canonical workflow
+Each lane covers the entire system.
 
-GitHub Issues track Findings and confirmed work. Pull Requests integrate code.
+GitHub Issues track Findings and confirmed work. A Finding is not permission to fix it.
 
-A Finding is not permission to fix it. Wait for Lead triage and assignment.
+Contributors must stay within their lane. Cross-scope issues should be noticed, recorded, and routed rather than silently solved.
 
-## Git
+Routine Git/GitHub operations should be handled by Codex using the approved contributor prompt.
 
-Routine contributor Git/GitHub operations should be handled by Codex using the approved contributor prompt.
+Never push directly to main. Never merge your own PR. Never deploy production or change production configuration/secrets/DNS.
 
-Conceptually:
-
-```text
-origin/main
-→ short-lived Issue branch
-→ focused commits
-→ PR into main
-→ Lead review/merge
-```
-
-Never push directly to `main`. Never merge your own PR.
-
-## Scope
-
-Do not:
-- perform unrelated refactors;
-- redefine canonical concepts;
-- alter lifecycle/security semantics without approval;
-- create migrations unless the Issue explicitly authorizes schema changes;
-- modify manuscript unless assigned;
-- deploy production;
-- change production configuration/secrets/DNS.
-
-## Verification
-
-Every implementation PR requires fresh evidence, relevant tests, build validation, and browser/authorization verification when applicable.
-
-## AI
-
-ChatGPT helps reason about assignments and context. Codex handles repository inspection, Git, implementation, testing, commits, pushes, and PR preparation.
-
-AI guidance never overrides canonical repository context or Lead authority.
+ChatGPT Projects are separate reasoning workspaces. GitHub is shared team memory. Repository context and Lead authority override AI memory.
