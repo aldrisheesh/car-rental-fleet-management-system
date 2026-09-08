@@ -50,9 +50,9 @@ function CalendarPage() {
       <Card>
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div className="flex items-center gap-3">
-            <button className="grid h-8 w-8 place-items-center rounded-md border border-border bg-background hover:bg-secondary"><ChevronLeft className="h-4 w-4" /></button>
+            <button aria-label="Previous month" className="touch-target grid h-8 w-8 place-items-center rounded-md border border-border bg-background hover:bg-secondary"><ChevronLeft className="h-4 w-4" /></button>
             <h3 className="font-display text-base font-semibold">{monthName}</h3>
-            <button className="grid h-8 w-8 place-items-center rounded-md border border-border bg-background hover:bg-secondary"><ChevronRight className="h-4 w-4" /></button>
+            <button aria-label="Next month" className="touch-target grid h-8 w-8 place-items-center rounded-md border border-border bg-background hover:bg-secondary"><ChevronRight className="h-4 w-4" /></button>
           </div>
           <div className="flex items-center gap-3 text-xs">
             {(Object.keys(kindLabel) as Event["kind"][]).map((k) => (
