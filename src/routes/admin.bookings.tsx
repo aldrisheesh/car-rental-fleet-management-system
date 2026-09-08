@@ -77,12 +77,20 @@ function BookingsPage() {
           onChange={(e) => setQ(e.target.value)}
           className="min-w-80"
         />
-        <TSelect value={status} onChange={(e) => setStatus(e.target.value as never)}>
+        <TSelect
+          aria-label="Filter bookings by status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as never)}
+        >
           {statuses.map((s) => (
             <option key={s}>{s}</option>
           ))}
         </TSelect>
-        <TSelect value={branch} onChange={(e) => setBranch(e.target.value as never)}>
+        <TSelect
+          aria-label="Filter bookings by branch"
+          value={branch}
+          onChange={(e) => setBranch(e.target.value as never)}
+        >
           {branches.map((b) => (
             <option key={b}>{b}</option>
           ))}
