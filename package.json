@@ -18,6 +18,8 @@
     "test:backup": "node --experimental-strip-types --test src/lib/backup/*.test.ts",
     "backup:run": "node --experimental-strip-types scripts/backup-run.ts",
     "backup:restore-drill": "node --experimental-strip-types scripts/backup-restore-drill.ts",
+    "qa:fixtures": "node --experimental-strip-types scripts/qa/controlled-fixtures.ts",
+    "test:qa-fixtures": "node --experimental-strip-types --test scripts/qa/*.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
@@ -92,6 +94,7 @@
     "globals": "^15.15.0",
     "nitro": "npm:nitro-nightly@^3.0.260522-beta",
     "prettier": "^3.7.3",
+    "postgres": "^3.4.7",
     "supabase": "^2.116.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
