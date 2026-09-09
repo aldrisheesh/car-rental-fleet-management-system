@@ -450,11 +450,13 @@ function FleetPage() {
         <Toolbar>
           <TInput
             placeholder="Search vehicle or plate…"
+            aria-label="Search fleet vehicles by name or plate"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="min-w-72"
           />
           <TSelect
+            aria-label="Filter fleet by status"
             value={status}
             onChange={(e) => setStatus(e.target.value as never)}
           >
@@ -464,14 +466,18 @@ function FleetPage() {
           </TSelect>
           <div className="ml-auto flex items-center gap-1 rounded-md border border-border bg-background p-0.5">
             <button
+              aria-label="Show fleet as a grid"
+              aria-pressed={view === "grid"}
               onClick={() => setView("grid")}
-              className={`grid h-7 w-7 place-items-center rounded ${view === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              className={`touch-target grid place-items-center rounded ${view === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
             >
               <LayoutGrid className="h-3.5 w-3.5" />
             </button>
             <button
+              aria-label="Show fleet as a list"
+              aria-pressed={view === "table"}
               onClick={() => setView("table")}
-              className={`grid h-7 w-7 place-items-center rounded ${view === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              className={`touch-target grid place-items-center rounded ${view === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
             >
               <List className="h-3.5 w-3.5" />
             </button>
@@ -491,6 +497,7 @@ function FleetPage() {
               <div className="relative flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-secondary to-background">
                 <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2">
                   <TSelect
+                    aria-label={`Assign ${vehicle.name} to a branch`}
                     value={vehicle.branch}
                     onChange={(e) =>
                       handleVehicleBranchChange(
@@ -554,8 +561,9 @@ function FleetPage() {
                     </div>
                   </div>
                   <button
+                    aria-label={`Schedule service for ${vehicle.name}`}
                     onClick={() => openServiceModalByVehicle(vehicle.id)}
-                    className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-xs hover:bg-secondary"
+                    className="touch-target inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 text-xs hover:bg-secondary"
                   >
                     <Wrench className="h-3.5 w-3.5" /> Service now
                   </button>
@@ -602,6 +610,7 @@ function FleetPage() {
                   </td>
                   <td className="px-4 py-3">
                     <TSelect
+                      aria-label={`Assign ${vehicle.name} to a branch`}
                       value={vehicle.branch}
                       onChange={(e) =>
                         handleVehicleBranchChange(
@@ -625,6 +634,7 @@ function FleetPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Btn
+                      aria-label={`Schedule service for ${vehicle.name}`}
                       variant="primary"
                       onClick={() => openServiceModalByVehicle(vehicle.id)}
                     >
