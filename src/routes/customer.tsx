@@ -4,7 +4,7 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CreditCard,
   FileCheck2,
@@ -19,6 +19,7 @@ import { NotificationsPanel } from "@/components/notifications/NotificationsPane
 import type { Booking } from "@/data/admin";
 import { peso } from "@/data/vehicles";
 import { getAdminSession } from "@/lib/admin-auth";
+import { parseCustomerBookingResponse } from "@/lib/booking-retrieval";
 import { getCustomerSession, type CustomerSession } from "@/lib/customer-auth";
 
 export const Route = createFileRoute("/customer")({
@@ -67,9 +68,28 @@ function CustomerViewPage() {
     undefined,
   );
   const [bookingRequests, setBookingRequests] = useState<any[]>([]);
+  const [bookingRequestsLoading, setBookingRequestsLoading] = useState(true);
+  const [bookingRequestsError, setBookingRequestsError] = useState("");
   const [idFileName, setIdFileName] = useState("");
   const [licenseFileName, setLicenseFileName] = useState("");
   const pastCustomerBookings: Booking[] = [];
+
+  const loadBookingRequests = useCallback(async () => {
+    setBookingRequestsLoading(true);
+    setBookingRequestsError("");
+    try {
+      const requests = await parseCustomerBookingResponse(
+        await fetch("/api/bookings", { credentials: "same-origin" }),
+      );
+      setBookingRequests(requests);
+    } catch (error) {
+      setBookingRequestsError(
+        error instanceof Error ? error.message : "Unable to load booking requests.",
+      );
+    } finally {
+      setBookingRequestsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const activeSession = getCustomerSession();
@@ -79,11 +99,8 @@ function CustomerViewPage() {
       return;
     }
     setSession(activeSession);
-    fetch("/api/bookings", { credentials: "same-origin" })
-      .then((r) => (r.ok ? r.json() : []))
-      .then(setBookingRequests)
-      .catch(() => undefined);
-  }, [navigate]);
+    void loadBookingRequests();
+  }, [loadBookingRequests, navigate]);
 
   if (session === undefined) {
     return (
@@ -296,6 +313,26 @@ function CustomerViewPage() {
             title="Past bookings"
             icon={<History className="h-4 w-4 text-primary" />}
           >
+            {bookingRequestsLoading && (
+              <p className="mb-4 text-sm text-muted-foreground">
+                Loading booking requests…
+              </p>
+            )}
+            {bookingRequestsError && (
+              <div
+                role="alert"
+                className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-3 text-sm text-foreground"
+              >
+                <p>{bookingRequestsError}</p>
+                <button
+                  type="button"
+                  onClick={() => void loadBookingRequests()}
+                  className="mt-2 text-xs font-semibold text-primary underline underline-offset-2"
+                >
+                  Retry loading bookings
+                </button>
+              </div>
+            )}
             {bookingRequests.length > 0 && (
               <div className="mb-4 space-y-3">
                 {bookingRequests.map((request) => (
