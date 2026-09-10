@@ -758,9 +758,16 @@ async function readExistingRecords(sql: Sql, records: FixtureRecord[]) {
       .filter((record) => record.table === table)
       .map((record) => String(record.row.id));
     if (!ids.length) continue;
-    const rows = await sql<
-      Record<string, unknown>[]
-    >`select * from ${sql(table)} where id in ${sql(ids)}`;
+    const rows =
+      table === "vehicle_operational_state_events"
+        ? await sql<Record<string, unknown>[]>`
+            select id, vehicle_id, is_active, effective_at::text as effective_at, source
+            from public.vehicle_operational_state_events
+            where id in ${sql(ids)}
+          `
+        : await sql<
+            Record<string, unknown>[]
+          >`select * from ${sql(table)} where id in ${sql(ids)}`;
     for (const row of rows) existing[String(row.id)] = row;
   }
   return existing;

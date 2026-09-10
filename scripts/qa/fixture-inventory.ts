@@ -1263,14 +1263,95 @@ export function assertUniqueFixtureInventory(
   );
 }
 
+/**
+ * Canonicalizes a timestamp string for exact fixture ownership comparison.
+ * PostgreSQL timestamptz precision is kept as six fractional digits instead of
+ * passing through JavaScript Date, which retains only milliseconds.
+ */
+export function canonicalFixtureTimestamp(value: unknown) {
+  if (typeof value !== "string") return null;
+  const match = value
+    .trim()
+    .match(
+      /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-]\d{2}(?::?\d{2})?)$/,
+    );
+  if (!match) return null;
+  const [
+    ,
+    yearText,
+    monthText,
+    dayText,
+    hourText,
+    minuteText,
+    secondText,
+    fractionText = "",
+    offsetText,
+  ] = match;
+  if (fractionText.length > 6) return null;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const second = Number(secondText);
+  if (
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31 ||
+    hour > 23 ||
+    minute > 59 ||
+    second > 59
+  )
+    return null;
+  let offsetMinutes = 0;
+  if (offsetText !== "Z") {
+    const offsetMatch = offsetText.match(/^([+-])(\d{2})(?::?(\d{2}))?$/);
+    if (!offsetMatch) return null;
+    const offsetHour = Number(offsetMatch[2]);
+    const offsetMinute = Number(offsetMatch[3] ?? 0);
+    if (offsetHour > 23 || offsetMinute > 59) return null;
+    offsetMinutes =
+      (offsetHour * 60 + offsetMinute) * (offsetMatch[1] === "+" ? 1 : -1);
+  }
+  const localMilliseconds = Date.UTC(
+    year,
+    month - 1,
+    day,
+    hour,
+    minute,
+    second,
+  );
+  const local = new Date(localMilliseconds);
+  if (
+    local.getUTCFullYear() !== year ||
+    local.getUTCMonth() !== month - 1 ||
+    local.getUTCDate() !== day ||
+    local.getUTCHours() !== hour ||
+    local.getUTCMinutes() !== minute ||
+    local.getUTCSeconds() !== second
+  )
+    return null;
+  const instant = new Date(localMilliseconds - offsetMinutes * 60 * 1000);
+  if (!Number.isFinite(instant.getTime())) return null;
+  return `${instant.toISOString().slice(0, 19).replace("T", " ")}.${fractionText.padEnd(6, "0")}+00`;
+}
+
 export function sameFingerprint(
   record: FixtureRecord,
   existing: Record<string, unknown>,
 ) {
-  return record.fingerprint.every(
-    (field) =>
-      String(existing[field] ?? "") === String(record.row[field] ?? ""),
-  );
+  return record.fingerprint.every((field) => {
+    if (
+      record.table === "vehicle_operational_state_events" &&
+      field === "effective_at"
+    ) {
+      const persisted = canonicalFixtureTimestamp(existing[field]);
+      const expected = canonicalFixtureTimestamp(record.row[field]);
+      return persisted !== null && expected !== null && persisted === expected;
+    }
+    return String(existing[field] ?? "") === String(record.row[field] ?? "");
+  });
 }
 
 export function planRecords(
