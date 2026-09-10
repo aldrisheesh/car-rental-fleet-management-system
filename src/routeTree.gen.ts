@@ -37,8 +37,11 @@ import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-m
 import { Route as ApiBackupStatusRouteImport } from './routes/api.backup-status'
 import { Route as ApiAuditEventsRouteImport } from './routes/api.audit-events'
 import { Route as ApiAllocationRecommendationsRouteImport } from './routes/api.allocation-recommendations'
+import { Route as ApiAdminUsersRouteImport } from './routes/api.admin-users'
 import { Route as ApiAdminReportsRouteImport } from './routes/api.admin-reports'
+import { Route as ApiAdminFleetRouteImport } from './routes/api.admin-fleet'
 import { Route as ApiAdminDashboardRouteImport } from './routes/api.admin-dashboard'
+import { Route as ApiAdminCalendarRouteImport } from './routes/api.admin-calendar'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
@@ -201,14 +204,29 @@ const ApiAllocationRecommendationsRoute =
     path: '/api/allocation-recommendations',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
+  id: '/api/admin-users',
+  path: '/api/admin-users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminReportsRoute = ApiAdminReportsRouteImport.update({
   id: '/api/admin-reports',
   path: '/api/admin-reports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminFleetRoute = ApiAdminFleetRouteImport.update({
+  id: '/api/admin-fleet',
+  path: '/api/admin-fleet',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminDashboardRoute = ApiAdminDashboardRouteImport.update({
   id: '/api/admin-dashboard',
   path: '/api/admin-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminCalendarRoute = ApiAdminCalendarRouteImport.update({
+  id: '/api/admin-calendar',
+  path: '/api/admin-calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -336,8 +354,11 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin-fleet': typeof ApiAdminFleetRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
+  '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
@@ -387,8 +408,11 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin-fleet': typeof ApiAdminFleetRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
+  '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
@@ -440,8 +464,11 @@ export interface FileRoutesById {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin-fleet': typeof ApiAdminFleetRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
+  '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
@@ -494,8 +521,11 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/admin-calendar'
     | '/api/admin-dashboard'
+    | '/api/admin-fleet'
     | '/api/admin-reports'
+    | '/api/admin-users'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
@@ -545,8 +575,11 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/admin-calendar'
     | '/api/admin-dashboard'
+    | '/api/admin-fleet'
     | '/api/admin-reports'
+    | '/api/admin-users'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
@@ -597,8 +630,11 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
+    | '/api/admin-calendar'
     | '/api/admin-dashboard'
+    | '/api/admin-fleet'
     | '/api/admin-reports'
+    | '/api/admin-users'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
@@ -636,8 +672,11 @@ export interface RootRouteChildren {
   PaymentDetailsRoute: typeof PaymentDetailsRoute
   SignInRoute: typeof SignInRoute
   VehiclesRoute: typeof VehiclesRoute
+  ApiAdminCalendarRoute: typeof ApiAdminCalendarRoute
   ApiAdminDashboardRoute: typeof ApiAdminDashboardRoute
+  ApiAdminFleetRoute: typeof ApiAdminFleetRoute
   ApiAdminReportsRoute: typeof ApiAdminReportsRoute
+  ApiAdminUsersRoute: typeof ApiAdminUsersRoute
   ApiAllocationRecommendationsRoute: typeof ApiAllocationRecommendationsRoute
   ApiAuditEventsRoute: typeof ApiAuditEventsRoute
   ApiBackupStatusRoute: typeof ApiBackupStatusRoute
@@ -862,6 +901,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAllocationRecommendationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin-users': {
+      id: '/api/admin-users'
+      path: '/api/admin-users'
+      fullPath: '/api/admin-users'
+      preLoaderRoute: typeof ApiAdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin-reports': {
       id: '/api/admin-reports'
       path: '/api/admin-reports'
@@ -869,11 +915,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin-fleet': {
+      id: '/api/admin-fleet'
+      path: '/api/admin-fleet'
+      fullPath: '/api/admin-fleet'
+      preLoaderRoute: typeof ApiAdminFleetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin-dashboard': {
       id: '/api/admin-dashboard'
       path: '/api/admin-dashboard'
       fullPath: '/api/admin-dashboard'
       preLoaderRoute: typeof ApiAdminDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin-calendar': {
+      id: '/api/admin-calendar'
+      path: '/api/admin-calendar'
+      fullPath: '/api/admin-calendar'
+      preLoaderRoute: typeof ApiAdminCalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
@@ -1067,8 +1127,11 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentDetailsRoute: PaymentDetailsRoute,
   SignInRoute: SignInRoute,
   VehiclesRoute: VehiclesRoute,
+  ApiAdminCalendarRoute: ApiAdminCalendarRoute,
   ApiAdminDashboardRoute: ApiAdminDashboardRoute,
+  ApiAdminFleetRoute: ApiAdminFleetRoute,
   ApiAdminReportsRoute: ApiAdminReportsRoute,
+  ApiAdminUsersRoute: ApiAdminUsersRoute,
   ApiAllocationRecommendationsRoute: ApiAllocationRecommendationsRoute,
   ApiAuditEventsRoute: ApiAuditEventsRoute,
   ApiBackupStatusRoute: ApiBackupStatusRoute,

@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Filter, Download } from "lucide-react";
 import { Badge, Btn, Card, PageHeader, TInput, TSelect, Toolbar } from "@/components/admin/ui";
 import { OperationalContextPanel, type OperationalContextView } from "@/components/admin/operational-context-panel";
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
+import { parseAdminBookingResponse } from "@/lib/booking-retrieval";
 
 export const Route = createFileRoute("/admin/bookings")({ component: BookingsPage });
 
@@ -17,12 +18,32 @@ function BookingsPage() {
   const [status, setStatus] = useState<(typeof statuses)[number]>("All");
   const [branch, setBranch] = useState<(typeof branches)[number]>("All branches");
   const [bookings, setBookings] = useState<any[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [bookingsError, setBookingsError] = useState("");
   const [releaseOdometer, setReleaseOdometer] = useState(""); const [releaseFuel, setReleaseFuel] = useState("Other/Unknown"); const [releaseCondition, setReleaseCondition] = useState(""); const [damageNotes, setDamageNotes] = useState(""); const [agreementAck, setAgreementAck] = useState(false); const [conditionAck, setConditionAck] = useState(false); const [returnAck, setReturnAck] = useState(false);
   const [returnOdometer, setReturnOdometer] = useState(""); const [returnFuel, setReturnFuel] = useState("Other/Unknown"); const [returnCondition, setReturnCondition] = useState(""); const [returnDamage, setReturnDamage] = useState(""); const [returnRemarks, setReturnRemarks] = useState("");
   const [candidateVehicles, setCandidateVehicles] = useState<any[]>([]); const [selected, setSelected] = useState<any>(null); const [vehicleId, setVehicleId] = useState(""); const [note, setNote] = useState(""); const [subAck, setSubAck] = useState(false); const [branchAck, setBranchAck] = useState(false); const [busy, setBusy] = useState(false);
   const [operationalContext, setOperationalContext] = useState<OperationalContextView | null>(null); const [contextLoading, setContextLoading] = useState(false); const [contextError, setContextError] = useState("");
-  const load = () => fetch("/api/bookings", { credentials: "same-origin" }).then((r) => r.ok ? r.json() : null).then((d) => { setBookings(d?.bookings ?? []); setCandidateVehicles(d?.candidateVehicles ?? []); }).catch(() => undefined);
-  useEffect(() => { load(); }, []);
+  const load = useCallback(async () => {
+    setBookingsLoading(true);
+    setBookingsError("");
+    try {
+      const data = await parseAdminBookingResponse(
+        await fetch("/api/bookings", { credentials: "same-origin" }),
+      );
+      setBookings(data.bookings);
+      setCandidateVehicles(data.candidateVehicles);
+    } catch (error) {
+      setBookingsError(
+        error instanceof Error ? error.message : "Unable to load booking requests.",
+      );
+    } finally {
+      setBookingsLoading(false);
+    }
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const rows = useMemo(
     () =>
@@ -94,6 +115,27 @@ function BookingsPage() {
           {rows.length} of {bookings.length} bookings
         </span>
       </Toolbar>
+
+      {bookingsLoading && (
+        <p className="mb-4 text-sm text-muted-foreground">
+          Loading booking requests…
+        </p>
+      )}
+      {bookingsError && (
+        <div
+          role="alert"
+          className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-3 text-sm text-foreground"
+        >
+          <p>{bookingsError}</p>
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="mt-2 text-xs font-semibold text-primary underline underline-offset-2"
+          >
+            Retry loading bookings
+          </button>
+        </div>
+      )}
 
       <Card>
         <div className="overflow-x-auto">

@@ -4,19 +4,35 @@ import test from "node:test";
 import {
   AUTH_SPECS,
   CANONICAL_BRANCHES,
+  HISTORICAL_AUTH_SPECS,
+  HISTORICAL_FIXTURE_OWNER,
+  HISTORICAL_OPERATOR_SPEC,
   VEHICLES,
+  buildHistoricalFixtureDataset,
   buildFixtureDataset,
   fixtureAuthMetadata,
+  historicalFixtureWeekStarts,
   isOwnedAuthUser,
   planRecords,
   validateFixtureDataset,
   type FixtureAuthIdentity,
 } from "./fixture-inventory.ts";
 import {
+  calculateWma,
+  extractWeeklyDemand,
+} from "../../src/lib/forecasting.server.ts";
+import {
   assertTargetAgreement,
+  assertHistoricalCoverage,
   assertWriteSafety,
+  canonicalCoverageTimestamp,
+  planHistoricalCoverage,
+  planHistoricalCoverageRestore,
   parseArguments,
+  restoreCoverageInTransaction,
   SIDE_EFFECT_TRIGGERS,
+  SYNTHETIC_FORECAST_COVERAGE_FLAG,
+  updateCoverageInTransaction,
 } from "./controlled-fixtures.ts";
 
 function uuid(number: number) {
@@ -46,19 +62,53 @@ function dataset() {
   });
 }
 
+function historicalDataset() {
+  const identities: FixtureAuthIdentity[] = HISTORICAL_AUTH_SPECS.map(
+    (spec, index) => ({
+      ...spec,
+      userId: uuid(index + 1),
+    }),
+  );
+  const branches = Object.fromEntries(
+    CANONICAL_BRANCHES.map((name, index) => [name, uuid(100 + index)]),
+  );
+  const vehicles = Object.fromEntries(
+    VEHICLES.map(([plate, _name, branch], index) => [
+      plate,
+      { id: uuid(200 + index), branchId: branches[branch] },
+    ]),
+  );
+  return buildHistoricalFixtureDataset({
+    anchorDate: "2026-09-10",
+    identities,
+    branches,
+    vehicles,
+  });
+}
+
+function postgresTimestampText(value: unknown) {
+  return String(value)
+    .replace("T", " ")
+    .replace(/\.000Z$/, "+00");
+}
+
 test("CLI is dry-run by default and each write gate is explicit", () => {
   assert.deepEqual(parseArguments([]), {
+    mode: "standard",
     apply: false,
     cleanup: false,
     includeAuthUsers: false,
     confirmProduction: false,
+    confirmSyntheticForecastCoverage: false,
     anchorDate: undefined,
   });
   assert.deepEqual(parseArguments(["--cleanup"]), {
+    mode: "standard",
     apply: false,
     cleanup: true,
     includeAuthUsers: false,
     confirmProduction: false,
+    confirmSyntheticForecastCoverage: false,
     anchorDate: undefined,
   });
   const write = parseArguments([
@@ -69,6 +119,25 @@ test("CLI is dry-run by default and each write gate is explicit", () => {
   assert.equal(write.apply, true);
   assert.equal(write.includeAuthUsers, true);
   assert.equal(write.confirmProduction, true);
+  assert.equal(parseArguments(["--historical"]).mode, "historical");
+  assert.equal(parseArguments(["--mode=historical"]).mode, "historical");
+  assert.equal(
+    parseArguments(["--historical", SYNTHETIC_FORECAST_COVERAGE_FLAG])
+      .confirmSyntheticForecastCoverage,
+    true,
+  );
+  assert.throws(
+    () => parseArguments(["--historical", "--mode=standard"]),
+    /conflicts/,
+  );
+  assert.throws(
+    () => parseArguments([SYNTHETIC_FORECAST_COVERAGE_FLAG]),
+    /valid only with --historical/,
+  );
+  assert.throws(
+    () => parseArguments(["--mode=standard", SYNTHETIC_FORECAST_COVERAGE_FLAG]),
+    /valid only with --historical/,
+  );
   assert.throws(() => parseArguments(["--force"]), /Unknown argument/);
 });
 
@@ -148,6 +217,646 @@ test("the moderate dataset has bounded canonical coverage", () => {
       "Cancelled",
     );
   }
+});
+
+test("historical inventory is deterministic, separate, and bounded", () => {
+  const fixture = historicalDataset();
+  const count = (table: string) =>
+    fixture.records.filter((record) => record.table === table).length;
+  assert.equal(fixture.definition.owner, HISTORICAL_FIXTURE_OWNER);
+  assert.equal(
+    fixture.definition.operatorSpec.label,
+    HISTORICAL_OPERATOR_SPEC.label,
+  );
+  assert.equal(count("profiles"), 9);
+  assert.equal(count("booking_requests"), 81);
+  assert.equal(count("rental_transactions"), 75);
+  assert.equal(count("maintenance_records"), 3);
+  assert.equal(count("vehicle_operational_state_events"), 12);
+  assert.equal(fixture.artifacts.length, 0);
+  assert.equal(fixture.ids.requirements.length, 0);
+  assert.equal(fixture.ids.payments.length, 0);
+  assert(
+    fixture.records.every((record) => record.label.startsWith("QA-HIST-")),
+  );
+  assert(
+    fixture.records.every(
+      (record) =>
+        ![
+          "forecast_runs",
+          "forecasts",
+          "forecast_inputs",
+          "supply_evaluations",
+          "supply_evaluation_vehicles",
+          "allocation_recommendation_batches",
+          "allocation_recommendations",
+          "allocation_recommendation_candidates",
+        ].includes(record.table),
+    ),
+  );
+  assert.deepEqual(
+    fixture.historical?.weekStarts,
+    historicalFixtureWeekStarts("2026-09-10"),
+  );
+  assert.deepEqual(fixture.historical?.dateRange, {
+    start: "2026-06-29",
+    end: "2026-09-06",
+  });
+});
+
+test("historical inventory supplies complete canonical demand history for WMA", () => {
+  const fixture = historicalDataset();
+  const branchIds = Object.fromEntries(
+    CANONICAL_BRANCHES.map((name, index) => [name, uuid(100 + index)]),
+  );
+  const categoryByVehicleId = Object.fromEntries(
+    VEHICLES.map(([_plate, _name, _branch, category], index) => [
+      uuid(200 + index),
+      category,
+    ]),
+  );
+  const rows = fixture.records
+    .filter((record) => record.table === "booking_requests")
+    .map((record) => ({
+      ...record.row,
+      requested_vehicle: {
+        category: {
+          id: categoryByVehicleId[String(record.row.requested_vehicle_id)],
+        },
+      },
+    }));
+  const pairs = CANONICAL_BRANCHES.flatMap((branch) =>
+    ["Economy", "Sedan", "SUV", "MPV", "Van", "Pickup"].map((category) => ({
+      branchId: branchIds[branch],
+      categoryId: category,
+    })),
+  );
+  const actual = extractWeeklyDemand(
+    rows,
+    "2026-06-29T00:00:00+08:00",
+    new Date("2026-09-10T00:00:00+08:00"),
+    pairs,
+  );
+  const taftEconomy = actual.get(`${branchIds["Taft, Manila"]}:Economy`)!;
+  const taftSedan = actual.get(`${branchIds["Taft, Manila"]}:Sedan`)!;
+  const antipoloSedan = actual.get(`${branchIds["Antipolo, Rizal"]}:Sedan`)!;
+  assert.equal(actual.size, 12);
+  assert.equal(taftEconomy.length, 10);
+  assert.deepEqual(
+    taftEconomy.slice(-3).map((week) => week.demand),
+    [3, 2, 3],
+  );
+  assert.deepEqual(
+    taftSedan.slice(-3).map((week) => week.demand),
+    [1, 2, 1],
+  );
+  assert.deepEqual(
+    antipoloSedan.map((week) => week.demand),
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  );
+  assert.equal(calculateWma(taftEconomy)?.forecasts[0], 2.7);
+  assert.equal(calculateWma(taftSedan)?.forecasts[0], 1.3);
+  assert.equal(calculateWma(antipoloSedan)?.forecasts[0], 0);
+  assert.deepEqual(
+    fixture.historical?.supplyComparisons.find(
+      (comparison) => comparison.pair === "Taft, Manila · Economy",
+    ),
+    {
+      pair: "Taft, Manila · Economy",
+      firstWmaForecast: 2.7,
+      requiredUnits: 3,
+      referenceSupply: 2,
+      balance: "Shortage",
+    },
+  );
+  assert(
+    fixture.historical?.nonZeroForecastPairs.includes("Taft, Manila · Economy"),
+  );
+  assert(
+    fixture.historical?.scenarios.shortage.includes("Taft, Manila · Economy"),
+  );
+  assert(
+    fixture.historical?.scenarios.surplus.includes("Antipolo, Rizal · Sedan"),
+  );
+  assert(
+    fixture.historical?.scenarios.balanced.includes("Antipolo, Rizal · SUV"),
+  );
+});
+
+function coverageReferences(trackingStartedAt: string) {
+  return {
+    branches: {},
+    vehicles: {},
+    paymentMethodId: "payment-method",
+    demandCoverageStart: trackingStartedAt,
+    demandCoverageState: {
+      rowExists: true,
+      trackingStartedAt,
+    },
+    unexpectedBranches: [],
+  } as Parameters<typeof assertHistoricalCoverage>[1];
+}
+
+function mockCoverageTransaction(...responses: Record<string, unknown>[][]) {
+  const calls: { text: string; values: unknown[] }[] = [];
+  const transaction = (<T>(
+    strings: TemplateStringsArray,
+    ...values: unknown[]
+  ) => {
+    calls.push({ text: strings.join("?").replace(/\s+/g, " ").trim(), values });
+    return Promise.resolve(responses.shift() as T);
+  }) as Parameters<typeof updateCoverageInTransaction>[0];
+  return { calls, transaction };
+}
+
+test("historical apply keeps the default insufficient-coverage refusal", () => {
+  const fixture = historicalDataset();
+  const references = coverageReferences("2026-09-01T02:42:18.555Z");
+  assert.throws(
+    () => assertHistoricalCoverage(fixture, references),
+    new RegExp(SYNTHETIC_FORECAST_COVERAGE_FLAG),
+  );
+});
+
+test("synthetic coverage authorization uses the exact historical window start", () => {
+  const fixture = historicalDataset();
+  const references = coverageReferences("2026-09-01T02:42:18.555Z");
+  const plan = assertHistoricalCoverage(fixture, references, true);
+  assert.equal(plan?.action, "update");
+  assert.equal(plan?.proposedTrackingStartedAt, "2026-06-29T00:00:00+08:00");
+  assert.deepEqual(plan?.snapshot.previous, {
+    rowExists: true,
+    trackingStartedAt: "2026-09-01T02:42:18.555Z",
+  });
+});
+
+test("PostgreSQL coverage text preserves microseconds in snapshots", () => {
+  const raw = "2026-09-01 02:42:18.555866+00";
+  assert.equal(
+    canonicalCoverageTimestamp(raw),
+    "2026-09-01 02:42:18.555866+00",
+  );
+  assert.notEqual(
+    canonicalCoverageTimestamp(raw),
+    canonicalCoverageTimestamp("2026-09-01 02:42:18.555867+00"),
+  );
+  const plan = assertHistoricalCoverage(
+    historicalDataset(),
+    coverageReferences(raw),
+    true,
+  );
+  assert.equal(plan?.snapshot.previous.trackingStartedAt, raw);
+});
+
+test("coverage ownership refuses a microsecond mismatch", () => {
+  const initial = {
+    rowExists: true,
+    trackingStartedAt: "2026-09-01 02:42:18.555866+00",
+  };
+  const first = planHistoricalCoverage(initial, "2026-06-29", true);
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  assert.throws(
+    () =>
+      planHistoricalCoverage(
+        {
+          rowExists: true,
+          trackingStartedAt: "2026-09-01 02:42:18.555867+00",
+        },
+        "2026-06-29",
+        true,
+        first.snapshot,
+      ),
+    /no longer matches/,
+  );
+});
+
+test("legacy partial coverage metadata is recovered with the exact raw timestamp", () => {
+  const raw = "2026-09-01 02:42:18.555866+00";
+  const legacySnapshot = {
+    version: 1,
+    owner: HISTORICAL_FIXTURE_OWNER,
+    historicalStart: "2026-06-29",
+    previous: {
+      rowExists: true,
+      trackingStartedAt: "2026-09-01T02:42:18.555Z",
+    },
+    appliedTrackingStartedAt: "2026-06-28T16:00:00.000Z",
+  };
+  const recovered = planHistoricalCoverage(
+    { rowExists: true, trackingStartedAt: raw },
+    "2026-06-29",
+    true,
+    legacySnapshot,
+  );
+  assert.equal(recovered.action, "update");
+  assert.equal(recovered.recoveredPartialSnapshot, true);
+  if (recovered.action !== "update") return;
+  assert.equal(recovered.snapshot.version, 2);
+  assert.equal(recovered.snapshot.previous.trackingStartedAt, raw);
+
+  const applied = {
+    rowExists: true,
+    trackingStartedAt: "2026-06-28 16:00:00+00",
+  };
+  const repeated = planHistoricalCoverage(
+    applied,
+    "2026-06-29",
+    true,
+    recovered.snapshot,
+  );
+  assert.equal(repeated.action, "already-owned");
+  const restored = planHistoricalCoverageRestore(
+    applied,
+    recovered.snapshot,
+    "2026-06-29",
+  );
+  assert.equal(restored.action, "restore");
+  assert.equal(
+    restored.action === "restore"
+      ? restored.snapshot.previous.trackingStartedAt
+      : null,
+    raw,
+  );
+});
+
+test("coverage update keeps raw microseconds in a text-typed SQL parameter", async () => {
+  const raw = "2026-09-01 02:42:18.555866+00";
+  const plan = planHistoricalCoverage(
+    { rowExists: true, trackingStartedAt: raw },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(plan.action, "update");
+  if (plan.action !== "update") return;
+  const { calls, transaction } = mockCoverageTransaction(
+    [{ tracking_started_at: raw }],
+    [{ tracking_started_at: "2026-06-28 16:00:00.000000+00" }],
+  );
+
+  await updateCoverageInTransaction(transaction, plan);
+
+  const update = calls[1];
+  assert.match(update.text, /set tracking_started_at = \?::text::timestamptz/);
+  assert.match(update.text, /tracking_started_at::text = \?/);
+  assert.equal(update.values[1], raw);
+  assert.equal(update.values[0], "2026-06-29T00:00:00+08:00");
+});
+
+test("coverage update refuses a different microsecond before issuing UPDATE", async () => {
+  const raw = "2026-09-01 02:42:18.555866+00";
+  const plan = planHistoricalCoverage(
+    { rowExists: true, trackingStartedAt: raw },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(plan.action, "update");
+  if (plan.action !== "update") return;
+  const { calls, transaction } = mockCoverageTransaction([
+    { tracking_started_at: "2026-09-01 02:42:18.555867+00" },
+  ]);
+
+  await assert.rejects(
+    updateCoverageInTransaction(transaction, plan),
+    /changed after validation/,
+  );
+  assert.equal(calls.length, 1);
+});
+
+test("coverage update refuses when PostgreSQL does not return exactly one row", async () => {
+  const plan = planHistoricalCoverage(
+    {
+      rowExists: true,
+      trackingStartedAt: "2026-09-01 02:42:18.555866+00",
+    },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(plan.action, "update");
+  if (plan.action !== "update") return;
+  const { transaction } = mockCoverageTransaction(
+    [{ tracking_started_at: "2026-09-01 02:42:18.555866+00" }],
+    [],
+  );
+
+  await assert.rejects(
+    updateCoverageInTransaction(transaction, plan),
+    /not applied exactly once/,
+  );
+});
+
+test("coverage restore uses the exact original raw timestamp text", async () => {
+  const raw = "2026-09-01 02:42:18.555866+00";
+  const first = planHistoricalCoverage(
+    { rowExists: true, trackingStartedAt: raw },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  const restore = planHistoricalCoverageRestore(
+    { rowExists: true, trackingStartedAt: "2026-06-28 16:00:00.000000+00" },
+    first.snapshot,
+    "2026-06-29",
+  );
+  assert.equal(restore.action, "restore");
+  if (restore.action !== "restore") return;
+  const { calls, transaction } = mockCoverageTransaction(
+    [{ tracking_started_at: "2026-06-28 16:00:00.000000+00" }],
+    [{ tracking_started_at: raw }],
+  );
+
+  await restoreCoverageInTransaction(transaction, restore);
+
+  const update = calls[1];
+  assert.match(update.text, /set tracking_started_at = \?::text::timestamptz/);
+  assert.match(update.text, /tracking_started_at::text = \?/);
+  assert.equal(update.values[0], raw);
+  assert.equal(update.values[1], "2026-06-28 16:00:00.000000+00");
+});
+
+test("coverage restore refuses when PostgreSQL does not return exactly one row", async () => {
+  const first = planHistoricalCoverage(
+    {
+      rowExists: true,
+      trackingStartedAt: "2026-09-01 02:42:18.555866+00",
+    },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  const restore = planHistoricalCoverageRestore(
+    { rowExists: true, trackingStartedAt: "2026-06-28 16:00:00.000000+00" },
+    first.snapshot,
+    "2026-06-29",
+  );
+  assert.equal(restore.action, "restore");
+  if (restore.action !== "restore") return;
+  const { transaction } = mockCoverageTransaction(
+    [{ tracking_started_at: "2026-06-28 16:00:00.000000+00" }],
+    [],
+  );
+
+  await assert.rejects(
+    restoreCoverageInTransaction(transaction, restore),
+    /did not restore forecast coverage exactly once/,
+  );
+});
+
+test("cleanup refuses a changed applied microsecond value", () => {
+  const first = planHistoricalCoverage(
+    {
+      rowExists: true,
+      trackingStartedAt: "2026-09-01 02:42:18.555866+00",
+    },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  assert.throws(
+    () =>
+      planHistoricalCoverageRestore(
+        {
+          rowExists: true,
+          trackingStartedAt: "2026-06-28 16:00:00.000001+00",
+        },
+        first.snapshot,
+        "2026-06-29",
+      ),
+    /no longer matches/,
+  );
+});
+
+test("historical coverage apply is idempotent and cleanup restores the exact prior state", () => {
+  const initial = {
+    rowExists: true,
+    trackingStartedAt: "2026-09-01T02:42:18.555Z",
+  };
+  const first = planHistoricalCoverage(initial, "2026-06-29", true);
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  const applied = {
+    rowExists: true,
+    trackingStartedAt: new Date(first.proposedTrackingStartedAt).toISOString(),
+  };
+  const repeated = planHistoricalCoverage(
+    applied,
+    "2026-06-29",
+    true,
+    first.snapshot,
+  );
+  assert.equal(repeated.action, "already-owned");
+  const restore = planHistoricalCoverageRestore(
+    applied,
+    first.snapshot,
+    "2026-06-29",
+  );
+  assert.equal(restore.action, "restore");
+  assert.deepEqual(
+    restore.action === "restore" ? restore.snapshot.previous : null,
+    initial,
+  );
+});
+
+test("historical cleanup refuses mismatched or unowned synthetic coverage", () => {
+  const first = planHistoricalCoverage(
+    { rowExists: true, trackingStartedAt: "2026-09-01T02:42:18.555Z" },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  assert.throws(
+    () =>
+      planHistoricalCoverageRestore(
+        {
+          rowExists: true,
+          trackingStartedAt: "2026-06-30T00:00:00.000Z",
+        },
+        first.snapshot,
+        "2026-06-29",
+      ),
+    /no longer matches|changed after restoration/,
+  );
+  assert.throws(
+    () =>
+      planHistoricalCoverageRestore(
+        {
+          rowExists: true,
+          trackingStartedAt: "2026-06-28T16:00:00.000Z",
+        },
+        undefined,
+        "2026-06-29",
+      ),
+    /ownership cannot be proven/,
+  );
+});
+
+test("historical ownership and cleanup inventory are independent from standard QA", () => {
+  const fixture = historicalDataset();
+  const booking = fixture.records.find(
+    (record) => record.label === "QA-HIST-BOOK-001",
+  )!;
+  assert.equal(
+    planRecords([booking], { [String(booking.row.id)]: { ...booking.row } })[0]
+      .action,
+    "skip",
+  );
+  assert.equal(
+    planRecords([booking], {
+      [String(booking.row.id)]: {
+        ...booking.row,
+        purpose_of_use: "uncontrolled operational row",
+      },
+    })[0].action,
+    "collision",
+  );
+  assert.equal(fixture.ids.operationalStateEvents.length, 12);
+  assert(
+    fixture.records
+      .filter((record) => record.table === "vehicle_operational_state_events")
+      .every((record) =>
+        fixture.ids.operationalStateEvents.includes(String(record.row.id)),
+      ),
+  );
+  const metadata = fixtureAuthMetadata(
+    HISTORICAL_OPERATOR_SPEC.label,
+    fixture.anchorDate,
+    fixture.definition,
+  );
+  assert.equal(
+    isOwnedAuthUser(
+      { email: HISTORICAL_OPERATOR_SPEC.email, app_metadata: metadata },
+      HISTORICAL_OPERATOR_SPEC,
+      fixture.definition,
+    ),
+    true,
+  );
+});
+
+test("existing QA-HIST effective_at round-trips as PostgreSQL text", () => {
+  const fixture = historicalDataset();
+  const stateEvent = fixture.records.find(
+    (record) => record.label === "QA-HIST-STATE-001",
+  )!;
+  assert.equal(stateEvent.row.effective_at, "2026-06-27T16:00:00.000Z");
+  const persisted = {
+    ...stateEvent.row,
+    effective_at: "2026-06-27 16:00:00+00",
+  };
+  assert.equal(
+    planRecords([stateEvent], { [String(stateEvent.row.id)]: persisted })[0]
+      .action,
+    "skip",
+  );
+});
+
+test("PostgreSQL text and deterministic fixture timestamp offsets compare exactly", () => {
+  const fixture = historicalDataset();
+  const stateEvent = fixture.records.find(
+    (record) => record.label === "QA-HIST-STATE-001",
+  )!;
+  const persisted = {
+    ...stateEvent.row,
+    effective_at: "2026-06-28 00:00:00.000000+08:00",
+  };
+  assert.equal(
+    planRecords([stateEvent], { [String(stateEvent.row.id)]: persisted })[0]
+      .action,
+    "skip",
+  );
+});
+
+test("a different state-event effective_at microsecond refuses ownership", () => {
+  const fixture = historicalDataset();
+  const stateEvent = fixture.records.find(
+    (record) => record.label === "QA-HIST-STATE-001",
+  )!;
+  const persisted = {
+    ...stateEvent.row,
+    effective_at: "2026-06-27 16:00:00.000001+00",
+  };
+  assert.equal(
+    planRecords([stateEvent], { [String(stateEvent.row.id)]: persisted })[0]
+      .action,
+    "collision",
+  );
+});
+
+test("state-event ownership remains strict for non-timestamp fields", () => {
+  const fixture = historicalDataset();
+  const stateEvent = fixture.records.find(
+    (record) => record.label === "QA-HIST-STATE-001",
+  )!;
+  const persisted = {
+    ...stateEvent.row,
+    effective_at: postgresTimestampText(stateEvent.row.effective_at),
+    source: "uncontrolled operational event",
+  };
+  assert.equal(
+    planRecords([stateEvent], { [String(stateEvent.row.id)]: persisted })[0]
+      .action,
+    "collision",
+  );
+});
+
+test("repeated historical dry-run planning is idempotent", () => {
+  const fixture = historicalDataset();
+  const records = fixture.records.filter(
+    (record) => record.table !== "profiles",
+  );
+  const existing = Object.fromEntries(
+    records.map((record) => [
+      String(record.row.id),
+      record.table === "vehicle_operational_state_events"
+        ? {
+            ...record.row,
+            effective_at: postgresTimestampText(record.row.effective_at),
+          }
+        : { ...record.row },
+    ]),
+  );
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const plan = planRecords(records, existing);
+    assert.equal(plan.length, records.length);
+    assert(plan.every((item) => item.action === "skip"));
+  }
+});
+
+test("cleanup inventory safely recognizes all existing state events", () => {
+  const fixture = historicalDataset();
+  const stateEvents = fixture.records.filter(
+    (record) => record.table === "vehicle_operational_state_events",
+  );
+  const existing = Object.fromEntries(
+    stateEvents.map((record) => [
+      String(record.row.id),
+      {
+        ...record.row,
+        effective_at: postgresTimestampText(record.row.effective_at),
+      },
+    ]),
+  );
+  const plan = planRecords(stateEvents, existing);
+  assert.equal(plan.length, 12);
+  assert(plan.every((item) => item.action === "skip"));
+  assert.deepEqual(
+    plan.map((item) => String(item.record.row.id)),
+    fixture.ids.operationalStateEvents,
+  );
+});
+
+test("state-event inventory reads effective_at as PostgreSQL text", () => {
+  const source = readFileSync(
+    new URL("./controlled-fixtures.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    source,
+    /select id, vehicle_id, is_active, effective_at::text as effective_at, source\s+from public\.vehicle_operational_state_events/,
+  );
 });
 
 test("duplicate fixture identifiers and artifact paths are rejected", () => {

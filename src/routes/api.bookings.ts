@@ -6,6 +6,8 @@ import { projectCustomerRental } from "@/lib/rental-projection";
 import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
 import { FINDER_BASELINE, revalidateFinderBookingBasis } from "@/lib/finder-booking";
 import { evaluateCanonicalVehicleFinder } from "@/lib/vehicle-finder.server";
+import { BOOKING_READ_SELECT } from "@/lib/booking-reads";
+import { existingBookingFromLookup } from "@/lib/booking-idempotency";
 
 const text = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 const optionalText = (v: unknown) => text(v) || null;
@@ -19,7 +21,7 @@ async function readBookings() {
   try {
     const principal = await requirePrincipal();
     const client = getSupabaseServerClient();
-    let query = (client as any).from("booking_requests").select("*, customer:profiles(id,full_name,email,phone_number), requested_vehicle:vehicles!booking_requests_requested_vehicle_id_fkey(id,name,license_plate,branch_id), assigned_vehicle:vehicles!booking_requests_assigned_vehicle_id_fkey(id,name,license_plate,branch_id,is_active), pickup_branch:branches!booking_requests_pickup_branch_id_fkey(id,name), return_branch:branches!booking_requests_return_branch_id_fkey(id,name)").order("created_at", { ascending: false });
+    let query = (client as any).from("booking_requests").select(BOOKING_READ_SELECT).order("created_at", { ascending: false });
     if (principal.role === "Customer/Renter") query = query.eq("customer_id", principal.userId);
     const result = await query;
     if (result.error) return errorResponse("Unable to load booking requests.", 503);
@@ -133,7 +135,7 @@ async function createBooking({ request }: { request: Request }) {
       if (existing.error.message?.includes("idempotency_request_mismatch")) return errorResponse("This submission key was already used for different booking details. Please submit again.", 409);
       return errorResponse("Unable to create booking request.", 400);
     }
-    const existingBooking = Array.isArray(existing.data) ? existing.data[0] : existing.data;
+    const existingBooking = existingBookingFromLookup(existing.data);
     if (existingBooking) return Response.json(existingBooking, { status: 200 });
     const [vehicle, pickupBranch, returnBranch] = await Promise.all([
       client.from("vehicles").select("id").eq("id", requestedVehicleId).eq("is_active", true).maybeSingle(),

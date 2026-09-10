@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { MapPin, Plus, TrendingUp } from "lucide-react";
+import { MapPin, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge, Btn, Card, PageHeader } from "@/components/admin/ui";
 import { TInput } from "@/components/admin/ui";
@@ -10,16 +10,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { branchPerformance, peso } from "@/data/admin";
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
-import { fetchMasterData, saveMasterData } from "@/lib/master-data-client";
+import {
+  buildAdminBranchRows,
+  type CanonicalBranchRecord,
+} from "@/lib/admin-branches";
+import {
+  fetchMasterData,
+  saveMasterData,
+  type ApiMasterVehicle,
+} from "@/lib/master-data-client";
 
-type BranchRecord = {
-  id: string;
-  name: string;
-  address: string | null;
-  is_active: boolean;
-};
+type BranchRecord = CanonicalBranchRecord;
 
 export const Route = createFileRoute("/admin/branches")({
   beforeLoad: () => {
@@ -33,6 +35,11 @@ export const Route = createFileRoute("/admin/branches")({
 
 function BranchesPage() {
   const [branches, setBranches] = useState<BranchRecord[]>([]);
+  const [vehicles, setVehicles] = useState<ApiMasterVehicle[]>([]);
+  const [branchLoading, setBranchLoading] = useState(true);
+  const [branchLoadError, setBranchLoadError] = useState("");
+  const [vehicleLoading, setVehicleLoading] = useState(true);
+  const [vehicleLoadError, setVehicleLoadError] = useState("");
   const [branchDialogOpen, setBranchDialogOpen] = useState(false);
   const [editingBranch, setEditingBranch] = useState<BranchRecord | null>(null);
   const [branchName, setBranchName] = useState("");
@@ -41,20 +48,26 @@ function BranchesPage() {
   useEffect(() => {
     void fetchMasterData<BranchRecord>("branches")
       .then(setBranches)
-      .catch(() => undefined);
+      .catch((error: unknown) =>
+        setBranchLoadError(
+          error instanceof Error
+            ? error.message
+            : "Unable to load canonical branch data.",
+        ),
+      )
+      .finally(() => setBranchLoading(false));
+    void fetchMasterData<ApiMasterVehicle>("vehicles")
+      .then(setVehicles)
+      .catch((error: unknown) =>
+        setVehicleLoadError(
+          error instanceof Error
+            ? error.message
+            : "Unable to load canonical vehicle assignments.",
+        ),
+      )
+      .finally(() => setVehicleLoading(false));
   }, []);
-  const displayedBranches = branches.length
-    ? branches.map((record) => ({
-        ...(branchPerformance.find((branch) => branch.name === record.name) ?? {
-          name: record.name,
-          active: 0,
-          fleet: 0,
-          demand: 0,
-          revenue: 0,
-        }),
-        record,
-      }))
-    : branchPerformance.map((record) => ({ ...record, record: null }));
+  const displayedBranches = buildAdminBranchRows(branches, vehicles);
   function openBranchDialog(branch?: BranchRecord) {
     setEditingBranch(branch ?? null);
     setBranchName(branch?.name ?? "");
@@ -111,7 +124,7 @@ function BranchesPage() {
     <div>
       <PageHeader
         title="Branches"
-        subtitle="Manage operations and growth across Luzon."
+        subtitle="Manage canonical branches and their assigned vehicles."
         actions={
           <Btn variant="primary" onClick={() => openBranchDialog()}>
             <Plus className="h-4 w-4" /> New branch
@@ -119,60 +132,76 @@ function BranchesPage() {
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        {displayedBranches.map((b) => (
-          <Card key={b.name}>
-            <div className="p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-                    <MapPin className="h-3.5 w-3.5 text-primary" />{" "}
-                    {b.name === "Taft, Manila" ? "Flagship" : "Suburban hub"}
+      {branchLoading || vehicleLoading ? (
+        <Card>
+          <p className="p-6 text-sm text-muted-foreground">
+            Loading canonical branch data…
+          </p>
+        </Card>
+      ) : branchLoadError ? (
+        <Card>
+          <p className="p-6 text-sm text-destructive" role="alert">
+            {branchLoadError}
+          </p>
+        </Card>
+      ) : displayedBranches.length === 0 ? (
+        <Card>
+          <p className="p-6 text-sm text-muted-foreground">
+            No canonical branches are available.
+          </p>
+        </Card>
+      ) : (
+        <div className="grid gap-4 xl:grid-cols-2">
+          {displayedBranches.map((branch) => (
+            <Card key={branch.record.id}>
+              <div className="p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+                      <MapPin className="h-3.5 w-3.5 text-primary" /> Branch
+                    </div>
+                    <h3 className="mt-1 break-words font-display text-2xl font-semibold">
+                      {branch.record.name}
+                    </h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {branch.record.address ?? "Address unavailable"}
+                    </p>
                   </div>
-                  <h3 className="mt-1 font-display text-2xl font-semibold">
-                    {b.name}
-                  </h3>
+                  <Badge>
+                    {branch.record.is_active ? "Active" : "Inactive"}
+                  </Badge>
                 </div>
-                <Badge>{b.demand >= 70 ? "High demand" : "Steady"}</Badge>
-              </div>
 
-              <div className="mt-5 grid grid-cols-3 gap-4 border-y border-border py-4">
-                <Stat label="Active rentals" value={String(b.active)} />
-                <Stat label="Fleet on-site" value={String(b.fleet)} />
-                <Stat label="Demand score" value={`${b.demand}%`} accent />
-              </div>
-
-              <div className="mt-5 flex items-center justify-between">
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Monthly revenue
-                  </div>
-                  <div className="font-display text-2xl font-semibold text-primary">
-                    {peso(b.revenue)}
-                  </div>
+                <div className="mt-5 border-y border-border py-4">
+                  <Stat
+                    label="Assigned vehicles"
+                    value={
+                      vehicleLoadError
+                        ? "Unavailable"
+                        : String(branch.assignedVehicleCount)
+                    }
+                  />
                 </div>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
-                  <TrendingUp className="h-3.5 w-3.5" /> +
-                  {b.name === "Taft, Manila" ? "11.2" : "8.4"}% MoM
-                </span>
-              </div>
-              {b.record && (
+
                 <div className="mt-4 flex gap-2">
                   <Btn
                     variant="ghost"
-                    onClick={() => openBranchDialog(b.record)}
+                    onClick={() => openBranchDialog(branch.record)}
                   >
                     Edit
                   </Btn>
-                  <Btn variant="ghost" onClick={() => toggleBranch(b.record)}>
-                    {b.record.is_active ? "Deactivate" : "Activate"}
+                  <Btn
+                    variant="ghost"
+                    onClick={() => toggleBranch(branch.record)}
+                  >
+                    {branch.record.is_active ? "Deactivate" : "Activate"}
                   </Btn>
                 </div>
-              )}
-            </div>
-          </Card>
-        ))}
-      </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
       <Dialog open={branchDialogOpen} onOpenChange={setBranchDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -213,25 +242,13 @@ function BranchesPage() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-}) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
         {label}
       </div>
-      <div
-        className={`font-display text-xl font-semibold ${accent ? "text-primary" : ""}`}
-      >
-        {value}
-      </div>
+      <div className="font-display text-xl font-semibold">{value}</div>
     </div>
   );
 }

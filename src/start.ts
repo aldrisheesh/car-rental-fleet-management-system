@@ -2,6 +2,7 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { getCurrentPrincipal } from "./lib/auth.server";
 import { canAccessAdminPath } from "./lib/auth";
+import { getUnauthorizedRecoveryDestination } from "./lib/auth-recovery";
 import { renderErrorPage } from "./lib/error-page";
 
 const authBoundaryMiddleware = createMiddleware().server(
@@ -24,7 +25,10 @@ const authBoundaryMiddleware = createMiddleware().server(
 
     if (allowed) return next();
 
-    const destination = principal ? "/" : "/sign-in";
+    const destination = getUnauthorizedRecoveryDestination(
+      pathname,
+      !!principal,
+    );
     return Response.redirect(new URL(destination, request.url), 302);
   },
 );
