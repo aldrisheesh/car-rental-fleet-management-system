@@ -2,6 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { validateRequirementFile } from "@/lib/requirements-validation";
+import {
+  canAccessRenterRequirementDocument,
+  canReviewRenterRequirements,
+} from "@/lib/requirements-access";
 
 const TYPES = ["Valid Government ID", "Driver's License"] as const;
 const error = (message: string, status = 400) => Response.json({ message }, { status });
@@ -30,16 +34,19 @@ async function read({ request }: { request: Request }) {
     const client = getSupabaseServerClient();
     if (documentId) {
       const d = await client.from("renter_requirement_documents").select("*").eq("id", documentId).maybeSingle();
-      if (!d.data || (principal.role === "Customer/Renter" && d.data.customer_id !== principal.userId) || principal.role === "Operations Staff") return error("Forbidden.", 403);
+      if (!d.data || !canAccessRenterRequirementDocument(principal, d.data.customer_id)) return error("Forbidden.", 403);
       const signed = await client.storage.from("renter-requirements").createSignedUrl(d.data.storage_path, 300);
       if (signed.error || !signed.data) return error("Unable to open document.", 503);
       return Response.json({ url: signed.data.signedUrl });
     }
-    if (!bookingId && principal.role === "Owner/Admin") {
-      const pending = await client.from("renter_requirement_sets").select("*, booking:booking_requests(id,customer:profiles(id,full_name,email),requested_vehicle:vehicles(name))").eq("status", "Pending Review").order("updated_at", { ascending: true });
-      if (pending.error) return error("Unable to load requirements.", 503);
-      return Response.json({ requirementSets: pending.data ?? [], requiredTypes: TYPES });
+    if (!bookingId && canReviewRenterRequirements(principal.role)) {
+      let sets = client.from("renter_requirement_sets").select("*, booking:booking_requests(id,customer:profiles!booking_requests_customer_id_fkey(id,full_name,email),requested_vehicle:vehicles!booking_requests_requested_vehicle_id_fkey(name))");
+      if (url.searchParams.get("view") !== "all") sets = sets.eq("status", "Pending Review");
+      const result = await sets.order("updated_at", { ascending: true });
+      if (result.error) return error("Unable to load requirements.", 503);
+      return Response.json({ requirementSets: result.data ?? [], requiredTypes: TYPES });
     }
+    if (!bookingId && url.searchParams.get("view") === "all") return error("Forbidden.", 403);
     if (!bookingId) return error("Booking is required.");
     const booking = await ownBooking(client, bookingId, principal); if (!booking) return error("Booking not found.", 404);
     const set = await getSet(client, bookingId, booking.customer_id, principal.role === "Customer/Renter");
@@ -60,7 +67,7 @@ async function mutate({ request }: { request: Request }) {
   try {
     const principal = await requirePrincipal();
     const client = getSupabaseServerClient();
-    if (principal.role === "Owner/Admin") {
+    if (canReviewRenterRequirements(principal.role)) {
       const body = await request.json().catch(() => null) as Record<string, unknown> | null;
       if (body?.action !== "review") return error("Invalid review action.");
       const setId = String(body.requirementSetId || "");
@@ -73,6 +80,7 @@ async function mutate({ request }: { request: Request }) {
       if (result.error) { const map: Record<string,string> = { not_reviewable:"Requirement set is no longer pending review.", stale_document:"Document version is stale; reload and review the current files.", invalid_verified_gate:"Verified requires both accepted documents, consistent identity, and LTO Clear.", invalid_resubmission_gate:"Needs Resubmission requires a flagged document with a reason.", missing_reason:"A customer-facing replacement reason is required." }; return error(map[result.error.message] || "Unable to save review.", 409); }
       return Response.json({ reviewId: result.data, status: body.resultingStatus });
     }
+    if (request.headers.get("content-type")?.includes("application/json")) return error("Owner/Admin access is required.", 403);
     if (principal.role !== "Customer/Renter") return error("Customer access is required.", 403);
     const form = await request.formData(); const bookingId = String(form.get("bookingId") || ""); const action = String(form.get("action") || "upload");
     const booking = await ownBooking(client, bookingId, principal); if (!booking) return error("Booking not found.", 404);

@@ -1,5 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Eye, FileText, Mail, Phone, Search, UserPlus } from "lucide-react";
+import {
+  Eye,
+  FileText,
+  Mail,
+  Phone,
+  RefreshCw,
+  Search,
+  UserPlus,
+} from "lucide-react";
 import {
   Badge,
   Btn,
@@ -7,56 +15,27 @@ import {
   CardHeader,
   PageHeader,
   TInput,
-  TSelect,
   Toolbar,
 } from "@/components/admin/ui";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { customers, peso } from "@/data/admin";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-export const Route = createFileRoute("/admin/customers")({ component: CustomersPage });
-
-type RequirementStatus = "Verified" | "Pending";
-type RequirementFile = {
-  fileName: string;
-  label: string;
-  fallbackStatus: RequirementStatus;
-};
+export const Route = createFileRoute("/admin/customers")({
+  component: CustomersPage,
+});
 
 function CustomersPage() {
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState(customers[0]);
-  const [requirementStatuses, setRequirementStatuses] = useState<Record<string, RequirementStatus>>(
-    {},
-  );
-  const [quickViewFile, setQuickViewFile] = useState<RequirementFile | null>(null);
 
   const rows = customers.filter(
-    (c) => !q || [c.id, c.name, c.email, c.phone].join(" ").toLowerCase().includes(q.toLowerCase()),
+    (c) =>
+      !q ||
+      [c.id, c.name, c.email, c.phone]
+        .join(" ")
+        .toLowerCase()
+        .includes(q.toLowerCase()),
   );
-  const selectedRequirements = getRequirementFiles(selected.verification);
-
-  function requirementKey(fileName: string) {
-    return `${selected.id}:${fileName}`;
-  }
-
-  function getRequirementStatus(file: RequirementFile) {
-    return requirementStatuses[requirementKey(file.fileName)] ?? file.fallbackStatus;
-  }
-
-  function updateRequirementStatus(fileName: string, status: RequirementStatus) {
-    setRequirementStatuses((current) => ({
-      ...current,
-      [`${selected.id}:${fileName}`]: status,
-    }));
-  }
-
   return (
     <div>
       <PageHeader
@@ -81,18 +60,23 @@ function CustomersPage() {
                 className="w-full pl-9"
               />
             </div>
-            <span className="text-xs text-muted-foreground">{rows.length} customers</span>
+            <span className="text-xs text-muted-foreground">
+              {rows.length} customers
+            </span>
           </Toolbar>
 
           <Card>
             <table className="w-full text-sm">
               <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
                 <tr className="border-b border-border">
-                  <th className="px-4 py-3 text-left font-semibold">Customer</th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    Customer
+                  </th>
                   <th className="px-4 py-3 text-left font-semibold">Joined</th>
                   <th className="px-4 py-3 text-right font-semibold">Trips</th>
-                  <th className="px-4 py-3 text-right font-semibold">Lifetime spend</th>
-                  <th className="px-4 py-3 text-left font-semibold">Verification</th>
+                  <th className="px-4 py-3 text-right font-semibold">
+                    Lifetime spend
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -113,17 +97,18 @@ function CustomersPage() {
                         </span>
                         <div>
                           <div className="font-medium">{c.name}</div>
-                          <div className="text-xs text-muted-foreground">{c.email}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {c.email}
+                          </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{c.joined}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {c.joined}
+                    </td>
                     <td className="px-4 py-3 text-right">{c.trips}</td>
                     <td className="px-4 py-3 text-right font-display font-semibold">
                       {peso(c.spent)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge>{c.verification}</Badge>
                     </td>
                   </tr>
                 ))}
@@ -143,10 +128,9 @@ function CustomersPage() {
                   .join("")}
               </span>
               <div>
-                <h3 className="font-display text-lg font-semibold">{selected.name}</h3>
-                <div className="mt-1">
-                  <Badge>{selected.verification}</Badge>
-                </div>
+                <h3 className="font-display text-lg font-semibold">
+                  {selected.name}
+                </h3>
               </div>
             </div>
 
@@ -174,141 +158,533 @@ function CustomersPage() {
             </div>
           </div>
 
-          <CardHeader title="Uploaded requirements" />
-          <ul className="divide-y divide-border text-sm">
-            {selectedRequirements.map((file) => (
-              <li key={file.fileName} className="px-5 py-3">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <FileText className="h-4 w-4 shrink-0 text-primary" />
-                      <span className="truncate font-mono text-xs">{file.fileName}</span>
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground">{file.label}</div>
-                  </div>
-                  <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <Btn type="button" variant="ghost" onClick={() => setQuickViewFile(file)}>
-                      <Eye className="h-4 w-4" />
-                      View
-                    </Btn>
-                    <TSelect
-                      aria-label={`Status for ${file.fileName}`}
-                      value={getRequirementStatus(file)}
-                      onChange={(event) =>
-                        updateRequirementStatus(
-                          file.fileName,
-                          event.target.value as RequirementStatus,
-                        )
-                      }
-                      className="min-h-9 w-32 text-xs"
-                    >
-                      <option value="Verified">Verified</option>
-                      <option value="Pending">Pending</option>
-                    </TSelect>
-                    <Badge>{getRequirementStatus(file)}</Badge>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <div className="flex gap-2 border-t border-border p-4">
-            <Btn variant="primary" className="flex-1">
-              Approve
-            </Btn>
-            <Btn variant="danger" className="flex-1">
-              Reject
-            </Btn>
+          <div className="border-t border-border px-5 py-4 text-xs text-muted-foreground">
+            Requirement documents and review decisions are shown below from the
+            canonical, booking-linked workflow.
           </div>
         </Card>
       </div>
+      <CanonicalRequirementReview />
+    </div>
+  );
+}
 
-      <Dialog open={quickViewFile != null} onOpenChange={(open) => !open && setQuickViewFile(null)}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Requirement quick view</DialogTitle>
-            <DialogDescription>{quickViewFile?.fileName}</DialogDescription>
-          </DialogHeader>
+type RequirementSetSummary = {
+  id: string;
+  booking_id: string;
+  status:
+    | "Not Submitted"
+    | "Pending Review"
+    | "Needs Resubmission"
+    | "Verified";
+  submitted_at: string | null;
+  updated_at: string;
+  booking?: {
+    customer?: { id: string; full_name: string; email: string } | null;
+    requested_vehicle?: { name: string } | null;
+  } | null;
+};
 
-          {quickViewFile && (
-            <div className="space-y-4">
-              <div className="rounded-lg border border-border bg-secondary/30 p-4">
-                <div className="aspect-[4/3] rounded-md border border-dashed border-border bg-card p-5">
-                  <div className="flex h-full flex-col items-center justify-center text-center">
-                    <FileText className="h-10 w-10 text-primary" />
-                    <div className="mt-3 font-mono text-sm font-semibold">
-                      {quickViewFile.fileName}
+type RequirementDocument = {
+  id: string;
+  requirement_type: "Valid Government ID" | "Driver's License";
+  original_filename: string;
+  mime_type: string;
+  size_bytes: number;
+  version: number;
+  is_current: boolean;
+  uploaded_at: string;
+};
+
+type RequirementReview = {
+  government_id_outcome: string;
+  government_id_reason: string | null;
+  drivers_license_outcome: string;
+  drivers_license_reason: string | null;
+  identity_consistency: string;
+  lto_outcome: string;
+  resulting_status: string;
+  reviewed_at: string;
+};
+
+type RequirementDetails = {
+  requirementSet: RequirementSetSummary;
+  documents: RequirementDocument[];
+  reviews: RequirementReview[];
+};
+
+async function responseJson<T>(response: Response): Promise<T> {
+  const body = (await response.json().catch(() => null)) as
+    | (T & { message?: string })
+    | null;
+  if (!response.ok)
+    throw new Error(body?.message ?? "Unable to load requirements.");
+  if (!body) throw new Error("The requirements response was empty.");
+  return body;
+}
+
+function CanonicalRequirementReview() {
+  const [sets, setSets] = useState<RequirementSetSummary[]>([]);
+  const [selected, setSelected] = useState<
+    (RequirementSetSummary & RequirementDetails) | null
+  >(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [governmentIdOutcome, setGovernmentIdOutcome] = useState("Accepted");
+  const [governmentIdReason, setGovernmentIdReason] = useState("");
+  const [driversLicenseOutcome, setDriversLicenseOutcome] =
+    useState("Accepted");
+  const [driversLicenseReason, setDriversLicenseReason] = useState("");
+  const [identityConsistency, setIdentityConsistency] = useState("Consistent");
+  const [ltoOutcome, setLtoOutcome] = useState("Not Checked");
+
+  const loadSets = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await responseJson<{
+        requirementSets: RequirementSetSummary[];
+      }>(
+        await fetch("/api/requirements?view=all", {
+          credentials: "same-origin",
+        }),
+      );
+      setSets(data.requirementSets);
+      return data.requirementSets;
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "Unable to load requirements.",
+      );
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadSets();
+  }, [loadSets]);
+
+  async function openSet(set: RequirementSetSummary) {
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const details = await responseJson<RequirementDetails>(
+        await fetch(
+          `/api/requirements?bookingId=${encodeURIComponent(set.booking_id)}`,
+          {
+            credentials: "same-origin",
+          },
+        ),
+      );
+      setSelected({ ...set, ...details, ...details.requirementSet });
+      setGovernmentIdOutcome("Accepted");
+      setGovernmentIdReason("");
+      setDriversLicenseOutcome("Accepted");
+      setDriversLicenseReason("");
+      setIdentityConsistency("Consistent");
+      setLtoOutcome("Not Checked");
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "Unable to load requirements.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function openDocument(documentId: string) {
+    const popup = window.open("about:blank", "_blank");
+    if (popup) popup.opener = null;
+    try {
+      const data = await responseJson<{ url: string }>(
+        await fetch(
+          `/api/requirements?documentId=${encodeURIComponent(documentId)}`,
+          {
+            credentials: "same-origin",
+          },
+        ),
+      );
+      if (popup) popup.location.href = data.url;
+      else setError("Allow pop-ups to open this protected document.");
+    } catch (documentError) {
+      popup?.close();
+      setError(
+        documentError instanceof Error
+          ? documentError.message
+          : "Unable to open document.",
+      );
+    }
+  }
+
+  async function submitReview(
+    resultingStatus: "Needs Resubmission" | "Verified",
+  ) {
+    if (!selected) return;
+    const currentDocuments = selected.documents.filter(
+      (document) => document.is_current,
+    );
+    const governmentId = currentDocuments.find(
+      (document) => document.requirement_type === "Valid Government ID",
+    );
+    const driversLicense = currentDocuments.find(
+      (document) => document.requirement_type === "Driver's License",
+    );
+    if (!governmentId || !driversLicense) {
+      setError(
+        "Both current requirement documents are required before review.",
+      );
+      return;
+    }
+
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      await responseJson(
+        await fetch("/api/requirements", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "review",
+            requirementSetId: selected.id,
+            governmentIdDocumentId: governmentId.id,
+            governmentIdVersion: governmentId.version,
+            governmentIdOutcome,
+            governmentIdReason,
+            driversLicenseDocumentId: driversLicense.id,
+            driversLicenseVersion: driversLicense.version,
+            driversLicenseOutcome,
+            driversLicenseReason,
+            identityConsistency,
+            ltoOutcome,
+            resultingStatus,
+          }),
+        }),
+      );
+      const refreshedSets = await loadSets();
+      const refreshed = refreshedSets.find((set) => set.id === selected.id);
+      if (refreshed) await openSet(refreshed);
+      setNotice(`Canonical requirement status saved as ${resultingStatus}.`);
+    } catch (reviewError) {
+      setError(
+        reviewError instanceof Error
+          ? reviewError.message
+          : "Unable to save review.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const currentDocuments =
+    selected?.documents.filter((document) => document.is_current) ?? [];
+  const latestReview = selected?.reviews[0];
+  const canReview = selected?.status === "Pending Review";
+
+  return (
+    <Card className="mt-4">
+      <CardHeader
+        title="Canonical renter requirements"
+        right={
+          <Btn
+            type="button"
+            variant="ghost"
+            disabled={loading || busy}
+            onClick={() => void loadSets()}
+          >
+            <RefreshCw className="h-4 w-4" /> Refresh
+          </Btn>
+        }
+      />
+      <div className="grid lg:grid-cols-[minmax(18rem,0.85fr)_minmax(0,1.5fr)]">
+        <div className="border-b border-border lg:border-b-0 lg:border-r">
+          {loading && (
+            <p className="p-5 text-sm text-muted-foreground">
+              Loading canonical requirements…
+            </p>
+          )}
+          {!loading && sets.length === 0 && (
+            <p className="p-5 text-sm text-muted-foreground">
+              No canonical requirement sets found.
+            </p>
+          )}
+          <div className="max-h-[36rem] divide-y divide-border overflow-y-auto">
+            {sets.map((set) => (
+              <button
+                key={set.id}
+                type="button"
+                onClick={() => void openSet(set)}
+                className={`w-full p-4 text-left transition-colors hover:bg-secondary/40 ${selected?.id === set.id ? "bg-primary/5" : ""}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium">
+                      {set.booking?.customer?.full_name ?? "Customer"}
+                    </div>
+                    <div className="mt-1 truncate text-xs text-muted-foreground">
+                      {set.booking?.customer?.email ?? "Email not available"}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
-                      Preview placeholder for uploaded customer file
+                      {set.booking?.requested_vehicle?.name ??
+                        "Vehicle not available"}{" "}
+                      · Booking …{set.booking_id.slice(-6)}
                     </div>
                   </div>
+                  <Badge>{set.status}</Badge>
                 </div>
-              </div>
+              </button>
+            ))}
+          </div>
+        </div>
 
-              <div className="grid gap-3 text-sm sm:grid-cols-2">
-                <PreviewMeta label="Customer" value={selected.name} />
-                <PreviewMeta label="Document" value={quickViewFile.label} />
-                <PreviewMeta label="Customer ID" value={selected.id} />
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Status
-                  </div>
-                  <div className="mt-1">
-                    <Badge>{getRequirementStatus(quickViewFile)}</Badge>
-                  </div>
-                </div>
-              </div>
+        <div className="min-w-0 p-5">
+          {error && (
+            <div
+              role="alert"
+              className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm"
+            >
+              {error}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-    </div>
+          {notice && (
+            <div
+              role="status"
+              className="mb-4 rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm"
+            >
+              {notice}
+            </div>
+          )}
+          {!selected ? (
+            <p className="text-sm text-muted-foreground">
+              Select a booking-linked requirement set to inspect its canonical
+              state and files.
+            </p>
+          ) : (
+            <div className="space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-display text-lg font-semibold">
+                    {selected.booking?.customer?.full_name ??
+                      "Customer requirements"}
+                  </h3>
+                  <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
+                    Booking {selected.booking_id}
+                  </p>
+                </div>
+                <Badge>{selected.status}</Badge>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Current submitted documents
+                </h4>
+                {currentDocuments.length === 0 ? (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    No current documents submitted.
+                  </p>
+                ) : (
+                  <ul className="mt-2 divide-y divide-border rounded-md border border-border">
+                    {currentDocuments.map((document) => (
+                      <li
+                        key={document.id}
+                        className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 text-sm font-medium">
+                            <FileText className="h-4 w-4 shrink-0 text-primary" />
+                            {document.requirement_type}
+                          </div>
+                          <div className="mt-1 truncate text-xs text-muted-foreground">
+                            {document.original_filename} · version{" "}
+                            {document.version}
+                          </div>
+                        </div>
+                        <Btn
+                          type="button"
+                          variant="ghost"
+                          onClick={() => void openDocument(document.id)}
+                        >
+                          <Eye className="h-4 w-4" /> Open securely
+                        </Btn>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {canReview ? (
+                <div className="space-y-4 border-t border-border pt-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <ReviewOutcomeField
+                      label="Valid Government ID"
+                      outcome={governmentIdOutcome}
+                      setOutcome={setGovernmentIdOutcome}
+                      reason={governmentIdReason}
+                      setReason={setGovernmentIdReason}
+                    />
+                    <ReviewOutcomeField
+                      label="Driver's License"
+                      outcome={driversLicenseOutcome}
+                      setOutcome={setDriversLicenseOutcome}
+                      reason={driversLicenseReason}
+                      setReason={setDriversLicenseReason}
+                    />
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Identity consistency
+                      <select
+                        className="input-control mt-1"
+                        value={identityConsistency}
+                        onChange={(event) =>
+                          setIdentityConsistency(event.target.value)
+                        }
+                      >
+                        <option>Consistent</option>
+                        <option>Concern</option>
+                      </select>
+                    </label>
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Manual LTO check outcome (no document upload required)
+                      <select
+                        className="input-control mt-1"
+                        value={ltoOutcome}
+                        onChange={(event) => setLtoOutcome(event.target.value)}
+                      >
+                        <option>Not Checked</option>
+                        <option>Clear</option>
+                        <option>Concern</option>
+                        <option>Unavailable</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Btn
+                      type="button"
+                      variant="danger"
+                      disabled={busy || currentDocuments.length < 2}
+                      onClick={() => void submitReview("Needs Resubmission")}
+                    >
+                      Request resubmission
+                    </Btn>
+                    <Btn
+                      type="button"
+                      variant="primary"
+                      disabled={busy || currentDocuments.length < 2}
+                      onClick={() => void submitReview("Verified")}
+                    >
+                      Verify requirements
+                    </Btn>
+                  </div>
+                </div>
+              ) : latestReview ? (
+                <div className="grid gap-3 border-t border-border pt-4 text-sm sm:grid-cols-2">
+                  <ReviewResult
+                    label="Government ID"
+                    value={latestReview.government_id_outcome}
+                    reason={latestReview.government_id_reason}
+                  />
+                  <ReviewResult
+                    label="Driver's License"
+                    value={latestReview.drivers_license_outcome}
+                    reason={latestReview.drivers_license_reason}
+                  />
+                  <ReviewResult
+                    label="Identity"
+                    value={latestReview.identity_consistency}
+                  />
+                  <ReviewResult
+                    label="LTO check"
+                    value={latestReview.lto_outcome}
+                  />
+                </div>
+              ) : (
+                <p className="border-t border-border pt-4 text-sm text-muted-foreground">
+                  This requirement set is not currently reviewable.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
   );
 }
 
-function getRequirementFiles(verification: string): RequirementFile[] {
-  const pendingState: RequirementStatus = verification === "Verified" ? "Verified" : "Pending";
-
-  return [
-    {
-      fileName: "drivers_license.jpg",
-      label: "Driver's license",
-      fallbackStatus: "Verified",
-    },
-    {
-      fileName: "valid_id_back.jpg",
-      label: "Valid ID",
-      fallbackStatus: "Verified",
-    },
-    {
-      fileName: "lto_license_portal_screenshot.png",
-      label: "Screenshot of License on LTO portal",
-      fallbackStatus: pendingState,
-    },
-    {
-      fileName: "secondary_id_front.jpg",
-      label: "Secondary ID front",
-      fallbackStatus: pendingState,
-    },
-    {
-      fileName: "secondary_id_back.jpg",
-      label: "Secondary ID back",
-      fallbackStatus: pendingState,
-    },
-  ];
-}
-
-function PreviewMeta({ label, value }: { label: string; value: string }) {
+function ReviewOutcomeField({
+  label,
+  outcome,
+  setOutcome,
+  reason,
+  setReason,
+}: {
+  label: string;
+  outcome: string;
+  setOutcome: (value: string) => void;
+  reason: string;
+  setReason: (value: string) => void;
+}) {
   return (
-    <div>
-      <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+    <label className="text-xs font-medium text-muted-foreground">
+      {label}
+      <select
+        className="input-control mt-1"
+        value={outcome}
+        onChange={(event) => setOutcome(event.target.value)}
+      >
+        <option>Accepted</option>
+        <option>Needs Replacement</option>
+      </select>
+      {outcome === "Needs Replacement" && (
+        <input
+          className="input-control mt-2"
+          placeholder="Customer-facing replacement reason"
+          value={reason}
+          onChange={(event) => setReason(event.target.value)}
+        />
+      )}
+    </label>
+  );
+}
+
+function ReviewResult({
+  label,
+  value,
+  reason,
+}: {
+  label: string;
+  value: string;
+  reason?: string | null;
+}) {
+  return (
+    <div className="rounded-md bg-secondary/40 p-3">
+      <div className="text-xs uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
       <div className="mt-1 font-medium">{value}</div>
+      {reason && (
+        <div className="mt-1 text-xs text-muted-foreground">{reason}</div>
+      )}
     </div>
   );
 }
 
-function Row({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string }) {
+function Row({
+  icon,
+  label,
+  value,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="flex items-center justify-between gap-3">
       <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
@@ -322,8 +698,12 @@ function Row({ icon, label, value }: { icon?: React.ReactNode; label: string; va
 function KPIish({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md bg-secondary/60 p-3 text-center">
-      <div className="font-display text-lg font-semibold text-primary">{value}</div>
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="font-display text-lg font-semibold text-primary">
+        {value}
+      </div>
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
     </div>
   );
 }

@@ -15,7 +15,8 @@ export function Header() {
   const [signInOpen, setSignInOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const customerSession = getCustomerSession();
+  const [signedOut, setSignedOut] = useState(false);
+  const customerSession = signedOut ? null : getCustomerSession();
   const showCustomerDashboardLink = customerSession != null;
   const navLinks: NavLink[] = [
     { to: "/", label: "Home", exact: true },
@@ -34,11 +35,12 @@ export function Header() {
     setSignInOpen(true);
   }
 
-  function signOut() {
-    clearCustomerSession();
+  async function signOut() {
+    setSignedOut(true);
     setMenuOpen(false);
     setAccountOpen(false);
     setSignInOpen(false);
+    await clearCustomerSession();
     void navigate({ to: "/", replace: true });
   }
 
