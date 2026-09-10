@@ -37,6 +37,7 @@ import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-m
 import { Route as ApiBackupStatusRouteImport } from './routes/api.backup-status'
 import { Route as ApiAuditEventsRouteImport } from './routes/api.audit-events'
 import { Route as ApiAllocationRecommendationsRouteImport } from './routes/api.allocation-recommendations'
+import { Route as ApiAdminUsersRouteImport } from './routes/api.admin-users'
 import { Route as ApiAdminReportsRouteImport } from './routes/api.admin-reports'
 import { Route as ApiAdminDashboardRouteImport } from './routes/api.admin-dashboard'
 import { Route as ApiAdminCalendarRouteImport } from './routes/api.admin-calendar'
@@ -202,6 +203,11 @@ const ApiAllocationRecommendationsRoute =
     path: '/api/allocation-recommendations',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
+  id: '/api/admin-users',
+  path: '/api/admin-users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminReportsRoute = ApiAdminReportsRouteImport.update({
   id: '/api/admin-reports',
   path: '/api/admin-reports',
@@ -345,6 +351,7 @@ export interface FileRoutesByFullPath {
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
+  '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
@@ -397,6 +404,7 @@ export interface FileRoutesByTo {
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
+  '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
@@ -451,6 +459,7 @@ export interface FileRoutesById {
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
+  '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
@@ -506,6 +515,7 @@ export interface FileRouteTypes {
     | '/api/admin-calendar'
     | '/api/admin-dashboard'
     | '/api/admin-reports'
+    | '/api/admin-users'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
@@ -558,6 +568,7 @@ export interface FileRouteTypes {
     | '/api/admin-calendar'
     | '/api/admin-dashboard'
     | '/api/admin-reports'
+    | '/api/admin-users'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
@@ -611,6 +622,7 @@ export interface FileRouteTypes {
     | '/api/admin-calendar'
     | '/api/admin-dashboard'
     | '/api/admin-reports'
+    | '/api/admin-users'
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
@@ -651,6 +663,7 @@ export interface RootRouteChildren {
   ApiAdminCalendarRoute: typeof ApiAdminCalendarRoute
   ApiAdminDashboardRoute: typeof ApiAdminDashboardRoute
   ApiAdminReportsRoute: typeof ApiAdminReportsRoute
+  ApiAdminUsersRoute: typeof ApiAdminUsersRoute
   ApiAllocationRecommendationsRoute: typeof ApiAllocationRecommendationsRoute
   ApiAuditEventsRoute: typeof ApiAuditEventsRoute
   ApiBackupStatusRoute: typeof ApiBackupStatusRoute
@@ -875,6 +888,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAllocationRecommendationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin-users': {
+      id: '/api/admin-users'
+      path: '/api/admin-users'
+      fullPath: '/api/admin-users'
+      preLoaderRoute: typeof ApiAdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin-reports': {
       id: '/api/admin-reports'
       path: '/api/admin-reports'
@@ -1090,6 +1110,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminCalendarRoute: ApiAdminCalendarRoute,
   ApiAdminDashboardRoute: ApiAdminDashboardRoute,
   ApiAdminReportsRoute: ApiAdminReportsRoute,
+  ApiAdminUsersRoute: ApiAdminUsersRoute,
   ApiAllocationRecommendationsRoute: ApiAllocationRecommendationsRoute,
   ApiAuditEventsRoute: ApiAuditEventsRoute,
   ApiBackupStatusRoute: ApiBackupStatusRoute,
