@@ -7,6 +7,7 @@ import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
 import { FINDER_BASELINE, revalidateFinderBookingBasis } from "@/lib/finder-booking";
 import { evaluateCanonicalVehicleFinder } from "@/lib/vehicle-finder.server";
 import { BOOKING_READ_SELECT } from "@/lib/booking-reads";
+import { existingBookingFromLookup } from "@/lib/booking-idempotency";
 
 const text = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 const optionalText = (v: unknown) => text(v) || null;
@@ -134,7 +135,7 @@ async function createBooking({ request }: { request: Request }) {
       if (existing.error.message?.includes("idempotency_request_mismatch")) return errorResponse("This submission key was already used for different booking details. Please submit again.", 409);
       return errorResponse("Unable to create booking request.", 400);
     }
-    const existingBooking = Array.isArray(existing.data) ? existing.data[0] : existing.data;
+    const existingBooking = existingBookingFromLookup(existing.data);
     if (existingBooking) return Response.json(existingBooking, { status: 200 });
     const [vehicle, pickupBranch, returnBranch] = await Promise.all([
       client.from("vehicles").select("id").eq("id", requestedVehicleId).eq("is_active", true).maybeSingle(),
