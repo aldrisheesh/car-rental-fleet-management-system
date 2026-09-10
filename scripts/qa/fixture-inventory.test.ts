@@ -29,8 +29,10 @@ import {
   planHistoricalCoverage,
   planHistoricalCoverageRestore,
   parseArguments,
+  restoreCoverageInTransaction,
   SIDE_EFFECT_TRIGGERS,
   SYNTHETIC_FORECAST_COVERAGE_FLAG,
+  updateCoverageInTransaction,
 } from "./controlled-fixtures.ts";
 
 function uuid(number: number) {
@@ -349,6 +351,18 @@ function coverageReferences(trackingStartedAt: string) {
   } as Parameters<typeof assertHistoricalCoverage>[1];
 }
 
+function mockCoverageTransaction(...responses: Record<string, unknown>[][]) {
+  const calls: { text: string; values: unknown[] }[] = [];
+  const transaction = (<T>(
+    strings: TemplateStringsArray,
+    ...values: unknown[]
+  ) => {
+    calls.push({ text: strings.join("?").replace(/\s+/g, " ").trim(), values });
+    return Promise.resolve(responses.shift() as T);
+  }) as Parameters<typeof updateCoverageInTransaction>[0];
+  return { calls, transaction };
+}
+
 test("historical apply keeps the default insufficient-coverage refusal", () => {
   const fixture = historicalDataset();
   const references = coverageReferences("2026-09-01T02:42:18.555Z");
@@ -457,6 +471,130 @@ test("legacy partial coverage metadata is recovered with the exact raw timestamp
       ? restored.snapshot.previous.trackingStartedAt
       : null,
     raw,
+  );
+});
+
+test("coverage update keeps raw microseconds in a text-typed SQL parameter", async () => {
+  const raw = "2026-09-01 02:42:18.555866+00";
+  const plan = planHistoricalCoverage(
+    { rowExists: true, trackingStartedAt: raw },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(plan.action, "update");
+  if (plan.action !== "update") return;
+  const { calls, transaction } = mockCoverageTransaction(
+    [{ tracking_started_at: raw }],
+    [{ tracking_started_at: "2026-06-28 16:00:00.000000+00" }],
+  );
+
+  await updateCoverageInTransaction(transaction, plan);
+
+  const update = calls[1];
+  assert.match(update.text, /set tracking_started_at = \?::text::timestamptz/);
+  assert.match(update.text, /tracking_started_at::text = \?/);
+  assert.equal(update.values[1], raw);
+  assert.equal(update.values[0], "2026-06-29T00:00:00+08:00");
+});
+
+test("coverage update refuses a different microsecond before issuing UPDATE", async () => {
+  const raw = "2026-09-01 02:42:18.555866+00";
+  const plan = planHistoricalCoverage(
+    { rowExists: true, trackingStartedAt: raw },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(plan.action, "update");
+  if (plan.action !== "update") return;
+  const { calls, transaction } = mockCoverageTransaction([
+    { tracking_started_at: "2026-09-01 02:42:18.555867+00" },
+  ]);
+
+  await assert.rejects(
+    updateCoverageInTransaction(transaction, plan),
+    /changed after validation/,
+  );
+  assert.equal(calls.length, 1);
+});
+
+test("coverage update refuses when PostgreSQL does not return exactly one row", async () => {
+  const plan = planHistoricalCoverage(
+    {
+      rowExists: true,
+      trackingStartedAt: "2026-09-01 02:42:18.555866+00",
+    },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(plan.action, "update");
+  if (plan.action !== "update") return;
+  const { transaction } = mockCoverageTransaction(
+    [{ tracking_started_at: "2026-09-01 02:42:18.555866+00" }],
+    [],
+  );
+
+  await assert.rejects(
+    updateCoverageInTransaction(transaction, plan),
+    /not applied exactly once/,
+  );
+});
+
+test("coverage restore uses the exact original raw timestamp text", async () => {
+  const raw = "2026-09-01 02:42:18.555866+00";
+  const first = planHistoricalCoverage(
+    { rowExists: true, trackingStartedAt: raw },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  const restore = planHistoricalCoverageRestore(
+    { rowExists: true, trackingStartedAt: "2026-06-28 16:00:00.000000+00" },
+    first.snapshot,
+    "2026-06-29",
+  );
+  assert.equal(restore.action, "restore");
+  if (restore.action !== "restore") return;
+  const { calls, transaction } = mockCoverageTransaction(
+    [{ tracking_started_at: "2026-06-28 16:00:00.000000+00" }],
+    [{ tracking_started_at: raw }],
+  );
+
+  await restoreCoverageInTransaction(transaction, restore);
+
+  const update = calls[1];
+  assert.match(update.text, /set tracking_started_at = \?::text::timestamptz/);
+  assert.match(update.text, /tracking_started_at::text = \?/);
+  assert.equal(update.values[0], raw);
+  assert.equal(update.values[1], "2026-06-28 16:00:00.000000+00");
+});
+
+test("coverage restore refuses when PostgreSQL does not return exactly one row", async () => {
+  const first = planHistoricalCoverage(
+    {
+      rowExists: true,
+      trackingStartedAt: "2026-09-01 02:42:18.555866+00",
+    },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  const restore = planHistoricalCoverageRestore(
+    { rowExists: true, trackingStartedAt: "2026-06-28 16:00:00.000000+00" },
+    first.snapshot,
+    "2026-06-29",
+  );
+  assert.equal(restore.action, "restore");
+  if (restore.action !== "restore") return;
+  const { transaction } = mockCoverageTransaction(
+    [{ tracking_started_at: "2026-06-28 16:00:00.000000+00" }],
+    [],
+  );
+
+  await assert.rejects(
+    restoreCoverageInTransaction(transaction, restore),
+    /did not restore forecast coverage exactly once/,
   );
 });
 
