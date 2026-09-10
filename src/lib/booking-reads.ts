@@ -1,0 +1,2 @@
+export const BOOKING_READ_SELECT =
+  "*, customer:profiles!booking_requests_customer_id_fkey(id,full_name,email,phone_number), requested_vehicle:vehicles!booking_requests_requested_vehicle_id_fkey(id,name,license_plate,branch_id), assigned_vehicle:vehicles!booking_requests_assigned_vehicle_id_fkey(id,name,license_plate,branch_id,is_active), pickup_branch:branches!booking_requests_pickup_branch_id_fkey(id,name), return_branch:branches!booking_requests_return_branch_id_fkey(id,name)";
