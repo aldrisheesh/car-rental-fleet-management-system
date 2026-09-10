@@ -85,6 +85,13 @@ export function selectLatestSupplyEvaluations(
   );
 }
 
+export function canShowSupplyEvaluationActions(
+  staffView: boolean,
+  unevaluatedForecastCount: number,
+) {
+  return !staffView && unevaluatedForecastCount > 0;
+}
+
 export function buildForecastChart(rows: CanonicalForecast[]) {
   const seriesBySource = new Map<string, ForecastChartSeries>();
   const dataByWeek = new Map<string, Record<string, string | number>>();
