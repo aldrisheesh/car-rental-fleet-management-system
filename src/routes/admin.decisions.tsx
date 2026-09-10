@@ -25,6 +25,7 @@ import {
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 import {
   buildForecastChart,
+  canShowSupplyEvaluationActions,
   forecastLabel,
   selectLatestForecasts,
   selectLatestSupplyEvaluations,
@@ -454,6 +455,10 @@ function DecisionPage() {
   const unevaluatedForecasts = forecastRows.filter(
     (forecast) => !evaluatedForecastIds.has(forecast.id),
   );
+  const showSupplyEvaluationActions = canShowSupplyEvaluationActions(
+    staffView,
+    unevaluatedForecasts.length,
+  );
   const utilizationRows = [...vehicleAnalytics].sort((left, right) =>
     left.name.localeCompare(right.name),
   );
@@ -829,37 +834,37 @@ function DecisionPage() {
                   );
                 })}
               </ul>
-              {!staffView && unevaluatedForecasts.length ? (
-                <div className="border-t border-border p-5">
-                  <p className="mb-3 text-xs text-muted-foreground">
-                    Persisted forecasts without a supply snapshot
-                  </p>
-                  <div className="space-y-2">
-                    {unevaluatedForecasts.map((forecast) => (
-                      <div
-                        key={forecast.id}
-                        className="flex flex-wrap items-center justify-between gap-3 text-sm"
-                      >
-                        <span>
-                          {forecastLabel(forecast)} ·{" "}
-                          {formatDay(forecast.target_week_start)}
-                        </span>
-                        <Btn
-                          variant="ghost"
-                          disabled={supplyBusyForecastId === forecast.id}
-                          onClick={() => void evaluateSupply(forecast.id)}
-                        >
-                          {supplyBusyForecastId === forecast.id
-                            ? "Evaluating…"
-                            : "Evaluate supply"}
-                        </Btn>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
             </>
           )}
+          {showSupplyEvaluationActions ? (
+            <div className="border-t border-border p-5">
+              <p className="mb-3 text-xs text-muted-foreground">
+                Persisted forecasts without a supply snapshot
+              </p>
+              <div className="space-y-2">
+                {unevaluatedForecasts.map((forecast) => (
+                  <div
+                    key={forecast.id}
+                    className="flex flex-wrap items-center justify-between gap-3 text-sm"
+                  >
+                    <span>
+                      {forecastLabel(forecast)} ·{" "}
+                      {formatDay(forecast.target_week_start)}
+                    </span>
+                    <Btn
+                      variant="ghost"
+                      disabled={supplyBusyForecastId === forecast.id}
+                      onClick={() => void evaluateSupply(forecast.id)}
+                    >
+                      {supplyBusyForecastId === forecast.id
+                        ? "Evaluating…"
+                        : "Evaluate supply"}
+                    </Btn>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </Card>
 
         {!staffView ? (
