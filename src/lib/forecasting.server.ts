@@ -65,7 +65,7 @@ export function mapeFromDatabaseRows(rows: any[]) {
 export async function loadCanonicalBookings() {
   const { getSupabaseServerClient } = await import("./supabase/server");
   const client = getSupabaseServerClient() as any;
-  const result = await client.from("booking_requests").select("id,booking_status,pickup_at,pickup_branch_id,requested_vehicle:vehicles!booking_requests_requested_vehicle_id(id,category:vehicle_categories(id,name))");
+  const result = await client.from("booking_requests").select("id,booking_status,pickup_at,pickup_branch_id,requested_vehicle:vehicles!booking_requests_requested_vehicle_id_fkey(id,category:vehicle_categories(id,name))");
   if (result.error) throw result.error;
   return result.data ?? [];
 }

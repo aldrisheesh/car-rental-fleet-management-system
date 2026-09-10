@@ -1,8 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { calculateWma, extractWeeklyDemand, trustworthyCoverageWeekStart, isoDay } from "./forecasting.server.ts";
 
 const booking = (week: string, status = "Confirmed") => ({ booking_status: status, pickup_branch_id: "b", pickup_at: `${week}T04:00:00Z`, requested_vehicle: { category: { id: "c" } } });
+
+test("forecast generation uses the explicit requested-vehicle FK relationship", async () => {
+  const source = await readFile(new URL("./forecasting.server.ts", import.meta.url), "utf8");
+  assert.match(source, /from\("booking_requests"\)\.select\("id,booking_status,pickup_at,pickup_branch_id,requested_vehicle:vehicles!booking_requests_requested_vehicle_id_fkey\(id,category:vehicle_categories\(id,name\)\)"\)/);
+  assert.doesNotMatch(source, /vehicles!booking_requests_requested_vehicle_id\(/);
+});
 
 test("coverage is not inferred from an earliest historical booking", () => {
   const result = extractWeeklyDemand([booking("2026-01-05")], "2026-09-01T00:00:00+08:00", new Date("2026-09-15T00:00:00+08:00"));
