@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { validateRequirementFile } from "@/lib/requirements-validation";
+import { isPaymentEligibleRequirementStatus } from "@/lib/requirements-access";
 import { projectCustomerPayment } from "@/lib/payment-integrity";
 
 const error = (message: string, status = 400) =>
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/api/payments")({
 async function read({ request }: { request: Request }) {
   try {
     const principal = await requirePrincipal();
+    // Supabase's generated relationship/RPC types do not cover this legacy payment query yet.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const client = getSupabaseServerClient() as any;
     const url = new URL(request.url);
     const bookingId = url.searchParams.get("bookingId");
@@ -44,7 +47,7 @@ async function read({ request }: { request: Request }) {
     let query = client
       .from("payments")
       .select(
-        "*, booking:booking_requests(id,booking_status,customer:profiles(id,full_name,email)), payment_methods(id,code,label,instructions,is_demo), payment_proofs(*)",
+        "*, booking:booking_requests(id,booking_status,customer:profiles!booking_requests_customer_id_fkey(id,full_name,email)), payment_methods(id,code,label,instructions,is_demo), payment_proofs(*)",
       )
       .order("updated_at", { ascending: false });
     if (principal.role === "Customer/Renter")
@@ -76,6 +79,8 @@ async function mutate({ request }: { request: Request }) {
   let uploadedPath: string | null = null;
   try {
     const principal = await requirePrincipal();
+    // Supabase's generated relationship/RPC types do not cover this legacy payment query yet.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const client = getSupabaseServerClient() as any;
     if (principal.role === "Owner/Admin") {
       const body = (await request.json().catch(() => null)) as Record<
@@ -155,7 +160,7 @@ async function mutate({ request }: { request: Request }) {
       .eq("booking_id", bookingId)
       .eq("customer_id", principal.userId)
       .maybeSingle();
-    if (req.data?.status !== "Verified")
+    if (!isPaymentEligibleRequirementStatus(req.data?.status))
       return error(
         "Payment is available only after requirements are Verified.",
         409,
@@ -214,10 +219,13 @@ async function mutate({ request }: { request: Request }) {
   } catch (e) {
     if (uploadedPath) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (getSupabaseServerClient() as any).storage
           .from("payment-proofs")
           .remove([uploadedPath]);
-      } catch {}
+      } catch {
+        // Cleanup is best-effort after a failed submission.
+      }
     }
     return error(
       e instanceof Error && e.message === "forbidden"

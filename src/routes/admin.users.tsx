@@ -1,26 +1,30 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Mail, MapPin, Phone, Pencil, ShieldCheck, User, Users } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import {
+  AlertTriangle,
+  MapPin,
+  Phone,
+  RefreshCw,
+  ShieldCheck,
+  User,
+  Users,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Badge, Btn, Card, CardHeader, PageHeader, TInput } from "@/components/admin/ui";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { users } from "@/data/admin";
+  Badge,
+  Btn,
+  Card,
+  CardHeader,
+  PageHeader,
+} from "@/components/admin/ui";
+import { APP_ROLES, type AppRole } from "@/lib/auth";
 import {
-  canAccessPayments,
-  getAdminProfile,
-  getAdminProfiles,
-  getAdminSession,
-  isStaffRole,
-  setAdminProfile,
-  setAdminSession,
-  type AdminProfile,
-} from "@/lib/admin-auth";
+  canManageApplicationUsers,
+  type AdminUserAccount,
+  type AdminUserRoleResponse,
+  type AdminUsersResponse,
+} from "@/lib/admin-users";
+import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/users")({
   beforeLoad: () => {
@@ -32,132 +36,169 @@ export const Route = createFileRoute("/admin/users")({
   component: UsersPage,
 });
 
-const roleSummary = [
+const roleSummary: Array<{
+  role: AppRole;
+  icon: typeof ShieldCheck;
+  accountType: string;
+  perms: string[];
+}> = [
   {
-    role: "Business Owner",
+    role: "Owner/Admin",
     icon: ShieldCheck,
     accountType: "Primary operations authority",
     perms: [
       "Full access to operational records and payment information",
       "Approves rentals and vehicle allocation decisions",
       "Monitors maintenance activities and operational reports",
-      "Oversees branch operations and final operational decisions",
+      "Manages canonical application account roles",
     ],
   },
   {
-    role: "Staff",
+    role: "Operations Staff",
     icon: Users,
     accountType: "Operations and coordination account",
     perms: [
       "Handles reservation coordination and booking schedule monitoring",
       "Manages customer communication and calendar updates",
       "Submits operational updates for daily branch work",
-      "Limited access to sensitive financial and payment records",
+      "Cannot change application account roles",
     ],
   },
   {
-    role: "Customers / Renters",
+    role: "Customer/Renter",
     icon: User,
     accountType: "Customer service account",
     perms: [
       "Inquires about vehicle availability",
       "Submits reservation requests and rental requirements",
       "Receives booking confirmations",
-      "Receives operational updates related to rentals",
+      "Cannot change application account roles",
     ],
   },
 ];
 
+type LoadState =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "ready"; accounts: AdminUserAccount[] };
+
 function UsersPage() {
   const session = getAdminSession();
-  const canManageUsers = canAccessPayments(session?.role);
+  const canManageUsers = canManageApplicationUsers(session?.role);
+  const [state, setState] = useState<LoadState>({ status: "loading" });
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [draftRole, setDraftRole] = useState<string>("Staff");
-  const [roleOverrides, setRoleOverrides] = useState<Record<string, string>>({});
-  const [profiles, setProfiles] = useState(() => getAdminProfiles());
-  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  const [profileDraft, setProfileDraft] = useState<AdminProfile | null>(null);
+  const [draftRole, setDraftRole] = useState<AppRole>(APP_ROLES[0]);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
-  const roleOptions = ["Business Owner", "Staff", "Customers / Renters"] as const;
-  const getEffectiveRole = (id: string, role: string) => roleOverrides[id] ?? role;
-  const accountRows = users.map((user) => ({
-    ...user,
-    profile: profiles[user.id] ?? getAdminProfile(user.id),
-  }));
+  const loadAccounts = useCallback(async () => {
+    setState({ status: "loading" });
+    try {
+      const response = await fetch("/api/admin-users", {
+        credentials: "same-origin",
+      });
+      const body = (await response.json().catch(() => null)) as
+        | AdminUsersResponse
+        | { message?: string }
+        | null;
+      if (!response.ok || !body || !("accounts" in body)) {
+        throw new Error(
+          body && "message" in body && body.message
+            ? body.message
+            : "Unable to load application accounts.",
+        );
+      }
+      setState({ status: "ready", accounts: body.accounts });
+    } catch (error) {
+      setState({
+        status: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to load application accounts.",
+      });
+    }
+  }, []);
 
-  function openProfileEditor(userId: string) {
-    setProfileDraft(profiles[userId] ?? getAdminProfile(userId));
-    setProfileDialogOpen(true);
+  useEffect(() => {
+    void loadAccounts();
+  }, [loadAccounts]);
+
+  async function saveRole(account: AdminUserAccount) {
+    if (!canManageUsers || savingId) return;
+    setSavingId(account.id);
+    try {
+      const response = await fetch("/api/admin-users", {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: account.id, role: draftRole }),
+      });
+      const body = (await response.json().catch(() => null)) as
+        | AdminUserRoleResponse
+        | { message?: string }
+        | null;
+      if (!response.ok || !body || !("account" in body)) {
+        throw new Error(
+          body && "message" in body && body.message
+            ? body.message
+            : "Unable to update the application account role.",
+        );
+      }
+
+      setState((current) => {
+        if (current.status !== "ready") return current;
+        return {
+          status: "ready",
+          accounts: current.accounts.map((item) =>
+            item.id === body.account.id ? body.account : item,
+          ),
+        };
+      });
+      setEditingId(null);
+      toast.success("Role updated", {
+        description: `${body.account.fullName || body.account.email || "Account"} is now ${body.account.role}.`,
+      });
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to update the application account role.",
+      );
+    } finally {
+      setSavingId(null);
+    }
   }
 
-  function updateProfileDraft(field: keyof AdminProfile, value: string) {
-    setProfileDraft((current) => (current ? { ...current, [field]: value } : current));
-  }
-
-  function handleProfileSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!profileDraft) return;
-
-    if (!profileDraft.name.trim()) {
-      toast.error("Please enter a full name.");
-      return;
-    }
-
-    if (profileDraft.phone.trim() && profileDraft.phone.replace(/\D/g, "").length < 10) {
-      toast.error("Please enter a valid contact number.");
-      return;
-    }
-
-    const currentProfile = getAdminProfile(profileDraft.id);
-    const savedProfile = setAdminProfile({
-      id: profileDraft.id,
-      name: profileDraft.name.trim(),
-      email: currentProfile.email,
-      phone: profileDraft.phone.trim(),
-      streetAddress: profileDraft.streetAddress.trim(),
-      barangay: profileDraft.barangay.trim(),
-      cityMunicipality: profileDraft.cityMunicipality.trim(),
-      province: profileDraft.province.trim(),
-      postalCode: profileDraft.postalCode.trim(),
-    });
-
-    setProfiles((current) => ({ ...current, [savedProfile.id]: savedProfile }));
-
-    const activeSession = getAdminSession();
-    if (activeSession?.userId === savedProfile.id) {
-      setAdminSession({ ...activeSession, name: savedProfile.name });
-    }
-
-    setProfileDialogOpen(false);
-    setProfileDraft(null);
-    toast.success("Profile updated", {
-      description: `${savedProfile.name}'s account details have been saved.`,
-    });
-  }
+  const accounts = state.status === "ready" ? state.accounts : [];
 
   return (
     <div>
       <PageHeader
         title="Users & roles"
-        subtitle="Manage role-based access for owners, staff, and renters."
+        subtitle="Review canonical application profiles and manage persisted access roles."
       />
 
       <div className="grid gap-4 lg:grid-cols-3">
-        {roleSummary.map((r) => (
-          <Card key={r.role} className="p-5">
+        {roleSummary.map((item) => (
+          <Card key={item.role} className="p-5">
             <div className="flex items-center gap-3">
               <span className="grid h-9 w-9 place-items-center rounded-md bg-primary/15 text-primary">
-                <r.icon className="h-4 w-4" />
+                <item.icon className="h-4 w-4" />
               </span>
               <div>
-                <div className="font-display text-lg font-semibold">{r.role}</div>
-                <div className="text-xs text-muted-foreground">{r.accountType}</div>
+                <div className="font-display text-lg font-semibold">
+                  {item.role}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {item.accountType}
+                </div>
               </div>
             </div>
             <ul className="mt-4 space-y-1.5 border-t border-border pt-4 text-xs text-muted-foreground">
-              {r.perms.map((p) => (
-                <li key={p} className="flex items-center gap-2">
-                  <span className="h-1 w-1 rounded-full bg-primary" /> {p}
+              {item.perms.map((permission) => (
+                <li key={permission} className="flex items-center gap-2">
+                  <span className="h-1 w-1 rounded-full bg-primary" />{" "}
+                  {permission}
                 </li>
               ))}
             </ul>
@@ -166,263 +207,165 @@ function UsersPage() {
       </div>
 
       <Card className="mt-6">
-        <CardHeader title="Accounts" hint={`${users.length} owner, staff, and renter accounts`} />
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-sm">
-            <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              <tr className="border-b border-border">
-                <th className="px-5 py-3 text-left font-semibold">User</th>
-                <th className="px-5 py-3 text-left font-semibold">Role</th>
-                <th className="px-5 py-3 text-left font-semibold">Contact</th>
-                <th className="px-5 py-3 text-right font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {accountRows.map((u) => (
-                <tr key={u.id} className="border-b border-border/60 hover:bg-secondary/40">
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      <span className="grid h-9 w-9 place-items-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
-                        {getInitials(u.profile.name)}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="font-medium">{u.profile.name}</div>
-                        <div className="break-all text-xs text-muted-foreground">
-                          {u.profile.email}
+        <CardHeader
+          title="Canonical accounts"
+          hint={`${accounts.length} application profiles`}
+        />
+        <p className="border-b border-border px-5 py-3 text-xs text-muted-foreground">
+          Profile details are read-only on this page. Role changes are persisted
+          against the canonical profile record.
+        </p>
+
+        {state.status === "loading" ? (
+          <p className="px-5 py-12 text-center text-sm text-muted-foreground">
+            Loading canonical accounts...
+          </p>
+        ) : state.status === "error" ? (
+          <div role="alert" className="px-5 py-10 text-center">
+            <AlertTriangle className="mx-auto h-6 w-6 text-amber-400" />
+            <p className="mt-3 text-sm">{state.message}</p>
+            <Btn className="mt-4" onClick={() => void loadAccounts()}>
+              <RefreshCw className="h-4 w-4" /> Retry
+            </Btn>
+          </div>
+        ) : accounts.length === 0 ? (
+          <p className="px-5 py-12 text-center text-sm text-muted-foreground">
+            No canonical application accounts are available.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[860px] text-sm">
+              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                <tr className="border-b border-border">
+                  <th className="px-5 py-3 text-left font-semibold">User</th>
+                  <th className="px-5 py-3 text-left font-semibold">Role</th>
+                  <th className="px-5 py-3 text-left font-semibold">Status</th>
+                  <th className="px-5 py-3 text-left font-semibold">Contact</th>
+                  <th className="px-5 py-3 text-right font-semibold">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {accounts.map((account) => (
+                  <tr
+                    key={account.id}
+                    className="border-b border-border/60 hover:bg-secondary/40"
+                  >
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <span className="grid h-9 w-9 place-items-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+                          {getInitials(account.fullName)}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="font-medium">
+                            {account.fullName || "Unnamed account"}
+                          </div>
+                          <div className="break-all text-xs text-muted-foreground">
+                            {account.email || "No email address"}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3">
-                    {editingId === u.id ? (
-                      <select
-                        className="input-control min-h-10"
-                        value={draftRole}
-                        onChange={(e) => setDraftRole(e.target.value)}
-                        disabled={!canManageUsers}
-                      >
-                        {roleOptions.map((r) => (
-                          <option key={r} value={r}>
-                            {r}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <Badge>{getEffectiveRole(u.id, u.role)}</Badge>
-                    )}
-                  </td>
-                  <td className="px-5 py-3">
-                    <div className="max-w-64 space-y-1 text-xs text-muted-foreground">
-                      <div className="flex items-start gap-1.5">
-                        <Phone className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                        <span className="break-words">{u.profile.phone || "Not set"}</span>
-                      </div>
-                      <div className="flex items-start gap-1.5">
-                        <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                        <span className="break-words">{formatAddress(u.profile) || "Not set"}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    {editingId === u.id ? (
-                      <div className="inline-flex items-center justify-end gap-2">
-                        <Btn
-                          variant="primary"
-                          disabled={!canManageUsers}
-                          onClick={() => {
-                            setRoleOverrides((prev) => ({ ...prev, [u.id]: draftRole }));
-                            setEditingId(null);
-                          }}
-                          title={canManageUsers ? "Save role" : "Only admin can edit roles"}
+                    </td>
+                    <td className="px-5 py-3">
+                      {editingId === account.id ? (
+                        <select
+                          className="input-control min-h-10"
+                          value={draftRole}
+                          onChange={(event) =>
+                            setDraftRole(event.target.value as AppRole)
+                          }
+                          disabled={!canManageUsers || savingId === account.id}
+                          aria-label={`Role for ${account.fullName || account.email || "account"}`}
                         >
-                          Save
-                        </Btn>
-                        <Btn
-                          variant="ghost"
-                          onClick={() => {
-                            setDraftRole(getEffectiveRole(u.id, u.role));
-                            setEditingId(null);
-                          }}
-                        >
-                          Cancel
-                        </Btn>
+                          {APP_ROLES.map((role) => (
+                            <option key={role} value={role}>
+                              {role}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <Badge>{account.role}</Badge>
+                      )}
+                    </td>
+                    <td className="px-5 py-3">
+                      <Badge>{account.accountStatus}</Badge>
+                    </td>
+                    <td className="px-5 py-3">
+                      <div className="max-w-64 space-y-1 text-xs text-muted-foreground">
+                        <div className="flex items-start gap-1.5">
+                          <Phone className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                          <span className="break-words">
+                            {account.phoneNumber || "Not set"}
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-1.5">
+                          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                          <span className="break-words">
+                            {formatAddress(account) || "Not set"}
+                          </span>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="inline-flex flex-wrap items-center justify-end gap-2">
-                        <Btn
-                          variant="default"
-                          disabled={!canManageUsers}
-                          onClick={() => openProfileEditor(u.id)}
-                          title={canManageUsers ? "Edit profile" : "Only admin can edit profiles"}
-                        >
-                          <Pencil className="h-4 w-4" />
-                          Edit profile
-                        </Btn>
-                        <Btn
-                          variant="ghost"
-                          disabled={!canManageUsers}
-                          onClick={() => {
-                            setEditingId(u.id);
-                            setDraftRole(getEffectiveRole(u.id, u.role));
-                          }}
-                          title={canManageUsers ? "Edit role" : "Only admin can edit roles"}
-                        >
-                          {canManageUsers ? "Edit role" : "View only"}
-                        </Btn>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      {canManageUsers ? (
+                        editingId === account.id ? (
+                          <div className="inline-flex items-center justify-end gap-2">
+                            <Btn
+                              variant="primary"
+                              disabled={savingId === account.id}
+                              onClick={() => void saveRole(account)}
+                            >
+                              {savingId === account.id
+                                ? "Saving..."
+                                : "Save role"}
+                            </Btn>
+                            <Btn
+                              variant="ghost"
+                              disabled={savingId === account.id}
+                              onClick={() => setEditingId(null)}
+                            >
+                              Cancel
+                            </Btn>
+                          </div>
+                        ) : (
+                          <Btn
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingId(account.id);
+                              setDraftRole(account.role);
+                            }}
+                            title="Edit persisted role"
+                          >
+                            Edit role
+                          </Btn>
+                        )
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          View only
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Card>
-
-      <Dialog
-        open={profileDialogOpen}
-        onOpenChange={(open) => {
-          setProfileDialogOpen(open);
-          if (!open) setProfileDraft(null);
-        }}
-      >
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit profile</DialogTitle>
-          </DialogHeader>
-
-          {profileDraft ? (
-            <form onSubmit={handleProfileSubmit}>
-              <div className="grid gap-4 py-2 sm:grid-cols-2">
-                <ProfileField label="Full name" id="user-profile-name" icon={<User />}>
-                  <TInput
-                    id="user-profile-name"
-                    value={profileDraft.name}
-                    onChange={(event) => updateProfileDraft("name", event.target.value)}
-                    autoComplete="name"
-                    required
-                  />
-                </ProfileField>
-
-                <ProfileField label="Email address" id="user-profile-email" icon={<Mail />}>
-                  <div
-                    id="user-profile-email"
-                    className="input-control flex min-h-11 items-center bg-secondary/40 text-muted-foreground"
-                  >
-                    <span className="truncate text-foreground">{profileDraft.email}</span>
-                  </div>
-                </ProfileField>
-
-                <ProfileField label="Contact No." id="user-profile-phone" icon={<Phone />}>
-                  <TInput
-                    id="user-profile-phone"
-                    value={profileDraft.phone}
-                    onChange={(event) => updateProfileDraft("phone", event.target.value)}
-                    autoComplete="tel"
-                    placeholder="+63 917 000 0000"
-                  />
-                </ProfileField>
-
-                <ProfileField
-                  label="House no. / Street / Subdivision"
-                  id="user-profile-street"
-                  icon={<MapPin />}
-                >
-                  <TInput
-                    id="user-profile-street"
-                    value={profileDraft.streetAddress}
-                    onChange={(event) => updateProfileDraft("streetAddress", event.target.value)}
-                    autoComplete="street-address"
-                  />
-                </ProfileField>
-
-                <ProfileField label="Barangay" id="user-profile-barangay" icon={<MapPin />}>
-                  <TInput
-                    id="user-profile-barangay"
-                    value={profileDraft.barangay}
-                    onChange={(event) => updateProfileDraft("barangay", event.target.value)}
-                  />
-                </ProfileField>
-
-                <ProfileField label="City / Municipality" id="user-profile-city" icon={<MapPin />}>
-                  <TInput
-                    id="user-profile-city"
-                    value={profileDraft.cityMunicipality}
-                    onChange={(event) => updateProfileDraft("cityMunicipality", event.target.value)}
-                  />
-                </ProfileField>
-
-                <ProfileField label="Province" id="user-profile-province" icon={<MapPin />}>
-                  <TInput
-                    id="user-profile-province"
-                    value={profileDraft.province}
-                    onChange={(event) => updateProfileDraft("province", event.target.value)}
-                  />
-                </ProfileField>
-
-                <ProfileField label="Postal code" id="user-profile-postal" icon={<MapPin />}>
-                  <TInput
-                    id="user-profile-postal"
-                    value={profileDraft.postalCode}
-                    onChange={(event) => updateProfileDraft("postalCode", event.target.value)}
-                    inputMode="numeric"
-                    autoComplete="postal-code"
-                  />
-                </ProfileField>
-              </div>
-
-              <DialogFooter className="mt-4">
-                <Btn type="button" onClick={() => setProfileDialogOpen(false)}>
-                  Cancel
-                </Btn>
-                <Btn type="submit" variant="primary">
-                  Save profile
-                </Btn>
-              </DialogFooter>
-            </form>
-          ) : null}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
 
-function ProfileField({
-  label,
-  id,
-  icon,
-  children,
-}: {
-  label: string;
-  id: string;
-  icon: React.ReactElement;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block" htmlFor={id}>
-      <span className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        <span className="[&_svg]:h-3.5 [&_svg]:w-3.5">{icon}</span>
-        {label}
-      </span>
-      {children}
-    </label>
-  );
-}
-
-function formatAddress(
-  profile: Pick<
-    AdminProfile,
-    "streetAddress" | "barangay" | "cityMunicipality" | "province" | "postalCode"
-  >,
-) {
+function formatAddress(account: AdminUserAccount) {
   return [
-    profile.streetAddress,
-    profile.barangay,
-    profile.cityMunicipality,
-    profile.province,
-    profile.postalCode,
+    account.streetAddress,
+    account.barangay,
+    account.cityMunicipality,
+    account.province,
+    account.postalCode,
   ]
-    .map((part) => part.trim())
+    .map((part) => part?.trim())
     .filter(Boolean)
     .join(", ");
 }
