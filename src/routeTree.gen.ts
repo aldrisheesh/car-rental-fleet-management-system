@@ -39,6 +39,7 @@ import { Route as ApiAuditEventsRouteImport } from './routes/api.audit-events'
 import { Route as ApiAllocationRecommendationsRouteImport } from './routes/api.allocation-recommendations'
 import { Route as ApiAdminUsersRouteImport } from './routes/api.admin-users'
 import { Route as ApiAdminReportsRouteImport } from './routes/api.admin-reports'
+import { Route as ApiAdminFleetRouteImport } from './routes/api.admin-fleet'
 import { Route as ApiAdminDashboardRouteImport } from './routes/api.admin-dashboard'
 import { Route as ApiAdminCalendarRouteImport } from './routes/api.admin-calendar'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
@@ -213,6 +214,11 @@ const ApiAdminReportsRoute = ApiAdminReportsRouteImport.update({
   path: '/api/admin-reports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminFleetRoute = ApiAdminFleetRouteImport.update({
+  id: '/api/admin-fleet',
+  path: '/api/admin-fleet',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminDashboardRoute = ApiAdminDashboardRouteImport.update({
   id: '/api/admin-dashboard',
   path: '/api/admin-dashboard',
@@ -350,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin-fleet': typeof ApiAdminFleetRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
@@ -403,6 +410,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin-fleet': typeof ApiAdminFleetRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
@@ -458,6 +466,7 @@ export interface FileRoutesById {
   '/admin/users': typeof AdminUsersRoute
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin-fleet': typeof ApiAdminFleetRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
@@ -514,6 +523,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/admin-calendar'
     | '/api/admin-dashboard'
+    | '/api/admin-fleet'
     | '/api/admin-reports'
     | '/api/admin-users'
     | '/api/allocation-recommendations'
@@ -567,6 +577,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/admin-calendar'
     | '/api/admin-dashboard'
+    | '/api/admin-fleet'
     | '/api/admin-reports'
     | '/api/admin-users'
     | '/api/allocation-recommendations'
@@ -621,6 +632,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/admin-calendar'
     | '/api/admin-dashboard'
+    | '/api/admin-fleet'
     | '/api/admin-reports'
     | '/api/admin-users'
     | '/api/allocation-recommendations'
@@ -662,6 +674,7 @@ export interface RootRouteChildren {
   VehiclesRoute: typeof VehiclesRoute
   ApiAdminCalendarRoute: typeof ApiAdminCalendarRoute
   ApiAdminDashboardRoute: typeof ApiAdminDashboardRoute
+  ApiAdminFleetRoute: typeof ApiAdminFleetRoute
   ApiAdminReportsRoute: typeof ApiAdminReportsRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRoute
   ApiAllocationRecommendationsRoute: typeof ApiAllocationRecommendationsRoute
@@ -902,6 +915,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin-fleet': {
+      id: '/api/admin-fleet'
+      path: '/api/admin-fleet'
+      fullPath: '/api/admin-fleet'
+      preLoaderRoute: typeof ApiAdminFleetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin-dashboard': {
       id: '/api/admin-dashboard'
       path: '/api/admin-dashboard'
@@ -1109,6 +1129,7 @@ const rootRouteChildren: RootRouteChildren = {
   VehiclesRoute: VehiclesRoute,
   ApiAdminCalendarRoute: ApiAdminCalendarRoute,
   ApiAdminDashboardRoute: ApiAdminDashboardRoute,
+  ApiAdminFleetRoute: ApiAdminFleetRoute,
   ApiAdminReportsRoute: ApiAdminReportsRoute,
   ApiAdminUsersRoute: ApiAdminUsersRoute,
   ApiAllocationRecommendationsRoute: ApiAllocationRecommendationsRoute,
