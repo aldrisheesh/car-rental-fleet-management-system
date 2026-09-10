@@ -53,8 +53,11 @@ historical apply updates only the singleton
 `forecast_demand_coverage.tracking_started_at` to the exact historical window
 start. This is synthetic QA/demo coverage, not real operational coverage, and
 production still requires `--confirm-production-fixtures` as a separate gate.
-The previous singleton state is captured in protected historical fixture
-metadata for exact cleanup restoration.
+The raw PostgreSQL timestamp text, including microseconds, is captured in
+protected historical fixture metadata for exact cleanup restoration. Existing
+owned partial metadata written by the earlier millisecond-normalizing version
+is repaired from the unchanged database value on the next authorized apply;
+changed coverage still refuses.
 
 ## Apply
 

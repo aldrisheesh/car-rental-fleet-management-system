@@ -25,6 +25,7 @@ import {
   assertTargetAgreement,
   assertHistoricalCoverage,
   assertWriteSafety,
+  canonicalCoverageTimestamp,
   planHistoricalCoverage,
   planHistoricalCoverageRestore,
   parseArguments,
@@ -367,6 +368,121 @@ test("synthetic coverage authorization uses the exact historical window start", 
     rowExists: true,
     trackingStartedAt: "2026-09-01T02:42:18.555Z",
   });
+});
+
+test("PostgreSQL coverage text preserves microseconds in snapshots", () => {
+  const raw = "2026-09-01 02:42:18.555866+00";
+  assert.equal(
+    canonicalCoverageTimestamp(raw),
+    "2026-09-01 02:42:18.555866+00",
+  );
+  assert.notEqual(
+    canonicalCoverageTimestamp(raw),
+    canonicalCoverageTimestamp("2026-09-01 02:42:18.555867+00"),
+  );
+  const plan = assertHistoricalCoverage(
+    historicalDataset(),
+    coverageReferences(raw),
+    true,
+  );
+  assert.equal(plan?.snapshot.previous.trackingStartedAt, raw);
+});
+
+test("coverage ownership refuses a microsecond mismatch", () => {
+  const initial = {
+    rowExists: true,
+    trackingStartedAt: "2026-09-01 02:42:18.555866+00",
+  };
+  const first = planHistoricalCoverage(initial, "2026-06-29", true);
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  assert.throws(
+    () =>
+      planHistoricalCoverage(
+        {
+          rowExists: true,
+          trackingStartedAt: "2026-09-01 02:42:18.555867+00",
+        },
+        "2026-06-29",
+        true,
+        first.snapshot,
+      ),
+    /no longer matches/,
+  );
+});
+
+test("legacy partial coverage metadata is recovered with the exact raw timestamp", () => {
+  const raw = "2026-09-01 02:42:18.555866+00";
+  const legacySnapshot = {
+    version: 1,
+    owner: HISTORICAL_FIXTURE_OWNER,
+    historicalStart: "2026-06-29",
+    previous: {
+      rowExists: true,
+      trackingStartedAt: "2026-09-01T02:42:18.555Z",
+    },
+    appliedTrackingStartedAt: "2026-06-28T16:00:00.000Z",
+  };
+  const recovered = planHistoricalCoverage(
+    { rowExists: true, trackingStartedAt: raw },
+    "2026-06-29",
+    true,
+    legacySnapshot,
+  );
+  assert.equal(recovered.action, "update");
+  assert.equal(recovered.recoveredPartialSnapshot, true);
+  if (recovered.action !== "update") return;
+  assert.equal(recovered.snapshot.version, 2);
+  assert.equal(recovered.snapshot.previous.trackingStartedAt, raw);
+
+  const applied = {
+    rowExists: true,
+    trackingStartedAt: "2026-06-28 16:00:00+00",
+  };
+  const repeated = planHistoricalCoverage(
+    applied,
+    "2026-06-29",
+    true,
+    recovered.snapshot,
+  );
+  assert.equal(repeated.action, "already-owned");
+  const restored = planHistoricalCoverageRestore(
+    applied,
+    recovered.snapshot,
+    "2026-06-29",
+  );
+  assert.equal(restored.action, "restore");
+  assert.equal(
+    restored.action === "restore"
+      ? restored.snapshot.previous.trackingStartedAt
+      : null,
+    raw,
+  );
+});
+
+test("cleanup refuses a changed applied microsecond value", () => {
+  const first = planHistoricalCoverage(
+    {
+      rowExists: true,
+      trackingStartedAt: "2026-09-01 02:42:18.555866+00",
+    },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  assert.throws(
+    () =>
+      planHistoricalCoverageRestore(
+        {
+          rowExists: true,
+          trackingStartedAt: "2026-06-28 16:00:00.000001+00",
+        },
+        first.snapshot,
+        "2026-06-29",
+      ),
+    /no longer matches/,
+  );
 });
 
 test("historical coverage apply is idempotent and cleanup restores the exact prior state", () => {

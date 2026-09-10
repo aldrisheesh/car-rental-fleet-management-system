@@ -41,7 +41,8 @@ type Arguments = {
 export const SYNTHETIC_FORECAST_COVERAGE_FLAG =
   "--confirm-synthetic-forecast-coverage";
 const HISTORICAL_COVERAGE_METADATA_KEY = "qa_fixture_forecast_coverage";
-const HISTORICAL_COVERAGE_METADATA_VERSION = 1;
+const HISTORICAL_COVERAGE_METADATA_VERSION = 2;
+const LEGACY_HISTORICAL_COVERAGE_METADATA_VERSION = 1;
 
 export type ForecastCoverageState = {
   rowExists: boolean;
@@ -67,6 +68,7 @@ export type HistoricalCoveragePlan =
       current: ForecastCoverageState;
       proposedTrackingStartedAt: string;
       snapshot: HistoricalCoverageSnapshot;
+      recoveredPartialSnapshot?: boolean;
     }
   | {
       action: "already-owned";
@@ -365,10 +367,90 @@ function placeholderIdentities(
   }));
 }
 
-function normalizeTimestamp(value: unknown) {
-  if (value === null || value === undefined) return null;
-  const date = value instanceof Date ? value : new Date(String(value));
-  return Number.isFinite(date.getTime()) ? date.toISOString() : null;
+/**
+ * Canonicalizes timestamp formatting without discarding PostgreSQL's
+ * microsecond precision. This is used only for exact value comparison; the
+ * raw PostgreSQL text remains the value stored in coverage state/snapshots.
+ */
+export function canonicalCoverageTimestamp(value: unknown) {
+  if (typeof value !== "string") return null;
+  const match = value
+    .trim()
+    .match(
+      /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-]\d{2}(?::?\d{2})?)$/,
+    );
+  if (!match) return null;
+  const [
+    ,
+    yearText,
+    monthText,
+    dayText,
+    hourText,
+    minuteText,
+    secondText,
+    fractionText = "",
+    offsetText,
+  ] = match;
+  if (fractionText.length > 6) return null;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const second = Number(secondText);
+  let offsetMinutes = 0;
+  if (offsetText !== "Z") {
+    const offsetMatch = offsetText.match(/^([+-])(\d{2})(?::?(\d{2}))?$/);
+    if (!offsetMatch) return null;
+    offsetMinutes =
+      (Number(offsetMatch[2]) * 60 + Number(offsetMatch[3] ?? 0)) *
+      (offsetMatch[1] === "+" ? 1 : -1);
+  }
+  const epochMilliseconds =
+    Date.UTC(year, month - 1, day, hour, minute, second) -
+    offsetMinutes * 60 * 1000;
+  const instant = new Date(epochMilliseconds);
+  if (!Number.isFinite(instant.getTime())) return null;
+  return `${instant.toISOString().slice(0, 19).replace("T", " ")}.${fractionText.padEnd(6, "0")}+00`;
+}
+
+function rawDatabaseTimestamp(value: unknown) {
+  if (typeof value !== "string")
+    throw new Error(
+      "Forecast coverage query did not return PostgreSQL timestamp text; refusing to discard precision.",
+    );
+  const raw = value.trim();
+  if (!canonicalCoverageTimestamp(raw))
+    throw new Error(
+      "Forecast coverage query returned an invalid timestamp; refusing to continue.",
+    );
+  return raw;
+}
+
+function sameCoverageTimestamp(left: string | null, right: string | null) {
+  if (left === null || right === null) return left === right;
+  const leftCanonical = canonicalCoverageTimestamp(left);
+  const rightCanonical = canonicalCoverageTimestamp(right);
+  return leftCanonical !== null && leftCanonical === rightCanonical;
+}
+
+function legacyMillisecondProjection(value: string) {
+  const canonical = canonicalCoverageTimestamp(value);
+  if (!canonical) return null;
+  return `${canonical.slice(0, 20)}${canonical.slice(20, 23)}000+00`;
+}
+
+function matchesLegacyMillisecondSnapshot(
+  current: string,
+  legacySnapshot: string,
+) {
+  const currentProjection = legacyMillisecondProjection(current);
+  const legacyCanonical = canonicalCoverageTimestamp(legacySnapshot);
+  return (
+    currentProjection !== null &&
+    legacyCanonical !== null &&
+    currentProjection === legacyCanonical
+  );
 }
 
 function sameCoverageState(
@@ -377,7 +459,7 @@ function sameCoverageState(
 ) {
   return (
     left.rowExists === right.rowExists &&
-    left.trackingStartedAt === right.trackingStartedAt
+    sameCoverageTimestamp(left.trackingStartedAt, right.trackingStartedAt)
   );
 }
 
@@ -395,28 +477,37 @@ function parseHistoricalCoverageSnapshot(value: unknown) {
     );
   const previous = previousValue as Record<string, unknown>;
   const previousRowExists = previous.rowExists === true;
-  const previousTrackingStartedAt = normalizeTimestamp(
-    previous.trackingStartedAt,
-  );
-  const appliedTrackingStartedAt = normalizeTimestamp(
-    candidate.appliedTrackingStartedAt,
-  );
+  const previousTrackingStartedAt = previousRowExists
+    ? typeof previous.trackingStartedAt === "string"
+      ? previous.trackingStartedAt
+      : null
+    : null;
+  const appliedTrackingStartedAt =
+    typeof candidate.appliedTrackingStartedAt === "string"
+      ? candidate.appliedTrackingStartedAt
+      : null;
   if (
-    candidate.version !== HISTORICAL_COVERAGE_METADATA_VERSION ||
+    ![
+      LEGACY_HISTORICAL_COVERAGE_METADATA_VERSION,
+      HISTORICAL_COVERAGE_METADATA_VERSION,
+    ].includes(candidate.version as number) ||
     candidate.owner !== HISTORICAL_FIXTURE_OWNER ||
     typeof candidate.historicalStart !== "string" ||
     !/^\d{4}-\d{2}-\d{2}$/.test(candidate.historicalStart) ||
     typeof previous.rowExists !== "boolean" ||
-    (previousRowExists && !previousTrackingStartedAt) ||
+    (previousRowExists &&
+      (!previousTrackingStartedAt ||
+        !canonicalCoverageTimestamp(previousTrackingStartedAt))) ||
     (!previousRowExists && previousTrackingStartedAt) ||
-    !appliedTrackingStartedAt
+    !appliedTrackingStartedAt ||
+    !canonicalCoverageTimestamp(appliedTrackingStartedAt)
   ) {
     throw new Error(
       "Historical synthetic coverage metadata is invalid; refusing to continue.",
     );
   }
   return {
-    version: HISTORICAL_COVERAGE_METADATA_VERSION,
+    version: candidate.version as number,
     owner: HISTORICAL_FIXTURE_OWNER,
     historicalStart: candidate.historicalStart,
     previous: {
@@ -439,7 +530,7 @@ export function planHistoricalCoverage(
 ): HistoricalCoveragePlan {
   const proposedTrackingStartedAt =
     historicalCoverageTrackingStart(historicalStart);
-  const appliedTrackingStartedAt = normalizeTimestamp(
+  const appliedTrackingStartedAt = canonicalCoverageTimestamp(
     proposedTrackingStartedAt,
   );
   assert(appliedTrackingStartedAt);
@@ -448,18 +539,47 @@ export function planHistoricalCoverage(
   if (snapshot) {
     if (
       snapshot.historicalStart !== historicalStart ||
-      snapshot.appliedTrackingStartedAt !== appliedTrackingStartedAt
+      !sameCoverageTimestamp(
+        snapshot.appliedTrackingStartedAt,
+        appliedTrackingStartedAt,
+      )
     ) {
       throw new Error(
         "Historical synthetic coverage metadata belongs to a different historical window; refusing to overwrite it.",
       );
     }
-    if (
-      !sameCoverageState(current, {
-        rowExists: true,
-        trackingStartedAt: snapshot.appliedTrackingStartedAt,
-      })
-    ) {
+    const appliedState = {
+      rowExists: true,
+      trackingStartedAt: snapshot.appliedTrackingStartedAt,
+    } satisfies ForecastCoverageState;
+    if (sameCoverageState(current, appliedState)) {
+      if (snapshot.version === LEGACY_HISTORICAL_COVERAGE_METADATA_VERSION)
+        throw new Error(
+          "Historical synthetic coverage uses legacy metadata that cannot prove the exact prior timestamp; refusing to treat it as cleanup-safe.",
+        );
+      if (!confirmSyntheticCoverage)
+        throw new Error(
+          `${SYNTHETIC_FORECAST_COVERAGE_FLAG} is required for historical coverage owned by QA-HIST fixtures.`,
+        );
+      return {
+        action: "already-owned",
+        current,
+        proposedTrackingStartedAt,
+        snapshot,
+      };
+    }
+    const previousMatches =
+      sameCoverageState(current, snapshot.previous) ||
+      (snapshot.version === LEGACY_HISTORICAL_COVERAGE_METADATA_VERSION &&
+        current.rowExists &&
+        Boolean(current.trackingStartedAt) &&
+        snapshot.previous.rowExists &&
+        Boolean(snapshot.previous.trackingStartedAt) &&
+        matchesLegacyMillisecondSnapshot(
+          current.trackingStartedAt,
+          snapshot.previous.trackingStartedAt,
+        ));
+    if (!previousMatches) {
       throw new Error(
         "Historical synthetic coverage no longer matches the fixture-owned expected state; refusing to overwrite coverage.",
       );
@@ -469,10 +589,17 @@ export function planHistoricalCoverage(
         `${SYNTHETIC_FORECAST_COVERAGE_FLAG} is required for historical coverage owned by QA-HIST fixtures.`,
       );
     return {
-      action: "already-owned",
+      action: "update",
       current,
       proposedTrackingStartedAt,
-      snapshot,
+      recoveredPartialSnapshot: true,
+      snapshot: {
+        version: HISTORICAL_COVERAGE_METADATA_VERSION,
+        owner: HISTORICAL_FIXTURE_OWNER,
+        historicalStart,
+        previous: current,
+        appliedTrackingStartedAt,
+      },
     };
   }
 
@@ -514,8 +641,10 @@ export function planHistoricalCoverageRestore(
   if (!snapshot) {
     if (
       historicalStart &&
-      current.trackingStartedAt ===
-        normalizeTimestamp(historicalCoverageTrackingStart(historicalStart))
+      sameCoverageTimestamp(
+        current.trackingStartedAt,
+        historicalCoverageTrackingStart(historicalStart),
+      )
     ) {
       throw new Error(
         "Historical cleanup refused: synthetic coverage ownership cannot be proven because its restoration metadata is missing.",
@@ -527,8 +656,13 @@ export function planHistoricalCoverageRestore(
     rowExists: true,
     trackingStartedAt: snapshot.appliedTrackingStartedAt,
   } satisfies ForecastCoverageState;
-  if (sameCoverageState(current, expected))
+  if (sameCoverageState(current, expected)) {
+    if (snapshot.version === LEGACY_HISTORICAL_COVERAGE_METADATA_VERSION)
+      throw new Error(
+        "Historical cleanup refused: legacy coverage metadata cannot prove the exact prior timestamp; recover it with a historical apply first.",
+      );
     return { action: "restore", current, snapshot };
+  }
   if (sameCoverageState(current, snapshot.previous))
     return { action: "already-restored", current, snapshot };
   throw new Error(
@@ -596,13 +730,13 @@ async function loadReferences(sql: Sql, requireDemandCoverage = false) {
   let demandCoverageState: ForecastCoverageState | null = null;
   if (requireDemandCoverage) {
     const coverageRows = await sql<Record<string, unknown>[]>`
-      select tracking_started_at from public.forecast_demand_coverage where id = 1
+      select tracking_started_at::text as tracking_started_at from public.forecast_demand_coverage where id = 1
     `;
     demandCoverageState = {
       rowExists: coverageRows.length === 1,
       trackingStartedAt:
         coverageRows.length === 1
-          ? normalizeTimestamp(coverageRows[0].tracking_started_at)
+          ? rawDatabaseTimestamp(coverageRows[0].tracking_started_at)
           : null,
     };
     demandCoverageStart = demandCoverageState.trackingStartedAt;
@@ -880,7 +1014,7 @@ function printHistoricalReport(
   );
   if (options.coveragePlan?.action === "update") {
     process.stdout.write(
-      `HISTORICAL COVERAGE SNAPSHOT previous=${options.coveragePlan.snapshot.previous.trackingStartedAt ?? "missing"}; applied=${options.coveragePlan.snapshot.appliedTrackingStartedAt}; cleanup=restore_exact_previous_state_only\n`,
+      `HISTORICAL COVERAGE SNAPSHOT previous=${options.coveragePlan.snapshot.previous.trackingStartedAt ?? "missing"}; applied=${options.coveragePlan.snapshot.appliedTrackingStartedAt}; recovery=${options.coveragePlan.recoveredPartialSnapshot === true ? "repair_existing_owned_partial_metadata" : "new_snapshot"}; cleanup=restore_exact_previous_state_only\n`,
     );
   } else if (options.restorePlan?.action === "restore") {
     process.stdout.write(
@@ -971,13 +1105,13 @@ async function updateCoverageInTransaction(
   plan: Extract<HistoricalCoveragePlan, { action: "update" }>,
 ) {
   const rows = await transaction<Record<string, unknown>[]>`
-    select tracking_started_at from public.forecast_demand_coverage where id = 1 for update
+    select tracking_started_at::text as tracking_started_at from public.forecast_demand_coverage where id = 1 for update
   `;
   const current: ForecastCoverageState = {
     rowExists: rows.length === 1,
     trackingStartedAt:
       rows.length === 1
-        ? normalizeTimestamp(rows[0].tracking_started_at)
+        ? rawDatabaseTimestamp(rows[0].tracking_started_at)
         : null,
   };
   if (!sameCoverageState(current, plan.current))
@@ -986,13 +1120,25 @@ async function updateCoverageInTransaction(
     );
   const updated = await transaction<Record<string, unknown>[]>`
     update public.forecast_demand_coverage
-    set tracking_started_at = ${plan.proposedTrackingStartedAt}
-    where id = 1 and tracking_started_at = ${plan.current.trackingStartedAt}
-    returning tracking_started_at
+    set tracking_started_at = ${plan.proposedTrackingStartedAt}::timestamptz
+    where id = 1 and tracking_started_at = ${current.trackingStartedAt}::timestamptz
+    returning tracking_started_at::text as tracking_started_at
   `;
-  if (updated.length !== 1)
+  if (updated.length !== 1 || !updated[0].tracking_started_at)
     throw new Error(
       "Synthetic forecast coverage update was not applied exactly once.",
+    );
+  const updatedTrackingStartedAt = rawDatabaseTimestamp(
+    updated[0].tracking_started_at,
+  );
+  if (
+    !sameCoverageTimestamp(
+      updatedTrackingStartedAt,
+      plan.snapshot.appliedTrackingStartedAt,
+    )
+  )
+    throw new Error(
+      "Synthetic forecast coverage update returned an unexpected timestamp; refusing to continue.",
     );
 }
 
@@ -1001,13 +1147,13 @@ async function restoreCoverageInTransaction(
   plan: Extract<HistoricalCoverageRestorePlan, { action: "restore" }>,
 ) {
   const rows = await transaction<Record<string, unknown>[]>`
-    select tracking_started_at from public.forecast_demand_coverage where id = 1 for update
+    select tracking_started_at::text as tracking_started_at from public.forecast_demand_coverage where id = 1 for update
   `;
   const current: ForecastCoverageState = {
     rowExists: rows.length === 1,
     trackingStartedAt:
       rows.length === 1
-        ? normalizeTimestamp(rows[0].tracking_started_at)
+        ? rawDatabaseTimestamp(rows[0].tracking_started_at)
         : null,
   };
   const expected: ForecastCoverageState = {
@@ -1021,18 +1167,30 @@ async function restoreCoverageInTransaction(
   if (plan.snapshot.previous.rowExists) {
     const restored = await transaction<Record<string, unknown>[]>`
       update public.forecast_demand_coverage
-      set tracking_started_at = ${plan.snapshot.previous.trackingStartedAt}
-      where id = 1 and tracking_started_at = ${plan.snapshot.appliedTrackingStartedAt}
-      returning tracking_started_at
+      set tracking_started_at = ${plan.snapshot.previous.trackingStartedAt}::timestamptz
+      where id = 1 and tracking_started_at = ${current.trackingStartedAt}::timestamptz
+      returning tracking_started_at::text as tracking_started_at
     `;
-    if (restored.length !== 1)
+    if (restored.length !== 1 || !restored[0].tracking_started_at)
       throw new Error(
         "Historical cleanup did not restore forecast coverage exactly once.",
+      );
+    const restoredTrackingStartedAt = rawDatabaseTimestamp(
+      restored[0].tracking_started_at,
+    );
+    if (
+      !sameCoverageTimestamp(
+        restoredTrackingStartedAt,
+        plan.snapshot.previous.trackingStartedAt,
+      )
+    )
+      throw new Error(
+        "Historical cleanup returned an unexpected forecast coverage timestamp.",
       );
   } else {
     const removed = await transaction<Record<string, unknown>[]>`
       delete from public.forecast_demand_coverage
-      where id = 1 and tracking_started_at = ${plan.snapshot.appliedTrackingStartedAt}
+      where id = 1 and tracking_started_at = ${current.trackingStartedAt}::timestamptz
       returning id
     `;
     if (removed.length !== 1)
