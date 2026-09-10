@@ -4,7 +4,7 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   CreditCard,
   FileCheck2,
@@ -21,6 +21,10 @@ import { peso } from "@/data/vehicles";
 import { getAdminSession } from "@/lib/admin-auth";
 import { parseCustomerBookingResponse } from "@/lib/booking-retrieval";
 import { getCustomerSession, type CustomerSession } from "@/lib/customer-auth";
+import {
+  parseCustomerPaymentResponse,
+  type CustomerPayment,
+} from "@/lib/payment-retrieval";
 
 export const Route = createFileRoute("/customer")({
   beforeLoad: () => {
@@ -48,18 +52,36 @@ export const Route = createFileRoute("/customer")({
   component: CustomerViewPage,
 });
 
-type PaymentStatus = "Pending" | "Verified" | "Invalid";
+type CustomerBooking = {
+  id: string;
+  booking_status: string;
+  pickup_at: string;
+  requested_vehicle_id: string | null;
+  requested_vehicle?: { name: string | null } | null;
+  assigned_vehicle?: { id: string; name: string | null } | null;
+  rental?: {
+    started_at: string;
+    scheduled_return_at: string;
+    ended_at: string | null;
+  } | null;
+};
 
-const paymentRows: {
-  ref: string;
-  amount: number;
-  method: string;
-  status: PaymentStatus;
-}[] = [
-  { ref: "PAY-4502", amount: 5000, method: "GCash", status: "Pending" },
-  { ref: "PAY-4487", amount: 7200, method: "BDO", status: "Verified" },
-  { ref: "PAY-4469", amount: 3000, method: "BPI", status: "Invalid" },
-];
+type RequirementDocument = {
+  requirement_type: string;
+  is_current: boolean;
+  original_filename?: string | null;
+};
+
+type RequirementData = {
+  requirementSet?: { status?: string | null } | null;
+  documents?: RequirementDocument[];
+  review?: {
+    governmentIdOutcome?: string | null;
+    governmentIdReason?: string | null;
+    driversLicenseOutcome?: string | null;
+    driversLicenseReason?: string | null;
+  } | null;
+};
 
 function CustomerViewPage() {
   const navigate = useNavigate();
@@ -67,9 +89,14 @@ function CustomerViewPage() {
   const [session, setSession] = useState<CustomerSession | null | undefined>(
     undefined,
   );
-  const [bookingRequests, setBookingRequests] = useState<any[]>([]);
+  const [bookingRequests, setBookingRequests] = useState<CustomerBooking[]>([]);
   const [bookingRequestsLoading, setBookingRequestsLoading] = useState(true);
   const [bookingRequestsError, setBookingRequestsError] = useState("");
+  const [customerPayments, setCustomerPayments] = useState<CustomerPayment[]>(
+    [],
+  );
+  const [customerPaymentsLoading, setCustomerPaymentsLoading] = useState(true);
+  const [customerPaymentsError, setCustomerPaymentsError] = useState("");
   const [idFileName, setIdFileName] = useState("");
   const [licenseFileName, setLicenseFileName] = useState("");
   const pastCustomerBookings: Booking[] = [];
@@ -81,13 +108,34 @@ function CustomerViewPage() {
       const requests = await parseCustomerBookingResponse(
         await fetch("/api/bookings", { credentials: "same-origin" }),
       );
-      setBookingRequests(requests);
+      setBookingRequests(requests as CustomerBooking[]);
     } catch (error) {
       setBookingRequestsError(
-        error instanceof Error ? error.message : "Unable to load booking requests.",
+        error instanceof Error
+          ? error.message
+          : "Unable to load booking requests.",
       );
     } finally {
       setBookingRequestsLoading(false);
+    }
+  }, []);
+
+  const loadCustomerPayments = useCallback(async () => {
+    setCustomerPaymentsLoading(true);
+    setCustomerPaymentsError("");
+    try {
+      const payments = await parseCustomerPaymentResponse(
+        await fetch("/api/payments", { credentials: "same-origin" }),
+      );
+      setCustomerPayments(payments);
+    } catch (error) {
+      setCustomerPaymentsError(
+        error instanceof Error
+          ? error.message
+          : "Unable to load payment status.",
+      );
+    } finally {
+      setCustomerPaymentsLoading(false);
     }
   }, []);
 
@@ -100,7 +148,8 @@ function CustomerViewPage() {
     }
     setSession(activeSession);
     void loadBookingRequests();
-  }, [loadBookingRequests, navigate]);
+    void loadCustomerPayments();
+  }, [loadBookingRequests, loadCustomerPayments, navigate]);
 
   if (session === undefined) {
     return (
@@ -204,9 +253,6 @@ function CustomerViewPage() {
     );
   }
 
-  const highlightedPayment =
-    paymentRows.find((row) => row.ref === "PAY-4487") ?? paymentRows[0];
-
   return (
     <div>
       <Header />
@@ -216,10 +262,10 @@ function CustomerViewPage() {
           <div className="flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
             <div>
               <h1 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">
-                Your booking details are in the QR code
+                Your booking and payment status
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Show this when asked during verification or vehicle pickup.
+                Review the booking and payment records linked to your account.
               </p>
             </div>
             <Link
@@ -235,71 +281,49 @@ function CustomerViewPage() {
 
       <section className="container-page mt-8">
         <div className="mx-auto max-w-4xl space-y-6">
-          <div className="flex justify-center pt-2">
-            <div className="w-full max-w-[260px]">
-              <div className="aspect-square rounded-xl border-2 border-border bg-card shadow-soft">
-                <div className="grid h-full place-items-center px-5 text-center">
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                      QR code
-                    </div>
-                    <div className="mt-3 rounded-lg border border-border bg-background p-3">
-                      <FakeQrCode seed={session.email} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 rounded-xl border border-border bg-card px-4 py-3 text-left shadow-soft">
-                <div className="text-xs font-semibold text-foreground">
-                  {highlightedPayment.ref} {"\u2022"}{" "}
-                  {peso(highlightedPayment.amount)}
-                </div>
-                <div className="mt-2 text-xs font-semibold text-muted-foreground">
-                  {highlightedPayment.method}
-                </div>
-                <div className="mt-2">
-                  <span
-                    className={[
-                      "inline-flex rounded-full border px-2 py-0.5 text-[11px] font-medium",
-                      highlightedPayment.status === "Verified"
-                        ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
-                        : highlightedPayment.status === "Invalid"
-                          ? "border-rose-500/25 bg-rose-500/10 text-rose-300"
-                          : "border-amber-500/25 bg-amber-500/10 text-amber-300",
-                    ].join(" ")}
-                  >
-                    {highlightedPayment.status}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <Card
             title="Payment status"
             icon={<CreditCard className="h-4 w-4 text-primary" />}
           >
             <div className="space-y-2">
-              {paymentRows.map((row) => (
-                <Row
-                  key={row.ref}
-                  title={`${row.ref} \u2022 ${peso(row.amount)}`}
-                  subtitle={row.method}
-                  status={row.status}
-                  action={
-                    row.status === "Invalid" ? (
-                      <Link
-                        to="/payment-details"
-                        search={{ resubmit: "invalid" }}
-                        className="inline-flex items-center rounded-md border border-border bg-background px-2 py-1 text-[11px] font-semibold text-foreground transition-colors hover:bg-accent"
-                      >
-                        Resubmit
-                      </Link>
-                    ) : null
-                  }
-                />
-              ))}
+              {customerPaymentsLoading && (
+                <p className="text-sm text-muted-foreground">
+                  Loading payment status…
+                </p>
+              )}
+              {customerPaymentsError && (
+                <div
+                  role="alert"
+                  className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-3 text-sm text-foreground"
+                >
+                  <p>{customerPaymentsError}</p>
+                  <button
+                    type="button"
+                    onClick={() => void loadCustomerPayments()}
+                    className="mt-2 text-xs font-semibold text-primary underline underline-offset-2"
+                  >
+                    Retry loading payment status
+                  </button>
+                </div>
+              )}
+              {!customerPaymentsLoading &&
+                !customerPaymentsError &&
+                customerPayments.length === 0 && (
+                  <div className="rounded-md border border-dashed border-border bg-secondary/20 px-4 py-5 text-center">
+                    <p className="text-sm font-medium text-foreground">
+                      No payment submitted
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      Persisted payment status will appear here after you submit
+                      a payment proof.
+                    </p>
+                  </div>
+                )}
+              {!customerPaymentsLoading &&
+                !customerPaymentsError &&
+                customerPayments.map((payment) => (
+                  <CustomerPaymentRow key={payment.id} payment={payment} />
+                ))}
             </div>
           </Card>
 
@@ -401,22 +425,25 @@ function CustomerViewPage() {
   );
 }
 
-function RequirementSubmission({ booking }: { booking: any }) {
-  const [data, setData] = useState<any>(null);
+function RequirementSubmission({ booking }: { booking: CustomerBooking }) {
+  const [data, setData] = useState<RequirementData | null>(null);
   const [busy, setBusy] = useState(false);
-  const load = () =>
-    fetch(`/api/requirements?bookingId=${encodeURIComponent(booking.id)}`, {
-      credentials: "same-origin",
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setData)
-      .catch(() => undefined);
+  const load = useCallback(
+    () =>
+      fetch(`/api/requirements?bookingId=${encodeURIComponent(booking.id)}`, {
+        credentials: "same-origin",
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((body) => setData(body as RequirementData | null))
+        .catch(() => undefined),
+    [booking.id],
+  );
   useEffect(() => {
-    load();
-  }, [booking.id]);
+    void load();
+  }, [load]);
   const current = (type: string) =>
     data?.documents?.find(
-      (d: any) => d.requirement_type === type && d.is_current,
+      (document) => document.requirement_type === type && document.is_current,
     );
   async function upload(type: string, file: File | undefined) {
     if (!file) return;
@@ -703,7 +730,7 @@ function Row({
   const style =
     status === "Verified"
       ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/25"
-      : status === "Invalid"
+      : status === "Needs Resubmission"
         ? "bg-rose-500/10 text-rose-300 border-rose-500/25"
         : "bg-amber-500/10 text-amber-300 border-amber-500/25";
 
@@ -727,79 +754,47 @@ function Row({
   );
 }
 
-function FakeQrCode({ seed, size = 21 }: { seed: string; size?: number }) {
-  const cells = useMemo(() => buildFakeQrCells(seed, size), [seed, size]);
-  const gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
+function CustomerPaymentRow({ payment }: { payment: CustomerPayment }) {
+  const bookingReference = payment.booking_id.slice(0, 8);
+  const transactionReference = payment.transaction_reference?.trim();
+  const title = transactionReference
+    ? `Reference ${transactionReference}`
+    : `Payment for booking ${bookingReference}`;
+  const subtitle = [
+    `Booking ${bookingReference}`,
+    payment.payment_method_label?.trim() || "Payment method not recorded",
+    formatPaymentAmount(payment.submitted_amount),
+  ].join(" · ");
 
   return (
-    <div className="mx-auto w-full max-w-[200px] rounded-lg border border-border bg-white p-2.5">
-      <div className="grid gap-[2px]" style={{ gridTemplateColumns }}>
-        {cells.map((on, idx) => (
-          <div
-            key={idx}
-            className={on ? "bg-black" : "bg-white"}
-            style={{ aspectRatio: "1 / 1", borderRadius: 2 }}
-          />
-        ))}
-      </div>
-    </div>
+    <Row
+      title={title}
+      subtitle={subtitle}
+      status={payment.status}
+      action={
+        payment.status === "Needs Resubmission" ? (
+          <Link
+            to="/payment-details"
+            className="inline-flex items-center rounded-md border border-border bg-background px-2 py-1 text-[11px] font-semibold text-foreground transition-colors hover:bg-accent"
+          >
+            Resubmit
+          </Link>
+        ) : null
+      }
+    />
   );
 }
 
-function buildFakeQrCells(seed: string, size: number) {
-  const rand = mulberry32(hashString(seed));
-  const cells: boolean[] = new Array(size * size).fill(false);
-
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const idx = y * size + x;
-      const finder = finderValue(x, y, size);
-      if (finder !== null) {
-        cells[idx] = finder;
-        continue;
-      }
-
-      const timing =
-        (x === 6 && y >= 8 && y <= size - 9) ||
-        (y === 6 && x >= 8 && x <= size - 9);
-      if (timing) {
-        cells[idx] = (x + y) % 2 === 0;
-        continue;
-      }
-
-      const quietZone = x < 1 || y < 1 || x > size - 2 || y > size - 2;
-      if (quietZone) {
-        cells[idx] = false;
-        continue;
-      }
-
-      cells[idx] = rand() > 0.54;
-    }
-  }
-
-  return cells;
-}
-
-function finderValue(x: number, y: number, size: number) {
-  const finderSize = 7;
-  const positions: Array<[number, number]> = [
-    [0, 0],
-    [size - finderSize, 0],
-    [0, size - finderSize],
-  ];
-
-  for (const [x0, y0] of positions) {
-    const dx = x - x0;
-    const dy = y - y0;
-    if (dx < 0 || dy < 0 || dx >= finderSize || dy >= finderSize) continue;
-
-    const outer =
-      dx === 0 || dx === finderSize - 1 || dy === 0 || dy === finderSize - 1;
-    const inner = dx >= 2 && dx <= 4 && dy >= 2 && dy <= 4;
-    return outer || inner;
-  }
-
-  return null;
+function formatPaymentAmount(amount: CustomerPayment["submitted_amount"]) {
+  const numericAmount =
+    typeof amount === "number"
+      ? amount
+      : typeof amount === "string"
+        ? Number(amount)
+        : NaN;
+  return Number.isFinite(numericAmount)
+    ? peso(numericAmount)
+    : "Amount not recorded";
 }
 
 function normalizeCustomerName(name: string) {
@@ -820,23 +815,4 @@ function formatBookingDate(date: string) {
     day: "numeric",
     year: "numeric",
   }).format(new Date(`${date}T00:00:00`));
-}
-
-function hashString(input: string) {
-  let hash = 2166136261;
-  for (let i = 0; i < input.length; i++) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
-function mulberry32(seed: number) {
-  let t = seed >>> 0;
-  return () => {
-    t += 0x6d2b79f5;
-    let x = Math.imul(t ^ (t >>> 15), t | 1);
-    x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
-    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
-  };
 }
