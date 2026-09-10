@@ -1,10 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const Route = createFileRoute("/api/booking-master-data")({
   server: { handlers: { GET: async () => {
-    try { await requirePrincipal(); } catch { return Response.json({ message: "Authentication required." }, { status: 401 }); }
     const client = getSupabaseServerClient();
     const [branches, vehicles] = await Promise.all([
       client.from("branches").select("id,name").eq("is_active", true).order("name"),
