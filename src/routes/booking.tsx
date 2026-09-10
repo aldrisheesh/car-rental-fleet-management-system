@@ -130,6 +130,7 @@ function BookingPage() {
 
   const selectedCanonical = masterData.vehicles.find((v) => v.id === vehicleId);
   const selected = selectedCanonical ?? initial;
+  const selectedBranchName = masterData.branches.find((b) => b.id === branch)?.name ?? "";
   const bookingOptionsReady = !masterDataLoading && !masterDataError && Boolean(selectedCanonical) && masterData.branches.length > 0;
   const effectiveName = customerSession?.name ?? name;
   const effectiveEmail = customerSession?.email ?? email;
@@ -500,7 +501,7 @@ function BookingPage() {
                   <Row
                     icon={<MapPin className="h-4 w-4 text-primary" />}
                     label="Branch"
-                    value={branch}
+                    value={selectedBranchName || "—"}
                   />
                   <Row
                     icon={<Calendar className="h-4 w-4 text-primary" />}
