@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { validateRequirementFile } from "@/lib/requirements-validation";
+import { isPaymentEligibleRequirementStatus } from "@/lib/requirements-access";
 import { projectCustomerPayment } from "@/lib/payment-integrity";
 
 const error = (message: string, status = 400) =>
@@ -155,7 +156,7 @@ async function mutate({ request }: { request: Request }) {
       .eq("booking_id", bookingId)
       .eq("customer_id", principal.userId)
       .maybeSingle();
-    if (req.data?.status !== "Verified")
+    if (!isPaymentEligibleRequirementStatus(req.data?.status))
       return error(
         "Payment is available only after requirements are Verified.",
         409,
