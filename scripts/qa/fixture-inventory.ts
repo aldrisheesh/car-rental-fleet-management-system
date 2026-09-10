@@ -1,45 +1,75 @@
 export const FIXTURE_OWNER = "briah-controlled-qa-v1";
 export const FIXTURE_VERSION = 1;
+export const HISTORICAL_FIXTURE_OWNER =
+  "briah-historical-decision-support-qa-v1";
+export const HISTORICAL_FIXTURE_VERSION = 1;
 export const CANONICAL_BRANCHES = ["Taft, Manila", "Antipolo, Rizal"] as const;
+export const SUPPORTED_CATEGORIES = [
+  "Economy",
+  "Sedan",
+  "SUV",
+  "MPV",
+  "Van",
+  "Pickup",
+] as const;
 export const UNEXPECTED_BRANCH_NAME = "VS003 Temp 1788110993";
 
 export const VEHICLES = [
-  ["DEV-WIGO-001", "Toyota Wigo", "Taft, Manila"],
-  ["DEV-MIRA-001", "Mitsubishi Mirage", "Taft, Manila"],
-  ["DEV-VIOS-001", "Toyota Vios", "Antipolo, Rizal"],
-  ["DEV-CITY-001", "Honda City", "Taft, Manila"],
-  ["DEV-RUSH-001", "Toyota Rush", "Antipolo, Rizal"],
-  ["DEV-EVST-001", "Ford Everest", "Taft, Manila"],
-  ["DEV-AVAN-001", "Toyota Avanza", "Antipolo, Rizal"],
-  ["DEV-INNO-001", "Toyota Innova", "Taft, Manila"],
-  ["DEV-URVN-001", "Nissan Urvan", "Antipolo, Rizal"],
-  ["DEV-HIAC-001", "Toyota Hiace", "Taft, Manila"],
-  ["DEV-RANG-001", "Ford Ranger", "Antipolo, Rizal"],
-  ["DEV-HILX-001", "Toyota Hilux", "Taft, Manila"],
+  ["DEV-WIGO-001", "Toyota Wigo", "Taft, Manila", "Economy"],
+  ["DEV-MIRA-001", "Mitsubishi Mirage", "Taft, Manila", "Economy"],
+  ["DEV-VIOS-001", "Toyota Vios", "Antipolo, Rizal", "Sedan"],
+  ["DEV-CITY-001", "Honda City", "Taft, Manila", "Sedan"],
+  ["DEV-RUSH-001", "Toyota Rush", "Antipolo, Rizal", "SUV"],
+  ["DEV-EVST-001", "Ford Everest", "Taft, Manila", "SUV"],
+  ["DEV-AVAN-001", "Toyota Avanza", "Antipolo, Rizal", "MPV"],
+  ["DEV-INNO-001", "Toyota Innova", "Taft, Manila", "MPV"],
+  ["DEV-URVN-001", "Nissan Urvan", "Antipolo, Rizal", "Van"],
+  ["DEV-HIAC-001", "Toyota Hiace", "Taft, Manila", "Van"],
+  ["DEV-RANG-001", "Ford Ranger", "Antipolo, Rizal", "Pickup"],
+  ["DEV-HILX-001", "Toyota Hilux", "Taft, Manila", "Pickup"],
 ] as const;
 
-export const CUSTOMER_SPECS = Array.from({ length: 10 }, (_, offset) => {
-  const number = offset + 1;
-  const label = `QA-CUST-${String(number).padStart(3, "0")}`;
-  const suffixes = [
-    "Alpha",
-    "Bravo",
-    "Charlie",
-    "Delta",
-    "Echo",
-    "Foxtrot",
-    "Golf",
-    "Hotel",
-    "India",
-    "Juliett-With-An-Intentionally-Long-Display-Name",
-  ];
-  return {
-    label,
-    email: `${label.toLowerCase()}@fixtures.invalid`,
-    fullName: `${label} — Synthetic Customer ${suffixes[offset]}`,
-    role: "Customer/Renter",
-  } as const;
-});
+export type FixtureMode = "standard" | "historical";
+export type FixtureAuthSpec = {
+  readonly label: string;
+  readonly email: string;
+  readonly fullName: string;
+  readonly role: "Customer/Renter" | "Owner/Admin";
+};
+export type FixtureDefinition = {
+  readonly mode: FixtureMode;
+  readonly owner: string;
+  readonly version: number;
+  readonly operatorSpec: FixtureAuthSpec;
+  readonly customerSpecs: readonly FixtureAuthSpec[];
+  readonly authSpecs: readonly FixtureAuthSpec[];
+};
+
+export const CUSTOMER_SPECS: FixtureAuthSpec[] = Array.from(
+  { length: 10 },
+  (_, offset) => {
+    const number = offset + 1;
+    const label = `QA-CUST-${String(number).padStart(3, "0")}`;
+    const suffixes = [
+      "Alpha",
+      "Bravo",
+      "Charlie",
+      "Delta",
+      "Echo",
+      "Foxtrot",
+      "Golf",
+      "Hotel",
+      "India",
+      "Juliett-With-An-Intentionally-Long-Display-Name",
+    ];
+    return {
+      label,
+      email: `${label.toLowerCase()}@fixtures.invalid`,
+      fullName: `${label} — Synthetic Customer ${suffixes[offset]}`,
+      role: "Customer/Renter",
+    };
+  },
+);
 
 export const OPERATOR_SPEC = {
   label: "QA-OPERATOR-001",
@@ -50,10 +80,60 @@ export const OPERATOR_SPEC = {
 
 export const AUTH_SPECS = [OPERATOR_SPEC, ...CUSTOMER_SPECS];
 
+export const HISTORICAL_CUSTOMER_SPECS: FixtureAuthSpec[] = Array.from(
+  { length: 8 },
+  (_, offset) => {
+    const number = offset + 1;
+    const label = `QA-HIST-CUST-${String(number).padStart(3, "0")}`;
+    return {
+      label,
+      email: `${label.toLowerCase()}@fixtures.invalid`,
+      fullName: `${label} — Synthetic Historical Customer`,
+      role: "Customer/Renter",
+    };
+  },
+);
+
+export const HISTORICAL_OPERATOR_SPEC: FixtureAuthSpec = {
+  label: "QA-HIST-OPERATOR-001",
+  email: "qa-hist-operator-001@fixtures.invalid",
+  fullName: "QA-HIST-OPERATOR-001 — Synthetic Historical Fixture Operator",
+  role: "Owner/Admin",
+};
+
+export const HISTORICAL_AUTH_SPECS = [
+  HISTORICAL_OPERATOR_SPEC,
+  ...HISTORICAL_CUSTOMER_SPECS,
+];
+
+export const STANDARD_FIXTURE_DEFINITION: FixtureDefinition = {
+  mode: "standard",
+  owner: FIXTURE_OWNER,
+  version: FIXTURE_VERSION,
+  operatorSpec: OPERATOR_SPEC,
+  customerSpecs: CUSTOMER_SPECS,
+  authSpecs: AUTH_SPECS,
+};
+
+export const HISTORICAL_FIXTURE_DEFINITION: FixtureDefinition = {
+  mode: "historical",
+  owner: HISTORICAL_FIXTURE_OWNER,
+  version: HISTORICAL_FIXTURE_VERSION,
+  operatorSpec: HISTORICAL_OPERATOR_SPEC,
+  customerSpecs: HISTORICAL_CUSTOMER_SPECS,
+  authSpecs: HISTORICAL_AUTH_SPECS,
+};
+
+export function getFixtureDefinition(mode: FixtureMode) {
+  return mode === "historical"
+    ? HISTORICAL_FIXTURE_DEFINITION
+    : STANDARD_FIXTURE_DEFINITION;
+}
+
 const uuid = (namespace: string, number: number) =>
   `5151${namespace}-0000-4000-8000-${String(number).padStart(12, "0")}`;
 
-export type FixtureAuthIdentity = (typeof AUTH_SPECS)[number] & {
+export type FixtureAuthIdentity = FixtureAuthSpec & {
   userId: string;
 };
 export type FixtureRecord = {
@@ -71,14 +151,43 @@ export type FixtureArtifact = {
 };
 export type FixtureDataset = {
   anchorDate: string;
+  definition: FixtureDefinition;
   records: FixtureRecord[];
   artifacts: FixtureArtifact[];
+  historical?: HistoricalFixtureMetadata;
   ids: {
     bookings: string[];
     requirements: string[];
     payments: string[];
     rentals: string[];
     maintenance: string[];
+    operationalStateEvents: string[];
+  };
+};
+
+export type HistoricalFixtureMetadata = {
+  dateRange: { start: string; end: string };
+  weekStarts: string[];
+  branchCategoryDistribution: Array<{
+    branch: string;
+    category: string;
+    confirmedBookings: number;
+  }>;
+  forecastEligiblePairs: string[];
+  nonZeroForecastPairs: string[];
+  supplyComparisons: Array<{
+    pair: string;
+    firstWmaForecast: number;
+    requiredUnits: number;
+    referenceSupply: number;
+    balance: "Shortage" | "Balanced" | "Surplus";
+  }>;
+  scenarios: {
+    shortage: string[];
+    balanced: string[];
+    surplus: string[];
+    idle: string[];
+    allocation: string;
   };
 };
 
@@ -153,24 +262,29 @@ function placeholderPdf(text: string) {
   return new TextEncoder().encode(pdf);
 }
 
-export function fixtureAuthMetadata(label: string, anchorDate: string) {
+export function fixtureAuthMetadata(
+  label: string,
+  anchorDate: string,
+  definition: FixtureDefinition = STANDARD_FIXTURE_DEFINITION,
+) {
   return {
-    qa_fixture_owner: FIXTURE_OWNER,
+    qa_fixture_owner: definition.owner,
     qa_fixture_id: label,
-    qa_fixture_version: FIXTURE_VERSION,
+    qa_fixture_version: definition.version,
     qa_fixture_anchor_date: anchorDate,
   };
 }
 
 export function isOwnedAuthUser(
   user: { email?: string; app_metadata?: Record<string, unknown> },
-  spec: (typeof AUTH_SPECS)[number],
+  spec: FixtureAuthSpec,
+  definition: FixtureDefinition = STANDARD_FIXTURE_DEFINITION,
 ) {
   return (
     user.email?.toLowerCase() === spec.email &&
-    user.app_metadata?.qa_fixture_owner === FIXTURE_OWNER &&
+    user.app_metadata?.qa_fixture_owner === definition.owner &&
     user.app_metadata?.qa_fixture_id === spec.label &&
-    user.app_metadata?.qa_fixture_version === FIXTURE_VERSION
+    user.app_metadata?.qa_fixture_version === definition.version
   );
 }
 
@@ -180,14 +294,17 @@ export function buildFixtureDataset(input: {
   branches: Record<string, string>;
   vehicles: Record<string, { id: string; branchId: string }>;
   paymentMethodId: string;
+  definition?: FixtureDefinition;
 }): FixtureDataset {
   const { anchorDate, branches, vehicles, paymentMethodId } = input;
+  const definition = input.definition ?? STANDARD_FIXTURE_DEFINITION;
+  const { customerSpecs, operatorSpec, owner } = definition;
   const identities = Object.fromEntries(
     input.identities.map((identity) => [identity.label, identity]),
   );
-  const operator = identities[OPERATOR_SPEC.label];
+  const operator = identities[operatorSpec.label];
   if (!operator) throw new Error("Fixture operator identity is missing.");
-  for (const customer of CUSTOMER_SPECS) {
+  for (const customer of customerSpecs) {
     if (!identities[customer.label])
       throw new Error(`Fixture identity ${customer.label} is missing.`);
   }
@@ -269,7 +386,7 @@ export function buildFixtureDataset(input: {
     const number = offset + 1;
     const label = `QA-BOOK-${String(number).padStart(3, "0")}`;
     const customer =
-      identities[CUSTOMER_SPECS[offset % CUSTOMER_SPECS.length].label];
+      identities[customerSpecs[offset % customerSpecs.length].label];
     const vehiclePlate = VEHICLES[offset % VEHICLES.length][0];
     const vehicle = vehicles[vehiclePlate];
     const pickupBranch = VEHICLES[offset % VEHICLES.length][2];
@@ -290,7 +407,7 @@ export function buildFixtureDataset(input: {
         offset === 20
           ? "QA destination with deliberately long synthetic text for wrapping coverage — not a real customer itinerary"
           : `QA destination ${String(number).padStart(3, "0")} — synthetic only`,
-      purpose_of_use: `${FIXTURE_OWNER} [${label}] UI/state coverage only`,
+      purpose_of_use: `${owner} [${label}] UI/state coverage only`,
       pickup_delivery_option: offset % 3 === 0 ? "delivery" : "pickup",
       pickup_location:
         offset % 3 === 0 ? "QA pickup placeholder — not a real address" : null,
@@ -304,7 +421,7 @@ export function buildFixtureDataset(input: {
       assigned_by: confirmed ? operator.userId : null,
       assigned_at: confirmed ? addDays(anchorDate, pickupDay - 2, 8) : null,
       assignment_note: confirmed
-        ? `${FIXTURE_OWNER} [${label}] deterministic QA assignment`
+        ? `${owner} [${label}] deterministic QA assignment`
         : null,
       substitution_acknowledged: confirmed,
       cross_branch_acknowledged: confirmed,
@@ -357,7 +474,7 @@ export function buildFixtureDataset(input: {
     if (status === "Not Submitted") continue;
 
     const customerLabel =
-      CUSTOMER_SPECS[(requirementBookings[offset] - 1) % CUSTOMER_SPECS.length]
+      customerSpecs[(requirementBookings[offset] - 1) % customerSpecs.length]
         .label;
     const customer = identities[customerLabel];
     const documentRows: Record<string, unknown>[] = [];
@@ -367,7 +484,7 @@ export function buildFixtureDataset(input: {
     ].entries()) {
       const kind = documentOffset === 0 ? "government-id" : "drivers-license";
       const documentLabel = `${label}-${documentOffset === 0 ? "GOV" : "LIC"}`;
-      const path = `${customer.userId}/qa-fixtures/${FIXTURE_OWNER}/${label}/${kind}-NOT-REAL.pdf`;
+      const path = `${customer.userId}/qa-fixtures/${owner}/${label}/${kind}-NOT-REAL.pdf`;
       const body = placeholderPdf(
         documentOffset === 0
           ? `QA TEST DOCUMENT ${label} - NOT A REAL IDENTIFICATION DOCUMENT`
@@ -416,12 +533,12 @@ export function buildFixtureDataset(input: {
         ? "Needs Replacement"
         : "Accepted",
       government_id_reason: needsReplacement
-        ? `${FIXTURE_OWNER} [${label}] placeholder is intentionally not a real ID`
-        : `${FIXTURE_OWNER} [${label}] synthetic accepted-state marker`,
+        ? `${owner} [${label}] placeholder is intentionally not a real ID`
+        : `${owner} [${label}] synthetic accepted-state marker`,
       drivers_license_document_id: documentRows[1].id,
       drivers_license_version: 1,
       drivers_license_outcome: "Accepted",
-      drivers_license_reason: `${FIXTURE_OWNER} [${label}] synthetic accepted-state marker`,
+      drivers_license_reason: `${owner} [${label}] synthetic accepted-state marker`,
       identity_consistency: "Consistent",
       lto_outcome: needsReplacement ? "Not Checked" : "Clear",
       lto_checked_at: needsReplacement
@@ -453,13 +570,12 @@ export function buildFixtureDataset(input: {
     const label = `QA-PAY-${String(number).padStart(3, "0")}`;
     const booking = bookingRows[paymentBookings[offset] - 1];
     const customerLabel =
-      CUSTOMER_SPECS[(paymentBookings[offset] - 1) % CUSTOMER_SPECS.length]
-        .label;
+      customerSpecs[(paymentBookings[offset] - 1) % customerSpecs.length].label;
     const customer = identities[customerLabel];
     const status = paymentStatuses[offset];
     const submitted = 1500 + offset * 375;
     const paymentId = uuid("f001", number);
-    const path = `${customer.userId}/qa-fixtures/${FIXTURE_OWNER}/${label}/payment-proof-NOT-REAL.pdf`;
+    const path = `${customer.userId}/qa-fixtures/${owner}/${label}/payment-proof-NOT-REAL.pdf`;
     const body = placeholderPdf(
       `QA PAYMENT PROOF PLACEHOLDER ${label} - NOT A REAL TRANSACTION`,
     );
@@ -478,7 +594,7 @@ export function buildFixtureDataset(input: {
       status,
       resubmission_reason:
         status === "Needs Resubmission"
-          ? `${FIXTURE_OWNER} [${label}] synthetic resubmission state`
+          ? `${owner} [${label}] synthetic resubmission state`
           : null,
       reviewed_by: status === "Pending Verification" ? null : operator.userId,
       reviewed_at:
@@ -550,7 +666,7 @@ export function buildFixtureDataset(input: {
       released_by: operator.userId,
       release_odometer: releaseOdometer,
       release_fuel_level: ["Full", "3/4", "Full", "1/2", "Full"][offset],
-      release_condition_summary: `${FIXTURE_OWNER} [${label}] synthetic release condition`,
+      release_condition_summary: `${owner} [${label}] synthetic release condition`,
       existing_damage_notes: null,
       agreement_acknowledged: true,
       condition_acknowledged: true,
@@ -559,7 +675,7 @@ export function buildFixtureDataset(input: {
       return_odometer: completed ? releaseOdometer + 180 + offset * 25 : null,
       return_fuel_level: completed ? "3/4" : null,
       return_condition_summary: completed
-        ? `${FIXTURE_OWNER} [${label}] synthetic return condition`
+        ? `${owner} [${label}] synthetic return condition`
         : null,
       observed_damage_notes: null,
       return_remarks: completed
@@ -590,7 +706,7 @@ export function buildFixtureDataset(input: {
             offset
           ]
         : "Cancelled inspection placeholder",
-      description: `${FIXTURE_OWNER} [${label}] synthetic maintenance history — no real service performed`,
+      description: `${owner} [${label}] synthetic maintenance history — no real service performed`,
       status: completed ? "Completed" : "Cancelled",
       blocks_rental_use: false,
       service_started_at: addDays(anchorDate, startedDay, 8),
@@ -601,7 +717,7 @@ export function buildFixtureDataset(input: {
         ? dateOnly(anchorDate, 60 + offset * 15)
         : null,
       cost_php: completed ? 900 + offset * 475 : null,
-      remarks: `${FIXTURE_OWNER} [${label}] UI/state coverage only`,
+      remarks: `${owner} [${label}] UI/state coverage only`,
       created_by: operator.userId,
       updated_by: operator.userId,
       created_at: addDays(anchorDate, startedDay, 8),
@@ -618,6 +734,7 @@ export function buildFixtureDataset(input: {
   assertUniqueFixtureInventory(records, artifacts);
   const dataset = {
     anchorDate,
+    definition,
     records,
     artifacts,
     ids: {
@@ -632,8 +749,489 @@ export function buildFixtureDataset(input: {
       maintenance: records
         .filter((record) => record.table === "maintenance_records")
         .map((record) => String(record.row.id)),
+      operationalStateEvents: [],
     },
   };
+  validateFixtureDataset(dataset);
+  return dataset;
+}
+
+export const HISTORICAL_WEEK_COUNT = 10;
+
+const HISTORICAL_DEMAND_PLAN: Record<string, readonly number[]> = {
+  "Taft, Manila::Economy": [2, 3, 2, 3, 2, 3, 2, 3, 2, 3],
+  "Taft, Manila::Sedan": [1, 1, 2, 1, 2, 1, 2, 1, 2, 1],
+  "Taft, Manila::SUV": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+  "Taft, Manila::MPV": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "Taft, Manila::Van": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  "Taft, Manila::Pickup": [0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+  "Antipolo, Rizal::Economy": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "Antipolo, Rizal::Sedan": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "Antipolo, Rizal::SUV": [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+  "Antipolo, Rizal::MPV": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  "Antipolo, Rizal::Van": [0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+  "Antipolo, Rizal::Pickup": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+};
+
+const HISTORICAL_NON_QUALIFYING_BOOKINGS = [
+  ["Submitted", "Taft, Manila::Economy"],
+  ["Rejected", "Taft, Manila::Sedan"],
+  ["Cancelled", "Antipolo, Rizal::SUV"],
+  ["Submitted", "Taft, Manila::Van"],
+  ["Rejected", "Antipolo, Rizal::MPV"],
+  ["Cancelled", "Taft, Manila::Pickup"],
+] as const;
+
+function addCalendarDays(value: string, days: number) {
+  const date = new Date(`${value}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function mondayForCalendarDate(value: string) {
+  const date = new Date(`${value}T00:00:00Z`);
+  const mondayOffset = (date.getUTCDay() + 6) % 7;
+  return addCalendarDays(value, -mondayOffset);
+}
+
+export function historicalFixtureWeekStarts(anchorDate: string) {
+  const currentWeek = mondayForCalendarDate(anchorDate);
+  return Array.from({ length: HISTORICAL_WEEK_COUNT }, (_, index) =>
+    addCalendarDays(currentWeek, (index - HISTORICAL_WEEK_COUNT) * 7),
+  );
+}
+
+export function trustworthyHistoricalCoverageWeekStart(value: string) {
+  const instant = new Date(value);
+  if (!Number.isFinite(instant.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(instant);
+  const get = (type: string) =>
+    Number(parts.find((part) => part.type === type)?.value ?? 0);
+  const localDate = `${get("year").toString().padStart(4, "0")}-${get("month")
+    .toString()
+    .padStart(2, "0")}-${get("day").toString().padStart(2, "0")}`;
+  const weekStart = mondayForCalendarDate(localDate);
+  const exactMondayMidnight =
+    localDate === weekStart &&
+    (get("hour") === 0 || get("hour") === 24) &&
+    get("minute") === 0 &&
+    get("second") === 0;
+  return exactMondayMidnight ? weekStart : addCalendarDays(weekStart, 7);
+}
+
+export function historicalCoverageCoversWindow(
+  trackingStartedAt: string,
+  historicalStart: string,
+) {
+  const coverageWeek =
+    trustworthyHistoricalCoverageWeekStart(trackingStartedAt);
+  return coverageWeek !== null && coverageWeek <= historicalStart;
+}
+
+export function historicalCoverageTrackingStart(historicalStart: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(historicalStart))
+    throw new Error("Historical coverage start must use YYYY-MM-DD.");
+  return `${historicalStart}T00:00:00+08:00`;
+}
+
+function addMinutes(value: string, minutes: number) {
+  return new Date(
+    new Date(value).getTime() + minutes * 60 * 1000,
+  ).toISOString();
+}
+
+function historicalPair(branch: string, category: string) {
+  return `${branch} · ${category}`;
+}
+
+function historicalDemandPlanKey(branch: string, category: string) {
+  return `${branch}::${category}`;
+}
+
+function historicalPairVehicles(branch: string, category: string) {
+  return VEHICLES.filter(
+    (vehicle) => vehicle[2] === branch && vehicle[3] === category,
+  );
+}
+
+function firstWmaDemand(values: readonly number[]) {
+  const [d0, d1, d2] = values.slice(-3).reverse();
+  return 0.5 * d0 + 0.3 * d1 + 0.2 * d2;
+}
+
+export function buildHistoricalFixtureDataset(input: {
+  anchorDate: string;
+  identities: FixtureAuthIdentity[];
+  branches: Record<string, string>;
+  vehicles: Record<string, { id: string; branchId: string }>;
+  definition?: FixtureDefinition;
+}): FixtureDataset {
+  const definition = input.definition ?? HISTORICAL_FIXTURE_DEFINITION;
+  if (definition.mode !== "historical")
+    throw new Error("Historical fixtures require the historical definition.");
+
+  const { anchorDate, branches, vehicles } = input;
+  const { customerSpecs, operatorSpec, owner } = definition;
+  const identities = Object.fromEntries(
+    input.identities.map((identity) => [identity.label, identity]),
+  );
+  const operator = identities[operatorSpec.label];
+  if (!operator)
+    throw new Error("Historical fixture operator identity is missing.");
+  for (const customer of customerSpecs) {
+    if (!identities[customer.label])
+      throw new Error(
+        `Historical fixture identity ${customer.label} is missing.`,
+      );
+  }
+
+  const weeks = historicalFixtureWeekStarts(anchorDate);
+  const records: FixtureRecord[] = [];
+  const add = (
+    table: string,
+    label: string,
+    row: Record<string, unknown>,
+    fingerprint: string[],
+  ) => records.push({ table, label, row, fingerprint });
+
+  for (const identity of input.identities) {
+    add(
+      "profiles",
+      identity.label,
+      {
+        id: identity.userId,
+        email: identity.email,
+        full_name: identity.fullName,
+        user_type: identity.role,
+        account_status: "Active",
+      },
+      ["id", "email", "full_name", "user_type", "account_status"],
+    );
+  }
+
+  const confirmedBookings: Array<{
+    label: string;
+    row: Record<string, unknown>;
+  }> = [];
+  const bookingRows: Record<string, unknown>[] = [];
+  const distribution: HistoricalFixtureMetadata["branchCategoryDistribution"] =
+    [];
+  let bookingNumber = 0;
+
+  for (const branch of CANONICAL_BRANCHES) {
+    for (const category of SUPPORTED_CATEGORIES) {
+      const key = historicalDemandPlanKey(branch, category);
+      const demand = HISTORICAL_DEMAND_PLAN[key];
+      if (!demand) throw new Error(`Historical demand plan is missing ${key}.`);
+      const pairVehicles = historicalPairVehicles(branch, category);
+      if (demand.some((count) => count > 0) && !pairVehicles.length)
+        throw new Error(
+          `Historical demand has no reference vehicle for ${key}.`,
+        );
+
+      let confirmedCount = 0;
+      for (const [weekIndex, count] of demand.entries()) {
+        for (let requestIndex = 0; requestIndex < count; requestIndex += 1) {
+          bookingNumber += 1;
+          confirmedCount += 1;
+          const label = `QA-HIST-BOOK-${String(bookingNumber).padStart(3, "0")}`;
+          const week = weeks[weekIndex];
+          const pickupDay = 1 + requestIndex * 2;
+          const returnDay = pickupDay + 1;
+          const pickupAt = addDays(week, pickupDay, 9 + (requestIndex % 2));
+          const returnAt = addDays(week, returnDay, 17);
+          const vehiclePlate =
+            pairVehicles[requestIndex % pairVehicles.length][0];
+          const vehicle = vehicles[vehiclePlate];
+          const customer =
+            identities[
+              customerSpecs[(bookingNumber - 1) % customerSpecs.length].label
+            ];
+          const row: Record<string, unknown> = {
+            id: uuid("b101", bookingNumber),
+            customer_id: customer.userId,
+            requested_vehicle_id: vehicle.id,
+            assigned_vehicle_id: vehicle.id,
+            pickup_branch_id: branches[branch],
+            return_branch_id: branches[branch],
+            pickup_at: pickupAt,
+            return_at: returnAt,
+            destination: `${owner} [${label}] synthetic historical destination`,
+            purpose_of_use: `${owner} [${label}] historical demand input only — no real booking`,
+            pickup_delivery_option: "pickup",
+            pickup_location: null,
+            dropoff_location: null,
+            preferred_seat_count: [5, 5, 7, 8, 15, 5][
+              SUPPORTED_CATEGORIES.indexOf(category)
+            ],
+            customer_contact_number: null,
+            booking_status: "Confirmed",
+            assigned_by: operator.userId,
+            assigned_at: addDays(week, -6, 10),
+            assignment_note: `${owner} [${label}] synthetic historical assignment`,
+            substitution_acknowledged: true,
+            cross_branch_acknowledged: true,
+            confirmed_by: operator.userId,
+            confirmed_at: addDays(week, -5, 11),
+            created_at: addDays(week, -10, 8),
+            updated_at: addDays(week, -5, 11),
+          };
+          bookingRows.push(row);
+          confirmedBookings.push({ label, row });
+          add("booking_requests", label, row, ["id", "purpose_of_use"]);
+        }
+      }
+      distribution.push({
+        branch,
+        category,
+        confirmedBookings: confirmedCount,
+      });
+    }
+  }
+
+  for (const [
+    offset,
+    [status, key],
+  ] of HISTORICAL_NON_QUALIFYING_BOOKINGS.entries()) {
+    bookingNumber += 1;
+    const [branch, category] = key.split("::");
+    const pairVehicles = historicalPairVehicles(branch, category);
+    const vehiclePlate = pairVehicles[0]?.[0] ?? VEHICLES[0][0];
+    const vehicle = vehicles[vehiclePlate];
+    const customer =
+      identities[customerSpecs[bookingNumber % customerSpecs.length].label];
+    const week = weeks[weeks.length - 1 - (offset % 3)];
+    const pickupAt = addDays(week, 1 + (offset % 3) * 2, 9);
+    const returnAt = addDays(week, 2 + (offset % 3) * 2, 17);
+    const label = `QA-HIST-BOOK-${String(bookingNumber).padStart(3, "0")}`;
+    const row: Record<string, unknown> = {
+      id: uuid("b101", bookingNumber),
+      customer_id: customer.userId,
+      requested_vehicle_id: vehicle.id,
+      assigned_vehicle_id: null,
+      pickup_branch_id: branches[branch],
+      return_branch_id: branches[branch],
+      pickup_at: pickupAt,
+      return_at: returnAt,
+      destination: `${owner} [${label}] synthetic non-qualifying request`,
+      purpose_of_use: `${owner} [${label}] historical request-state input only — no real booking`,
+      pickup_delivery_option: "pickup",
+      pickup_location: null,
+      dropoff_location: null,
+      preferred_seat_count: 5,
+      customer_contact_number: null,
+      booking_status: status,
+      assigned_by: null,
+      assigned_at: null,
+      assignment_note: null,
+      substitution_acknowledged: false,
+      cross_branch_acknowledged: false,
+      confirmed_by: null,
+      confirmed_at: null,
+      created_at: addDays(week, -8, 8),
+      updated_at: addDays(week, -2, 12),
+    };
+    bookingRows.push(row);
+    add("booking_requests", label, row, ["id", "purpose_of_use"]);
+  }
+
+  const rentalIds: string[] = [];
+  for (const [offset, booking] of confirmedBookings.entries()) {
+    const label = `QA-HIST-RENT-${String(offset + 1).padStart(3, "0")}`;
+    const row = booking.row;
+    const startedAt = addMinutes(String(row.pickup_at), 15);
+    const endedAt = addMinutes(String(row.return_at), -15);
+    const rental = {
+      id: uuid("a301", offset + 1),
+      booking_id: row.id,
+      customer_id: row.customer_id,
+      vehicle_id: row.assigned_vehicle_id,
+      scheduled_pickup_at: row.pickup_at,
+      scheduled_return_at: row.return_at,
+      started_at: startedAt,
+      ended_at: endedAt,
+      released_by: operator.userId,
+      release_odometer: null,
+      release_fuel_level: "Other/Unknown",
+      release_condition_summary: `${owner} [${label}] synthetic historical release — no real rental`,
+      existing_damage_notes: null,
+      agreement_acknowledged: true,
+      condition_acknowledged: true,
+      return_schedule_acknowledged: true,
+      returned_by: operator.userId,
+      return_odometer: null,
+      return_fuel_level: "Other/Unknown",
+      return_condition_summary: `${owner} [${label}] synthetic historical return — no real rental`,
+      observed_damage_notes: null,
+      return_remarks: `${owner} [${label}] completed synthetic QA history`,
+      created_at: startedAt,
+      updated_at: endedAt,
+    };
+    rentalIds.push(String(rental.id));
+    add("rental_transactions", label, rental, [
+      "id",
+      "booking_id",
+      "vehicle_id",
+      "release_condition_summary",
+      "return_remarks",
+    ]);
+  }
+
+  const maintenanceIds: string[] = [];
+  for (const [offset, vehiclePlate] of [
+    "DEV-INNO-001",
+    "DEV-HIAC-001",
+    "DEV-RANG-001",
+  ].entries()) {
+    const label = `QA-HIST-MAINT-${String(offset + 1).padStart(3, "0")}`;
+    const startedAt = addDays(weeks[2 + offset], 1, 8);
+    const row = {
+      id: uuid("a401", offset + 1),
+      vehicle_id: vehicles[vehiclePlate].id,
+      maintenance_type: "Historical QA inspection",
+      description: `${owner} [${label}] synthetic completed maintenance history — no real service`,
+      status: "Completed",
+      blocks_rental_use: false,
+      service_started_at: startedAt,
+      completed_at: addDays(weeks[2 + offset], 2, 15),
+      odometer_at_service: null,
+      next_service_odometer: null,
+      next_service_date: null,
+      cost_php: null,
+      remarks: `${owner} [${label}] non-blocking QA history only`,
+      created_by: operator.userId,
+      updated_by: operator.userId,
+      created_at: startedAt,
+      updated_at: addDays(weeks[2 + offset], 2, 15),
+    };
+    maintenanceIds.push(String(row.id));
+    add("maintenance_records", label, row, [
+      "id",
+      "vehicle_id",
+      "description",
+      "remarks",
+    ]);
+  }
+
+  const stateEventIds: string[] = [];
+  for (const [offset, vehicleSpec] of VEHICLES.entries()) {
+    const [vehiclePlate] = vehicleSpec;
+    const label = `QA-HIST-STATE-${String(offset + 1).padStart(3, "0")}`;
+    const effectiveAt = addDays(weeks[0], 0, 0);
+    const row = {
+      id: uuid("e301", offset + 1),
+      vehicle_id: vehicles[vehiclePlate].id,
+      is_active: true,
+      effective_at: effectiveAt,
+      recorded_by: operator.userId,
+      source: owner,
+      created_at: effectiveAt,
+    };
+    stateEventIds.push(String(row.id));
+    add("vehicle_operational_state_events", label, row, [
+      "id",
+      "vehicle_id",
+      "is_active",
+      "effective_at",
+      "source",
+    ]);
+  }
+
+  const forecastEligiblePairs = CANONICAL_BRANCHES.flatMap((branch) =>
+    SUPPORTED_CATEGORIES.map((category) => historicalPair(branch, category)),
+  );
+  const nonZeroForecastPairs = forecastEligiblePairs.filter((pair) => {
+    const [branch, category] = pair.split(" · ");
+    return (
+      firstWmaDemand(
+        HISTORICAL_DEMAND_PLAN[historicalDemandPlanKey(branch, category)],
+      ) > 0
+    );
+  });
+  const supplyByPair = new Map(
+    forecastEligiblePairs.map((pair) => {
+      const [branch, category] = pair.split(" · ");
+      return [pair, historicalPairVehicles(branch, category).length];
+    }),
+  );
+  const supplyComparisons = forecastEligiblePairs.map((pair) => {
+    const [branch, category] = pair.split(" · ");
+    const firstWmaForecast = firstWmaDemand(
+      HISTORICAL_DEMAND_PLAN[historicalDemandPlanKey(branch, category)],
+    );
+    const requiredUnits = Math.ceil(firstWmaForecast);
+    const supply = supplyByPair.get(pair) ?? 0;
+    const balance =
+      requiredUnits > supply
+        ? "Shortage"
+        : supply > requiredUnits
+          ? "Surplus"
+          : "Balanced";
+    return {
+      pair,
+      firstWmaForecast,
+      requiredUnits,
+      referenceSupply: supply,
+      balance,
+    };
+  });
+  const shortage = supplyComparisons
+    .filter((comparison) => comparison.balance === "Shortage")
+    .map((comparison) => comparison.pair);
+  const balanced = supplyComparisons
+    .filter((comparison) => comparison.balance === "Balanced")
+    .map((comparison) => comparison.pair);
+  const surplus = supplyComparisons
+    .filter((comparison) => comparison.balance === "Surplus")
+    .map((comparison) => comparison.pair);
+
+  const dateRange = {
+    start: weeks[0],
+    end: addCalendarDays(weeks[weeks.length - 1], 6),
+  };
+  const dataset = {
+    anchorDate,
+    definition,
+    records,
+    artifacts: [],
+    historical: {
+      dateRange,
+      weekStarts: weeks,
+      branchCategoryDistribution: distribution,
+      forecastEligiblePairs,
+      nonZeroForecastPairs,
+      supplyComparisons,
+      scenarios: {
+        shortage,
+        balanced,
+        surplus,
+        idle: [
+          historicalPair("Antipolo, Rizal", "Sedan"),
+          historicalPair("Antipolo, Rizal", "Pickup"),
+          historicalPair("Taft, Manila", "MPV"),
+        ],
+        allocation: `${historicalPair("Antipolo, Rizal", "Sedan")} -> ${historicalPair("Taft, Manila", "Sedan")}`,
+      },
+    },
+    ids: {
+      bookings: bookingRows.map((row) => String(row.id)),
+      requirements: [],
+      payments: [],
+      rentals: rentalIds,
+      maintenance: maintenanceIds,
+      operationalStateEvents: stateEventIds,
+    },
+  } satisfies FixtureDataset;
+  assertUniqueFixtureInventory(records, []);
   validateFixtureDataset(dataset);
   return dataset;
 }

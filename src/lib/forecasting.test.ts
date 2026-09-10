@@ -32,6 +32,11 @@ test("canonical pair with covered all-zero weeks is forecastable", () => {
   assert.deepEqual(r.get("b:c")?.map(x => x.demand), [0, 0, 0]);
   assert.deepEqual(calculateWma(r.get("b:c")!)?.forecasts, [0, 0, 0]);
 });
+test("canonical pairs preserve observed qualifying demand", () => {
+  const r = extractWeeklyDemand([booking("2026-09-07"), booking("2026-09-14"), booking("2026-09-21")], "2026-09-07T00:00:00+08:00", new Date("2026-09-29T00:00:00+08:00"), [{ branchId: "b", categoryId: "c" }]);
+  assert.deepEqual(r.get("b:c")?.map(x => x.demand), [1, 1, 1]);
+  assert.equal(calculateWma(r.get("b:c")!)?.forecasts[0], 1);
+});
 test("coverage begins only at exact Manila Monday midnight", () => {
   assert.equal(isoDay(trustworthyCoverageWeekStart("2026-09-07T00:00:00+08:00")), "2026-09-07");
   assert.equal(isoDay(trustworthyCoverageWeekStart("2026-09-07T00:00:01+08:00")), "2026-09-14");
