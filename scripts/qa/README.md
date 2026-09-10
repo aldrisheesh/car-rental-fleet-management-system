@@ -30,6 +30,12 @@ The bounded historical Decision Support mode is explicit:
 QA_FIXTURE_TARGET=staging npm run qa:fixtures -- --historical
 ```
 
+To preview the separately authorized synthetic coverage adjustment as well:
+
+```sh
+QA_FIXTURE_TARGET=staging npm run qa:fixtures -- --historical --confirm-synthetic-forecast-coverage
+```
+
 It proposes only `QA-HIST-*` Auth/database identifiers under the separate
 `briah-historical-decision-support-qa-v1` ownership namespace. The mode creates
 ten complete Asia/Manila weeks of `Confirmed` booking demand, completed
@@ -39,11 +45,16 @@ payments, documents, forecast rows, supply evaluations, or allocation rows.
 The report includes exact rows, date coverage, branch/category counts, expected
 forecast-eligible pairs, and designed shortage/surplus/balanced/idle scenarios.
 
-Historical mode refuses apply when `forecast_demand_coverage.tracking_started_at`
+Historical mode still refuses apply when `forecast_demand_coverage.tracking_started_at`
 does not already establish trustworthy coverage on or before the proposed
-history start. It never changes that canonical coverage row. This preserves the
-forecasting boundary and prevents synthetic rows from being presented as
-covered history without separate Lead authorization.
+history start. The explicit `--confirm-synthetic-forecast-coverage` flag is
+required to authorize the bounded exception. With that flag, an authorized
+historical apply updates only the singleton
+`forecast_demand_coverage.tracking_started_at` to the exact historical window
+start. This is synthetic QA/demo coverage, not real operational coverage, and
+production still requires `--confirm-production-fixtures` as a separate gate.
+The previous singleton state is captured in protected historical fixture
+metadata for exact cleanup restoration.
 
 ## Apply
 
@@ -116,6 +127,18 @@ operational-state events are included in the owned inventory and removed before
 dependent historical rows. If later canonical Decision Support outputs or other
 records reference the dedicated historical operator, cleanup refuses instead of
 guessing ownership; derived outputs must be reviewed by the Lead.
+
+When historical apply changed synthetic coverage, preview and authorize its
+restoration explicitly:
+
+```sh
+QA_FIXTURE_TARGET=staging npm run qa:fixtures -- --historical --cleanup --confirm-synthetic-forecast-coverage --apply
+```
+
+Cleanup restores the exact captured singleton state only when the current value
+still matches the fixture-owned synthetic value. Missing or mismatched
+restoration ownership is a hard refusal; the tool never guesses or overwrites a
+newer coverage change.
 
 Notifications, email outbox rows, finder context, or idempotency bindings created later by application jobs/interactions are removed only when positively linked to deterministic fixture entity IDs. The unexpected branch `VS003 Temp 1788110993` is report-only and is never changed or deleted.
 

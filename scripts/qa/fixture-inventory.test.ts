@@ -23,9 +23,13 @@ import {
 } from "../../src/lib/forecasting.server.ts";
 import {
   assertTargetAgreement,
+  assertHistoricalCoverage,
   assertWriteSafety,
+  planHistoricalCoverage,
+  planHistoricalCoverageRestore,
   parseArguments,
   SIDE_EFFECT_TRIGGERS,
+  SYNTHETIC_FORECAST_COVERAGE_FLAG,
 } from "./controlled-fixtures.ts";
 
 function uuid(number: number) {
@@ -86,6 +90,7 @@ test("CLI is dry-run by default and each write gate is explicit", () => {
     cleanup: false,
     includeAuthUsers: false,
     confirmProduction: false,
+    confirmSyntheticForecastCoverage: false,
     anchorDate: undefined,
   });
   assert.deepEqual(parseArguments(["--cleanup"]), {
@@ -94,6 +99,7 @@ test("CLI is dry-run by default and each write gate is explicit", () => {
     cleanup: true,
     includeAuthUsers: false,
     confirmProduction: false,
+    confirmSyntheticForecastCoverage: false,
     anchorDate: undefined,
   });
   const write = parseArguments([
@@ -106,9 +112,22 @@ test("CLI is dry-run by default and each write gate is explicit", () => {
   assert.equal(write.confirmProduction, true);
   assert.equal(parseArguments(["--historical"]).mode, "historical");
   assert.equal(parseArguments(["--mode=historical"]).mode, "historical");
+  assert.equal(
+    parseArguments(["--historical", SYNTHETIC_FORECAST_COVERAGE_FLAG])
+      .confirmSyntheticForecastCoverage,
+    true,
+  );
   assert.throws(
     () => parseArguments(["--historical", "--mode=standard"]),
     /conflicts/,
+  );
+  assert.throws(
+    () => parseArguments([SYNTHETIC_FORECAST_COVERAGE_FLAG]),
+    /valid only with --historical/,
+  );
+  assert.throws(
+    () => parseArguments(["--mode=standard", SYNTHETIC_FORECAST_COVERAGE_FLAG]),
+    /valid only with --historical/,
   );
   assert.throws(() => parseArguments(["--force"]), /Unknown argument/);
 });
@@ -312,6 +331,106 @@ test("historical inventory supplies complete canonical demand history for WMA", 
   );
   assert(
     fixture.historical?.scenarios.balanced.includes("Antipolo, Rizal · SUV"),
+  );
+});
+
+function coverageReferences(trackingStartedAt: string) {
+  return {
+    branches: {},
+    vehicles: {},
+    paymentMethodId: "payment-method",
+    demandCoverageStart: trackingStartedAt,
+    demandCoverageState: {
+      rowExists: true,
+      trackingStartedAt,
+    },
+    unexpectedBranches: [],
+  } as Parameters<typeof assertHistoricalCoverage>[1];
+}
+
+test("historical apply keeps the default insufficient-coverage refusal", () => {
+  const fixture = historicalDataset();
+  const references = coverageReferences("2026-09-01T02:42:18.555Z");
+  assert.throws(
+    () => assertHistoricalCoverage(fixture, references),
+    new RegExp(SYNTHETIC_FORECAST_COVERAGE_FLAG),
+  );
+});
+
+test("synthetic coverage authorization uses the exact historical window start", () => {
+  const fixture = historicalDataset();
+  const references = coverageReferences("2026-09-01T02:42:18.555Z");
+  const plan = assertHistoricalCoverage(fixture, references, true);
+  assert.equal(plan?.action, "update");
+  assert.equal(plan?.proposedTrackingStartedAt, "2026-06-29T00:00:00+08:00");
+  assert.deepEqual(plan?.snapshot.previous, {
+    rowExists: true,
+    trackingStartedAt: "2026-09-01T02:42:18.555Z",
+  });
+});
+
+test("historical coverage apply is idempotent and cleanup restores the exact prior state", () => {
+  const initial = {
+    rowExists: true,
+    trackingStartedAt: "2026-09-01T02:42:18.555Z",
+  };
+  const first = planHistoricalCoverage(initial, "2026-06-29", true);
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  const applied = {
+    rowExists: true,
+    trackingStartedAt: new Date(first.proposedTrackingStartedAt).toISOString(),
+  };
+  const repeated = planHistoricalCoverage(
+    applied,
+    "2026-06-29",
+    true,
+    first.snapshot,
+  );
+  assert.equal(repeated.action, "already-owned");
+  const restore = planHistoricalCoverageRestore(
+    applied,
+    first.snapshot,
+    "2026-06-29",
+  );
+  assert.equal(restore.action, "restore");
+  assert.deepEqual(
+    restore.action === "restore" ? restore.snapshot.previous : null,
+    initial,
+  );
+});
+
+test("historical cleanup refuses mismatched or unowned synthetic coverage", () => {
+  const first = planHistoricalCoverage(
+    { rowExists: true, trackingStartedAt: "2026-09-01T02:42:18.555Z" },
+    "2026-06-29",
+    true,
+  );
+  assert.equal(first.action, "update");
+  if (first.action !== "update") return;
+  assert.throws(
+    () =>
+      planHistoricalCoverageRestore(
+        {
+          rowExists: true,
+          trackingStartedAt: "2026-06-30T00:00:00.000Z",
+        },
+        first.snapshot,
+        "2026-06-29",
+      ),
+    /no longer matches|changed after restoration/,
+  );
+  assert.throws(
+    () =>
+      planHistoricalCoverageRestore(
+        {
+          rowExists: true,
+          trackingStartedAt: "2026-06-28T16:00:00.000Z",
+        },
+        undefined,
+        "2026-06-29",
+      ),
+    /ownership cannot be proven/,
   );
 });
 

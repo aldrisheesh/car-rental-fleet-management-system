@@ -6,6 +6,7 @@ import { createClient, type User } from "@supabase/supabase-js";
 import postgres, { type Sql } from "postgres";
 import {
   CANONICAL_BRANCHES,
+  HISTORICAL_FIXTURE_OWNER,
   STANDARD_FIXTURE_DEFINITION,
   UNEXPECTED_BRANCH_NAME,
   VEHICLES,
@@ -14,6 +15,7 @@ import {
   fixtureAuthMetadata,
   getFixtureDefinition,
   historicalCoverageCoversWindow,
+  historicalCoverageTrackingStart,
   trustworthyHistoricalCoverageWeekStart,
   isOwnedAuthUser,
   planRecords,
@@ -32,8 +34,54 @@ type Arguments = {
   cleanup: boolean;
   includeAuthUsers: boolean;
   confirmProduction: boolean;
+  confirmSyntheticForecastCoverage: boolean;
   anchorDate?: string;
 };
+
+export const SYNTHETIC_FORECAST_COVERAGE_FLAG =
+  "--confirm-synthetic-forecast-coverage";
+const HISTORICAL_COVERAGE_METADATA_KEY = "qa_fixture_forecast_coverage";
+const HISTORICAL_COVERAGE_METADATA_VERSION = 1;
+
+export type ForecastCoverageState = {
+  rowExists: boolean;
+  trackingStartedAt: string | null;
+};
+
+export type HistoricalCoverageSnapshot = {
+  version: number;
+  owner: string;
+  historicalStart: string;
+  previous: ForecastCoverageState;
+  appliedTrackingStartedAt: string;
+};
+
+export type HistoricalCoveragePlan =
+  | {
+      action: "none";
+      current: ForecastCoverageState;
+      proposedTrackingStartedAt: string;
+    }
+  | {
+      action: "update";
+      current: ForecastCoverageState;
+      proposedTrackingStartedAt: string;
+      snapshot: HistoricalCoverageSnapshot;
+    }
+  | {
+      action: "already-owned";
+      current: ForecastCoverageState;
+      proposedTrackingStartedAt: string;
+      snapshot: HistoricalCoverageSnapshot;
+    };
+
+export type HistoricalCoverageRestorePlan =
+  | { action: "none" }
+  | {
+      action: "restore" | "already-restored";
+      current: ForecastCoverageState;
+      snapshot: HistoricalCoverageSnapshot;
+    };
 
 const TABLE_ORDER = [
   "booking_requests",
@@ -60,13 +108,15 @@ function usage() {
 
 Usage:
   npm run qa:fixtures -- [--historical] [--anchor-date=YYYY-MM-DD]
-  npm run qa:fixtures -- --historical --apply --include-auth-users [--confirm-production-fixtures]
-  npm run qa:fixtures -- --historical --cleanup [--apply] [--confirm-production-fixtures]
+  npm run qa:fixtures -- --historical --confirm-synthetic-forecast-coverage --apply --include-auth-users [--confirm-production-fixtures]
+  npm run qa:fixtures -- --historical --cleanup --confirm-synthetic-forecast-coverage [--apply] [--confirm-production-fixtures]
 
 Writes never occur without --apply. Creating missing Auth identities additionally
 requires --include-auth-users. Production writes additionally require
 --confirm-production-fixtures. Historical mode creates only QA-HIST-* operational
-inputs and is refused when canonical demand coverage cannot cover its history.`;
+inputs. If its synthetic history predates canonical coverage,
+--confirm-synthetic-forecast-coverage is required to update and later restore
+only the forecast coverage singleton.`;
 }
 
 export function parseArguments(argv: string[]): Arguments {
@@ -76,6 +126,7 @@ export function parseArguments(argv: string[]): Arguments {
     "--cleanup",
     "--include-auth-users",
     "--confirm-production-fixtures",
+    SYNTHETIC_FORECAST_COVERAGE_FLAG,
     "--help",
   ]);
   for (const argument of argv) {
@@ -106,14 +157,26 @@ export function parseArguments(argv: string[]): Arguments {
     | undefined;
   if (argv.includes("--historical") && requestedMode === "standard")
     throw new Error("--historical conflicts with --mode=standard.");
+  const mode = argv.includes("--historical")
+    ? "historical"
+    : (requestedMode ?? "standard");
+  if (
+    argv.includes(SYNTHETIC_FORECAST_COVERAGE_FLAG) &&
+    mode !== "historical"
+  ) {
+    throw new Error(
+      `${SYNTHETIC_FORECAST_COVERAGE_FLAG} is valid only with --historical.`,
+    );
+  }
   return {
-    mode: argv.includes("--historical")
-      ? "historical"
-      : (requestedMode ?? "standard"),
+    mode,
     apply: argv.includes("--apply"),
     cleanup: argv.includes("--cleanup"),
     includeAuthUsers: argv.includes("--include-auth-users"),
     confirmProduction: argv.includes("--confirm-production-fixtures"),
+    confirmSyntheticForecastCoverage: argv.includes(
+      SYNTHETIC_FORECAST_COVERAGE_FLAG,
+    ),
     anchorDate: anchor,
   };
 }
@@ -302,6 +365,177 @@ function placeholderIdentities(
   }));
 }
 
+function normalizeTimestamp(value: unknown) {
+  if (value === null || value === undefined) return null;
+  const date = value instanceof Date ? value : new Date(String(value));
+  return Number.isFinite(date.getTime()) ? date.toISOString() : null;
+}
+
+function sameCoverageState(
+  left: ForecastCoverageState,
+  right: ForecastCoverageState,
+) {
+  return (
+    left.rowExists === right.rowExists &&
+    left.trackingStartedAt === right.trackingStartedAt
+  );
+}
+
+function parseHistoricalCoverageSnapshot(value: unknown) {
+  if (value === undefined || value === null) return null;
+  if (!value || typeof value !== "object")
+    throw new Error(
+      "Historical synthetic coverage metadata is invalid; refusing to continue.",
+    );
+  const candidate = value as Record<string, unknown>;
+  const previousValue = candidate.previous;
+  if (!previousValue || typeof previousValue !== "object")
+    throw new Error(
+      "Historical synthetic coverage metadata is invalid; refusing to continue.",
+    );
+  const previous = previousValue as Record<string, unknown>;
+  const previousRowExists = previous.rowExists === true;
+  const previousTrackingStartedAt = normalizeTimestamp(
+    previous.trackingStartedAt,
+  );
+  const appliedTrackingStartedAt = normalizeTimestamp(
+    candidate.appliedTrackingStartedAt,
+  );
+  if (
+    candidate.version !== HISTORICAL_COVERAGE_METADATA_VERSION ||
+    candidate.owner !== HISTORICAL_FIXTURE_OWNER ||
+    typeof candidate.historicalStart !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(candidate.historicalStart) ||
+    typeof previous.rowExists !== "boolean" ||
+    (previousRowExists && !previousTrackingStartedAt) ||
+    (!previousRowExists && previousTrackingStartedAt) ||
+    !appliedTrackingStartedAt
+  ) {
+    throw new Error(
+      "Historical synthetic coverage metadata is invalid; refusing to continue.",
+    );
+  }
+  return {
+    version: HISTORICAL_COVERAGE_METADATA_VERSION,
+    owner: HISTORICAL_FIXTURE_OWNER,
+    historicalStart: candidate.historicalStart,
+    previous: {
+      rowExists: previousRowExists,
+      trackingStartedAt: previousTrackingStartedAt,
+    },
+    appliedTrackingStartedAt,
+  } satisfies HistoricalCoverageSnapshot;
+}
+
+function historicalCoverageMetadata(user: User | undefined) {
+  return user?.app_metadata?.[HISTORICAL_COVERAGE_METADATA_KEY];
+}
+
+export function planHistoricalCoverage(
+  current: ForecastCoverageState,
+  historicalStart: string,
+  confirmSyntheticCoverage: boolean,
+  existingMetadata?: unknown,
+): HistoricalCoveragePlan {
+  const proposedTrackingStartedAt =
+    historicalCoverageTrackingStart(historicalStart);
+  const appliedTrackingStartedAt = normalizeTimestamp(
+    proposedTrackingStartedAt,
+  );
+  assert(appliedTrackingStartedAt);
+  const snapshot = parseHistoricalCoverageSnapshot(existingMetadata);
+
+  if (snapshot) {
+    if (
+      snapshot.historicalStart !== historicalStart ||
+      snapshot.appliedTrackingStartedAt !== appliedTrackingStartedAt
+    ) {
+      throw new Error(
+        "Historical synthetic coverage metadata belongs to a different historical window; refusing to overwrite it.",
+      );
+    }
+    if (
+      !sameCoverageState(current, {
+        rowExists: true,
+        trackingStartedAt: snapshot.appliedTrackingStartedAt,
+      })
+    ) {
+      throw new Error(
+        "Historical synthetic coverage no longer matches the fixture-owned expected state; refusing to overwrite coverage.",
+      );
+    }
+    if (!confirmSyntheticCoverage)
+      throw new Error(
+        `${SYNTHETIC_FORECAST_COVERAGE_FLAG} is required for historical coverage owned by QA-HIST fixtures.`,
+      );
+    return {
+      action: "already-owned",
+      current,
+      proposedTrackingStartedAt,
+      snapshot,
+    };
+  }
+
+  if (!current.rowExists || !current.trackingStartedAt) {
+    throw new Error(
+      "Historical fixture requires an existing canonical forecast coverage singleton so its exact previous state can be captured.",
+    );
+  }
+  if (
+    historicalCoverageCoversWindow(current.trackingStartedAt, historicalStart)
+  ) {
+    return { action: "none", current, proposedTrackingStartedAt };
+  }
+  if (!confirmSyntheticCoverage) {
+    throw new Error(
+      `Historical fixture requires canonical demand coverage on or before ${historicalStart}; refusing to modify uncontrolled coverage. Supply ${SYNTHETIC_FORECAST_COVERAGE_FLAG} to authorize synthetic QA/demo coverage.`,
+    );
+  }
+  return {
+    action: "update",
+    current,
+    proposedTrackingStartedAt,
+    snapshot: {
+      version: HISTORICAL_COVERAGE_METADATA_VERSION,
+      owner: HISTORICAL_FIXTURE_OWNER,
+      historicalStart,
+      previous: current,
+      appliedTrackingStartedAt,
+    },
+  };
+}
+
+export function planHistoricalCoverageRestore(
+  current: ForecastCoverageState,
+  existingMetadata?: unknown,
+  historicalStart?: string,
+): HistoricalCoverageRestorePlan {
+  const snapshot = parseHistoricalCoverageSnapshot(existingMetadata);
+  if (!snapshot) {
+    if (
+      historicalStart &&
+      current.trackingStartedAt ===
+        normalizeTimestamp(historicalCoverageTrackingStart(historicalStart))
+    ) {
+      throw new Error(
+        "Historical cleanup refused: synthetic coverage ownership cannot be proven because its restoration metadata is missing.",
+      );
+    }
+    return { action: "none" };
+  }
+  const expected = {
+    rowExists: true,
+    trackingStartedAt: snapshot.appliedTrackingStartedAt,
+  } satisfies ForecastCoverageState;
+  if (sameCoverageState(current, expected))
+    return { action: "restore", current, snapshot };
+  if (sameCoverageState(current, snapshot.previous))
+    return { action: "already-restored", current, snapshot };
+  throw new Error(
+    "Historical cleanup refused: forecast coverage no longer matches the fixture-owned state or its exact previous state.",
+  );
+}
+
 async function loadReferences(sql: Sql, requireDemandCoverage = false) {
   const branchRows = await sql<
     Record<string, unknown>[]
@@ -359,18 +593,26 @@ async function loadReferences(sql: Sql, requireDemandCoverage = false) {
     );
   }
   let demandCoverageStart: string | null = null;
+  let demandCoverageState: ForecastCoverageState | null = null;
   if (requireDemandCoverage) {
     const coverageRows = await sql<Record<string, unknown>[]>`
       select tracking_started_at from public.forecast_demand_coverage where id = 1
     `;
-    if (coverageRows.length === 1 && coverageRows[0].tracking_started_at)
-      demandCoverageStart = String(coverageRows[0].tracking_started_at);
+    demandCoverageState = {
+      rowExists: coverageRows.length === 1,
+      trackingStartedAt:
+        coverageRows.length === 1
+          ? normalizeTimestamp(coverageRows[0].tracking_started_at)
+          : null,
+    };
+    demandCoverageStart = demandCoverageState.trackingStartedAt;
   }
   return {
     branches: branchMap,
     vehicles: vehicleMap,
     paymentMethodId: String(methods[0].id),
     demandCoverageStart,
+    demandCoverageState,
     unexpectedBranches: unexpected,
   };
 }
@@ -512,6 +754,11 @@ function printHistoricalReport(
   references: Awaited<ReturnType<typeof loadReferences>>,
   recordPlan?: ReturnType<typeof planRecords>,
   artifactPlan?: Awaited<ReturnType<typeof planArtifacts>>,
+  options: {
+    confirmSyntheticCoverage?: boolean;
+    coveragePlan?: HistoricalCoveragePlan | null;
+    restorePlan?: HistoricalCoverageRestorePlan;
+  } = {},
 ) {
   const historical = dataset.historical;
   if (!historical) return;
@@ -565,6 +812,22 @@ function printHistoricalReport(
   process.stdout.write(
     `HISTORICAL DEMAND COVERAGE tracking_started_at=${references.demandCoverageStart ?? "missing"}; trustworthy_week_start=${coverageWeek ?? "invalid"}; covers_window=${covered}\n`,
   );
+  const proposedTrackingStartedAt = historicalCoverageTrackingStart(
+    historical.dateRange.start,
+  );
+  const coverageNeedsUpdate = !covered;
+  process.stdout.write(
+    `HISTORICAL SYNTHETIC COVERAGE current=${references.demandCoverageStart ?? "missing"}; proposed=${proposedTrackingStartedAt}; update_required=${coverageNeedsUpdate}; confirmation_flag=${options.confirmSyntheticCoverage === true}; production_apply_gate=--confirm-production-fixtures\n`,
+  );
+  if (coverageNeedsUpdate) {
+    process.stdout.write(
+      `HISTORICAL SYNTHETIC COVERAGE ACTION ${options.confirmSyntheticCoverage === true ? "would_update_only_on_authorized_apply" : "refused_without_" + SYNTHETIC_FORECAST_COVERAGE_FLAG}\n`,
+    );
+  } else {
+    process.stdout.write(
+      "HISTORICAL SYNTHETIC COVERAGE ACTION unchanged; canonical coverage already reaches the historical window\n",
+    );
+  }
   process.stdout.write("HISTORICAL BRANCH/CATEGORY DISTRIBUTION\n");
   for (const item of historical.branchCategoryDistribution)
     process.stdout.write(
@@ -615,33 +878,50 @@ function printHistoricalReport(
   process.stdout.write(
     `HISTORICAL CLEANUP INVENTORY ${dataset.records.length} database rows (${dataset.ids.bookings.length} bookings, ${dataset.ids.rentals.length} rentals, ${dataset.ids.maintenance.length} maintenance, ${dataset.ids.operationalStateEvents.length} state events), ${dataset.artifacts.length} storage artifacts, ${dataset.definition.authSpecs.length} Auth users; all create-only/owned.\n`,
   );
-  if (!covered)
+  if (options.coveragePlan?.action === "update") {
     process.stdout.write(
-      `HISTORICAL REFUSAL canonical demand coverage does not reach ${historical.dateRange.start}; no historical writes are safe until the coverage marker is independently authorized.\n`,
+      `HISTORICAL COVERAGE SNAPSHOT previous=${options.coveragePlan.snapshot.previous.trackingStartedAt ?? "missing"}; applied=${options.coveragePlan.snapshot.appliedTrackingStartedAt}; cleanup=restore_exact_previous_state_only\n`,
+    );
+  } else if (options.restorePlan?.action === "restore") {
+    process.stdout.write(
+      `HISTORICAL COVERAGE CLEANUP current=${options.restorePlan.snapshot.appliedTrackingStartedAt}; restore=${options.restorePlan.snapshot.previous.trackingStartedAt ?? "missing"}; mismatch=refuse\n`,
+    );
+  } else if (options.restorePlan?.action === "already-restored") {
+    process.stdout.write(
+      "HISTORICAL COVERAGE CLEANUP exact previous state is already restored; only owned metadata cleanup remains\n",
+    );
+  } else if (coverageNeedsUpdate && options.confirmSyntheticCoverage === true) {
+    process.stdout.write(
+      "HISTORICAL COVERAGE CLEANUP authorized apply will capture the exact current state in QA-HIST operator metadata; cleanup restores it only on an exact match, otherwise refuses\n",
+    );
+  } else {
+    process.stdout.write(
+      "HISTORICAL COVERAGE CLEANUP no fixture-owned coverage snapshot detected; canonical coverage will not be changed\n",
+    );
+  }
+  if (!covered && options.confirmSyntheticCoverage !== true)
+    process.stdout.write(
+      `HISTORICAL REFUSAL canonical demand coverage does not reach ${historical.dateRange.start}; historical apply requires ${SYNTHETIC_FORECAST_COVERAGE_FLAG}.\n`,
     );
 }
 
-function assertHistoricalCoverage(
+export function assertHistoricalCoverage(
   dataset: FixtureDataset,
   references: Awaited<ReturnType<typeof loadReferences>>,
-) {
-  if (dataset.historical && !references.demandCoverageStart) {
-    throw new Error(
-      "Historical fixture requires the canonical demand coverage marker; refusing to infer coverage.",
-    );
-  }
-  if (
-    dataset.historical &&
-    references.demandCoverageStart &&
-    !historicalCoverageCoversWindow(
-      references.demandCoverageStart,
-      dataset.historical.dateRange.start,
-    )
-  ) {
-    throw new Error(
-      `Historical fixture requires canonical demand coverage on or before ${dataset.historical.dateRange.start}; refusing to modify uncontrolled coverage or create rows that cannot produce trustworthy WMA observations.`,
-    );
-  }
+  confirmSyntheticCoverage = false,
+  operatorUser?: User,
+): HistoricalCoveragePlan | null {
+  if (!dataset.historical) return null;
+  const current = references.demandCoverageState ?? {
+    rowExists: Boolean(references.demandCoverageStart),
+    trackingStartedAt: references.demandCoverageStart,
+  };
+  return planHistoricalCoverage(
+    current,
+    dataset.historical.dateRange.start,
+    confirmSyntheticCoverage,
+    historicalCoverageMetadata(operatorUser),
+  );
 }
 
 function assertNoCollisions(
@@ -662,9 +942,115 @@ function assertNoCollisions(
     );
 }
 
-async function insertMissingRecords(sql: Sql, dataset: FixtureDataset) {
+function appMetadataWithCoverageSnapshot(
+  user: User,
+  snapshot: HistoricalCoverageSnapshot | null,
+) {
+  const appMetadata = { ...(user.app_metadata ?? {}) };
+  if (snapshot) appMetadata[HISTORICAL_COVERAGE_METADATA_KEY] = snapshot;
+  else delete appMetadata[HISTORICAL_COVERAGE_METADATA_KEY];
+  return appMetadata;
+}
+
+async function updateHistoricalCoverageMetadata(
+  client: ReturnType<typeof createClient>,
+  user: User,
+  snapshot: HistoricalCoverageSnapshot | null,
+) {
+  const result = await client.auth.admin.updateUserById(user.id, {
+    app_metadata: appMetadataWithCoverageSnapshot(user, snapshot),
+  });
+  if (result.error)
+    throw new Error(
+      `Unable to persist historical coverage metadata: ${result.error.message}`,
+    );
+}
+
+async function updateCoverageInTransaction(
+  transaction: Sql,
+  plan: Extract<HistoricalCoveragePlan, { action: "update" }>,
+) {
+  const rows = await transaction<Record<string, unknown>[]>`
+    select tracking_started_at from public.forecast_demand_coverage where id = 1 for update
+  `;
+  const current: ForecastCoverageState = {
+    rowExists: rows.length === 1,
+    trackingStartedAt:
+      rows.length === 1
+        ? normalizeTimestamp(rows[0].tracking_started_at)
+        : null,
+  };
+  if (!sameCoverageState(current, plan.current))
+    throw new Error(
+      "Synthetic forecast coverage changed after validation; refusing to update it.",
+    );
+  const updated = await transaction<Record<string, unknown>[]>`
+    update public.forecast_demand_coverage
+    set tracking_started_at = ${plan.proposedTrackingStartedAt}
+    where id = 1 and tracking_started_at = ${plan.current.trackingStartedAt}
+    returning tracking_started_at
+  `;
+  if (updated.length !== 1)
+    throw new Error(
+      "Synthetic forecast coverage update was not applied exactly once.",
+    );
+}
+
+async function restoreCoverageInTransaction(
+  transaction: Sql,
+  plan: Extract<HistoricalCoverageRestorePlan, { action: "restore" }>,
+) {
+  const rows = await transaction<Record<string, unknown>[]>`
+    select tracking_started_at from public.forecast_demand_coverage where id = 1 for update
+  `;
+  const current: ForecastCoverageState = {
+    rowExists: rows.length === 1,
+    trackingStartedAt:
+      rows.length === 1
+        ? normalizeTimestamp(rows[0].tracking_started_at)
+        : null,
+  };
+  const expected: ForecastCoverageState = {
+    rowExists: true,
+    trackingStartedAt: plan.snapshot.appliedTrackingStartedAt,
+  };
+  if (!sameCoverageState(current, expected))
+    throw new Error(
+      "Historical cleanup refused: forecast coverage changed after restoration validation.",
+    );
+  if (plan.snapshot.previous.rowExists) {
+    const restored = await transaction<Record<string, unknown>[]>`
+      update public.forecast_demand_coverage
+      set tracking_started_at = ${plan.snapshot.previous.trackingStartedAt}
+      where id = 1 and tracking_started_at = ${plan.snapshot.appliedTrackingStartedAt}
+      returning tracking_started_at
+    `;
+    if (restored.length !== 1)
+      throw new Error(
+        "Historical cleanup did not restore forecast coverage exactly once.",
+      );
+  } else {
+    const removed = await transaction<Record<string, unknown>[]>`
+      delete from public.forecast_demand_coverage
+      where id = 1 and tracking_started_at = ${plan.snapshot.appliedTrackingStartedAt}
+      returning id
+    `;
+    if (removed.length !== 1)
+      throw new Error(
+        "Historical cleanup did not restore the missing forecast coverage row exactly.",
+      );
+  }
+}
+
+async function insertMissingRecords(
+  sql: Sql,
+  dataset: FixtureDataset,
+  coveragePlan: HistoricalCoveragePlan | null = null,
+) {
   await sql.begin(async (transaction) => {
     await transaction`select pg_advisory_xact_lock(hashtextextended(${dataset.definition.owner}, 0))`;
+    if (coveragePlan?.action === "update")
+      await updateCoverageInTransaction(transaction, coveragePlan);
     const existing = await readExistingRecords(transaction, dataset.records);
     validateProfiles(dataset, existing);
     const plans = planRecords(
@@ -731,11 +1117,35 @@ async function applyFixtures(
   dataset: FixtureDataset,
   recordPlan: ReturnType<typeof planRecords>,
   artifactPlan: Awaited<ReturnType<typeof planArtifacts>>,
+  coveragePlan: HistoricalCoveragePlan | null,
+  operatorUser: User,
 ) {
-  await uploadMissingArtifacts(client, artifactPlan);
-  await insertMissingRecords(sql, dataset);
+  const originalAppMetadata = { ...(operatorUser.app_metadata ?? {}) };
+  const coverageUpdate = coveragePlan?.action === "update";
+  if (coverageUpdate)
+    await updateHistoricalCoverageMetadata(
+      client,
+      operatorUser,
+      coveragePlan.snapshot,
+    );
+  try {
+    await uploadMissingArtifacts(client, artifactPlan);
+    await insertMissingRecords(sql, dataset, coveragePlan);
+  } catch (error) {
+    if (coverageUpdate) {
+      const restoration = await client.auth.admin.updateUserById(
+        operatorUser.id,
+        { app_metadata: originalAppMetadata },
+      );
+      if (restoration.error)
+        throw new Error(
+          `Historical coverage metadata rollback failed after fixture apply refusal: ${restoration.error.message}`,
+        );
+    }
+    throw error;
+  }
   process.stdout.write(
-    "APPLY COMPLETE: synthetic QA fixture records are present. No audit events or notifications were seeded.\n",
+    `APPLY COMPLETE: synthetic QA fixture records are present${coverageUpdate ? "; synthetic forecast coverage was authorized and updated" : ""}. No audit events or notifications were seeded.\n`,
   );
   const postExisting = await readExistingRecords(sql, dataset.records);
   const postPlan = planRecords(dataset.records, postExisting);
@@ -870,6 +1280,7 @@ function printCleanupPlan(
   artifacts: Awaited<ReturnType<typeof planArtifacts>>,
   dependencies: Awaited<ReturnType<typeof readCleanupDependencies>>,
   ownedUsers: Map<string, User>,
+  coverageRestorePlan: HistoricalCoverageRestorePlan = { action: "none" },
 ) {
   for (const item of recordPlan
     .filter(
@@ -888,6 +1299,14 @@ function printCleanupPlan(
   process.stdout.write(
     `REMOVE generated dependencies: ${dependencies.emailDeliveries.length} email deliveries, ${dependencies.notifications.length} notifications, ${dependencies.finder.length} finder contexts, ${dependencies.idempotency.length} idempotency bindings.\n`,
   );
+  if (coverageRestorePlan.action === "restore")
+    process.stdout.write(
+      `RESTORE forecast_demand_coverage tracking_started_at=${coverageRestorePlan.snapshot.previous.trackingStartedAt ?? "missing"} (exact fixture-owned state; mismatch refuses)\n`,
+    );
+  else if (coverageRestorePlan.action === "already-restored")
+    process.stdout.write(
+      "SKIP forecast_demand_coverage restore (exact previous fixture-owned state is already present)\n",
+    );
   for (const spec of dataset.definition.authSpecs)
     if (ownedUsers.has(spec.label))
       process.stdout.write(`REMOVE auth.users ${spec.label} (${spec.email})\n`);
@@ -900,6 +1319,7 @@ async function deleteOwnedDatabaseRows(
   sql: Sql,
   dataset: FixtureDataset,
   _dependencies: Awaited<ReturnType<typeof readCleanupDependencies>>,
+  coverageRestorePlan: HistoricalCoverageRestorePlan = { action: "none" },
 ) {
   await sql.begin(async (transaction) => {
     await transaction`select pg_advisory_xact_lock(hashtextextended(${dataset.definition.owner}, 0))`;
@@ -924,6 +1344,8 @@ async function deleteOwnedDatabaseRows(
       throw new Error(
         `Cleanup collision(s): ${collisions.map((item) => item.record.label).join(", ")}.`,
       );
+    if (coverageRestorePlan.action === "restore")
+      await restoreCoverageInTransaction(transaction, coverageRestorePlan);
     if (dependencies.emailDeliveries.length)
       await transaction`delete from public.email_deliveries where id in ${transaction(dependencies.emailDeliveries.map((row) => String(row.id)))}`;
     if (dependencies.notificationIds.length)
@@ -957,8 +1379,14 @@ async function cleanupFixtures(
   artifactPlan: Awaited<ReturnType<typeof planArtifacts>>,
   dependencies: Awaited<ReturnType<typeof readCleanupDependencies>>,
   ownedUsers: Map<string, User>,
+  coverageRestorePlan: HistoricalCoverageRestorePlan,
 ) {
-  await deleteOwnedDatabaseRows(sql, dataset, dependencies);
+  await deleteOwnedDatabaseRows(
+    sql,
+    dataset,
+    dependencies,
+    coverageRestorePlan,
+  );
   for (const bucket of ["renter-requirements", "payment-proofs"] as const) {
     const paths = artifactPlan
       .filter(
@@ -971,6 +1399,17 @@ async function cleanupFixtures(
       throw new Error(
         `Unable to remove fixture artifacts from ${bucket}: ${removal.error.message}`,
       );
+  }
+  if (
+    coverageRestorePlan.action === "restore" ||
+    coverageRestorePlan.action === "already-restored"
+  ) {
+    const operatorUser = ownedUsers.get(dataset.definition.operatorSpec.label);
+    if (!operatorUser)
+      throw new Error(
+        "Historical cleanup refused: coverage snapshot owner is missing.",
+      );
+    await updateHistoricalCoverageMetadata(client, operatorUser, null);
   }
   for (const spec of [...dataset.definition.authSpecs].reverse()) {
     const user = ownedUsers.get(spec.label);
@@ -1045,9 +1484,22 @@ async function main() {
     });
     if (definition.mode === "historical") {
       if (args.apply && !args.cleanup)
-        assertHistoricalCoverage(placeholderDataset, references);
+        assertHistoricalCoverage(
+          placeholderDataset,
+          references,
+          args.confirmSyntheticForecastCoverage,
+          ownedUsers.get(definition.operatorSpec.label),
+        );
       if (missingAuth.length && !args.apply)
-        printHistoricalReport(placeholderDataset, references);
+        printHistoricalReport(
+          placeholderDataset,
+          references,
+          undefined,
+          undefined,
+          {
+            confirmSyntheticCoverage: args.confirmSyntheticForecastCoverage,
+          },
+        );
     }
     if (missingAuth.length) {
       const residue = await readExistingRecords(
@@ -1120,10 +1572,46 @@ async function main() {
       existing,
     );
     const artifactPlan = await planArtifacts(client, dataset);
-    printHistoricalReport(dataset, references, recordPlan, artifactPlan);
+    const operatorUser = ownedUsers.get(definition.operatorSpec.label);
+    assert(operatorUser);
+    const coveragePlan =
+      definition.mode === "historical" &&
+      !args.cleanup &&
+      (args.apply || args.confirmSyntheticForecastCoverage)
+        ? assertHistoricalCoverage(
+            dataset,
+            references,
+            args.confirmSyntheticForecastCoverage,
+            operatorUser,
+          )
+        : null;
+    const coverageRestorePlan =
+      definition.mode === "historical" && args.cleanup
+        ? planHistoricalCoverageRestore(
+            references.demandCoverageState ?? {
+              rowExists: Boolean(references.demandCoverageStart),
+              trackingStartedAt: references.demandCoverageStart,
+            },
+            historicalCoverageMetadata(operatorUser),
+            dataset.historical?.dateRange.start,
+          )
+        : ({ action: "none" } satisfies HistoricalCoverageRestorePlan);
+    if (
+      args.cleanup &&
+      coverageRestorePlan.action !== "none" &&
+      !args.confirmSyntheticForecastCoverage
+    ) {
+      throw new Error(
+        `Historical cleanup of synthetic forecast coverage requires ${SYNTHETIC_FORECAST_COVERAGE_FLAG}.`,
+      );
+    }
+    printHistoricalReport(dataset, references, recordPlan, artifactPlan, {
+      confirmSyntheticCoverage: args.confirmSyntheticForecastCoverage,
+      coveragePlan,
+      restorePlan: coverageRestorePlan,
+    });
     assertNoCollisions(recordPlan, artifactPlan);
-    const operator =
-      existing[ownedUsers.get(definition.operatorSpec.label)!.id];
+    const operator = existing[operatorUser.id];
     const operatorNeedsRole = operator.user_type !== "Owner/Admin";
 
     if (args.cleanup) {
@@ -1140,6 +1628,7 @@ async function main() {
         artifactPlan,
         dependencies,
         ownedUsers,
+        coverageRestorePlan,
       );
       if (!args.apply) {
         process.stdout.write("DRY-RUN COMPLETE: no writes performed.\n");
@@ -1152,6 +1641,7 @@ async function main() {
         artifactPlan,
         dependencies,
         ownedUsers,
+        coverageRestorePlan,
       );
       return;
     }
@@ -1161,7 +1651,15 @@ async function main() {
       process.stdout.write("DRY-RUN COMPLETE: no writes performed.\n");
       return;
     }
-    await applyFixtures(sql, client, dataset, recordPlan, artifactPlan);
+    await applyFixtures(
+      sql,
+      client,
+      dataset,
+      recordPlan,
+      artifactPlan,
+      coveragePlan,
+      operatorUser,
+    );
   } finally {
     await sql.end({ timeout: 5 });
   }

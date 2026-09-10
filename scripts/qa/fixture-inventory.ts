@@ -837,6 +837,12 @@ export function historicalCoverageCoversWindow(
   return coverageWeek !== null && coverageWeek <= historicalStart;
 }
 
+export function historicalCoverageTrackingStart(historicalStart: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(historicalStart))
+    throw new Error("Historical coverage start must use YYYY-MM-DD.");
+  return `${historicalStart}T00:00:00+08:00`;
+}
+
 function addMinutes(value: string, minutes: number) {
   return new Date(
     new Date(value).getTime() + minutes * 60 * 1000,
