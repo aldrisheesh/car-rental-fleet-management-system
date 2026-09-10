@@ -24,7 +24,8 @@ const authBoundaryMiddleware = createMiddleware().server(
 
     if (allowed) return next();
 
-    const destination = principal ? "/" : "/sign-in";
+    const destination =
+      principal || pathname === "/admin/maintenance" ? "/" : "/sign-in";
     return Response.redirect(new URL(destination, request.url), 302);
   },
 );
