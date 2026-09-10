@@ -1100,7 +1100,7 @@ async function updateHistoricalCoverageMetadata(
     );
 }
 
-async function updateCoverageInTransaction(
+export async function updateCoverageInTransaction(
   transaction: Sql,
   plan: Extract<HistoricalCoveragePlan, { action: "update" }>,
 ) {
@@ -1118,10 +1118,13 @@ async function updateCoverageInTransaction(
     throw new Error(
       "Synthetic forecast coverage changed after validation; refusing to update it.",
     );
+  // Keep timestamp parameters text-typed until PostgreSQL casts them. The
+  // postgres driver otherwise recognizes timestamp-looking strings as Date
+  // values and can discard PostgreSQL microsecond precision.
   const updated = await transaction<Record<string, unknown>[]>`
     update public.forecast_demand_coverage
-    set tracking_started_at = ${plan.proposedTrackingStartedAt}::timestamptz
-    where id = 1 and tracking_started_at = ${current.trackingStartedAt}::timestamptz
+    set tracking_started_at = ${plan.proposedTrackingStartedAt}::text::timestamptz
+    where id = 1 and tracking_started_at::text = ${current.trackingStartedAt}
     returning tracking_started_at::text as tracking_started_at
   `;
   if (updated.length !== 1 || !updated[0].tracking_started_at)
@@ -1142,7 +1145,7 @@ async function updateCoverageInTransaction(
     );
 }
 
-async function restoreCoverageInTransaction(
+export async function restoreCoverageInTransaction(
   transaction: Sql,
   plan: Extract<HistoricalCoverageRestorePlan, { action: "restore" }>,
 ) {
@@ -1167,8 +1170,8 @@ async function restoreCoverageInTransaction(
   if (plan.snapshot.previous.rowExists) {
     const restored = await transaction<Record<string, unknown>[]>`
       update public.forecast_demand_coverage
-      set tracking_started_at = ${plan.snapshot.previous.trackingStartedAt}::timestamptz
-      where id = 1 and tracking_started_at = ${current.trackingStartedAt}::timestamptz
+      set tracking_started_at = ${plan.snapshot.previous.trackingStartedAt}::text::timestamptz
+      where id = 1 and tracking_started_at::text = ${current.trackingStartedAt}
       returning tracking_started_at::text as tracking_started_at
     `;
     if (restored.length !== 1 || !restored[0].tracking_started_at)
@@ -1190,7 +1193,7 @@ async function restoreCoverageInTransaction(
   } else {
     const removed = await transaction<Record<string, unknown>[]>`
       delete from public.forecast_demand_coverage
-      where id = 1 and tracking_started_at = ${current.trackingStartedAt}::timestamptz
+      where id = 1 and tracking_started_at::text = ${current.trackingStartedAt}
       returning id
     `;
     if (removed.length !== 1)
