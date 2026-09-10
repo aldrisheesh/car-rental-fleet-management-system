@@ -5,19 +5,21 @@ import process from "node:process";
 import { createClient, type User } from "@supabase/supabase-js";
 import postgres, { type Sql } from "postgres";
 import {
-  AUTH_SPECS,
   CANONICAL_BRANCHES,
-  CUSTOMER_SPECS,
-  FIXTURE_OWNER,
-  FIXTURE_VERSION,
-  OPERATOR_SPEC,
+  STANDARD_FIXTURE_DEFINITION,
   UNEXPECTED_BRANCH_NAME,
   VEHICLES,
+  buildHistoricalFixtureDataset,
   buildFixtureDataset,
   fixtureAuthMetadata,
+  getFixtureDefinition,
+  historicalCoverageCoversWindow,
+  trustworthyHistoricalCoverageWeekStart,
   isOwnedAuthUser,
   planRecords,
   sameFingerprint,
+  type FixtureDefinition,
+  type FixtureMode,
   type FixtureAuthIdentity,
   type FixtureDataset,
   type FixtureRecord,
@@ -25,6 +27,7 @@ import {
 
 type Target = "local" | "staging" | "production";
 type Arguments = {
+  mode: FixtureMode;
   apply: boolean;
   cleanup: boolean;
   includeAuthUsers: boolean;
@@ -41,6 +44,7 @@ const TABLE_ORDER = [
   "payment_proofs",
   "rental_transactions",
   "maintenance_records",
+  "vehicle_operational_state_events",
 ] as const;
 
 export const SIDE_EFFECT_TRIGGERS = [
@@ -55,17 +59,19 @@ function usage() {
   return `Controlled Briah QA fixtures (dry-run by default)
 
 Usage:
-  npm run qa:fixtures -- [--anchor-date=YYYY-MM-DD]
-  npm run qa:fixtures -- --apply --include-auth-users [--confirm-production-fixtures]
-  npm run qa:fixtures -- --cleanup [--apply] [--confirm-production-fixtures]
+  npm run qa:fixtures -- [--historical] [--anchor-date=YYYY-MM-DD]
+  npm run qa:fixtures -- --historical --apply --include-auth-users [--confirm-production-fixtures]
+  npm run qa:fixtures -- --historical --cleanup [--apply] [--confirm-production-fixtures]
 
 Writes never occur without --apply. Creating missing Auth identities additionally
 requires --include-auth-users. Production writes additionally require
---confirm-production-fixtures.`;
+--confirm-production-fixtures. Historical mode creates only QA-HIST-* operational
+inputs and is refused when canonical demand coverage cannot cover its history.`;
 }
 
 export function parseArguments(argv: string[]): Arguments {
   const known = new Set([
+    "--historical",
     "--apply",
     "--cleanup",
     "--include-auth-users",
@@ -73,7 +79,11 @@ export function parseArguments(argv: string[]): Arguments {
     "--help",
   ]);
   for (const argument of argv) {
-    if (!known.has(argument) && !argument.startsWith("--anchor-date=")) {
+    if (
+      !known.has(argument) &&
+      !argument.startsWith("--anchor-date=") &&
+      !argument.startsWith("--mode=")
+    ) {
       throw new Error(`Unknown argument: ${argument}`);
     }
   }
@@ -82,7 +92,24 @@ export function parseArguments(argv: string[]): Arguments {
     ?.split("=", 2)[1];
   if (anchor && !/^\d{4}-\d{2}-\d{2}$/.test(anchor))
     throw new Error("--anchor-date must use YYYY-MM-DD.");
+  const modeArguments = argv.filter((argument) =>
+    argument.startsWith("--mode="),
+  );
+  for (const argument of modeArguments) {
+    if (!["--mode=standard", "--mode=historical"].includes(argument))
+      throw new Error(`Unknown fixture mode: ${argument}`);
+  }
+  if (modeArguments.length > 1)
+    throw new Error("Only one fixture mode may be selected.");
+  const requestedMode = modeArguments[0]?.slice("--mode=".length) as
+    | FixtureMode
+    | undefined;
+  if (argv.includes("--historical") && requestedMode === "standard")
+    throw new Error("--historical conflicts with --mode=standard.");
   return {
+    mode: argv.includes("--historical")
+      ? "historical"
+      : (requestedMode ?? "standard"),
     apply: argv.includes("--apply"),
     cleanup: argv.includes("--cleanup"),
     includeAuthUsers: argv.includes("--include-auth-users"),
@@ -178,22 +205,25 @@ async function listAllUsers(client: ReturnType<typeof createClient>) {
   return users;
 }
 
-function inspectAuth(users: User[]) {
+function inspectAuth(
+  users: User[],
+  definition: FixtureDefinition = STANDARD_FIXTURE_DEFINITION,
+) {
   const ownedByLabel = new Map<string, User>();
-  for (const spec of AUTH_SPECS) {
+  for (const spec of definition.authSpecs) {
     const byEmail = users.filter(
       (user) => user.email?.toLowerCase() === spec.email,
     );
     const byLabel = users.filter(
       (user) =>
-        user.app_metadata?.qa_fixture_owner === FIXTURE_OWNER &&
+        user.app_metadata?.qa_fixture_owner === definition.owner &&
         user.app_metadata?.qa_fixture_id === spec.label,
     );
     if (byEmail.length > 1 || byLabel.length > 1)
       throw new Error(`Duplicate Auth identity detected for ${spec.label}.`);
     const candidate = byEmail[0] ?? byLabel[0];
     if (!candidate) continue;
-    if (!isOwnedAuthUser(candidate, spec))
+    if (!isOwnedAuthUser(candidate, spec, definition))
       throw new Error(
         `Unknown Auth user collides with ${spec.label}/${spec.email}.`,
       );
@@ -226,14 +256,15 @@ async function createMissingAuthUsers(
   client: ReturnType<typeof createClient>,
   ownedUsers: Map<string, User>,
   anchorDate: string,
+  definition: FixtureDefinition,
 ) {
   const password = process.env.QA_FIXTURE_CUSTOMER_PASSWORD;
-  for (const spec of AUTH_SPECS) {
+  for (const spec of definition.authSpecs) {
     if (ownedUsers.has(spec.label)) continue;
     const attributes: Record<string, unknown> = {
       email: spec.email,
       email_confirm: true,
-      app_metadata: fixtureAuthMetadata(spec.label, anchorDate),
+      app_metadata: fixtureAuthMetadata(spec.label, anchorDate, definition),
       user_metadata: {
         full_name: spec.fullName,
         qa_fixture_notice: "SYNTHETIC QA/DEMO IDENTITY ONLY",
@@ -251,22 +282,27 @@ async function createMissingAuthUsers(
   }
 }
 
-function identitiesFrom(ownedUsers: Map<string, User>): FixtureAuthIdentity[] {
-  return AUTH_SPECS.map((spec) => {
+function identitiesFrom(
+  ownedUsers: Map<string, User>,
+  definition: FixtureDefinition,
+): FixtureAuthIdentity[] {
+  return definition.authSpecs.map((spec) => {
     const user = ownedUsers.get(spec.label);
     if (!user) throw new Error(`Missing Auth fixture identity ${spec.label}.`);
     return { ...spec, userId: user.id };
   });
 }
 
-function placeholderIdentities(): FixtureAuthIdentity[] {
-  return AUTH_SPECS.map((spec, index) => ({
+function placeholderIdentities(
+  definition: FixtureDefinition,
+): FixtureAuthIdentity[] {
+  return definition.authSpecs.map((spec, index) => ({
     ...spec,
     userId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
   }));
 }
 
-async function loadReferences(sql: Sql) {
+async function loadReferences(sql: Sql, requireDemandCoverage = false) {
   const branchRows = await sql<
     Record<string, unknown>[]
   >`select id, name, is_active from public.branches order by name`;
@@ -284,20 +320,25 @@ async function loadReferences(sql: Sql) {
   );
 
   const vehicleRows = await sql<Record<string, unknown>[]>`
-    select id, name, license_plate, branch_id, is_active from public.vehicles
-    where license_plate in ${sql(VEHICLES.map(([plate]) => plate))}
+    select v.id, v.name, v.license_plate, v.branch_id, v.is_active,
+      c.name as category_name, c.is_active as category_is_active
+    from public.vehicles v
+    left join public.vehicle_categories c on c.id = v.category_id
+    where v.license_plate in ${sql(VEHICLES.map(([plate]) => plate))}
   `;
   const vehicleMap: Record<string, { id: string; branchId: string }> = {};
-  for (const [plate, expectedName, branchName] of VEHICLES) {
+  for (const [plate, expectedName, branchName, expectedCategory] of VEHICLES) {
     const matches = vehicleRows.filter((row) => row.license_plate === plate);
     if (
       matches.length !== 1 ||
       matches[0].name !== expectedName ||
       matches[0].branch_id !== branchMap[branchName] ||
+      matches[0].category_name !== expectedCategory ||
+      matches[0].category_is_active !== true ||
       matches[0].is_active !== true
     )
       throw new Error(
-        `Required canonical DEV vehicle is missing, inactive, duplicated, or changed: ${plate}.`,
+        `Required canonical DEV vehicle is missing, inactive, category-mismatched, duplicated, or changed: ${plate}.`,
       );
     vehicleMap[plate] = {
       id: String(matches[0].id),
@@ -317,10 +358,19 @@ async function loadReferences(sql: Sql) {
       "Required active demo payment method is missing or changed.",
     );
   }
+  let demandCoverageStart: string | null = null;
+  if (requireDemandCoverage) {
+    const coverageRows = await sql<Record<string, unknown>[]>`
+      select tracking_started_at from public.forecast_demand_coverage where id = 1
+    `;
+    if (coverageRows.length === 1 && coverageRows[0].tracking_started_at)
+      demandCoverageStart = String(coverageRows[0].tracking_started_at);
+  }
   return {
     branches: branchMap,
     vehicles: vehicleMap,
     paymentMethodId: String(methods[0].id),
+    demandCoverageStart,
     unexpectedBranches: unexpected,
   };
 }
@@ -351,7 +401,7 @@ function validateProfiles(
     if (!row)
       throw new Error(`Auth trigger did not create profile ${record.label}.`);
     const fields =
-      record.label === OPERATOR_SPEC.label
+      record.label === dataset.definition.operatorSpec.label
         ? record.fingerprint.filter((field) => field !== "user_type")
         : record.fingerprint;
     if (
@@ -364,7 +414,7 @@ function validateProfiles(
       );
     }
     if (
-      record.label === OPERATOR_SPEC.label &&
+      record.label === dataset.definition.operatorSpec.label &&
       !["Customer/Renter", "Owner/Admin"].includes(String(row.user_type))
     ) {
       throw new Error(`${record.label} has an unexpected role.`);
@@ -441,7 +491,7 @@ function printApplyPlan(
   );
   if (operatorNeedsRole)
     process.stdout.write(
-      `UPDATE profiles ${OPERATOR_SPEC.label}: owned non-login fixture operator role -> Owner/Admin\n`,
+      `UPDATE profiles ${dataset.definition.operatorSpec.label}: owned non-login fixture operator role -> Owner/Admin\n`,
     );
   for (const item of recordPlan.filter(
     (item) => item.record.table !== "profiles",
@@ -453,6 +503,143 @@ function printApplyPlan(
   for (const item of artifactPlan) {
     process.stdout.write(
       `${item.action.toUpperCase()} storage ${item.artifact.label} (${item.artifact.bucket}/${item.artifact.path})\n`,
+    );
+  }
+}
+
+function printHistoricalReport(
+  dataset: FixtureDataset,
+  references: Awaited<ReturnType<typeof loadReferences>>,
+  recordPlan?: ReturnType<typeof planRecords>,
+  artifactPlan?: Awaited<ReturnType<typeof planArtifacts>>,
+) {
+  const historical = dataset.historical;
+  if (!historical) return;
+  const counts = new Map<string, number>();
+  for (const record of dataset.records)
+    counts.set(record.table, (counts.get(record.table) ?? 0) + 1);
+  const proposedEntities = [
+    "profiles",
+    "booking_requests",
+    "renter_requirement_sets",
+    "renter_requirement_documents",
+    "renter_requirement_reviews",
+    "payments",
+    "payment_proofs",
+    "rental_transactions",
+    "maintenance_records",
+    "vehicle_operational_state_events",
+    "forecast_runs",
+    "forecasts",
+    "forecast_inputs",
+    "supply_evaluations",
+    "supply_evaluation_vehicles",
+    "allocation_recommendation_batches",
+    "allocation_recommendations",
+    "allocation_recommendation_candidates",
+  ];
+  const countText = [
+    ...proposedEntities.map((table) => `${table}=${counts.get(table) ?? 0}`),
+    `storage_artifacts=${dataset.artifacts.length}`,
+    `auth_users=${dataset.definition.authSpecs.length}`,
+  ].join(", ");
+  const coverageWeek = references.demandCoverageStart
+    ? trustworthyHistoricalCoverageWeekStart(references.demandCoverageStart)
+    : null;
+  const covered = references.demandCoverageStart
+    ? historicalCoverageCoversWindow(
+        references.demandCoverageStart,
+        historical.dateRange.start,
+      )
+    : false;
+  process.stdout.write(
+    `HISTORICAL MODE owner=${dataset.definition.owner} version=${dataset.definition.version}\n`,
+  );
+  process.stdout.write(
+    `HISTORICAL DATE RANGE ${historical.dateRange.start}..${historical.dateRange.end} (${historical.weekStarts.length} complete Asia/Manila weeks)\n`,
+  );
+  process.stdout.write(
+    `HISTORICAL WEEK STARTS ${historical.weekStarts.join(" | ")}\n`,
+  );
+  process.stdout.write(`HISTORICAL ROW COUNTS ${countText}\n`);
+  process.stdout.write(
+    `HISTORICAL DEMAND COVERAGE tracking_started_at=${references.demandCoverageStart ?? "missing"}; trustworthy_week_start=${coverageWeek ?? "invalid"}; covers_window=${covered}\n`,
+  );
+  process.stdout.write("HISTORICAL BRANCH/CATEGORY DISTRIBUTION\n");
+  for (const item of historical.branchCategoryDistribution)
+    process.stdout.write(
+      `  ${item.branch} · ${item.category}: confirmed=${item.confirmedBookings}\n`,
+    );
+  process.stdout.write(
+    `HISTORICAL FORECAST-ELIGIBLE PAIRS ${historical.forecastEligiblePairs.join(" | ")}\n`,
+  );
+  process.stdout.write(
+    `HISTORICAL NON-ZERO WMA PAIRS ${historical.nonZeroForecastPairs.join(" | ")}\n`,
+  );
+  process.stdout.write("HISTORICAL SUPPLY COMPARISONS\n");
+  for (const comparison of historical.supplyComparisons)
+    process.stdout.write(
+      `  ${comparison.pair}: wma_f1=${comparison.firstWmaForecast} required=${comparison.requiredUnits} reference_supply=${comparison.referenceSupply} balance=${comparison.balance}\n`,
+    );
+  process.stdout.write(
+    `HISTORICAL SHORTAGE SCENARIOS ${historical.scenarios.shortage.join(" | ")}\n`,
+  );
+  process.stdout.write(
+    `HISTORICAL BALANCED SCENARIOS ${historical.scenarios.balanced.join(" | ")}\n`,
+  );
+  process.stdout.write(
+    `HISTORICAL SURPLUS SCENARIOS ${historical.scenarios.surplus.join(" | ")}\n`,
+  );
+  process.stdout.write(
+    `HISTORICAL IDLE CANDIDATES ${historical.scenarios.idle.join(" | ")}\n`,
+  );
+  process.stdout.write(
+    `HISTORICAL ALLOCATION SCENARIO ${historical.scenarios.allocation}\n`,
+  );
+  if (recordPlan && artifactPlan) {
+    const collisions = [
+      ...recordPlan
+        .filter((item) => item.action === "collision")
+        .map((item) => `${item.record.table}:${item.record.label}`),
+      ...artifactPlan
+        .filter((item) => item.action === "collision")
+        .map((item) => `storage:${item.artifact.label}`),
+    ];
+    process.stdout.write(
+      `HISTORICAL COLLISIONS/REFUSALS ${collisions.length ? collisions.join(" | ") : "none"}\n`,
+    );
+  } else
+    process.stdout.write(
+      "HISTORICAL COLLISIONS/REFUSALS Auth IDs missing; deterministic database collision checks deferred until owned Auth IDs exist.\n",
+    );
+  process.stdout.write(
+    `HISTORICAL CLEANUP INVENTORY ${dataset.records.length} database rows (${dataset.ids.bookings.length} bookings, ${dataset.ids.rentals.length} rentals, ${dataset.ids.maintenance.length} maintenance, ${dataset.ids.operationalStateEvents.length} state events), ${dataset.artifacts.length} storage artifacts, ${dataset.definition.authSpecs.length} Auth users; all create-only/owned.\n`,
+  );
+  if (!covered)
+    process.stdout.write(
+      `HISTORICAL REFUSAL canonical demand coverage does not reach ${historical.dateRange.start}; no historical writes are safe until the coverage marker is independently authorized.\n`,
+    );
+}
+
+function assertHistoricalCoverage(
+  dataset: FixtureDataset,
+  references: Awaited<ReturnType<typeof loadReferences>>,
+) {
+  if (dataset.historical && !references.demandCoverageStart) {
+    throw new Error(
+      "Historical fixture requires the canonical demand coverage marker; refusing to infer coverage.",
+    );
+  }
+  if (
+    dataset.historical &&
+    references.demandCoverageStart &&
+    !historicalCoverageCoversWindow(
+      references.demandCoverageStart,
+      dataset.historical.dateRange.start,
+    )
+  ) {
+    throw new Error(
+      `Historical fixture requires canonical demand coverage on or before ${dataset.historical.dateRange.start}; refusing to modify uncontrolled coverage or create rows that cannot produce trustworthy WMA observations.`,
     );
   }
 }
@@ -477,7 +664,7 @@ function assertNoCollisions(
 
 async function insertMissingRecords(sql: Sql, dataset: FixtureDataset) {
   await sql.begin(async (transaction) => {
-    await transaction`select pg_advisory_xact_lock(hashtextextended(${FIXTURE_OWNER}, 0))`;
+    await transaction`select pg_advisory_xact_lock(hashtextextended(${dataset.definition.owner}, 0))`;
     const existing = await readExistingRecords(transaction, dataset.records);
     validateProfiles(dataset, existing);
     const plans = planRecords(
@@ -495,7 +682,7 @@ async function insertMissingRecords(sql: Sql, dataset: FixtureDataset) {
       );
     }
     const operator = dataset.records.find(
-      (record) => record.label === OPERATOR_SPEC.label,
+      (record) => record.label === dataset.definition.operatorSpec.label,
     );
     assert(operator);
     await transaction`
@@ -568,6 +755,7 @@ async function readCleanupDependencies(sql: Sql, dataset: FixtureDataset) {
     ...dataset.ids.payments,
     ...dataset.ids.rentals,
     ...dataset.ids.maintenance,
+    ...dataset.ids.operationalStateEvents,
   ];
   const audit = await sql<Record<string, unknown>[]>`
     select id, entity_id, booking_id from public.audit_events
@@ -619,6 +807,8 @@ async function assertNoUnknownIdentityReferences(
   identityIds: string[],
   allowedNotificationIds: string[],
 ) {
+  const excludeFixtureIds = (ids: string[]) =>
+    ids.length ? sql`id not in ${sql(ids)}` : sql`true`;
   const recordsByTable = Object.fromEntries(
     [
       "renter_requirement_documents",
@@ -634,29 +824,29 @@ async function assertNoUnknownIdentityReferences(
   const references = await sql<{ source: string; id: string }[]>`
     select 'booking_requests' source, id::text from public.booking_requests
       where (customer_id in ${sql(identityIds)} or assigned_by in ${sql(identityIds)} or confirmed_by in ${sql(identityIds)})
-        and id not in ${sql(dataset.ids.bookings)}
+        and ${excludeFixtureIds(dataset.ids.bookings)}
     union all select 'renter_requirement_sets', id::text from public.renter_requirement_sets
-      where customer_id in ${sql(identityIds)} and id not in ${sql(dataset.ids.requirements)}
+      where customer_id in ${sql(identityIds)} and ${excludeFixtureIds(dataset.ids.requirements)}
     union all select 'renter_requirement_documents', id::text from public.renter_requirement_documents
-      where customer_id in ${sql(identityIds)} and id not in ${sql(recordsByTable.renter_requirement_documents)}
+      where customer_id in ${sql(identityIds)} and ${excludeFixtureIds(recordsByTable.renter_requirement_documents)}
     union all select 'renter_requirement_reviews', id::text from public.renter_requirement_reviews
-      where reviewer_id in ${sql(identityIds)} and id not in ${sql(recordsByTable.renter_requirement_reviews)}
+      where reviewer_id in ${sql(identityIds)} and ${excludeFixtureIds(recordsByTable.renter_requirement_reviews)}
     union all select 'payments', id::text from public.payments
-      where (customer_id in ${sql(identityIds)} or reviewed_by in ${sql(identityIds)}) and id not in ${sql(dataset.ids.payments)}
+      where (customer_id in ${sql(identityIds)} or reviewed_by in ${sql(identityIds)}) and ${excludeFixtureIds(dataset.ids.payments)}
     union all select 'payment_proofs', id::text from public.payment_proofs
-      where customer_id in ${sql(identityIds)} and id not in ${sql(recordsByTable.payment_proofs)}
+      where customer_id in ${sql(identityIds)} and ${excludeFixtureIds(recordsByTable.payment_proofs)}
     union all select 'rental_transactions', id::text from public.rental_transactions
       where (customer_id in ${sql(identityIds)} or released_by in ${sql(identityIds)} or returned_by in ${sql(identityIds)})
-        and id not in ${sql(dataset.ids.rentals)}
+        and ${excludeFixtureIds(dataset.ids.rentals)}
     union all select 'maintenance_records', id::text from public.maintenance_records
-      where (created_by in ${sql(identityIds)} or updated_by in ${sql(identityIds)}) and id not in ${sql(dataset.ids.maintenance)}
+      where (created_by in ${sql(identityIds)} or updated_by in ${sql(identityIds)}) and ${excludeFixtureIds(dataset.ids.maintenance)}
     union all select 'audit_events', id::text from public.audit_events where actor_user_id in ${sql(identityIds)}
     union all select 'forecast_runs', id::text from public.forecast_runs where generated_by in ${sql(identityIds)}
     union all select 'supply_evaluations', id::text from public.supply_evaluations where evaluated_by in ${sql(identityIds)}
     union all select 'allocation_recommendation_batches', id::text from public.allocation_recommendation_batches where generated_by in ${sql(identityIds)}
     union all select 'allocation_recommendations', id::text from public.allocation_recommendations where decided_by in ${sql(identityIds)}
     union all select 'backup_runs', id::text from public.backup_runs where created_by in ${sql(identityIds)}
-    union all select 'vehicle_operational_state_events', id::text from public.vehicle_operational_state_events where recorded_by in ${sql(identityIds)}
+    union all select 'vehicle_operational_state_events', id::text from public.vehicle_operational_state_events where recorded_by in ${sql(identityIds)} and ${excludeFixtureIds(dataset.ids.operationalStateEvents)}
     ${
       allowedNotificationIds.length
         ? sql`union all select 'notifications', id::text from public.notifications where recipient_id in ${sql(identityIds)} and id not in ${sql(allowedNotificationIds)}`
@@ -698,7 +888,7 @@ function printCleanupPlan(
   process.stdout.write(
     `REMOVE generated dependencies: ${dependencies.emailDeliveries.length} email deliveries, ${dependencies.notifications.length} notifications, ${dependencies.finder.length} finder contexts, ${dependencies.idempotency.length} idempotency bindings.\n`,
   );
-  for (const spec of AUTH_SPECS)
+  for (const spec of dataset.definition.authSpecs)
     if (ownedUsers.has(spec.label))
       process.stdout.write(`REMOVE auth.users ${spec.label} (${spec.email})\n`);
   process.stdout.write(
@@ -712,7 +902,7 @@ async function deleteOwnedDatabaseRows(
   _dependencies: Awaited<ReturnType<typeof readCleanupDependencies>>,
 ) {
   await sql.begin(async (transaction) => {
-    await transaction`select pg_advisory_xact_lock(hashtextextended(${FIXTURE_OWNER}, 0))`;
+    await transaction`select pg_advisory_xact_lock(hashtextextended(${dataset.definition.owner}, 0))`;
     const dependencies = await readCleanupDependencies(transaction, dataset);
     const identityIds = dataset.records
       .filter((record) => record.table === "profiles")
@@ -782,7 +972,7 @@ async function cleanupFixtures(
         `Unable to remove fixture artifacts from ${bucket}: ${removal.error.message}`,
       );
   }
-  for (const spec of [...AUTH_SPECS].reverse()) {
+  for (const spec of [...dataset.definition.authSpecs].reverse()) {
     const user = ownedUsers.get(spec.label);
     if (!user) continue;
     const result = await client.auth.admin.deleteUser(user.id);
@@ -796,12 +986,28 @@ async function cleanupFixtures(
   );
 }
 
+function buildDataset(
+  definition: FixtureDefinition,
+  input: {
+    anchorDate: string;
+    identities: FixtureAuthIdentity[];
+    branches: Record<string, string>;
+    vehicles: Record<string, { id: string; branchId: string }>;
+    paymentMethodId: string;
+  },
+) {
+  if (definition.mode === "historical")
+    return buildHistoricalFixtureDataset({ ...input, definition });
+  return buildFixtureDataset({ ...input, definition });
+}
+
 async function main() {
   const args = parseArguments(process.argv.slice(2));
   if (process.argv.includes("--help")) {
     process.stdout.write(`${usage()}\n`);
     return;
   }
+  const definition = getFixtureDefinition(args.mode);
   const environment = validateEnvironment(args);
   const client = createClient(
     environment.supabaseUrl,
@@ -817,23 +1023,32 @@ async function main() {
   });
   try {
     process.stdout.write(
-      `${args.apply ? "WRITE" : "DRY-RUN"} ${args.cleanup ? "cleanup" : "create"} target=${environment.target}\n`,
+      `${args.apply ? "WRITE" : "DRY-RUN"} ${args.cleanup ? "cleanup" : "create"} mode=${definition.mode} target=${environment.target}\n`,
     );
-    const references = await loadReferences(sql);
+    const references = await loadReferences(
+      sql,
+      definition.mode === "historical",
+    );
     printReferenceReport(references);
     let users = await listAllUsers(client);
-    let ownedUsers = inspectAuth(users);
+    let ownedUsers = inspectAuth(users, definition);
     const anchorDate = resolveAnchor(args, ownedUsers);
-    const missingAuth = AUTH_SPECS.filter(
+    const missingAuth = definition.authSpecs.filter(
       (spec) => !ownedUsers.has(spec.label),
     );
-    const placeholderDataset = buildFixtureDataset({
+    const placeholderDataset = buildDataset(definition, {
       anchorDate,
-      identities: placeholderIdentities(),
+      identities: placeholderIdentities(definition),
       branches: references.branches,
       vehicles: references.vehicles,
       paymentMethodId: references.paymentMethodId,
     });
+    if (definition.mode === "historical") {
+      if (args.apply && !args.cleanup)
+        assertHistoricalCoverage(placeholderDataset, references);
+      if (missingAuth.length && !args.apply)
+        printHistoricalReport(placeholderDataset, references);
+    }
     if (missingAuth.length) {
       const residue = await readExistingRecords(
         sql,
@@ -869,9 +1084,9 @@ async function main() {
         throw new Error(
           "Missing Auth fixtures require --include-auth-users; no Auth users were created.",
         );
-      await createMissingAuthUsers(client, ownedUsers, anchorDate);
+      await createMissingAuthUsers(client, ownedUsers, anchorDate, definition);
       users = await listAllUsers(client);
-      ownedUsers = inspectAuth(users);
+      ownedUsers = inspectAuth(users, definition);
     }
     if (missingAuth.length && !args.apply) {
       for (const record of placeholderDataset.records.filter(
@@ -883,7 +1098,7 @@ async function main() {
       }
       for (const artifact of placeholderDataset.artifacts) {
         process.stdout.write(
-          `CREATE storage ${artifact.label} (${artifact.bucket}/<allocated-owned-auth-id>/qa-fixtures/${FIXTURE_OWNER}/...)\n`,
+          `CREATE storage ${artifact.label} (${artifact.bucket}/<allocated-owned-auth-id>/qa-fixtures/${definition.owner}/...)\n`,
         );
       }
       process.stdout.write(
@@ -891,9 +1106,9 @@ async function main() {
       );
       return;
     }
-    const dataset = buildFixtureDataset({
+    const dataset = buildDataset(definition, {
       anchorDate,
-      identities: identitiesFrom(ownedUsers),
+      identities: identitiesFrom(ownedUsers, definition),
       branches: references.branches,
       vehicles: references.vehicles,
       paymentMethodId: references.paymentMethodId,
@@ -905,8 +1120,10 @@ async function main() {
       existing,
     );
     const artifactPlan = await planArtifacts(client, dataset);
+    printHistoricalReport(dataset, references, recordPlan, artifactPlan);
     assertNoCollisions(recordPlan, artifactPlan);
-    const operator = existing[ownedUsers.get(OPERATOR_SPEC.label)!.id];
+    const operator =
+      existing[ownedUsers.get(definition.operatorSpec.label)!.id];
     const operatorNeedsRole = operator.user_type !== "Owner/Admin";
 
     if (args.cleanup) {

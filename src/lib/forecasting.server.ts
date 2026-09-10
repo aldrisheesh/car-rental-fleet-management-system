@@ -46,7 +46,10 @@ export function extractWeeklyDemand(rows: any[], trackingStartedAt: Date | strin
   const counts = new Map<string, Map<string, number>>();
   for (const r of qualifying) { const w = manilaWeekStart(r.pickup_at); if (w < coverage || w >= current) continue; const key = `${r.pickup_branch_id}:${r.requested_vehicle.category.id}`; const map = counts.get(key) ?? new Map(); map.set(isoDay(w), (map.get(isoDay(w)) ?? 0) + 1); counts.set(key, map); }
   const result = new Map<string, WeeklyActual[]>();
-  for (const pair of canonicalPairs) counts.set(`${pair.branchId}:${pair.categoryId}`, new Map());
+  for (const pair of canonicalPairs) {
+    const key = `${pair.branchId}:${pair.categoryId}`;
+    if (!counts.has(key)) counts.set(key, new Map());
+  }
   for (const [key, map] of counts) { const values: WeeklyActual[] = []; for (let w = new Date(coverage); w <= latest; w = addWeeks(w, 1)) values.push({ weekStart: isoDay(w), weekEnd: isoDay(addWeeks(w, 1)), demand: map.get(isoDay(w)) ?? 0 }); result.set(key, values); }
   return result;
 }

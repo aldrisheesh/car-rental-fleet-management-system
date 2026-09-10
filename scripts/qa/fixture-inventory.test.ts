@@ -4,14 +4,23 @@ import test from "node:test";
 import {
   AUTH_SPECS,
   CANONICAL_BRANCHES,
+  HISTORICAL_AUTH_SPECS,
+  HISTORICAL_FIXTURE_OWNER,
+  HISTORICAL_OPERATOR_SPEC,
   VEHICLES,
+  buildHistoricalFixtureDataset,
   buildFixtureDataset,
   fixtureAuthMetadata,
+  historicalFixtureWeekStarts,
   isOwnedAuthUser,
   planRecords,
   validateFixtureDataset,
   type FixtureAuthIdentity,
 } from "./fixture-inventory.ts";
+import {
+  calculateWma,
+  extractWeeklyDemand,
+} from "../../src/lib/forecasting.server.ts";
 import {
   assertTargetAgreement,
   assertWriteSafety,
@@ -46,8 +55,33 @@ function dataset() {
   });
 }
 
+function historicalDataset() {
+  const identities: FixtureAuthIdentity[] = HISTORICAL_AUTH_SPECS.map(
+    (spec, index) => ({
+      ...spec,
+      userId: uuid(index + 1),
+    }),
+  );
+  const branches = Object.fromEntries(
+    CANONICAL_BRANCHES.map((name, index) => [name, uuid(100 + index)]),
+  );
+  const vehicles = Object.fromEntries(
+    VEHICLES.map(([plate, _name, branch], index) => [
+      plate,
+      { id: uuid(200 + index), branchId: branches[branch] },
+    ]),
+  );
+  return buildHistoricalFixtureDataset({
+    anchorDate: "2026-09-10",
+    identities,
+    branches,
+    vehicles,
+  });
+}
+
 test("CLI is dry-run by default and each write gate is explicit", () => {
   assert.deepEqual(parseArguments([]), {
+    mode: "standard",
     apply: false,
     cleanup: false,
     includeAuthUsers: false,
@@ -55,6 +89,7 @@ test("CLI is dry-run by default and each write gate is explicit", () => {
     anchorDate: undefined,
   });
   assert.deepEqual(parseArguments(["--cleanup"]), {
+    mode: "standard",
     apply: false,
     cleanup: true,
     includeAuthUsers: false,
@@ -69,6 +104,12 @@ test("CLI is dry-run by default and each write gate is explicit", () => {
   assert.equal(write.apply, true);
   assert.equal(write.includeAuthUsers, true);
   assert.equal(write.confirmProduction, true);
+  assert.equal(parseArguments(["--historical"]).mode, "historical");
+  assert.equal(parseArguments(["--mode=historical"]).mode, "historical");
+  assert.throws(
+    () => parseArguments(["--historical", "--mode=standard"]),
+    /conflicts/,
+  );
   assert.throws(() => parseArguments(["--force"]), /Unknown argument/);
 });
 
@@ -148,6 +189,172 @@ test("the moderate dataset has bounded canonical coverage", () => {
       "Cancelled",
     );
   }
+});
+
+test("historical inventory is deterministic, separate, and bounded", () => {
+  const fixture = historicalDataset();
+  const count = (table: string) =>
+    fixture.records.filter((record) => record.table === table).length;
+  assert.equal(fixture.definition.owner, HISTORICAL_FIXTURE_OWNER);
+  assert.equal(
+    fixture.definition.operatorSpec.label,
+    HISTORICAL_OPERATOR_SPEC.label,
+  );
+  assert.equal(count("profiles"), 9);
+  assert.equal(count("booking_requests"), 81);
+  assert.equal(count("rental_transactions"), 75);
+  assert.equal(count("maintenance_records"), 3);
+  assert.equal(count("vehicle_operational_state_events"), 12);
+  assert.equal(fixture.artifacts.length, 0);
+  assert.equal(fixture.ids.requirements.length, 0);
+  assert.equal(fixture.ids.payments.length, 0);
+  assert(
+    fixture.records.every((record) => record.label.startsWith("QA-HIST-")),
+  );
+  assert(
+    fixture.records.every(
+      (record) =>
+        ![
+          "forecast_runs",
+          "forecasts",
+          "forecast_inputs",
+          "supply_evaluations",
+          "supply_evaluation_vehicles",
+          "allocation_recommendation_batches",
+          "allocation_recommendations",
+          "allocation_recommendation_candidates",
+        ].includes(record.table),
+    ),
+  );
+  assert.deepEqual(
+    fixture.historical?.weekStarts,
+    historicalFixtureWeekStarts("2026-09-10"),
+  );
+  assert.deepEqual(fixture.historical?.dateRange, {
+    start: "2026-06-29",
+    end: "2026-09-06",
+  });
+});
+
+test("historical inventory supplies complete canonical demand history for WMA", () => {
+  const fixture = historicalDataset();
+  const branchIds = Object.fromEntries(
+    CANONICAL_BRANCHES.map((name, index) => [name, uuid(100 + index)]),
+  );
+  const categoryByVehicleId = Object.fromEntries(
+    VEHICLES.map(([_plate, _name, _branch, category], index) => [
+      uuid(200 + index),
+      category,
+    ]),
+  );
+  const rows = fixture.records
+    .filter((record) => record.table === "booking_requests")
+    .map((record) => ({
+      ...record.row,
+      requested_vehicle: {
+        category: {
+          id: categoryByVehicleId[String(record.row.requested_vehicle_id)],
+        },
+      },
+    }));
+  const pairs = CANONICAL_BRANCHES.flatMap((branch) =>
+    ["Economy", "Sedan", "SUV", "MPV", "Van", "Pickup"].map((category) => ({
+      branchId: branchIds[branch],
+      categoryId: category,
+    })),
+  );
+  const actual = extractWeeklyDemand(
+    rows,
+    "2026-06-29T00:00:00+08:00",
+    new Date("2026-09-10T00:00:00+08:00"),
+    pairs,
+  );
+  const taftEconomy = actual.get(`${branchIds["Taft, Manila"]}:Economy`)!;
+  const taftSedan = actual.get(`${branchIds["Taft, Manila"]}:Sedan`)!;
+  const antipoloSedan = actual.get(`${branchIds["Antipolo, Rizal"]}:Sedan`)!;
+  assert.equal(actual.size, 12);
+  assert.equal(taftEconomy.length, 10);
+  assert.deepEqual(
+    taftEconomy.slice(-3).map((week) => week.demand),
+    [3, 2, 3],
+  );
+  assert.deepEqual(
+    taftSedan.slice(-3).map((week) => week.demand),
+    [1, 2, 1],
+  );
+  assert.deepEqual(
+    antipoloSedan.map((week) => week.demand),
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  );
+  assert.equal(calculateWma(taftEconomy)?.forecasts[0], 2.7);
+  assert.equal(calculateWma(taftSedan)?.forecasts[0], 1.3);
+  assert.equal(calculateWma(antipoloSedan)?.forecasts[0], 0);
+  assert.deepEqual(
+    fixture.historical?.supplyComparisons.find(
+      (comparison) => comparison.pair === "Taft, Manila · Economy",
+    ),
+    {
+      pair: "Taft, Manila · Economy",
+      firstWmaForecast: 2.7,
+      requiredUnits: 3,
+      referenceSupply: 2,
+      balance: "Shortage",
+    },
+  );
+  assert(
+    fixture.historical?.nonZeroForecastPairs.includes("Taft, Manila · Economy"),
+  );
+  assert(
+    fixture.historical?.scenarios.shortage.includes("Taft, Manila · Economy"),
+  );
+  assert(
+    fixture.historical?.scenarios.surplus.includes("Antipolo, Rizal · Sedan"),
+  );
+  assert(
+    fixture.historical?.scenarios.balanced.includes("Antipolo, Rizal · SUV"),
+  );
+});
+
+test("historical ownership and cleanup inventory are independent from standard QA", () => {
+  const fixture = historicalDataset();
+  const booking = fixture.records.find(
+    (record) => record.label === "QA-HIST-BOOK-001",
+  )!;
+  assert.equal(
+    planRecords([booking], { [String(booking.row.id)]: { ...booking.row } })[0]
+      .action,
+    "skip",
+  );
+  assert.equal(
+    planRecords([booking], {
+      [String(booking.row.id)]: {
+        ...booking.row,
+        purpose_of_use: "uncontrolled operational row",
+      },
+    })[0].action,
+    "collision",
+  );
+  assert.equal(fixture.ids.operationalStateEvents.length, 12);
+  assert(
+    fixture.records
+      .filter((record) => record.table === "vehicle_operational_state_events")
+      .every((record) =>
+        fixture.ids.operationalStateEvents.includes(String(record.row.id)),
+      ),
+  );
+  const metadata = fixtureAuthMetadata(
+    HISTORICAL_OPERATOR_SPEC.label,
+    fixture.anchorDate,
+    fixture.definition,
+  );
+  assert.equal(
+    isOwnedAuthUser(
+      { email: HISTORICAL_OPERATOR_SPEC.email, app_metadata: metadata },
+      HISTORICAL_OPERATOR_SPEC,
+      fixture.definition,
+    ),
+    true,
+  );
 });
 
 test("duplicate fixture identifiers and artifact paths are rejected", () => {
