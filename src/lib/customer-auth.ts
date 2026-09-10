@@ -54,9 +54,9 @@ export function getCustomerSession(): CustomerSession | null {
   };
 }
 
-export function clearCustomerSession() {
-  void signOutWithCredentialsApi();
+export async function clearCustomerSession() {
   if (hasBrowserStorage()) window.localStorage.removeItem(CUSTOMER_SESSION_KEY);
+  await signOutWithCredentialsApi();
 }
 
 export function getCustomerProfile(session: CustomerSession): CustomerProfile {
