@@ -86,6 +86,12 @@ function historicalDataset() {
   });
 }
 
+function postgresTimestampText(value: unknown) {
+  return String(value)
+    .replace("T", " ")
+    .replace(/\.000Z$/, "+00");
+}
+
 test("CLI is dry-run by default and each write gate is explicit", () => {
   assert.deepEqual(parseArguments([]), {
     mode: "standard",
@@ -727,6 +733,129 @@ test("historical ownership and cleanup inventory are independent from standard Q
       fixture.definition,
     ),
     true,
+  );
+});
+
+test("existing QA-HIST effective_at round-trips as PostgreSQL text", () => {
+  const fixture = historicalDataset();
+  const stateEvent = fixture.records.find(
+    (record) => record.label === "QA-HIST-STATE-001",
+  )!;
+  assert.equal(stateEvent.row.effective_at, "2026-06-27T16:00:00.000Z");
+  const persisted = {
+    ...stateEvent.row,
+    effective_at: "2026-06-27 16:00:00+00",
+  };
+  assert.equal(
+    planRecords([stateEvent], { [String(stateEvent.row.id)]: persisted })[0]
+      .action,
+    "skip",
+  );
+});
+
+test("PostgreSQL text and deterministic fixture timestamp offsets compare exactly", () => {
+  const fixture = historicalDataset();
+  const stateEvent = fixture.records.find(
+    (record) => record.label === "QA-HIST-STATE-001",
+  )!;
+  const persisted = {
+    ...stateEvent.row,
+    effective_at: "2026-06-28 00:00:00.000000+08:00",
+  };
+  assert.equal(
+    planRecords([stateEvent], { [String(stateEvent.row.id)]: persisted })[0]
+      .action,
+    "skip",
+  );
+});
+
+test("a different state-event effective_at microsecond refuses ownership", () => {
+  const fixture = historicalDataset();
+  const stateEvent = fixture.records.find(
+    (record) => record.label === "QA-HIST-STATE-001",
+  )!;
+  const persisted = {
+    ...stateEvent.row,
+    effective_at: "2026-06-27 16:00:00.000001+00",
+  };
+  assert.equal(
+    planRecords([stateEvent], { [String(stateEvent.row.id)]: persisted })[0]
+      .action,
+    "collision",
+  );
+});
+
+test("state-event ownership remains strict for non-timestamp fields", () => {
+  const fixture = historicalDataset();
+  const stateEvent = fixture.records.find(
+    (record) => record.label === "QA-HIST-STATE-001",
+  )!;
+  const persisted = {
+    ...stateEvent.row,
+    effective_at: postgresTimestampText(stateEvent.row.effective_at),
+    source: "uncontrolled operational event",
+  };
+  assert.equal(
+    planRecords([stateEvent], { [String(stateEvent.row.id)]: persisted })[0]
+      .action,
+    "collision",
+  );
+});
+
+test("repeated historical dry-run planning is idempotent", () => {
+  const fixture = historicalDataset();
+  const records = fixture.records.filter(
+    (record) => record.table !== "profiles",
+  );
+  const existing = Object.fromEntries(
+    records.map((record) => [
+      String(record.row.id),
+      record.table === "vehicle_operational_state_events"
+        ? {
+            ...record.row,
+            effective_at: postgresTimestampText(record.row.effective_at),
+          }
+        : { ...record.row },
+    ]),
+  );
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const plan = planRecords(records, existing);
+    assert.equal(plan.length, records.length);
+    assert(plan.every((item) => item.action === "skip"));
+  }
+});
+
+test("cleanup inventory safely recognizes all existing state events", () => {
+  const fixture = historicalDataset();
+  const stateEvents = fixture.records.filter(
+    (record) => record.table === "vehicle_operational_state_events",
+  );
+  const existing = Object.fromEntries(
+    stateEvents.map((record) => [
+      String(record.row.id),
+      {
+        ...record.row,
+        effective_at: postgresTimestampText(record.row.effective_at),
+      },
+    ]),
+  );
+  const plan = planRecords(stateEvents, existing);
+  assert.equal(plan.length, 12);
+  assert(plan.every((item) => item.action === "skip"));
+  assert.deepEqual(
+    plan.map((item) => String(item.record.row.id)),
+    fixture.ids.operationalStateEvents,
+  );
+});
+
+test("state-event inventory reads effective_at as PostgreSQL text", () => {
+  const source = readFileSync(
+    new URL("./controlled-fixtures.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    source,
+    /select id, vehicle_id, is_active, effective_at::text as effective_at, source\s+from public\.vehicle_operational_state_events/,
   );
 });
 
