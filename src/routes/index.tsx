@@ -104,8 +104,8 @@ const testimonials = [
 
 const faqs = [
   {
-    q: "Are all rentals self-drive?",
-    a: "Yes — every Briah's vehicle is self-drive only. You'll need a valid LTO driver's license and one valid government ID at pickup.",
+    q: "Does Briah offer self-drive and with-driver rentals?",
+    a: "Briah offers both self-drive and with-driver rentals. For self-drive rentals, you'll need a valid LTO driver's license and one valid government ID at pickup.",
   },
   {
     q: "Where can I pick up and drop off the car?",
@@ -174,8 +174,8 @@ function Home() {
             Drive anywhere in Luzon, <span className="text-primary">on your terms.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base text-white/80">
-            Reliable, affordable self-drive car rentals from Briah's. Take the wheel, set your pace,
-            and own the road — booked in minutes.
+            Reliable, affordable car rentals from Briah&apos;s — self-drive or with a driver. Travel
+            across Luzon on your terms.
           </p>
 
           {/* Search bar */}
@@ -337,8 +337,8 @@ function Home() {
             Your trip, your wheel
           </h2>
           <p className="mt-3 text-sm text-muted-foreground">
-            Every Briah's rental is self-drive. Pick up the keys, set your own pace, and own the
-            road across Luzon.
+            Self-drive rentals let you pick up the keys, set your own pace, and own the road across
+            Luzon.
           </p>
         </div>
 

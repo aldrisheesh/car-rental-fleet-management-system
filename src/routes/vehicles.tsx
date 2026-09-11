@@ -255,7 +255,7 @@ function VehiclesPage() {
             All vehicles
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-            Every car is self-drive. Filter by type or branch to find your ride.
+            Browse cars available for self-drive rental. Filter by type or branch to find your ride.
           </p>
           {search.pickup && (
             <p className="mt-3 text-xs font-medium text-primary">
