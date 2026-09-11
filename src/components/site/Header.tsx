@@ -30,7 +30,6 @@ export function Header() {
   const customerInitials = getInitials(customerSession?.name ?? "");
 
   function openSignIn() {
-    setMenuOpen(false);
     setAccountOpen(false);
     setSignInOpen(true);
   }
