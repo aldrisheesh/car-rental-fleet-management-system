@@ -154,3 +154,16 @@ test("readiness summary remains Owner/Admin-only at the API boundary", async () 
   assert.match(api, /principal\.role !== "Owner\/Admin"/);
   assert.match(api, /calculateFleetMaintenanceReadiness/);
 });
+
+test("maintenance write RPCs are executable only through the trusted server role", async () => {
+  const migration = await readFile(
+    new URL(
+      "../../supabase/migrations/20260910010000_maintenance_service_access.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.match(migration, /create_maintenance_atomic[\s\S]*\) to service_role;/);
+  assert.match(migration, /update_maintenance_atomic[\s\S]*\) to service_role;/);
+  assert.doesNotMatch(migration, /to (public|anon|authenticated);/);
+});
