@@ -36,6 +36,8 @@ export function SignInDialog({
   customerSuccessNavigate?: boolean;
 }) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (open) setMode(initialMode);
@@ -43,12 +45,53 @@ export function SignInDialog({
 
   useEffect(() => {
     if (!open) return;
+    previouslyFocusedElementRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
+      const previouslyFocusedElement = previouslyFocusedElementRef.current;
+      if (
+        previouslyFocusedElement &&
+        previouslyFocusedElement !== document.body &&
+        document.contains(previouslyFocusedElement)
+      ) {
+        previouslyFocusedElement.focus();
+      }
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const initialFocusTarget =
+      dialogRef.current?.querySelector<HTMLElement>("input:not([disabled])") ??
+      dialogRef.current?.querySelector<HTMLElement>("button:not([disabled])");
+    initialFocusTarget?.focus();
+  }, [mode, open]);
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "Tab") return;
+
+    const focusableElements = Array.from(
+      dialogRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ) ?? [],
+    ).filter((element) => element.getClientRects().length > 0);
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements.at(-1);
+    if (!firstElement || !lastElement) return;
+
+    if (event.shiftKey && document.activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus();
+    } else if (!event.shiftKey && document.activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus();
+    }
+  }
 
   if (!open) return null;
 
@@ -61,8 +104,10 @@ export function SignInDialog({
       onMouseDown={() => onOpenChange(false)}
     >
       <div
+        ref={dialogRef}
         className="relative my-auto w-full max-w-md rounded-xl border border-border bg-card p-4 text-foreground shadow-card sm:p-5"
         onMouseDown={(event) => event.stopPropagation()}
+        onKeyDown={handleKeyDown}
       >
         <button
           type="button"
@@ -131,13 +176,10 @@ function SignInForm({
   onSwitchToSignUp: () => void;
 }) {
   const navigate = useNavigate();
-  const identifierRef = useRef<HTMLInputElement>(null);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => identifierRef.current?.focus(), []);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -188,7 +230,6 @@ function SignInForm({
       <form onSubmit={submit} className="mt-5 space-y-4">
         <Field label="Email" icon={<UserRound className="h-4 w-4" />}>
           <input
-            ref={identifierRef}
             value={identifier}
             onChange={(event) => setIdentifier(event.target.value)}
             type="email"
