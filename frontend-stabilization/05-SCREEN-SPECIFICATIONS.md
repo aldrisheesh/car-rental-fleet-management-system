@@ -36,7 +36,7 @@ These are responsibilities, not pixel layouts.
 **Header:** vehicle/booking identity, dates, high-level status.  
 **Primary block:** `What happens next` / `Action required`.  
 **Progress:** Booking -> Requirements -> Payment -> Confirmation -> Rental -> Return.  
-**Context sections:** requirements, payment, pickup/rental, return/completion.  
+**Context sections:** requirements, payment, pickup/rental, return record.  
 **Rule:** only show actions permitted by canonical state.
 **State contract:** put a named action-or-waiting panel before secondary information. It must state what happened, whether the renter must act, why a locked step is unavailable, and what happens after the next action. Use a status badge as a supporting cue only.
 
@@ -44,10 +44,10 @@ These are responsibilities, not pixel layouts.
 May be a section/step within Booking Detail rather than an isolated mental model. Explain required documents, upload status, review state, and safe resubmission reasons.
 
 ### Payment Submission
-Accessible only when canonical prerequisites are met. Explain the payment amount only when `required_amount` is canonically available; otherwise explain that payment instructions/amount will be confirmed through the supported business process, without asserting a 50% total. Explain accepted baseline channels, manual verification, and current review state. Never imply automatic gateway verification.
+Accessible only when canonical prerequisites are met. The client-confirmed policy is a minimum 50% down payment after requirements verification. The frontend may state that policy, but it must display a peso amount only when a trustworthy canonical `required_amount` is available; it must not invent or calculate an amount from incomplete financial semantics. Explain accepted baseline channels, manual verification, and current review state. Never imply automatic gateway verification.
 
 ### Contact
-Simple, reliable contact path. Do not show controls that appear interactive but do nothing. If email delivery depends on configured backend/provider behavior, failure states must be honest.
+Use an honest informational contact surface in the stabilized baseline. Show only verified business contact/service information and supported external actions. Do not retain or recreate a message form that simulates successful delivery. A server-backed contact form requires separate authorization and a verified delivery contract.
 
 ## P0 Admin Screens
 
@@ -61,7 +61,7 @@ Use understandable customer/vehicle/date/status information and a visible next o
 
 ### Admin Booking Detail
 **Goal:** Complete the human review/lifecycle work for one booking.  
-Provide coherent sections for customer/trip context, requirements review, payment review, vehicle assignment/confirmation, rental release/return, and relevant activity. Enforce role/state restrictions before rendering actions; Operations Staff must receive an explanatory read-only view rather than controls that will be rejected. Settlement is not a supported workflow section without a Lead-approved contract.
+Provide coherent sections for customer/trip context, requirements review, payment review, vehicle assignment/confirmation, rental release/return, and relevant activity. Enforce role/state restrictions before rendering actions; Operations Staff must receive an explanatory read-only view where the server denies mutation authority. Settlement is not a supported workflow section without a Lead-approved contract.
 
 ### Fleet
 **Goal:** Understand vehicle availability/readiness/branch/rental state.  
@@ -84,4 +84,4 @@ Status vocabulary must be interpretable and derived from canonical data.
 **Goal:** Present implemented operational analytics honestly. Do not reintroduce deferred financial/revenue analytics without canonical settlement semantics.
 
 ## Secondary screens
-Calendar, Customers, Branches, Users/Roles, Settings, Profile, Notifications, and Activity should inherit the approved design system and navigation. They remain subject to role restrictions and capability migration review.
+Calendar, Customers, Branches, Users/Roles, Audit Trail, Profile, and Notifications should inherit the approved design system and navigation. Customers and Profile must use only canonical server/auth-backed data. Settings is excluded from the stabilized navigation until a server-backed settings contract exists. All secondary screens remain subject to role restrictions and capability migration review.
