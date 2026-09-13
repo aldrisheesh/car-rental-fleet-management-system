@@ -52,7 +52,10 @@ Payment and requirements are contextual to a booking; they should not require th
 - Customers
 - Branches
 - Users & Roles
-- Settings
+- Audit Trail
+
+### Non-canonical settings boundary
+Do not present `Settings` as a management destination until a server-backed settings contract exists. Existing hard-coded settings controls are capability evidence and must be removed from the replacement navigation or clearly treated as unavailable pending a Lead decision.
 
 ### Global utilities
 - Notifications
@@ -60,6 +63,9 @@ Payment and requirements are contextual to a booking; they should not require th
 
 ### Admin booking concept
 A booking detail should provide coherent access to the booking's customer/trip context, requirements, payment, vehicle assignment, rental/return state, and relevant activity without requiring unnecessary cross-module hunting.
+
+### Responsive navigation
+Customer navigation must keep no more than the essential top-level destinations visible on a phone and use labelled controls, not icon-only navigation. Admin may adapt from a persistent sidebar on large screens to a labelled compact navigation pattern on narrow screens; it must not mix competing primary navigation patterns at the same hierarchy level. Deep booking links must restore the relevant booking and keep the back path predictable.
 
 ## Operations Staff
 

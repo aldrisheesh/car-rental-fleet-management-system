@@ -62,7 +62,7 @@ These are low-fidelity interaction contracts. Visual styling comes later.
 
 ```text
 [BOOKING DETAIL: PAYMENT REQUIRED]
-  minimum required amount when canonical
+  amount only when canonical; otherwise no 50% assertion
   accepted baseline channels
   manual verification explanation
           |
@@ -71,6 +71,7 @@ These are low-fidelity interaction contracts. Visual styling comes later.
           |
           v
 [PAYMENT UNDER REVIEW]
+  No action needed — staff are verifying your payment
           |
      +----+----------------+
      |                     |
@@ -78,7 +79,8 @@ These are low-fidelity interaction contracts. Visual styling comes later.
 [RESUBMIT]             [VERIFIED / CONFIRMED AS CANONICAL]
                            |
                            v
-                    [PICKUP / PREPARATION INFO]
+[CONFIRMED BOOKING / SCHEDULED PICKUP OR DELIVERY]
+  do not imply a persisted preparation or ready state
 ```
 
 ## WF-04 - Admin review
@@ -133,3 +135,4 @@ For each state, a novice tester should answer without coaching:
 - What should I click next?
 - Why can't I pay yet, if payment is locked?
 - How will I know when the booking is confirmed?
+- Is this a confirmed fact, an understandable derived milestone, or information the system cannot yet confirm?

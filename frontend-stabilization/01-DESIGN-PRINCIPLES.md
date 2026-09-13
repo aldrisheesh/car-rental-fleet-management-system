@@ -41,3 +41,15 @@ Never fabricate state, totals, availability, status, or analytics to make a scre
 
 ## P13. Defense clarity
 A panel member should be able to understand the core workflow from the interface without a team member explaining where to click next.
+
+## P14. Distinguish customer action from business work
+Every lifecycle state must say either `Action required from you` or `No action needed — we're [specific business action]`. A status badge alone is never sufficient. Waiting language must name the next business event and how the customer will be notified where that behavior is canonically supported.
+
+## P15. Honest milestones, not invented statuses
+Progress may simplify canonical data into customer-friendly milestones, but each milestone must be labelled as persisted, derived, or unavailable. The interface must not represent preparation, ready-for-pickup, settlement, or completion as a confirmed system fact unless canonical data supports that statement.
+
+## P16. Responsive workflow preservation
+On narrow screens, preserve the current state, next action, prerequisites, and key trip facts before secondary detail. Do not merely compress desktop tables, multi-column forms, or operational dashboards until their meaning is lost.
+
+## P17. Accessible recovery and feedback
+Forms, uploads, reviews, and asynchronous actions must preserve entered data where possible; give a visible in-context result; and provide a specific recovery path for errors, timeouts, empty data, and unavailable information. Do not rely on color, hover, a toast alone, or a hidden status change to communicate an outcome.

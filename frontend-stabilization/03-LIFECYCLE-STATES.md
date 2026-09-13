@@ -36,13 +36,13 @@ This document defines UX-level representations. Codex must map them to verified 
 **Primary action:** Resubmit using canonical payment workflow.
 
 ### G. Booking confirmed / preparation
-**Meaning:** Booking is confirmed under canonical state and vehicle preparation/assignment is proceeding as applicable.  
+**Meaning:** Booking is canonically confirmed. Assignment may be known; preparation is not a persisted backend state.
 **Primary message:** `Your booking is confirmed.`  
-**Show:** pickup/delivery details and next milestone when available.
+**Show:** only canonically available assignment, pickup/delivery, and scheduled details. If preparation is discussed, present it as an operational expectation rather than a completed status.
 
-### H. Ready for pickup/delivery
-**Meaning:** Rental is approaching turnover.  
-**Primary message:** Clear time/location/service-method information.
+### H. Pickup/delivery information available (derived only)
+**Meaning:** Scheduled turnover details can be shown from the booking/rental data. This is not a persisted `Ready` state.
+**Primary message:** Clear scheduled time, location, and service method; do not claim the vehicle is ready unless a canonical field supports it.
 
 ### I. Active rental
 **Meaning:** Vehicle has been released and rental is active.  
@@ -53,12 +53,13 @@ This document defines UX-level representations. Codex must map them to verified 
 **Meaning:** Return milestone requires attention according to canonical rental/reminder state.  
 **Do not:** invent penalty amounts from incomplete policy evidence.
 
-### K. Returned / settlement pending
-**Meaning:** Vehicle is physically returned but settlement/inspection may still require completion.
+### K. Returned (derived from rental end time)
+**Meaning:** The rental transaction has an `ended_at` value. This does not establish settlement, inspection completion, or booking completion.
+**Primary message:** `Your return has been recorded.` Show only safe, canonical return facts.
 
-### L. Completed
-**Meaning:** Rental lifecycle is closed.  
-**Presentation:** Historical record; no false next action.
+### L. Settlement / completed
+**Status:** Not currently representable as a canonical or safely derived customer lifecycle state.
+**Rule:** Do not display a settlement-pending or completed milestone, completion date, charge total, or finality claim until a Lead-approved canonical source exists.
 
 ## Progress representation
 
@@ -73,5 +74,6 @@ This grouping is presentation-only. It must not redefine persisted domain states
 - Never expose a future action as enabled before its canonical prerequisite.
 - Locked steps must explain why they are locked.
 - Waiting states explicitly say `No action needed` when true.
+- Waiting states name the business action in progress and retain the last completed milestone.
 - Error/retry states must preserve valid progress where possible.
 - Status labels and primary messages must agree.

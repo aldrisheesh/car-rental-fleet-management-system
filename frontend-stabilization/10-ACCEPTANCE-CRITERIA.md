@@ -15,7 +15,8 @@ A first-time renter, without coaching, can:
 - determine whether they are waiting or must act;
 - identify when the booking is confirmed;
 - find pickup/return information;
-- find current and past bookings.
+- find current and historical bookings without being told which module to use;
+- distinguish a confirmed backend fact from a derived customer milestone and from unavailable post-return information.
 
 ## Canonical workflow
 - Requirements-before-payment is enforced and communicated.
@@ -29,6 +30,7 @@ A first-time renter, without coaching, can:
 - Customer booking-related requirements/payment/status are discoverable from the booking.
 - Admin can reach actionable booking work without unnecessary module hopping.
 - Deep links and refresh behavior remain safe.
+- Route changes move assistive-technology focus to main content and preserve appropriate back/scroll/filter context.
 
 ## UI quality
 - Consistent typography, spacing, controls, statuses, and feedback.
@@ -36,14 +38,17 @@ A first-time renter, without coaching, can:
 - No obviously nonfunctional controls.
 - No fabricated placeholder operational data in canonical screens.
 - Mobile customer flow is usable.
-- Keyboard/focus behavior passes targeted QA.
+- Customer flow is verified at 375 px, tablet, and desktop; Admin queue/detail is verified at tablet and desktop plus a narrow-screen fallback.
+- Keyboard/focus behavior passes targeted QA, including skip navigation, visible focus, modal escape/return focus, failed-form focus, and focus not hidden by sticky UI.
+- Every form has visible labels, correct input/autocomplete semantics, inline recovery guidance, and an accessible async result. Status is not color-only; reduced motion is respected; key touch targets meet 44 by 44 px.
+- Waiting, loading, empty, unavailable, error, success, and resubmission states are distinguishable and explain the next valid action or why none is available.
 
 ## P0 defense flow
 The following controlled flow must be browser-verified end to end before mock defense:
 
-`Find vehicle -> booking -> requirements -> Admin review -> payment -> Admin verification/confirmation -> assignment/preparation -> pickup/release -> active rental -> return -> completion`
+`Find vehicle -> booking -> requirements -> Admin review -> payment -> Admin verification/confirmation -> assignment -> scheduled pickup/delivery information -> release -> active rental -> return`
 
-Where a lifecycle transition requires controlled data or authorized role state, use approved synthetic/demo records and clearly identify them as such.
+Where a lifecycle transition requires controlled data or authorized role state, use approved synthetic/demo records and clearly identify them as such. Do not demonstrate settlement or completed-booking behavior as implemented until a canonical source and Lead decision exist.
 
 ## Decision-support demonstration
 With approved synthetic/demo data, the system can demonstrate:
