@@ -24,7 +24,8 @@ This document defines UX-level representations. Codex must map them to verified 
 ### D. Requirements verified / payment needed
 **Meaning:** Customer may proceed to payment submission.  
 **Primary message:** `Requirements verified. Submit the required down payment.`  
-**Primary action:** Submit payment proof/reference.
+**Primary action:** Submit payment proof/reference.  
+**Policy:** The client-confirmed minimum down payment is 50% of the applicable total bill. The frontend may state this policy, but it must not display or enforce a computed peso amount unless a trustworthy canonical required amount is available from the backend.
 
 ### E. Payment under review
 **Meaning:** Payment proof/reference awaits authorized verification.  
