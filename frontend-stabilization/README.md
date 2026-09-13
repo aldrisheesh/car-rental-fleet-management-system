@@ -7,7 +7,8 @@
 
 ## Current customer visual freeze candidate
 
-- Final review: `DIRECTION-E-FINAL-REVIEW.md`
+- Final customer refinements: `DIRECTION-E-FINAL-REFINEMENTS.md`
+- Prior final review: `DIRECTION-E-FINAL-REVIEW.md`
 - Proposed visual implementation contract: `DIRECTION-E-DESIGN-SYSTEM.md`
 - Final Home, Find a Car, and Requirements references: `art-directions/DIRECTION-E/`
 

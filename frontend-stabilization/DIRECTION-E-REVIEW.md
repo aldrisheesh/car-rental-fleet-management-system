@@ -6,6 +6,7 @@ Direction E remains the preferred customer-facing direction, but the original re
 
 The accepted final refinements are documented in:
 
+- `DIRECTION-E-FINAL-REFINEMENTS.md`
 - `DIRECTION-E-FINAL-REVIEW.md`
 - `DIRECTION-E-DESIGN-SYSTEM.md`
 - `art-directions/DIRECTION-E/README.md`

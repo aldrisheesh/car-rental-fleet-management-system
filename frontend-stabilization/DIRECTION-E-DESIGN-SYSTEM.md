@@ -12,6 +12,46 @@ The system earns confidence through proportion, typography, photography, whitesp
 
 The one expressive move is the photographic vehicle/road window. Controls and task flows remain familiar, restrained, and implementation-clear.
 
+### Customer request terminology
+
+Before canonical confirmation, use `Rental request`, `Request submitted`, `Your rental request`, or `Continue your request`. The existence of the canonical booking/request record must not be presented as a completed or confirmed booking.
+
+After canonical confirmation, use `Booking confirmed` or `Confirmed booking`. Confirmation remains a later customer milestone after requirements verification and payment review.
+
+The full customer-facing presentation is:
+
+`Find a car → choose vehicle / trip → submit rental request → complete requirements → Briah reviews requirements → requirements verified → submit required payment → payment review → booking confirmation → rental → return`
+
+This is a presentation contract only. It does not change when the backend creates the canonical booking/request record.
+
+### Homepage progressive disclosure
+
+Primary discovery asks for the minimum trip context first: `Rental start` and `Rental end`. Pickup area/branch may join this first step only if a future Lead-approved canonical contract makes it required; it is not a current Finder criterion.
+
+Passengers, maximum total base-rental budget, and vehicle preference belong to optional refinement on Find a Car/results where the canonical Finder supports them. They must not be required in the Home hero before a customer can see vehicles.
+
+### Customer reference identifiers
+
+Internal-looking booking/request references must not dominate customer task screens. The Requirements summary prioritizes vehicle, rental dates, pickup/return location where useful, and current request stage. A canonically useful customer reference may appear only in low-priority `Booking details` or help/support context.
+
+### Recommendation terminology
+
+Customer-facing language names the outcome: `Find the right car for your trip`, `Cars that fit your trip`, `Narrow your results`, and `Help me find a better fit`.
+
+Technical/manuscript terminology may remain `Smart Vehicle Finder` or `Customer-Side Vehicle Recommendation`. Do not expose AI, intelligence, algorithm, engine, or match-percentage language to customers.
+
+### Direct browse behavior
+
+Do not place a detached `Browse all cars` link beneath the Home hero CTA. Direct fleet browsing remains discoverable through the primary navigation item `Find a Car` and may also appear later as a composed `Browse vehicles` or `View all vehicles` action where it does not compete with `Find cars`.
+
+### Journey terminology
+
+The customer-facing macro journey is fixed:
+
+`Request → Requirements → Payment → Confirmation → Rental → Return`
+
+The completed first-stage copy is `Request submitted`. It never means `Booking confirmed`.
+
 ## 2. Branding boundaries
 
 Keep these layers separate:
@@ -156,7 +196,7 @@ Borders, surface contrast, and whitespace should do most structural work. Never 
 - Solid Evergreen background with white text.
 - Minimum height 48 px; minimum target 44 × 44 px.
 - 16–24 px horizontal padding depending on label length.
-- Specific verb phrase: `Show cars that fit`, `View car`, `Review documents`.
+- Specific verb phrase: `Find cars`, `View car`, `Review documents`.
 - Hover darkens the fill; active changes fill/elevation without changing bounds.
 
 ### Secondary
@@ -187,22 +227,16 @@ For Finder: use date-time controls for start/end, integer input for passengers, 
 
 ## 13. Search controls
 
-Home supports two explicit paths:
-
-1. **Guided:** `Find the right car for your trip` with `Show cars that fit`.
-2. **Direct:** `Browse all cars`.
-
-The compact Home Finder contains:
+Home begins guided discovery with `Find the right car for your trip` and one dominant `Find cars` action. Its compact search rail contains only:
 
 - Rental start — required.
-- Rental end — required.
-- Passengers — required, whole number 1–100.
-- Maximum budget — required, clearly described as total base-rental budget.
-- Vehicle preference — optional active category.
+- Rental end — required and after start.
 
 Do not include pickup area as a Finder criterion. Destination may appear only in an expanded/full Finder with the explicit note that it is captured for requirements and does not change baseline recommendations. Do not hide this limitation in a tooltip.
 
-On results, show a compact trip summary and `Change trip`. Store filter/search state in the URL where feasible so refresh, back, and deep links remain predictable. Results must preserve direct browsing and never relax hard criteria silently.
+On Find a Car/results, optional refinement may expose canonically supported passenger count, maximum total base-rental budget, and active vehicle category/preference. Use outcome-oriented invitations such as `Narrow your results` or `Help me find a better fit`. These refinements may invoke the canonical recommendation capability, but the Home hero must not feel like a questionnaire.
+
+Show a compact trip/refinement summary and `Change trip` where the Finder is active. Store filter/search state in the URL where feasible so refresh, back, and deep links remain predictable. Results must preserve direct browsing and never relax hard criteria silently.
 
 ## 14. Navigation
 
@@ -275,9 +309,10 @@ Never show a match percentage, AI endorsement, unexplained `best match`, or avai
 
 Customer lifecycle order is fixed:
 
-`Booking → Requirements → Payment → Confirmation → Rental → Return`
+`Request → Requirements → Payment → Confirmation → Rental → Return`
 
 - Render as an ordered list/stepper with complete, current, locked, and pending semantics.
+- The completed first stage reads `Request submitted`; it must never read `Booking completed` or imply `Booking confirmed`.
 - Each stage has a text label; complete/current/locked adds icon and/or explicit state copy.
 - Current step uses `aria-current="step"` in implementation.
 - Locked Payment must explain that requirements verification comes first.
@@ -320,7 +355,7 @@ Use dashed boundaries only for the functional file target. Support keyboard file
 
 Customer can upload/submit/resubmit their own requirements. Owner/Admin review authority must not leak into this customer pattern.
 
-## 23. Booking summary
+## 23. Customer request summary
 
 Use one restrained summary surface containing:
 
@@ -328,10 +363,12 @@ Use one restrained summary surface containing:
 - rental dates;
 - pickup/return branch/location when canonical;
 - canonical rate/total only when available and trustworthy;
-- booking reference;
-- one link to booking details when a route exists.
+- current request stage;
+- one link to request/booking details when a route exists.
 
 Facts are aligned in one scan path with quiet dividers. Location appears as a labelled value, not background artwork. On mobile, the summary follows the primary task unless persistent context is needed; it must not push the current action below avoidable decoration.
+
+Do not place an internal-looking reference ID in the primary summary hierarchy. If canonically useful to the customer, keep it inside low-priority details or support context.
 
 ## 24. Loading states
 
@@ -381,7 +418,7 @@ Validate at 375, 768, 1024, and 1440 px plus 200% zoom.
 
 - Desktop: asymmetric copy/photo field with integrated search rail.
 - Tablet: copy and image remain distinct; Finder becomes a two-column form and action spans the row.
-- Mobile: headline 42–48 px, single-column labelled fields, full-width primary action, visible `Browse all cars`, and photography below or behind no essential text.
+- Mobile: headline 42–48 px, single-column labelled date fields, full-width primary action, and photography below or behind no essential text. Direct browsing remains available through navigation rather than a detached hero link.
 - Four rental steps become a compact vertical ordered list; do not squeeze four labels into one clipped row.
 
 ### Find a Car
@@ -465,6 +502,9 @@ The following are explicitly forbidden:
 - location criteria the Finder does not evaluate;
 - silent relaxation of dates, capacity, budget, readiness, or availability;
 - payment-before-verification, automatic approval, instant confirmation, or automatic payment-verification language;
+- `Booking completed` or `Booking confirmed` before the canonical confirmation stage;
+- prominent internal/reference IDs on primary customer task screens;
+- a detached `Browse all cars` link beneath the Home hero CTA;
 - emoji controls, unlabeled icon buttons, placeholder-only fields, hidden focus rings, or color-only state;
 - inconsistent vehicle image ratios, invented rates/facts, or unlicensed production photography;
 - decorative micro-labels, all-caps eyebrows, technical system jargon, or filler metadata;

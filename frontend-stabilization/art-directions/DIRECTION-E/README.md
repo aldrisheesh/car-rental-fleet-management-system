@@ -29,7 +29,7 @@ The selected image-to-code combination is:
 Direction E separates three layers:
 
 1. **Business identity:** operator name, approved logo, approved brand colors, and legitimate contact information. The current concept uses Briah's Car Rental.
-2. **Operational data:** branch, pickup/return location, vehicle, dates, rates, and booking reference. `Antipolo branch` may appear where it is a real example value.
+2. **Operational data:** branch, pickup/return location, vehicle, dates, rates, and a support/reference identifier where it is genuinely useful. `Antipolo branch` may appear where it is a real example value; internal-looking identifiers do not belong in the primary customer task hierarchy.
 3. **System visual language:** layout, typography, controls, navigation, spacing, lifecycle, status, and guided flows. This layer is location-neutral.
 
 Operator identity may be replaced at the presentation level without redesigning the shell. This is a design boundary, not multi-tenancy, white-label infrastructure, or a theme-management feature.
@@ -38,9 +38,11 @@ Operator identity may be replaced at the presentation level without redesigning 
 
 ### Home
 
-Home foregrounds the working task `Find the right car for your trip`. Its guided form uses only recommendation criteria that affect current matching: rental start, rental end, passengers, maximum total base-rental budget, and optional vehicle preference. `Show cars that fit` is primary; `Browse all cars` preserves the direct-browse path. The compact four-step explanation ends with `Pay after verification`.
+Home foregrounds the working task `Find the right car for your trip`. Its first interaction asks only for rental start and rental end, then uses one dominant `Find cars` action. Passenger count, maximum total base-rental budget, and vehicle preference remain available as optional refinement on Find a Car/results. Quiet helper copy makes that capability discoverable without turning the hero into a questionnaire.
 
-Pickup area is intentionally absent from the Finder entry because it is not a canonical Finder criterion. Optional destination is also omitted from this compact entry because it is captured by the backend but does not affect baseline eligibility or ranking.
+Pickup area is intentionally absent because it is not a canonical Finder criterion. Optional destination is also omitted because it is captured by the backend but does not affect baseline eligibility or ranking. Direct browsing remains available through the header's `Find a Car` navigation item; no detached browse link competes beneath the hero CTA.
+
+The compact explanation uses `Find a car → Send your rental request → Submit your requirements → Pay after verification` and states that booking confirmation follows payment review.
 
 ### Find a Car
 
@@ -48,9 +50,11 @@ The results screen keeps the approved marketplace model: trip context, category 
 
 `Cars that fit your trip` is used only for evaluated Finder results. Each example card exposes one quiet, canonical reason such as `Available for your selected dates`, `Seats your group of 5`, or `Within your maximum base-rental budget`. No score, AI label, or unsupported availability claim is present.
 
+This existing reference remains unchanged in the final refinement because it already shows the supported optional criteria and a clear `Filters` entry without forcing them into Home.
+
 ### Requirements
 
-The Requirements screen preserves the approved rental journey and task progress without redesign. The booking summary uses a vehicle image, booking facts, restrained surface treatment, and whitespace. `Pickup: Antipolo branch` remains only as example booking data; all city artwork and slogans are removed.
+The Requirements screen preserves the approved task flow without redesign. Its macro journey now reads `Request → Requirements → Payment → Confirmation → Rental → Return`; the first stage says `Request submitted`, Requirements is current, and Payment is visibly locked. The request summary prioritizes vehicle, dates, operational pickup, and current stage. The former prominent reference ID is absent and may exist only in low-priority details/support context if canonically useful.
 
 ## Visual rules
 
@@ -72,9 +76,9 @@ Do not:
 
 ## Image-first production
 
-Each screen was generated and inspected as a standalone high-fidelity raster reference. Home was regenerated to integrate the canonical recommendation path. Find a Car and Requirements were minimally regenerated to remove permanent Antipolo identity while preserving the approved composition and flows. The accepted outputs were inspected at original resolution for text, hierarchy, spacing, controls, imagery, state treatment, and cross-screen consistency, then normalized to exactly 1440 × 960.
+Each screen was generated and inspected as a standalone high-fidelity raster reference. In this final refinement, Home and Requirements were regenerated from their approved Direction E references, inspected at original resolution, and normalized to exactly 1440 × 960. Find a Car was deliberately not regenerated because its existing Filters and trip-criteria treatment already demonstrate the optional refinement model. No mobile or Admin artifact was generated.
 
-See `../../DIRECTION-E-FINAL-REVIEW.md` for the final review and `../../DIRECTION-E-DESIGN-SYSTEM.md` for the proposed implementation contract.
+See `../../DIRECTION-E-FINAL-REFINEMENTS.md` for the Lead-approved correction record and `../../DIRECTION-E-DESIGN-SYSTEM.md` for the proposed implementation contract.
 
 ## Implementation boundary
 

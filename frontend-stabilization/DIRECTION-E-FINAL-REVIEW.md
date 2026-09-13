@@ -1,5 +1,6 @@
 # Direction E Final Review
 
+**Status:** Superseded by `DIRECTION-E-FINAL-REFINEMENTS.md` for the final customer terminology and progressive-disclosure corrections.
 **Review date:** 2026-09-13
 **Scope:** Customer visual references and proposed visual implementation contract only
 **Branch:** `stabilization/frontend-rebuild`
