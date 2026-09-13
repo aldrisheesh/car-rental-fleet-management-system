@@ -1,672 +1,1020 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import {
-  AlertCircle,
-  Calendar,
-  Car,
-  CheckCircle2,
-  Loader2,
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
   MapPin,
-  ShieldCheck,
+  RefreshCw,
 } from "lucide-react";
-import { toast } from "sonner";
+
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
-import { SignInDialog } from "@/components/site/SignInDialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { getAdminSession } from "@/lib/admin-auth";
-import { getCustomerProfile, getCustomerSession } from "@/lib/customer-auth";
-import { vehicles as fallbackVehicles } from "@/data/vehicles";
-import { CANCELLATION_POLICY, RENTAL_DONTS, RENTAL_DOS } from "@/data/rental-policy";
-import { calculateRentalDays } from "@/lib/rental-duration";
-import { finderBookingPrefill, finderContextForSubmission, finderProvenanceMatchesBooking, parseFinderBookingHandoff, validateFinderBookingSearch } from "@/lib/finder-booking";
-import { instantToManilaDateTimeLocal, manilaDateTimeLocalToInstant } from "@/lib/business-time";
-
-type BookingErrors = Partial<
-  Record<"pickup" | "dropoff" | "name" | "email" | "phone" | "purpose" | "locations" | "terms", string>
->;
-type CanonicalVehicle = { id: string; name: string; seat_capacity: number | null; image_url: string | null; branch_id: string; category?: { id: string; name: string } | null };
+  CustomerPage,
+  ErrorSummary,
+  FieldError,
+  Rate,
+  RequestProgress,
+  StatusCallout,
+  VehicleFacts,
+  VehicleImage,
+} from "@/components/customer/CustomerPrimitives";
+import {
+  ApiRequestError,
+  dateTimeInputFromIso,
+  encodeSearch,
+  fetchJson,
+  formatDateRange,
+  formatInputDateTime,
+  type BookingMasterData,
+  type CustomerVehicle,
+} from "@/lib/customer-data";
+import { getClientPrincipal, getSession } from "@/lib/auth-client";
+import { getCustomerSession } from "@/lib/customer-auth";
+import {
+  finderContextForSubmission,
+  finderProvenanceMatchesBooking,
+  parseFinderBookingHandoff,
+  validateFinderBookingSearch,
+} from "@/lib/finder-booking";
+import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
 
 export const Route = createFileRoute("/booking")({
-  beforeLoad: () => {
-    if (typeof window === "undefined") return;
-
-    if (getAdminSession()) {
-      throw redirect({ to: "/admin" });
-    }
-  },
-  validateSearch: validateFinderBookingSearch,
+  validateSearch: (search) => validateFinderBookingSearch(search),
   head: () => ({
     meta: [
-      { title: "Book a car - Briah's Car Rental" },
+      { title: "Rental request | Briah's Car Rental" },
       {
         name: "description",
-        content: "Reserve your car in minutes. Self-drive rentals with pickup in Taft or Antipolo.",
+        content: "Share trip details and send a rental request for review.",
       },
     ],
-    links: [{ rel: "canonical", href: "/booking" }],
   }),
-  component: BookingPage,
+  component: RentalRequestPage,
 });
 
-function BookingPage() {
-  const navigate = useNavigate();
-  const search = Route.useSearch();
-  const { vehicle } = search;
-  const finderHandoff = useMemo(() => parseFinderBookingHandoff(search), [search]);
-  const finderPrefill = finderHandoff ? finderBookingPrefill(finderHandoff) : null;
-  const [authOpen, setAuthOpen] = useState(false);
-  const [customerSession, setCustomerSession] = useState(() => getCustomerSession());
-  const initial = fallbackVehicles.find((v) => v.id === vehicle) ?? fallbackVehicles[0];
-  const [masterData, setMasterData] = useState<{ branches: { id: string; name: string }[]; vehicles: CanonicalVehicle[] }>({ branches: [], vehicles: [] });
-  const [masterDataLoading, setMasterDataLoading] = useState(true);
-  const [masterDataError, setMasterDataError] = useState("");
-
-  const [vehicleId, setVehicleId] = useState(vehicle ?? initial.id);
-  const [branch, setBranch] = useState<string>(initial.branch);
-  const [returnBranch, setReturnBranch] = useState("Same as pickup");
-  const [pickup, setPickup] = useState(finderPrefill?.pickup ?? "");
-  const [dropoff, setDropoff] = useState(finderPrefill?.dropoff ?? "");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [destination, setDestination] = useState(finderPrefill?.destination ?? "");
-  const [purpose, setPurpose] = useState("");
-  const [pickupDeliveryOption, setPickupDeliveryOption] = useState<"pickup" | "delivery">("pickup");
-  const [pickupLocation, setPickupLocation] = useState("");
-  const [dropoffLocation, setDropoffLocation] = useState("");
-  const [preferredSeatCount, setPreferredSeatCount] = useState(finderPrefill?.passengerCount ?? "");
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [termsModalOpen, setTermsModalOpen] = useState(false);
-  const [errors, setErrors] = useState<BookingErrors>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [successNotice, setSuccessNotice] = useState<{
-    vehicleName: string;
-    days: number;
-  } | null>(null);
-  const submissionAttemptRef = useRef<{ key: string; payload: string } | null>(null);
-
-  useEffect(() => {
-    if (!authOpen) {
-      setCustomerSession(getCustomerSession());
-    }
-  }, [authOpen]);
-
-  useEffect(() => {
-    if (!customerSession) return;
-    const profile = getCustomerProfile(customerSession);
-    setName((prev) => (prev ? prev : customerSession.name));
-    setEmail((prev) => (prev ? prev : customerSession.email));
-    setPhone((prev) => (prev ? prev : profile.phone));
-    setErrors((current) => ({ ...current, name: undefined, email: undefined }));
-  }, [customerSession]);
-
-  function loadMasterData() {
-    setMasterDataLoading(true); setMasterDataError("");
-    fetch("/api/booking-master-data", { credentials: "same-origin" })
-      .then(async (response) => { const data = await response.json().catch(() => null); if (!response.ok) throw new Error(data?.message || "Unable to load booking options."); return data; })
-      .then((data) => { setMasterData(data); setMasterDataLoading(false); })
-      .catch((error) => { setMasterDataLoading(false); setMasterDataError(error instanceof Error ? error.message : "Unable to load booking options."); });
-  }
-  useEffect(() => { loadMasterData(); }, [customerSession]);
-  useEffect(() => {
-    if (!masterData.vehicles.length) return;
-    const incoming = fallbackVehicles.find((v) => v.id === vehicle);
-    const mapped = masterData.vehicles.find((v) => v.id === vehicle) ?? (incoming && masterData.vehicles.find((v) => v.name === incoming.name));
-    setVehicleId((current) => masterData.vehicles.some((v) => v.id === current) ? current : (mapped?.id ?? masterData.vehicles[0].id));
-  }, [masterData.vehicles, vehicle]);
-  useEffect(() => {
-    if (!masterData.branches.length) return;
-    setBranch((current) => masterData.branches.some((b) => b.id === current) ? current : masterData.branches[0].id);
-  }, [masterData.branches]);
-
-  const selectedCanonical = masterData.vehicles.find((v) => v.id === vehicleId);
-  const selected = selectedCanonical ?? initial;
-  const bookingOptionsReady = !masterDataLoading && !masterDataError && Boolean(selectedCanonical) && masterData.branches.length > 0;
-  const effectiveName = customerSession?.name ?? name;
-  const effectiveEmail = customerSession?.email ?? email;
-  const finderProvenanceValid = Boolean(finderHandoff && finderProvenanceMatchesBooking(finderHandoff, { vehicleId, pickup, dropoff, passengerCount: preferredSeatCount, destination }));
-
-  const days = useMemo(() => {
-    if (!pickup || !dropoff) return 1;
-    try {
-      const pickupInstant = manilaDateTimeLocalToInstant(pickup);
-      const dropoffInstant = manilaDateTimeLocalToInstant(dropoff);
-      if (!pickupInstant || !dropoffInstant) return 1;
-      return calculateRentalDays(pickupInstant, dropoffInstant);
-    } catch {
-      return 1;
-    }
-  }, [pickup, dropoff]);
-  const minDateTime = instantToManilaDateTimeLocal(new Date());
-
-  function performSubmit(nextAcceptTerms = acceptTerms) {
-    setSubmitted(false);
-
-    if (!getCustomerSession()) {
-      toast.error("Please sign in to submit your booking request.");
-      setAuthOpen(true);
-      return;
-    }
-
-    const nextErrors = validateBooking({
-      pickup,
-      dropoff,
-      name: effectiveName,
-      email: effectiveEmail,
-      phone,
-      purpose,
-      pickupDeliveryOption,
-      pickupLocation,
-      dropoffLocation,
-      acceptTerms: nextAcceptTerms,
-    });
-    setErrors(nextErrors);
-
-    if (Object.keys(nextErrors).length > 0) {
-      toast.error("Please review the highlighted fields.");
-      return;
-    }
-
-    const bookingPayload = { requestedVehicleId: vehicleId, pickupBranchId: branch, returnBranchId: returnBranch === "Same as pickup" ? branch : returnBranch, pickupAt: pickup, returnAt: dropoff, destination, purposeOfUse: purpose, pickupDeliveryOption, pickupLocation, dropoffLocation, preferredSeatCount, finderContext: finderHandoff && finderProvenanceValid ? finderContextForSubmission(finderHandoff) : undefined };
-    const serializedPayload = JSON.stringify(bookingPayload);
-    if (!submissionAttemptRef.current || submissionAttemptRef.current.payload !== serializedPayload) {
-      submissionAttemptRef.current = { key: crypto.randomUUID(), payload: serializedPayload };
-    }
-    setSubmitting(true);
-    fetch("/api/bookings", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...bookingPayload, idempotencyKey: submissionAttemptRef.current.key }) })
-      .then(async (response) => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Unable to submit booking request."); return data; })
-      .then((data) => { setSubmitting(false); setSubmitted(true); setSuccessNotice({ vehicleName: selected.name, days }); void data; window.setTimeout(() => void navigate({ to: "/customer" }), 1400); })
-      .catch((error) => { setSubmitting(false); toast.error(error instanceof Error ? error.message : "Unable to submit booking request."); });
-  }
-
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    performSubmit();
-  }
-
-  return (
-    <div>
-      <Header />
-
-      <SignInDialog
-        open={authOpen}
-        onOpenChange={setAuthOpen}
-        customerSuccessTo="/booking"
-        customerSuccessSearch={vehicle ? search : undefined}
-        customerSuccessNavigate={false}
-      />
-
-      <Dialog open={termsModalOpen} onOpenChange={setTermsModalOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Rental do&apos;s and don&apos;ts</DialogTitle>
-            <DialogDescription>
-              Please review these guidelines. Tap &quot;I agree&quot; to continue.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-400">
-                Do&apos;s
-              </div>
-              <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm text-muted-foreground">
-                {RENTAL_DOS.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-400">
-                Don&apos;ts
-              </div>
-              <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm text-muted-foreground">
-                {RENTAL_DONTS.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
-            {CANCELLATION_POLICY}
-          </div>
-
-          <DialogFooter>
-            <button
-              type="button"
-              onClick={() => {
-                setAcceptTerms(false);
-                setTermsModalOpen(false);
-              }}
-              className="touch-target inline-flex items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAcceptTerms(true);
-                setErrors((current) => ({ ...current, terms: undefined }));
-                setTermsModalOpen(false);
-              }}
-              className="touch-target inline-flex items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              I agree
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <section className="border-b border-border bg-secondary/60">
-        <div className="container-page py-14 text-center">
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
-            Reserve your car
-          </p>
-          <h1 className="mt-2 font-display text-4xl font-semibold md:text-5xl">Booking</h1>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-            Tell us where you're going. We'll confirm availability within a few hours.
-          </p>
-          {!customerSession && (
-            <div className="mx-auto mt-6 max-w-xl rounded-xl border border-primary/25 bg-primary/10 px-4 py-3 text-left text-sm text-foreground shadow-soft">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-foreground">
-                  <span className="font-semibold">Sign in required:</span> You can browse and fill
-                  out this form, but you must sign in to submit your booking request.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setAuthOpen(true)}
-                  className="touch-target inline-flex items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Sign in
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="container-page mt-10">
-        <form onSubmit={submit} noValidate className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-          <div className="rounded-xl border border-border bg-card p-5 shadow-soft md:p-8">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h2 className="font-display text-2xl font-semibold">Trip details</h2>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Choose your vehicle, schedule, and pickup branch.
-                </p>
-              </div>
-              {submitted && (
-                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-600 bg-emerald-600 px-3 py-1 text-xs font-medium text-emerald-950">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Request sent
-                </span>
-              )}
-            </div>
-
-            {finderHandoff && finderProvenanceValid && (
-              <div className="mt-6 rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm">
-                <div className="flex items-center gap-2 font-semibold text-primary"><Car className="h-4 w-4" /> Selected with Smart Vehicle Finder</div>
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  {finderHandoff.passengerCount} passenger{finderHandoff.passengerCount === 1 ? "" : "s"} · maximum base-rental budget {formatPeso(finderHandoff.maximumBudget)}
-                  {finderHandoff.preferredCategory ? ` · ${finderHandoff.preferredCategory} preferred` : ""}
-                  {finderHandoff.destination ? ` · destination ${finderHandoff.destination}` : ""}
-                </p>
-              </div>
-            )}
-            {finderHandoff && !finderProvenanceValid && (
-              <div role="status" className="mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
-                Finder details changed. This booking will be submitted as a normal vehicle selection.
-              </div>
-            )}
-
-            <div className="mt-6 grid gap-5 md:grid-cols-2">
-              <Field label="Vehicle" id="booking-vehicle">
-                <select
-                  id="booking-vehicle"
-                  value={vehicleId}
-                  onChange={(event) => setVehicleId(event.target.value)}
-                  className="input-control"
-                >
-                  {masterData.vehicles.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Pickup branch" id="booking-branch">
-                <select
-                  id="booking-branch"
-                  value={branch}
-                  onChange={(event) => setBranch(event.target.value as never)}
-                  className="input-control"
-                >
-                  {masterData.branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                </select>
-              </Field>
-              <Field label="Return branch" id="booking-return-branch">
-                <select
-                  id="booking-return-branch"
-                  value={returnBranch}
-                  onChange={(event) => setReturnBranch(event.target.value)}
-                  className="input-control"
-                >
-                  <option value="Same as pickup">Same as pickup</option>
-                  {masterData.branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                </select>
-              </Field>
-              <Field label="Pickup date and time" id="booking-pickup" error={errors.pickup}>
-                <input
-                  id="booking-pickup"
-                  type="datetime-local"
-                  value={pickup}
-                  min={minDateTime}
-                  onChange={(event) => {
-                    setPickup(event.target.value);
-                    setErrors((current) => ({ ...current, pickup: undefined }));
-                  }}
-                  aria-invalid={Boolean(errors.pickup)}
-                  aria-describedby={errors.pickup ? "booking-pickup-error" : undefined}
-                  className="input-control [color-scheme:dark]"
-                  required
-                />
-              </Field>
-              <Field label="Return date and time" id="booking-dropoff" error={errors.dropoff}>
-                <input
-                  id="booking-dropoff"
-                  type="datetime-local"
-                  value={dropoff}
-                  min={pickup || minDateTime}
-                  onChange={(event) => {
-                    setDropoff(event.target.value);
-                    setErrors((current) => ({ ...current, dropoff: undefined }));
-                  }}
-                  aria-invalid={Boolean(errors.dropoff)}
-                  aria-describedby={errors.dropoff ? "booking-dropoff-error" : undefined}
-                  className="input-control [color-scheme:dark]"
-                  required
-                />
-              </Field>
-            </div>
-
-            <h2 className="mt-10 font-display text-2xl font-semibold">Your details</h2>
-            <div className="mt-6 grid gap-5 md:grid-cols-2">
-              <Field label="Full name" id="booking-name" error={errors.name}>
-                {customerSession ? (
-                  <div className="input-control flex items-center bg-secondary/40 text-muted-foreground">
-                    <span className="text-foreground">{customerSession.name}</span>
-                  </div>
-                ) : (
-                  <input
-                    id="booking-name"
-                    value={name}
-                    onChange={(event) => {
-                      setName(event.target.value);
-                      setErrors((current) => ({ ...current, name: undefined }));
-                    }}
-                    aria-invalid={Boolean(errors.name)}
-                    aria-describedby={errors.name ? "booking-name-error" : undefined}
-                    className="input-control"
-                    autoComplete="name"
-                    required
-                  />
-                )}
-              </Field>
-              <Field label="Email" id="booking-email" error={errors.email}>
-                {customerSession ? (
-                  <div className="input-control flex items-center bg-secondary/40 text-muted-foreground">
-                    <span className="text-foreground">{customerSession.email}</span>
-                  </div>
-                ) : (
-                  <input
-                    id="booking-email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => {
-                      setEmail(event.target.value);
-                      setErrors((current) => ({ ...current, email: undefined }));
-                    }}
-                    aria-invalid={Boolean(errors.email)}
-                    aria-describedby={errors.email ? "booking-email-error" : undefined}
-                    className="input-control"
-                    autoComplete="email"
-                    required
-                  />
-                )}
-              </Field>
-              <Field label="Phone (PH)" id="booking-phone" error={errors.phone}>
-                {customerSession ? (
-                  <div className="input-control flex items-center bg-secondary/40 text-muted-foreground"><span className="text-foreground">{phone || "No phone number on profile"}</span></div>
-                ) : <input
-                  id="booking-phone"
-                  value={phone}
-                  onChange={(event) => {
-                    setPhone(event.target.value);
-                    setErrors((current) => ({ ...current, phone: undefined }));
-                  }}
-                  aria-invalid={Boolean(errors.phone)}
-                  aria-describedby={errors.phone ? "booking-phone-error" : undefined}
-                  className="input-control"
-                  placeholder="+63 917 000 0000"
-                  autoComplete="tel"
-                  required
-                />}
-              </Field>
-              <Field label="Destination (optional)" id="booking-destination">
-                  <input
-                    id="booking-destination"
-                    className="input-control"
-                    placeholder="e.g. Baguio, La Union"
-                    value={destination}
-                    onChange={(event) => setDestination(event.target.value)}
-                  />
-                </Field>
-              <Field label="Purpose of use" id="booking-purpose" error={errors.purpose}><input id="booking-purpose" className="input-control" value={purpose} onChange={(e) => setPurpose(e.target.value)} required /></Field>
-              <Field label="Preferred seats (optional)" id="booking-seats"><input id="booking-seats" type="number" min="1" className="input-control" value={preferredSeatCount} onChange={(e) => setPreferredSeatCount(e.target.value)} /></Field>
-              <Field label="Pickup or delivery" id="booking-option"><select id="booking-option" className="input-control" value={pickupDeliveryOption} onChange={(e) => setPickupDeliveryOption(e.target.value as "pickup" | "delivery")}><option value="pickup">Pickup at branch</option><option value="delivery">Delivery / drop-off</option></select></Field>
-              {pickupDeliveryOption === "delivery" && <><Field label="Pickup location" id="booking-pickup-location" error={errors.locations}><input id="booking-pickup-location" className="input-control" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} /></Field><Field label="Drop-off location" id="booking-dropoff-location"><input id="booking-dropoff-location" className="input-control" value={dropoffLocation} onChange={(e) => setDropoffLocation(e.target.value)} /></Field></>}
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-soft">
-              <img
-                src={"image_url" in selected ? (selected.image_url ?? "/assets/car-sedan.jpg") : selected.image}
-                alt={selected.name}
-                className="aspect-[4/3] w-full object-cover"
-              />
-              <div className="p-6">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {"category" in selected
-                    ? typeof selected.category === "string"
-                      ? selected.category
-                      : selected.category?.name ?? "Vehicle"
-                    : String(selected.category)}
-                </div>
-                <h3 className="font-display text-xl font-semibold">{selected.name}</h3>
-                <div className="mt-3 space-y-2 text-sm">
-                  <Row
-                    icon={<MapPin className="h-4 w-4 text-primary" />}
-                    label="Branch"
-                    value={branch}
-                  />
-                  <Row
-                    icon={<Calendar className="h-4 w-4 text-primary" />}
-                    label="Duration"
-                    value={`${days} day${days > 1 ? "s" : ""}`}
-                  />
-                </div>
-
-                {!masterDataLoading && masterDataError && <div className="mt-4 rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-center text-xs text-rose-200">{masterDataError} <button type="button" className="ml-2 underline" onClick={loadMasterData}>Retry</button></div>}
-                {masterDataLoading && <div className="mt-4 text-center text-xs text-muted-foreground">Loading current vehicles and branches…</div>}
-                <button
-                  type="submit"
-                  disabled={submitting || !bookingOptionsReady}
-                  className="touch-target mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {submitting ? "Sending request..." : "Request booking"}
-                </button>
-
-                <label className="mt-4 flex items-start justify-center gap-2 text-xs text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked={acceptTerms}
-                    onChange={(event) => {
-                      setErrors((current) => ({ ...current, terms: undefined }));
-                      if (event.target.checked) {
-                        setTermsModalOpen(true);
-                        return;
-                      }
-                      setAcceptTerms(false);
-                    }}
-                    aria-invalid={Boolean(errors.terms)}
-                    className="mt-0.5 h-4 w-4 rounded border-border bg-background accent-primary"
-                  />
-                  <span>
-                    I agree to the rental do&apos;s and don&apos;ts and cancellation policy.
-                  </span>
-                </label>
-                {errors.terms && (
-                  <div className="mt-2 text-center text-rose-300">{errors.terms}</div>
-                )}
-
-                <p className="mt-3 text-center text-xs text-muted-foreground">
-                  You won't be charged yet - we'll confirm availability first.
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-border bg-secondary p-5 text-sm">
-              <div className="flex items-center gap-2 font-medium">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                What's included
-              </div>
-              <ul className="mt-3 list-disc space-y-1.5 pl-5 text-muted-foreground">
-                <li>Comprehensive insurance</li>
-                <li>24/7 roadside assistance</li>
-                <li>Reservation payments are non-refundable once paid.</li>
-              </ul>
-            </div>
-          </div>
-        </form>
-      </section>
-
-      <Footer />
-
-      {successNotice && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4">
-          <div className="w-[min(92vw,720px)] rounded-xl border border-emerald-500/30 bg-emerald-950 px-6 py-6 text-center shadow-card">
-            <p className="font-display text-3xl font-semibold text-emerald-200">
-              Booking request received
-            </p>
-            <p className="mt-2 text-base text-emerald-100/90">
-              {successNotice.vehicleName} - {successNotice.days} day
-              {successNotice.days > 1 ? "s" : ""}. Your request is Submitted and awaiting review.
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Field({
-  label,
-  id,
-  error,
-  children,
-}: {
-  label: string;
-  id: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block" htmlFor={id}>
-      <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</span>
-      {children}
-      {error && (
-        <span
-          id={`${id}-error`}
-          className="mt-1.5 flex items-start gap-1.5 text-xs leading-5 text-rose-300"
-        >
-          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          {error}
-        </span>
-      )}
-    </label>
-  );
-}
-
-function Row({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 text-sm">
-      <span className="flex items-center gap-2 text-muted-foreground">
-        {icon}
-        {label}
-      </span>
-      <span className="text-right font-medium">{value}</span>
-    </div>
-  );
-}
-
-function validateBooking({
-  pickup,
-  dropoff,
-  name,
-  email,
-  phone,
-  purpose,
-  pickupDeliveryOption,
-  pickupLocation,
-  dropoffLocation,
-  acceptTerms,
-}: {
-  pickup: string;
-  dropoff: string;
-  name: string;
-  email: string;
-  phone: string;
-  purpose: string;
+type BookingDraft = {
+  pickupBranchId: string;
+  returnBranchId: string;
+  pickupAt: string;
+  returnAt: string;
+  purposeOfUse: string;
   pickupDeliveryOption: "pickup" | "delivery";
   pickupLocation: string;
   dropoffLocation: string;
-  acceptTerms: boolean;
-}) {
-  const nextErrors: BookingErrors = {};
+  destination: string;
+  preferredSeatCount: string;
+};
 
-  if (!pickup) nextErrors.pickup = "Choose a pickup date and time.";
-  if (!dropoff) nextErrors.dropoff = "Choose a return date and time.";
-  const pickupInstant = manilaDateTimeLocalToInstant(pickup);
-  const dropoffInstant = manilaDateTimeLocalToInstant(dropoff);
-  if (pickup && !pickupInstant) nextErrors.pickup = "Choose a valid pickup date and time.";
-  if (dropoff && !dropoffInstant) nextErrors.dropoff = "Choose a valid return date and time.";
-  if (pickupInstant && dropoffInstant && dropoffInstant <= pickupInstant) {
-    nextErrors.dropoff = "Return must be after pickup.";
-  }
-  if (!name.trim()) nextErrors.name = "Enter your full name.";
-  if (!/^\S+@\S+\.\S+$/.test(email.trim())) nextErrors.email = "Enter a valid email address.";
-  if (phone.replace(/\D/g, "").length < 10) nextErrors.phone = "Enter a valid phone number.";
-  if (!purpose.trim()) nextErrors.purpose = "Enter the purpose of use.";
-  if (pickupDeliveryOption === "delivery" && (!pickupLocation.trim() || !dropoffLocation.trim())) nextErrors.locations = "Provide pickup and drop-off locations.";
-  if (!acceptTerms) nextErrors.terms = "Please accept the rental policies to continue.";
+type BookingErrors = Partial<Record<keyof BookingDraft | "vehicle", string>>;
 
-  return nextErrors;
+function initialDraft(
+  handoff: ReturnType<typeof parseFinderBookingHandoff>,
+): BookingDraft {
+  return {
+    pickupBranchId: "",
+    returnBranchId: "",
+    pickupAt: handoff ? dateTimeInputFromIso(handoff.requestedStart) : "",
+    returnAt: handoff ? dateTimeInputFromIso(handoff.requestedEnd) : "",
+    purposeOfUse: "",
+    pickupDeliveryOption: "pickup",
+    pickupLocation: "",
+    dropoffLocation: "",
+    destination: handoff?.destination ?? "",
+    preferredSeatCount: handoff ? String(handoff.passengerCount) : "",
+  };
 }
 
-function formatPeso(value: number) {
-  return new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 2 }).format(value);
+function RentalRequestPage() {
+  const search = Route.useSearch();
+  const handoff = useMemo(() => parseFinderBookingHandoff(search), [search]);
+  const [masterData, setMasterData] = useState<BookingMasterData | null>(null);
+  const [vehicles, setVehicles] = useState<CustomerVehicle[]>([]);
+  const [masterLoading, setMasterLoading] = useState(true);
+  const [masterError, setMasterError] = useState("");
+  const [draft, setDraft] = useState<BookingDraft>(() => initialDraft(handoff));
+  const [step, setStep] = useState<1 | 2>(1);
+  const [errors, setErrors] = useState<BookingErrors>({});
+  const [errorFocusKey, setErrorFocusKey] = useState(0);
+  const [principal, setPrincipal] = useState(getClientPrincipal());
+  const [sessionChecked, setSessionChecked] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const idempotency = useRef<{ fingerprint: string; key: string } | null>(null);
+  const draftHydrated = useRef(false);
+
+  const vehicleId = search.vehicle ?? "";
+  const selectedVehicle =
+    vehicles.find((vehicle) => vehicle.id === vehicleId) ?? null;
+  const storageKey = `briahs-rental-request-draft:${vehicleId}:${search.finderStart ?? ""}`;
+
+  async function loadBookingOptions() {
+    setMasterLoading(true);
+    setMasterError("");
+    try {
+      const [options, activeVehicles] = await Promise.all([
+        fetchJson<BookingMasterData>("/api/booking-master-data"),
+        fetchJson<CustomerVehicle[]>("/api/vehicles"),
+      ]);
+      setMasterData(options);
+      setVehicles(activeVehicles);
+    } catch (error) {
+      setMasterError(
+        error instanceof ApiRequestError
+          ? error.message
+          : "Booking options cannot be loaded right now.",
+      );
+    } finally {
+      setMasterLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadBookingOptions();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getSession().then((result) => {
+      if (cancelled) return;
+      if (result.ok) setPrincipal(result.data.principal);
+      else setPrincipal(null);
+      setSessionChecked(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!masterData || !selectedVehicle) return;
+    setDraft((current) => {
+      const vehicleBranchId =
+        selectedVehicle.branch?.id ??
+        masterData.vehicles.find((item) => item.id === vehicleId)?.branch_id ??
+        "";
+      return {
+        ...current,
+        pickupBranchId: current.pickupBranchId || vehicleBranchId,
+        returnBranchId: current.returnBranchId || vehicleBranchId,
+      };
+    });
+  }, [masterData, selectedVehicle, vehicleId]);
+
+  useEffect(() => {
+    if (draftHydrated.current || typeof window === "undefined") return;
+    draftHydrated.current = true;
+    const stored = window.sessionStorage.getItem(storageKey);
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored) as Partial<BookingDraft>;
+      setDraft((current) => ({ ...current, ...parsed }));
+    } catch {
+      window.sessionStorage.removeItem(storageKey);
+    }
+  }, [storageKey]);
+
+  function updateDraft<K extends keyof BookingDraft>(
+    field: K,
+    value: BookingDraft[K],
+  ) {
+    setDraft((current) => ({ ...current, [field]: value }));
+    setErrors((current) => ({ ...current, [field]: undefined }));
+    setSubmitError("");
+  }
+
+  function validateDetails() {
+    const nextErrors: BookingErrors = {};
+    const pickup = manilaDateTimeLocalToInstant(draft.pickupAt);
+    const returned = manilaDateTimeLocalToInstant(draft.returnAt);
+    const preferredSeats = draft.preferredSeatCount.trim()
+      ? Number(draft.preferredSeatCount)
+      : null;
+
+    if (!selectedVehicle)
+      nextErrors.vehicle = "Choose an active vehicle before continuing.";
+    if (!draft.pickupBranchId)
+      nextErrors.pickupBranchId = "Choose a pickup branch.";
+    if (!draft.returnBranchId)
+      nextErrors.returnBranchId = "Choose a return branch.";
+    if (!pickup) nextErrors.pickupAt = "Enter a valid pickup date and time.";
+    if (!returned) nextErrors.returnAt = "Enter a valid return date and time.";
+    if (pickup && pickup.getTime() < Date.now() - 60_000)
+      nextErrors.pickupAt = "Pickup cannot be in the past.";
+    if (pickup && returned && returned <= pickup)
+      nextErrors.returnAt = "Return must be after pickup.";
+    if (!draft.purposeOfUse.trim())
+      nextErrors.purposeOfUse = "Tell us the purpose of this rental.";
+    if (
+      draft.pickupDeliveryOption === "delivery" &&
+      !draft.pickupLocation.trim()
+    )
+      nextErrors.pickupLocation = "Enter the pickup location for delivery.";
+    if (
+      draft.pickupDeliveryOption === "delivery" &&
+      !draft.dropoffLocation.trim()
+    )
+      nextErrors.dropoffLocation = "Enter the drop-off location for delivery.";
+    if (
+      preferredSeats !== null &&
+      (!Number.isInteger(preferredSeats) || preferredSeats <= 0)
+    )
+      nextErrors.preferredSeatCount =
+        "Preferred seats must be a positive whole number.";
+    if (draft.destination.length > 200)
+      nextErrors.destination = "Destination must be 200 characters or fewer.";
+    return nextErrors;
+  }
+
+  function continueToReview(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextErrors = validateDetails();
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      setErrorFocusKey((key) => key + 1);
+      return;
+    }
+    if (typeof window !== "undefined")
+      window.sessionStorage.setItem(storageKey, JSON.stringify(draft));
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function finderContextIsStillValid() {
+    if (!handoff || !selectedVehicle) return false;
+    return finderProvenanceMatchesBooking(handoff, {
+      vehicleId: selectedVehicle.id,
+      pickup: draft.pickupAt,
+      dropoff: draft.returnAt,
+      passengerCount: draft.preferredSeatCount,
+      destination: draft.destination,
+    });
+  }
+
+  async function sendRentalRequest() {
+    const nextErrors = validateDetails();
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      setStep(1);
+      setErrorFocusKey((key) => key + 1);
+      return;
+    }
+    if (!selectedVehicle || !draft.pickupBranchId || !draft.returnBranchId)
+      return;
+    if (!getCustomerSession()) {
+      if (typeof window !== "undefined")
+        window.sessionStorage.setItem(storageKey, JSON.stringify(draft));
+      window.location.assign(
+        `/sign-in${encodeSearch({ ...search, vehicle: selectedVehicle.id })}`,
+      );
+      return;
+    }
+
+    const payload = {
+      requestedVehicleId: selectedVehicle.id,
+      pickupBranchId: draft.pickupBranchId,
+      returnBranchId: draft.returnBranchId,
+      pickupAt: draft.pickupAt,
+      returnAt: draft.returnAt,
+      purposeOfUse: draft.purposeOfUse.trim(),
+      pickupDeliveryOption: draft.pickupDeliveryOption,
+      pickupLocation:
+        draft.pickupDeliveryOption === "delivery"
+          ? draft.pickupLocation.trim()
+          : null,
+      dropoffLocation:
+        draft.pickupDeliveryOption === "delivery"
+          ? draft.dropoffLocation.trim()
+          : null,
+      destination: draft.destination.trim() || null,
+      preferredSeatCount: draft.preferredSeatCount.trim()
+        ? Number(draft.preferredSeatCount)
+        : null,
+      finderContext:
+        finderContextIsStillValid() && handoff
+          ? finderContextForSubmission(handoff)
+          : undefined,
+    };
+    const fingerprint = JSON.stringify(payload);
+    if (
+      !idempotency.current ||
+      idempotency.current.fingerprint !== fingerprint
+    ) {
+      idempotency.current = { fingerprint, key: crypto.randomUUID() };
+    }
+
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const result = await fetchJson<{
+        id?: string;
+        booking?: { id?: string };
+      }>("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          idempotencyKey: idempotency.current.key,
+        }),
+      });
+      const bookingId = result.id ?? result.booking?.id;
+      if (!bookingId) {
+        setSubmitError(
+          "The request was sent, but its booking identity was not returned. Check My Bookings before trying again.",
+        );
+        return;
+      }
+      if (typeof window !== "undefined")
+        window.sessionStorage.removeItem(storageKey);
+      window.location.assign(`/bookings/${encodeURIComponent(bookingId)}`);
+    } catch (error) {
+      if (
+        error instanceof ApiRequestError &&
+        (error.status === 401 || error.status === 403)
+      ) {
+        if (typeof window !== "undefined")
+          window.sessionStorage.setItem(storageKey, JSON.stringify(draft));
+        window.location.assign(
+          `/sign-in${encodeSearch({ ...search, vehicle: selectedVehicle.id })}`,
+        );
+        return;
+      }
+      setSubmitError(
+        error instanceof ApiRequestError
+          ? error.status === 409
+            ? `${error.message} Review the current request details before trying again.`
+            : error.message
+          : "The rental request could not be sent. Try again.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const errorSummary = [
+    errors.vehicle
+      ? { id: "selected-vehicle", label: "Vehicle", message: errors.vehicle }
+      : null,
+    errors.pickupBranchId
+      ? {
+          id: "pickup-branch",
+          label: "Pickup branch",
+          message: errors.pickupBranchId,
+        }
+      : null,
+    errors.returnBranchId
+      ? {
+          id: "return-branch",
+          label: "Return branch",
+          message: errors.returnBranchId,
+        }
+      : null,
+    errors.pickupAt
+      ? {
+          id: "pickup-at",
+          label: "Pickup date and time",
+          message: errors.pickupAt,
+        }
+      : null,
+    errors.returnAt
+      ? {
+          id: "return-at",
+          label: "Return date and time",
+          message: errors.returnAt,
+        }
+      : null,
+    errors.purposeOfUse
+      ? { id: "purpose", label: "Purpose", message: errors.purposeOfUse }
+      : null,
+    errors.pickupLocation
+      ? {
+          id: "pickup-location",
+          label: "Pickup location",
+          message: errors.pickupLocation,
+        }
+      : null,
+    errors.dropoffLocation
+      ? {
+          id: "dropoff-location",
+          label: "Drop-off location",
+          message: errors.dropoffLocation,
+        }
+      : null,
+    errors.preferredSeatCount
+      ? {
+          id: "preferred-seats",
+          label: "Preferred seats",
+          message: errors.preferredSeatCount,
+        }
+      : null,
+    errors.destination
+      ? { id: "destination", label: "Destination", message: errors.destination }
+      : null,
+  ].filter((error): error is { id: string; label: string; message: string } =>
+    Boolean(error),
+  );
+
+  return (
+    <CustomerPage>
+      <Header />
+      <main id="main-content" className="request-main">
+        <div className="customer-container">
+          <div className="request-breadcrumb">
+            <a
+              href={
+                selectedVehicle
+                  ? `/vehicles/${encodeURIComponent(selectedVehicle.id)}${encodeSearch(search)}`
+                  : "/vehicles"
+              }
+            >
+              <ArrowLeft size={15} aria-hidden="true" /> Find a Car
+            </a>
+            <span aria-hidden="true">/</span>
+            <span>Rental request</span>
+          </div>
+
+          <div className="request-heading">
+            <div>
+              <p className="eyebrow">Your rental request</p>
+              <h1>
+                {step === 1
+                  ? "Tell us about your rental"
+                  : "Review your rental request"}
+              </h1>
+              <p>
+                {step === 1
+                  ? "Add the trip details the team needs to review your request."
+                  : "Check the details below before sending your request to Briah's team."}
+              </p>
+            </div>
+          </div>
+          <RequestProgress current={step} />
+
+          {masterLoading ? (
+            <div
+              className="finder-empty-state"
+              role="status"
+              aria-live="polite"
+            >
+              <h2>Loading request options</h2>
+              <p>
+                Branches and vehicle details are coming from the current booking
+                service.
+              </p>
+            </div>
+          ) : masterError ? (
+            <StatusCallout
+              tone="error"
+              title="Request options unavailable"
+              action={
+                <button
+                  className="customer-secondary-button"
+                  type="button"
+                  onClick={() => void loadBookingOptions()}
+                >
+                  <RefreshCw size={16} aria-hidden="true" /> Try again
+                </button>
+              }
+            >
+              {masterError}
+            </StatusCallout>
+          ) : !vehicleId ? (
+            <StatusCallout
+              tone="info"
+              title="Choose a car first"
+              action={
+                <a className="customer-secondary-button" href="/vehicles">
+                  Find a car
+                </a>
+              }
+            >
+              Your rental request must be tied to the exact vehicle you
+              selected.
+            </StatusCallout>
+          ) : !selectedVehicle ? (
+            <StatusCallout
+              tone="warning"
+              title="Selected car is no longer available"
+              action={
+                <a className="customer-secondary-button" href="/vehicles">
+                  Return to Find a Car
+                </a>
+              }
+            >
+              The active fleet no longer contains this vehicle. No request has
+              been created.
+            </StatusCallout>
+          ) : (
+            <div className="request-layout">
+              {step === 1 ? (
+                <DetailsForm
+                  draft={draft}
+                  errors={errors}
+                  errorSummary={errorSummary}
+                  errorFocusKey={errorFocusKey}
+                  masterData={masterData}
+                  principal={principal}
+                  sessionChecked={sessionChecked}
+                  updateDraft={updateDraft}
+                  onSubmit={continueToReview}
+                />
+              ) : (
+                <ReviewPanel
+                  draft={draft}
+                  handoff={handoff}
+                  principal={principal}
+                  submitError={submitError}
+                  submitting={submitting}
+                  onEdit={() => setStep(1)}
+                  onSend={() => void sendRentalRequest()}
+                />
+              )}
+              <SelectedCarSummary vehicle={selectedVehicle} handoff={handoff} />
+            </div>
+          )}
+        </div>
+      </main>
+      <Footer />
+    </CustomerPage>
+  );
+}
+
+function DetailsForm({
+  draft,
+  errors,
+  errorSummary,
+  errorFocusKey,
+  masterData,
+  principal,
+  sessionChecked,
+  updateDraft,
+  onSubmit,
+}: {
+  draft: BookingDraft;
+  errors: BookingErrors;
+  errorSummary: Array<{ id: string; label: string; message: string }>;
+  errorFocusKey: number;
+  masterData: BookingMasterData | null;
+  principal: ReturnType<typeof getClientPrincipal>;
+  sessionChecked: boolean;
+  updateDraft: <K extends keyof BookingDraft>(
+    field: K,
+    value: BookingDraft[K],
+  ) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  const branches = masterData?.branches ?? [];
+  return (
+    <form className="request-form" onSubmit={onSubmit} noValidate>
+      <ErrorSummary errors={errorSummary} focusKey={errorFocusKey} />
+      <fieldset className="customer-fieldset">
+        <legend>
+          <CalendarDays size={19} aria-hidden="true" /> Trip schedule
+        </legend>
+        <div className="request-form-grid">
+          <div className="customer-field">
+            <label className="customer-label" htmlFor="pickup-at">
+              Pickup date and time
+            </label>
+            <input
+              id="pickup-at"
+              className="customer-input"
+              type="datetime-local"
+              value={draft.pickupAt}
+              aria-invalid={Boolean(errors.pickupAt)}
+              aria-describedby={errors.pickupAt ? "pickup-at-error" : undefined}
+              onChange={(event) => updateDraft("pickupAt", event.target.value)}
+              required
+            />
+            <FieldError id="pickup-at" message={errors.pickupAt} />
+          </div>
+          <div className="customer-field">
+            <label className="customer-label" htmlFor="return-at">
+              Return date and time
+            </label>
+            <input
+              id="return-at"
+              className="customer-input"
+              type="datetime-local"
+              value={draft.returnAt}
+              aria-invalid={Boolean(errors.returnAt)}
+              aria-describedby={errors.returnAt ? "return-at-error" : undefined}
+              onChange={(event) => updateDraft("returnAt", event.target.value)}
+              required
+            />
+            <FieldError id="return-at" message={errors.returnAt} />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset className="customer-fieldset">
+        <legend>
+          <MapPin size={19} aria-hidden="true" /> Branches and handoff
+        </legend>
+        <div className="request-form-grid">
+          <div className="customer-field">
+            <label className="customer-label" htmlFor="pickup-branch">
+              Pickup branch
+            </label>
+            <select
+              id="pickup-branch"
+              className="customer-select"
+              value={draft.pickupBranchId}
+              aria-invalid={Boolean(errors.pickupBranchId)}
+              aria-describedby={
+                errors.pickupBranchId ? "pickup-branch-error" : undefined
+              }
+              onChange={(event) =>
+                updateDraft("pickupBranchId", event.target.value)
+              }
+              required
+            >
+              <option value="">Choose a branch</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
+              ))}
+            </select>
+            <FieldError id="pickup-branch" message={errors.pickupBranchId} />
+          </div>
+          <div className="customer-field">
+            <label className="customer-label" htmlFor="return-branch">
+              Return branch
+            </label>
+            <select
+              id="return-branch"
+              className="customer-select"
+              value={draft.returnBranchId}
+              aria-invalid={Boolean(errors.returnBranchId)}
+              aria-describedby={
+                errors.returnBranchId ? "return-branch-error" : undefined
+              }
+              onChange={(event) =>
+                updateDraft("returnBranchId", event.target.value)
+              }
+              required
+            >
+              <option value="">Choose a branch</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
+              ))}
+            </select>
+            <FieldError id="return-branch" message={errors.returnBranchId} />
+          </div>
+        </div>
+        <div className="customer-field">
+          <span className="customer-label">Pickup or delivery</span>
+          <div
+            className="request-radio-list"
+            role="radiogroup"
+            aria-label="Pickup or delivery"
+          >
+            <label className="request-radio-option">
+              <input
+                type="radio"
+                name="pickupDeliveryOption"
+                value="pickup"
+                checked={draft.pickupDeliveryOption === "pickup"}
+                onChange={() => updateDraft("pickupDeliveryOption", "pickup")}
+              />
+              <span>Pickup at branch</span>
+            </label>
+            <label className="request-radio-option">
+              <input
+                type="radio"
+                name="pickupDeliveryOption"
+                value="delivery"
+                checked={draft.pickupDeliveryOption === "delivery"}
+                onChange={() => updateDraft("pickupDeliveryOption", "delivery")}
+              />
+              <span>Delivery</span>
+            </label>
+          </div>
+        </div>
+        {draft.pickupDeliveryOption === "delivery" ? (
+          <div className="request-form-grid">
+            <div className="customer-field">
+              <label className="customer-label" htmlFor="pickup-location">
+                Pickup location
+              </label>
+              <input
+                id="pickup-location"
+                className="customer-input"
+                type="text"
+                value={draft.pickupLocation}
+                aria-invalid={Boolean(errors.pickupLocation)}
+                aria-describedby={
+                  errors.pickupLocation ? "pickup-location-error" : undefined
+                }
+                onChange={(event) =>
+                  updateDraft("pickupLocation", event.target.value)
+                }
+                required
+              />
+              <FieldError
+                id="pickup-location"
+                message={errors.pickupLocation}
+              />
+            </div>
+            <div className="customer-field">
+              <label className="customer-label" htmlFor="dropoff-location">
+                Drop-off location
+              </label>
+              <input
+                id="dropoff-location"
+                className="customer-input"
+                type="text"
+                value={draft.dropoffLocation}
+                aria-invalid={Boolean(errors.dropoffLocation)}
+                aria-describedby={
+                  errors.dropoffLocation ? "dropoff-location-error" : undefined
+                }
+                onChange={(event) =>
+                  updateDraft("dropoffLocation", event.target.value)
+                }
+                required
+              />
+              <FieldError
+                id="dropoff-location"
+                message={errors.dropoffLocation}
+              />
+            </div>
+          </div>
+        ) : null}
+      </fieldset>
+
+      <fieldset className="customer-fieldset">
+        <legend>Tell us about the trip</legend>
+        <div className="request-form-grid">
+          <div className="customer-field full-span">
+            <label className="customer-label" htmlFor="purpose">
+              Purpose of use
+            </label>
+            <textarea
+              id="purpose"
+              className="customer-textarea"
+              value={draft.purposeOfUse}
+              aria-invalid={Boolean(errors.purposeOfUse)}
+              aria-describedby={
+                errors.purposeOfUse ? "purpose-error" : undefined
+              }
+              onChange={(event) =>
+                updateDraft("purposeOfUse", event.target.value)
+              }
+              required
+            />
+            <FieldError id="purpose" message={errors.purposeOfUse} />
+          </div>
+          <div className="customer-field">
+            <label className="customer-label" htmlFor="destination">
+              Destination <span className="customer-helper">(optional)</span>
+            </label>
+            <input
+              id="destination"
+              className="customer-input"
+              type="text"
+              maxLength={200}
+              value={draft.destination}
+              aria-invalid={Boolean(errors.destination)}
+              aria-describedby={
+                errors.destination ? "destination-error" : undefined
+              }
+              onChange={(event) =>
+                updateDraft("destination", event.target.value)
+              }
+            />
+            <FieldError id="destination" message={errors.destination} />
+          </div>
+          <div className="customer-field">
+            <label className="customer-label" htmlFor="preferred-seats">
+              Preferred seats{" "}
+              <span className="customer-helper">(optional)</span>
+            </label>
+            <input
+              id="preferred-seats"
+              className="customer-input"
+              type="number"
+              min="1"
+              step="1"
+              value={draft.preferredSeatCount}
+              aria-invalid={Boolean(errors.preferredSeatCount)}
+              aria-describedby={
+                errors.preferredSeatCount ? "preferred-seats-error" : undefined
+              }
+              onChange={(event) =>
+                updateDraft("preferredSeatCount", event.target.value)
+              }
+            />
+            <FieldError
+              id="preferred-seats"
+              message={errors.preferredSeatCount}
+            />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset className="customer-fieldset">
+        <legend>Your contact context</legend>
+        {sessionChecked && !principal ? (
+          <StatusCallout tone="info" title="Sign in before you send">
+            Your contact details will come from your authenticated customer
+            profile. You can complete the form first.
+          </StatusCallout>
+        ) : null}
+        <div className="request-contact">
+          <div className="customer-field">
+            <span className="customer-label">Name</span>
+            <div className="request-readonly-value">
+              {principal?.fullName ?? "Sign in to load"}
+            </div>
+          </div>
+          <div className="customer-field">
+            <span className="customer-label">Email</span>
+            <div className="request-readonly-value">
+              {principal?.email ?? "Sign in to load"}
+            </div>
+          </div>
+          <div className="customer-field">
+            <span className="customer-label">Phone</span>
+            <div className="request-readonly-value">
+              {principal?.phoneNumber ?? "Sign in to load"}
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <StatusCallout tone="info" title="What happens next">
+        Briah&apos;s team will review this rental request. Sending it does not
+        confirm the booking.
+      </StatusCallout>
+
+      <div className="request-actions">
+        <a className="customer-tertiary-button" href="/vehicles">
+          <ArrowLeft size={16} aria-hidden="true" /> Back to Find a Car
+        </a>
+        <button className="customer-primary-button" type="submit">
+          Review rental request <ArrowRight size={17} aria-hidden="true" />
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function ReviewPanel({
+  draft,
+  handoff,
+  principal,
+  submitError,
+  submitting,
+  onEdit,
+  onSend,
+}: {
+  draft: BookingDraft;
+  handoff: ReturnType<typeof parseFinderBookingHandoff>;
+  principal: ReturnType<typeof getClientPrincipal>;
+  submitError: string;
+  submitting: boolean;
+  onEdit: () => void;
+  onSend: () => void;
+}) {
+  return (
+    <section className="request-form" aria-labelledby="review-title">
+      <h2 id="review-title" className="sr-only">
+        Review rental request details
+      </h2>
+      <div className="review-groups">
+        <div className="review-group">
+          <div className="review-group-heading">
+            <h2>Trip schedule</h2>
+            <button className="review-edit-link" type="button" onClick={onEdit}>
+              Edit
+            </button>
+          </div>
+          <p>
+            {formatInputDateTime(draft.pickupAt)} →{" "}
+            {formatInputDateTime(draft.returnAt)}
+          </p>
+        </div>
+        <div className="review-group">
+          <div className="review-group-heading">
+            <h2>Branches and handoff</h2>
+            <button className="review-edit-link" type="button" onClick={onEdit}>
+              Edit
+            </button>
+          </div>
+          <p>
+            {draft.pickupDeliveryOption === "delivery"
+              ? `Delivery · ${draft.pickupLocation} → ${draft.dropoffLocation}`
+              : "Pickup at branch"}
+            {draft.destination ? `\nDestination · ${draft.destination}` : ""}
+          </p>
+        </div>
+        <div className="review-group">
+          <div className="review-group-heading">
+            <h2>Purpose and seats</h2>
+            <button className="review-edit-link" type="button" onClick={onEdit}>
+              Edit
+            </button>
+          </div>
+          <p>
+            {draft.purposeOfUse}
+            {draft.preferredSeatCount
+              ? `\nPreferred seats · ${draft.preferredSeatCount}`
+              : ""}
+          </p>
+        </div>
+        <div className="review-group">
+          <div className="review-group-heading">
+            <h2>Contact</h2>
+            <button className="review-edit-link" type="button" onClick={onEdit}>
+              Edit
+            </button>
+          </div>
+          <p>
+            {principal?.fullName ?? "Sign in required"}
+            {principal?.email ? `\n${principal.email}` : ""}
+            {principal?.phoneNumber ? `\n${principal.phoneNumber}` : ""}
+          </p>
+        </div>
+      </div>
+
+      {handoff ? (
+        <p className="customer-helper">
+          This request came from evaluated Finder results. The same trip context
+          will be rechecked before submission.
+        </p>
+      ) : null}
+      {submitError ? (
+        <StatusCallout tone="error" title="Rental request not sent">
+          {submitError}
+        </StatusCallout>
+      ) : null}
+      <StatusCallout tone="info" title="Send a rental request">
+        Submitting creates a rental request. It does not confirm the booking.
+      </StatusCallout>
+      <div className="request-actions">
+        <button
+          className="customer-tertiary-button"
+          type="button"
+          onClick={onEdit}
+        >
+          <ArrowLeft size={16} aria-hidden="true" /> Back to request details
+        </button>
+        <button
+          className="customer-primary-button"
+          type="button"
+          onClick={onSend}
+          disabled={submitting}
+        >
+          {submitting ? (
+            <RefreshCw className="animate-spin" size={17} aria-hidden="true" />
+          ) : null}
+          {submitting ? "Sending request…" : "Send rental request"}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function SelectedCarSummary({
+  vehicle,
+  handoff,
+}: {
+  vehicle: CustomerVehicle;
+  handoff: ReturnType<typeof parseFinderBookingHandoff>;
+}) {
+  return (
+    <aside className="request-summary" aria-labelledby="selected-car-title">
+      <h2 id="selected-car-title">Selected car</h2>
+      <div className="request-summary-image">
+        <VehicleImage
+          src={vehicle.image_url}
+          alt={vehicle.name}
+          sizes="(max-width: 767px) 100vw, 30vw"
+        />
+      </div>
+      <div>
+        <p className="request-summary-category">
+          {vehicle.category?.name || "Category not listed"}
+        </p>
+        <p className="request-summary-name">{vehicle.name}</p>
+        <Rate value={vehicle.daily_rate} />
+      </div>
+      <VehicleFacts vehicle={vehicle} />
+      {handoff ? (
+        <p className="customer-helper">
+          Selected from evaluated Finder results.
+        </p>
+      ) : null}
+      {handoff ? (
+        <p className="customer-helper">
+          {formatDateRange(handoff.requestedStart, handoff.requestedEnd)}
+        </p>
+      ) : null}
+    </aside>
+  );
 }

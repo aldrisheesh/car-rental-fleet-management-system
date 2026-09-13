@@ -432,16 +432,15 @@ test("no-match response is controlled and never returns an ineligible fallback",
   assert.deepEqual(result.noMatch?.factors, ["BUDGET"]);
 });
 
-test("Browse route preserves ordinary filters and Finder reset", async () => {
+test("Browse route preserves direct category filtering and Finder reset", async () => {
   const source = await readFile(
     new URL("../routes/vehicles.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(source, /<FilterGroup[\s\S]*label="Type"/);
-  assert.match(source, /<FilterGroup[\s\S]*label="Branch"/);
-  assert.match(source, /Browse all vehicles/);
-  assert.doesNotMatch(
-    source,
-    /setCat\("All"\);\s*setBranch\("All branches"\);\s*setFinder/,
-  );
+  assert.match(source, /browseCategory/);
+  assert.match(source, /All cars/);
+  assert.match(source, /Clear trip criteria/);
+  assert.match(source, /setFinderResponse\(null\)/);
+  assert.match(source, /evaluateFinder/);
+  assert.doesNotMatch(source, /Browse all vehicles/);
 });

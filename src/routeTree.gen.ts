@@ -19,7 +19,9 @@ import { Route as BookingRouteImport } from './routes/booking'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as VehiclesVehicleIdRouteImport } from './routes/vehicles.$vehicleId'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
+import { Route as BookingsBookingIdRouteImport } from './routes/bookings.$bookingId'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
 import { Route as ApiVehicleFinderRouteImport } from './routes/api.vehicle-finder'
 import { Route as ApiVehicleAnalyticsRouteImport } from './routes/api.vehicle-analytics'
@@ -113,9 +115,19 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const VehiclesVehicleIdRoute = VehiclesVehicleIdRouteImport.update({
+  id: '/$vehicleId',
+  path: '/$vehicleId',
+  getParentRoute: () => VehiclesRoute,
+} as any)
 const CustomerProfileRoute = CustomerProfileRouteImport.update({
   id: '/customer_/profile',
   path: '/customer/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingsBookingIdRoute = BookingsBookingIdRouteImport.update({
+  id: '/bookings/$bookingId',
+  path: '/bookings/$bookingId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
@@ -339,7 +351,7 @@ export interface FileRoutesByFullPath {
   '/customer-landing': typeof CustomerLandingRoute
   '/payment-details': typeof PaymentDetailsRoute
   '/sign-in': typeof SignInRoute
-  '/vehicles': typeof VehiclesRoute
+  '/vehicles': typeof VehiclesRouteWithChildren
   '/admin/activity': typeof AdminActivityRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/branches': typeof AdminBranchesRoute
@@ -376,7 +388,9 @@ export interface FileRoutesByFullPath {
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer/profile': typeof CustomerProfileRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
@@ -393,7 +407,7 @@ export interface FileRoutesByTo {
   '/customer-landing': typeof CustomerLandingRoute
   '/payment-details': typeof PaymentDetailsRoute
   '/sign-in': typeof SignInRoute
-  '/vehicles': typeof VehiclesRoute
+  '/vehicles': typeof VehiclesRouteWithChildren
   '/admin/activity': typeof AdminActivityRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/branches': typeof AdminBranchesRoute
@@ -430,7 +444,9 @@ export interface FileRoutesByTo {
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer/profile': typeof CustomerProfileRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin': typeof AdminIndexRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
@@ -449,7 +465,7 @@ export interface FileRoutesById {
   '/customer-landing': typeof CustomerLandingRoute
   '/payment-details': typeof PaymentDetailsRoute
   '/sign-in': typeof SignInRoute
-  '/vehicles': typeof VehiclesRoute
+  '/vehicles': typeof VehiclesRouteWithChildren
   '/admin/activity': typeof AdminActivityRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/branches': typeof AdminBranchesRoute
@@ -486,7 +502,9 @@ export interface FileRoutesById {
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer_/profile': typeof CustomerProfileRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
@@ -543,7 +561,9 @@ export interface FileRouteTypes {
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
     | '/api/vehicles'
+    | '/bookings/$bookingId'
     | '/customer/profile'
+    | '/vehicles/$vehicleId'
     | '/admin/'
     | '/api/auth/profile'
     | '/api/auth/session'
@@ -597,7 +617,9 @@ export interface FileRouteTypes {
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
     | '/api/vehicles'
+    | '/bookings/$bookingId'
     | '/customer/profile'
+    | '/vehicles/$vehicleId'
     | '/admin'
     | '/api/auth/profile'
     | '/api/auth/session'
@@ -652,7 +674,9 @@ export interface FileRouteTypes {
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
     | '/api/vehicles'
+    | '/bookings/$bookingId'
     | '/customer_/profile'
+    | '/vehicles/$vehicleId'
     | '/admin/'
     | '/api/auth/profile'
     | '/api/auth/session'
@@ -671,7 +695,7 @@ export interface RootRouteChildren {
   CustomerLandingRoute: typeof CustomerLandingRoute
   PaymentDetailsRoute: typeof PaymentDetailsRoute
   SignInRoute: typeof SignInRoute
-  VehiclesRoute: typeof VehiclesRoute
+  VehiclesRoute: typeof VehiclesRouteWithChildren
   ApiAdminCalendarRoute: typeof ApiAdminCalendarRoute
   ApiAdminDashboardRoute: typeof ApiAdminDashboardRoute
   ApiAdminFleetRoute: typeof ApiAdminFleetRoute
@@ -694,6 +718,7 @@ export interface RootRouteChildren {
   ApiVehicleAnalyticsRoute: typeof ApiVehicleAnalyticsRoute
   ApiVehicleFinderRoute: typeof ApiVehicleFinderRoute
   ApiVehiclesRoute: typeof ApiVehiclesRoute
+  BookingsBookingIdRoute: typeof BookingsBookingIdRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
   ApiAuthProfileRoute: typeof ApiAuthProfileRoute
   ApiAuthSessionRoute: typeof ApiAuthSessionRoute
@@ -775,11 +800,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/vehicles/$vehicleId': {
+      id: '/vehicles/$vehicleId'
+      path: '/$vehicleId'
+      fullPath: '/vehicles/$vehicleId'
+      preLoaderRoute: typeof VehiclesVehicleIdRouteImport
+      parentRoute: typeof VehiclesRoute
+    }
     '/customer_/profile': {
       id: '/customer_/profile'
       path: '/customer/profile'
       fullPath: '/customer/profile'
       preLoaderRoute: typeof CustomerProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bookings/$bookingId': {
+      id: '/bookings/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/bookings/$bookingId'
+      preLoaderRoute: typeof BookingsBookingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/vehicles': {
@@ -1117,6 +1156,18 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface VehiclesRouteChildren {
+  VehiclesVehicleIdRoute: typeof VehiclesVehicleIdRoute
+}
+
+const VehiclesRouteChildren: VehiclesRouteChildren = {
+  VehiclesVehicleIdRoute: VehiclesVehicleIdRoute,
+}
+
+const VehiclesRouteWithChildren = VehiclesRoute._addFileChildren(
+  VehiclesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -1126,7 +1177,7 @@ const rootRouteChildren: RootRouteChildren = {
   CustomerLandingRoute: CustomerLandingRoute,
   PaymentDetailsRoute: PaymentDetailsRoute,
   SignInRoute: SignInRoute,
-  VehiclesRoute: VehiclesRoute,
+  VehiclesRoute: VehiclesRouteWithChildren,
   ApiAdminCalendarRoute: ApiAdminCalendarRoute,
   ApiAdminDashboardRoute: ApiAdminDashboardRoute,
   ApiAdminFleetRoute: ApiAdminFleetRoute,
@@ -1149,6 +1200,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVehicleAnalyticsRoute: ApiVehicleAnalyticsRoute,
   ApiVehicleFinderRoute: ApiVehicleFinderRoute,
   ApiVehiclesRoute: ApiVehiclesRoute,
+  BookingsBookingIdRoute: BookingsBookingIdRoute,
   CustomerProfileRoute: CustomerProfileRoute,
   ApiAuthProfileRoute: ApiAuthProfileRoute,
   ApiAuthSessionRoute: ApiAuthSessionRoute,
