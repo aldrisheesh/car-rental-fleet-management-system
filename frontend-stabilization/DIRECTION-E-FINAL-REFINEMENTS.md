@@ -15,7 +15,8 @@
 - Kept Requirements after canonical request/booking-record creation and before Payment.
 - Removed the internal-looking reference ID from the primary Requirements hierarchy.
 - Kept direct fleet browsing discoverable without placing a competing link beneath the hero CTA.
-- Left Find a Car, Admin, and mobile artifacts unchanged.
+- Integrated the optional-refinement hint into the Home search surface and removed the detached helper line.
+- Left Requirements, Find a Car, Admin, and mobile artifacts unchanged in the final freeze pass.
 
 ## Customer lifecycle terminology
 
@@ -44,7 +45,9 @@ Retained in the initial Home interaction:
 - Rental end;
 - one dominant `Find cars` action.
 
-Pickup area/branch is not shown because it is not a current canonical Finder criterion. Optional recommendation criteria now appear on Find a Car/results through the existing trip summary, category controls, and `Filters` entry. Home includes only quiet explanatory text that customers can narrow results after seeing vehicles.
+Pickup area/branch is not shown because it is not a current canonical Finder criterion. `src/lib/vehicle-finder.ts` defines requested start/end, passenger count, maximum budget, optional preferred category, and optional destination as the Finder input; there is no branch field, and `findVehicles()` does not filter or rank by branch. `src/routes/api.vehicle-finder.ts` validates that same contract. Branch is returned only as vehicle metadata and is required later by rental-request creation, not Finder evaluation.
+
+Optional recommendation criteria now appear on Find a Car/results through the existing trip summary, category controls, and `Filters` entry. Home includes the quiet explanatory text `Want a better fit? Narrow by passengers, budget, and vehicle preference in your results.` inside the search surface, visually tied to the date controls but not styled as a link or CTA. The white panel remains compact.
 
 ## Recommendation capability preserved
 
@@ -80,13 +83,13 @@ The detached `Browse all cars` link beneath the hero CTA was removed. Direct fle
 
 ## Visual artifacts updated
 
-Regenerated from the approved Direction E references and normalized to 1440 × 960:
+Regenerated in this final freeze pass from the approved Direction E reference and normalized to 1440 × 960:
 
 - `art-directions/DIRECTION-E/HOME/home-desktop-1440.png`
-- `art-directions/DIRECTION-E/REQUIREMENTS/requirements-desktop-1440.png`
 
 Not regenerated:
 
+- Requirements — the existing reference already shows `Request submitted`, current Requirements, locked Payment, future Confirmation, the approved task flow, and no prominent reference ID.
 - Find a Car — the existing desktop reference already demonstrates optional refinement.
 - Mobile — the desktop corrections do not reveal an undocumented responsive conflict.
 - Admin — outside this refinement scope.
@@ -115,6 +118,6 @@ Not regenerated:
 - Pass — all changes are presentation/documentation-only.
 - Pass — no visual copy implies a changed backend lifecycle, instant confirmation, or payment before requirements verification.
 
-## Final freeze recommendation
+## Final freeze status
 
-**DIRECTION E READY TO FREEZE**
+**FROZEN FOR CUSTOMER IMPLEMENTATION**

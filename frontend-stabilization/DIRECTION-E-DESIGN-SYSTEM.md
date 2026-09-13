@@ -1,16 +1,27 @@
 # Direction E Design System
 
-**Status:** Proposed customer-facing freeze candidate
+**Status:** Authoritative customer implementation contract — FROZEN
 **Direction:** Premium Familiar Mobility
 **Scope:** Presentation and interaction contract for later authorized implementation; no application implementation is included here.
 
-## 1. Product character
+## Product character
 
 Direction E should feel calm, trustworthy, practical, and quietly premium. It belongs to an automotive rental product: real vehicles, trip facts, clear rates, grounded actions, and a legible rental lifecycle.
 
 The system earns confidence through proportion, typography, photography, whitespace, and truthful guidance. It does not borrow luxury clichés, generic SaaS chrome, or ecommerce persuasion mechanics.
 
 The one expressive move is the photographic vehicle/road window. Controls and task flows remain familiar, restrained, and implementation-clear.
+
+## Experience principles
+
+- Start with the smallest useful customer decision, then disclose detail when it becomes relevant.
+- Keep familiar marketplace and form behavior; premium quality comes from proportion, type, imagery, and finish rather than novelty.
+- Explain lifecycle state truthfully. A submitted request is not a confirmed booking, and payment is not available before requirements verification.
+- Put the current action, its prerequisites, and what happens next in one clear reading path.
+- Separate action-required states from waiting states so customers never have to infer whether they must do something.
+- Treat every rate, availability statement, recommendation reason, status, and location as canonical data rather than decoration.
+- Preserve direct vehicle browsing while offering Finder refinement as optional guidance.
+- Keep the reusable shell location-neutral and the current operator identity visible without turning either into product architecture.
 
 ### Customer request terminology
 
@@ -52,7 +63,7 @@ The customer-facing macro journey is fixed:
 
 The completed first-stage copy is `Request submitted`. It never means `Booking confirmed`.
 
-## 2. Branding boundaries
+## Branding boundary
 
 Keep these layers separate:
 
@@ -62,7 +73,7 @@ Keep these layers separate:
 
 The operator identity must be replaceable at the presentation level without redesigning the product shell. Preserve official logo proportions, clear space, and approved colors. Do not infer a runtime theme editor, multi-tenancy, white-label platform, or new management feature from this rule.
 
-## 3. Typography
+## Typography
 
 ### Families
 
@@ -88,7 +99,9 @@ Confirm font licensing and loading before implementation. Use `font-display: swa
 
 Use sentence case, active voice, plain verbs, and typographic ellipsis `…`. Keep body measures below 75 characters and use `text-wrap: balance` or `text-wrap: pretty` for headings. Use `font-variant-numeric: tabular-nums` for rates, dates in comparisons, counts, and totals.
 
-## 4. Color tokens
+Responsive display sizes use `clamp()` or equivalent fluid steps bounded by the documented mobile and desktop sizes. Home may scale from 42–48 px at 375 px to 72 px at 1440 px. Task-page titles scale from 32–36 px to 44 px. Body and routine control text never scale below 16 px where entry or sustained reading is required. Admin must use Instrument Sans for dense operational work; Newsreader is limited to an operator wordmark or rare top-level page title and never appears in tables, filters, forms, queues, or status-heavy UI.
+
+## Color tokens
 
 | Token | Value | Role |
 |---|---|---|
@@ -113,7 +126,7 @@ Measured reference pairs:
 
 Consume these through semantic tokens. Do not scatter raw hex values through components.
 
-## 5. Semantic colors
+## Semantic colors
 
 | State | Token | Value | White contrast | Required companion |
 |---|---|---:|---:|---|
@@ -125,7 +138,7 @@ Consume these through semantic tokens. Do not scatter raw hex values through com
 
 Color never acts alone. Tinted backgrounds may use low-opacity versions of the state color only when foreground contrast remains valid. Brand accent and error must never share a meaning.
 
-## 6. Spacing
+## Spacing
 
 Use a 4 px base with an 8 px dominant rhythm:
 
@@ -145,7 +158,7 @@ Use a 4 px base with an 8 px dominant rhythm:
 
 Do not compress task screens to match a marketing density or inflate task headings/spacing for decoration.
 
-## 7. Layout/grid
+## Layout and grids
 
 - Desktop reference canvas: 1440 px wide.
 - Maximum content width: 1344 px, centered.
@@ -158,7 +171,7 @@ Do not compress task screens to match a marketing density or inflate task headin
 
 Home uses an asymmetric copy/photo split and a search rail that visually bridges the two. Find a Car uses a three-column desktop grid. Requirements uses an open 8/4 task/summary split. Prefer CSS grid/flex layout over JavaScript measurement; prevent unintended horizontal scrolling.
 
-## 8. Containers/surfaces
+## Surfaces
 
 - Default page: open Rice Paper field.
 - Navigation and inputs: white for clarity.
@@ -169,17 +182,23 @@ Home uses an asymmetric copy/photo split and a search rail that visually bridges
 
 Never place a card inside a rounded section card inside a page card. Each container must correspond to one interaction or conceptual group.
 
-## 9. Border/radius rules
+## Borders
 
 - Divider: 1 px `border`.
+- Dashed border is reserved for a genuine file drop/select target.
+- Selected states need more than a border: add text/icon or a clear filled surface.
+- Control boundaries must meet 3:1 contrast where the boundary is needed to identify the control; decorative dividers need not carry meaning.
+
+## Radius
+
 - Standard input/button radius: 8 px.
 - Vehicle card and summary radius: 10 px.
 - Dialog/sheet radius: 12 px where the platform permits.
+- Compact status labels may use a smaller fully rounded shape only when the geometry communicates their label-like role.
 - Do not use pill geometry for ordinary rectangular actions or fields.
-- Dashed border is reserved for a genuine file drop/select target.
-- Selected states need more than a border: add text/icon or a clear filled surface.
+- Radius follows component function; do not apply one oversized radius to every surface.
 
-## 10. Shadows/elevation
+## Elevation/shadows
 
 Use one restrained elevation family:
 
@@ -189,7 +208,7 @@ Use one restrained elevation family:
 
 Borders, surface contrast, and whitespace should do most structural work. Never apply the same shadow to every section.
 
-## 11. Buttons
+## Buttons
 
 ### Primary
 
@@ -205,6 +224,12 @@ Borders, surface contrast, and whitespace should do most structural work. Never 
 - Must remain visibly subordinate to the primary action.
 - Navigation actions use links; mutations/actions use buttons.
 
+### Tertiary
+
+- Plain text action with no enclosing surface by default; use for `Back`, `Cancel`, `Change trip`, or a low-priority details disclosure.
+- Keep a 44 × 44 px effective target through padding even when the visual treatment is text-only.
+- Use underline or another conventional affordance for navigation; do not append decorative arrows to every link.
+
 ### Destructive
 
 - Error color only for a genuine destructive action.
@@ -213,7 +238,7 @@ Borders, surface contrast, and whitespace should do most structural work. Never 
 
 All buttons need disabled semantics, a visible focus ring, and progress feedback only after work starts. Do not use icon-only controls without an accessible name.
 
-## 12. Inputs
+## Inputs
 
 - Persistent visible label above every field; placeholders are examples, never labels.
 - Minimum 48 px control height; 16 px input text to avoid mobile zoom.
@@ -225,20 +250,38 @@ All buttons need disabled semantics, a visible focus ring, and progress feedback
 
 For Finder: use date-time controls for start/end, integer input for passengers, decimal/currency-aware input for maximum total base-rental budget, and a canonical active-category select for optional preference.
 
-## 13. Search controls
+## Select controls
+
+- Use a native select when its platform behavior is sufficient; use a custom listbox only when the added behavior is necessary and its full keyboard semantics can be implemented.
+- Keep a persistent visible label, explicit default or prompt, clear selected value, and a familiar downward chevron that is decorative to assistive technology.
+- Never use a select for navigation or hide a required choice in placeholder text.
+- Options come from canonical active values. Long category and branch names must wrap or truncate without hiding the selected meaning.
+- Set explicit foreground and background colors so native options remain legible in forced or dark browser modes.
+
+## Date controls
+
+- Home uses `Rental start` and `Rental end`; both are required for the initial trip handoff, and end must follow start.
+- Preserve time when the canonical Finder needs date-time precision. Do not visually simplify a date-time contract into date-only data during implementation.
+- Use labelled native date/time controls or an accessible picker with full typing and keyboard support; never require pointer-only calendar use.
+- Show locale-aware display values while submitting canonical instants according to the existing Manila business-time contract.
+- Explain invalid, past, or reversed periods beside the relevant control and preserve the other valid value.
+
+## Search controls
 
 Home begins guided discovery with `Find the right car for your trip` and one dominant `Find cars` action. Its compact search rail contains only:
 
 - Rental start — required.
 - Rental end — required and after start.
 
-Do not include pickup area as a Finder criterion. Destination may appear only in an expanded/full Finder with the explicit note that it is captured for requirements and does not change baseline recommendations. Do not hide this limitation in a tooltip.
+The optional-refinement hint belongs inside the search surface as quiet contextual helper text: `Want a better fit? Narrow by passengers, budget, and vehicle preference in your results.` It is not a link, button, or competing CTA. Keep the white search surface only tall enough for the labelled controls, action, and this helper line.
+
+Do not include pickup area as a Finder criterion. Evidence verified on 2026-09-13: `src/lib/vehicle-finder.ts` defines `VehicleFinderInput` with `requestedStart`, `requestedEnd`, `passengerCount`, `maximumBudget`, optional `preferredCategory`, and optional `destination`; it contains no branch/pickup-area input, and `findVehicles()` does not filter or rank by branch. `branchName` is result metadata only. `src/routes/api.vehicle-finder.ts` validates that same input through `validateFinderInput()`. Destination may appear only in an expanded/full Finder with the explicit note that it is captured for requirements and does not change baseline recommendations. Do not hide this limitation in a tooltip.
 
 On Find a Car/results, optional refinement may expose canonically supported passenger count, maximum total base-rental budget, and active vehicle category/preference. Use outcome-oriented invitations such as `Narrow your results` or `Help me find a better fit`. These refinements may invoke the canonical recommendation capability, but the Home hero must not feel like a questionnaire.
 
 Show a compact trip/refinement summary and `Change trip` where the Finder is active. Store filter/search state in the URL where feasible so refresh, back, and deep links remain predictable. Results must preserve direct browsing and never relax hard criteria silently.
 
-## 14. Navigation
+## Navigation
 
 - Order: operator identity, Home, Find a Car, My Bookings, Contact, account/sign-in action.
 - Desktop header target height: 76–88 px.
@@ -248,7 +291,15 @@ Show a compact trip/refinement summary and `Change trip` where the Finder is act
 - On mobile, use a labelled menu button and one clear disclosure surface; preserve logical focus order and return focus on close.
 - Sticky navigation must reserve layout space and never obscure focused content.
 
-## 15. Icons
+## Mobile navigation
+
+- Collapse the primary navigation into one labelled menu button at narrow widths; do not invent a separate mobile information architecture.
+- The button exposes `aria-expanded` and `aria-controls`; opening moves focus only when needed, closing returns focus to the trigger, and Escape closes the disclosure.
+- Use one flat list in the same order as desktop. Keep account/sign-in visually separated but inside the same focus-managed surface.
+- Prevent background interaction and page scroll only when navigation is modal; account for safe-area insets and never cover the focused item.
+- Do not use an icon-only hamburger without an accessible name, a gesture-only drawer, or more than one competing navigation tray.
+
+## Icons
 
 - Use one outlined SVG family with consistent 1.75–2 px stroke.
 - Sizes: 16 px supporting, 20 px inline, 24 px control, 32 px process emphasis.
@@ -257,7 +308,7 @@ Show a compact trip/refinement summary and `Change trip` where the Finder is act
 - Standalone meaningful icons need a text alternative; icon buttons need an accessible name and relevant expanded/pressed state.
 - Do not use emoji as structural icons.
 
-## 16. Vehicle imagery
+## Vehicle photography
 
 - Vehicle photography is functional product information and the main expressive material.
 - Show the whole or meaningfully cropped vehicle with consistent scale and angle across comparable cards.
@@ -268,7 +319,7 @@ Show a compact trip/refinement summary and `Change trip` where the Finder is act
 - Alt text names the vehicle when the image conveys its identity; purely repeated decorative imagery uses empty alt text.
 - Do not use identifiable city landmarks, skyline treatments, unrelated luxury cars, advertising-style speed effects, or inconsistent stock-photo worlds.
 
-## 17. Vehicle browsing cards
+## Vehicle cards
 
 Desktop scan order:
 
@@ -284,7 +335,16 @@ Use a three-column desktop, two-column tablet, and one-column mobile grid. Keep 
 
 Unknown rate, branch, image, transmission, or fuel must have a truthful designed fallback; do not invent values. `Available` language is forbidden in ordinary browse results unless current canonical period/readiness evaluation proves it.
 
-## 18. Recommendation/match reasons
+## Finder/refinement controls
+
+- Passengers, maximum total base-rental budget, and vehicle preference are optional refinement after initial Home discovery, even though passengers and budget are required when the canonical recommendation endpoint is actually invoked.
+- Opening `Narrow your results` reveals one coherent labelled group; closing it preserves applied criteria and the visible summary.
+- `Change trip` edits dates and any active refinement without silently clearing unrelated values.
+- Category shortcuts and filters must expose selected state with text/semantics, remain keyboard operable, and stay URL-addressable where feasible.
+- Direct browsing remains possible without submitting Finder criteria. Finder evaluation never silently relaxes hard dates, capacity, budget, readiness, or availability constraints.
+- A result generated from Finder criteria is not a reservation; stale selections must be revalidated by the canonical booking flow.
+
+## Recommendation explanations
 
 The customer-facing system names the outcome, not the mechanism:
 
@@ -305,7 +365,7 @@ The UI may render a subset for scanability, but must not rewrite a reason into a
 
 Never show a match percentage, AI endorsement, unexplained `best match`, or availability outside a current evaluation. State that results are not a reservation where selection/booking context could otherwise imply a hold.
 
-## 19. Lifecycle component
+## Customer macro lifecycle
 
 Customer lifecycle order is fixed:
 
@@ -319,7 +379,7 @@ Customer lifecycle order is fixed:
 - Lifecycle is informative, not clickable navigation unless a route is actually available.
 - On narrow screens, show the current stage, adjacent context, and an accessible full-list disclosure; never create horizontal page overflow.
 
-## 20. Task-level wizard/progress
+## Task-level progress/wizards
 
 Requirements task order is fixed:
 
@@ -329,7 +389,7 @@ Keep it visually and semantically separate from the overall rental lifecycle. Sh
 
 Desktop may show all four stages on one line. Mobile uses a compact current-step summary plus a disclosure/list; labels must not shrink below legibility or clip.
 
-## 21. Status treatment
+## Status presentation
 
 Status is a compact label with:
 
@@ -342,7 +402,15 @@ Status must never be a decorative pill collection. Use sentence case. Do not map
 
 Booking, requirements, payment, rental, maintenance, and advisory states keep their own canonical vocabulary and transitions.
 
-## 22. Requirements/upload patterns
+Use these presentation behaviors consistently:
+
+- **Action required:** warning/attention treatment, explicit required action, and a primary or clearly placed next action.
+- **Waiting / no action needed:** information or neutral treatment, who/what is being awaited, and no false CTA.
+- **Locked:** lock icon plus `Locked` and the prerequisite that must complete first; never make a locked stage appear clickable.
+- **Completed:** success icon plus completed wording and completion evidence when useful; completion is not confirmation of a later stage.
+- **Error:** error icon, specific failure, retained customer input where safe, and a recovery action.
+
+## Requirements/upload UI
 
 Exactly two canonical customer requirements are represented in the current contract:
 
@@ -355,7 +423,7 @@ Use dashed boundaries only for the functional file target. Support keyboard file
 
 Customer can upload/submit/resubmit their own requirements. Owner/Admin review authority must not leak into this customer pattern.
 
-## 23. Customer request summary
+## Booking/trip summaries
 
 Use one restrained summary surface containing:
 
@@ -370,7 +438,30 @@ Facts are aligned in one scan path with quiet dividers. Location appears as a la
 
 Do not place an internal-looking reference ID in the primary summary hierarchy. If canonically useful to the customer, keep it inside low-priority details or support context.
 
-## 24. Loading states
+## Reference-ID treatment
+
+- A reference such as `CR-2026-104` is never part of the page title, breadcrumb, lifecycle, current-stage label, upload task, or primary summary facts.
+- If support or lookup requires a canonical reference, place it under collapsed/secondary `Booking details` or beside support instructions after the human-readable trip facts.
+- Label it `Reference` and allow copy without requiring memorization. Use tabular numerals and prevent awkward character wrapping.
+- Never use the identifier as the customer-facing name of the rental request.
+
+## Forms
+
+- Group fields by the customer decision they support, not by database shape. Use one clear form title and concise instruction.
+- Keep persistent labels, optional markers only where helpful, field-level guidance, correct input types/modes, and meaningful names/autocomplete.
+- Validate on blur where useful and on submit authoritatively. For multiple failures, show a focusable linked error summary and retain inline errors.
+- Keep submit enabled until a request begins, prevent accidental duplicate submission during progress, and warn before navigation when unsaved work would be lost.
+- Never block paste, rely on placeholder-only labels, or clear valid values because another field failed.
+
+## Feedback
+
+- Put feedback next to the action or state it describes. Use concise active language and state the next step.
+- Async status uses one restrained `aria-live="polite"` region; urgent blocking failures may use an alert pattern.
+- Toasts may confirm global, non-critical outcomes but never replace inline form errors, upload status, or lifecycle state.
+- Disable or show progress only after work starts. Do not shift layout when labels change to loading text.
+- Action and response vocabulary must match: `Send for verification` leads to `Sent for verification`, not `Booking confirmed`.
+
+## Loading/skeletons
 
 - Preserve layout geometry with restrained skeletons for cards/images and reserved media ratios.
 - Search submit changes to `Finding cars…` only after the request begins and exposes polite status text.
@@ -379,7 +470,7 @@ Do not place an internal-looking reference ID in the primary summary hierarchy. 
 - Do not announce every skeleton; one contextual live status is enough.
 - Respect reduced motion; static placeholders are sufficient.
 
-## 25. Empty states
+## Empty states
 
 Differentiate:
 
@@ -390,7 +481,7 @@ Differentiate:
 
 Never show a blank grid or a mood-only illustration. Do not silently broaden dates, capacity, budget, or availability constraints.
 
-## 26. Error states
+## Error states
 
 - Field errors appear inline and say how to fix the value.
 - Multi-error submissions add a focusable error summary linked to invalid fields, while retaining inline errors.
@@ -401,7 +492,7 @@ Never show a blank grid or a mood-only illustration. Do not silently broaden dat
 
 Errors do not apologize vaguely, blame the user, or expose internal diagnostics.
 
-## 27. Success states
+## Success states
 
 - Confirm the completed action in context with success icon and words.
 - After Finder evaluation, move or announce focus to the results heading without unexpected scroll trapping.
@@ -410,7 +501,7 @@ Errors do not apologize vaguely, blame the user, or expose internal diagnostics.
 - After payment proof submission, say it is awaiting manual verification; do not imply automatic confirmation.
 - Preserve the next valid action or waiting expectation.
 
-## 28. Responsive rules
+## Responsive behavior
 
 Validate at 375, 768, 1024, and 1440 px plus 200% zoom.
 
@@ -435,7 +526,7 @@ Validate at 375, 768, 1024, and 1440 px plus 200% zoom.
 - Lifecycle and task progress recompose rather than horizontally scrolling the page.
 - Fixed/sticky actions reserve safe-area and content inset; keyboard focus stays visible.
 
-## 29. Accessibility rules
+## Accessibility
 
 - Meet WCAG AA: 4.5:1 normal text, 3:1 large text and meaningful non-text UI boundaries.
 - Use semantic HTML before ARIA; headings remain hierarchical and the page includes a skip link.
@@ -450,7 +541,7 @@ Validate at 375, 768, 1024, and 1440 px plus 200% zoom.
 - Do not disable zoom, block paste, force drag/swipe, or require hover.
 - Native dates, currency, and numbers use locale-aware formatting such as `Intl.DateTimeFormat` and `Intl.NumberFormat`.
 
-## 30. Motion rules
+## Motion
 
 - Motion responds to a user action or clarifies a state change.
 - Fast feedback: 140–180 ms; standard disclosure: 200–240 ms; large overlay: up to 320 ms.
@@ -460,7 +551,20 @@ Validate at 375, 768, 1024, and 1440 px plus 200% zoom.
 - Under `prefers-reduced-motion: reduce`, remove nonessential transitions and render final states immediately.
 - Button press/hover must not shift surrounding layout.
 
-## 31. Location-neutral presentation rules
+## Customer density
+
+- Home is airy but keeps the complete search task and its CTA visible on a small laptop.
+- Find a Car is scan-efficient: one vehicle card is one unit, facts stay in a consistent order, and filters do not create nested panels.
+- Requirements is task-focused: current instruction and upload actions dominate; lifecycle and trip context remain compact.
+- Use the 8 px rhythm, 16 px body floor, 44 px target floor, and 60–75 character text measure. Do not equate premium with empty space that pushes the action below the fold.
+
+## Admin density
+
+Admin implementation is outside this freeze. It must later inherit only the shared Direction E brand principles recorded now: Evergreen/Road Ink/Rice Paper color roles, Instrument Sans UI typography, the spacing and focus systems, semantic status colors with text/icon companions, restrained borders/elevation, location-as-data treatment, honest system copy, and the same accessibility floor.
+
+Admin may be denser than customer UI and should prioritize tables, filters, queues, and operational comparison. It must not inherit Home-scale serif headings, cinematic hero photography, editorial vehicle rows, marketing whitespace, or customer journey ornament. No Admin layout redesign is authorized by this document.
+
+## Location-neutral presentation
 
 Do:
 
@@ -480,21 +584,35 @@ Do not:
 - select a photographic landmark that visually locks the shell to one branch/city;
 - turn the presentation rule into multi-tenancy, white-label infrastructure, or a theme-management feature.
 
-## 32. Anti-patterns / forbidden drift
+## Progressive-disclosure rules
+
+- Home requests only rental start and rental end before showing cars.
+- Finder-specific passengers, maximum total base-rental budget, and vehicle preference appear in results/refinement and become required only when the customer asks for evaluated recommendations.
+- Destination is optional handoff data and must not be presented as affecting Finder ranking.
+- Requirements reveals preparation, upload, review, and submission in that order; it does not expose payment action while verification is incomplete.
+- Advanced details, support reference, full recommendation rationale, and secondary trip facts may sit behind clearly labelled disclosures.
+- Never hide essential eligibility, price, state, error recovery, or the next required customer action.
+
+## Anti-patterns / forbidden drift
 
 The following are explicitly forbidden:
 
-- city-specific permanent artwork;
-- city-specific decorative slogans;
+- permanent city-specific artwork;
+- permanent city/location slogans;
 - generic SaaS card proliferation;
-- arbitrary gradient CTAs;
+- excessive blue/green everywhere across surfaces, controls, and statuses;
+- arbitrary gradients, including gradient CTAs;
 - unsupported recommendation percentages;
 - unsupported availability claims;
-- Smart/AI terminology in customer-facing UI;
+- AI/smart terminology in customer UI;
 - fake ratings;
 - fake urgency, scarcity, countdowns, or discounts;
 - repetitive bordered containers;
+- excessive bordered containers where spacing, alignment, or a divider would suffice;
 - oversized decorative headings on task screens;
+- serif typography on routine dense operational UI;
+- turning every vehicle result into a large editorial row instead of preserving the approved marketplace grid;
+- returning to the old frontend visual structure;
 - cards nested inside cards or giant rounded wrappers around sections;
 - black/gold luxury clichés, glassmorphism, glow, or decorative gradients;
 - favorites unless the capability is implemented;
@@ -503,6 +621,7 @@ The following are explicitly forbidden:
 - silent relaxation of dates, capacity, budget, readiness, or availability;
 - payment-before-verification, automatic approval, instant confirmation, or automatic payment-verification language;
 - `Booking completed` or `Booking confirmed` before the canonical confirmation stage;
+- calling `Request submitted` a confirmed booking;
 - prominent internal/reference IDs on primary customer task screens;
 - a detached `Browse all cars` link beneath the Home hero CTA;
 - emoji controls, unlabeled icon buttons, placeholder-only fields, hidden focus rings, or color-only state;

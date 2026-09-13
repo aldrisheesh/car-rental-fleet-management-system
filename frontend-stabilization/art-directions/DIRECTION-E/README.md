@@ -1,6 +1,6 @@
 # Direction E — Premium Familiar Mobility
 
-Direction E is the proposed freeze candidate for Briah's Car Rental's customer-facing visual system. It combines premium restraint, meaningful vehicle photography, familiar marketplace browsing, and guided task flows inside a location-neutral rental-product shell.
+Direction E is frozen for customer implementation as Briah's Car Rental's customer-facing visual system. It combines premium restraint, meaningful vehicle photography, familiar marketplace browsing, and guided task flows inside a location-neutral rental-product shell.
 
 This folder contains exactly three final desktop references:
 
@@ -38,7 +38,7 @@ Operator identity may be replaced at the presentation level without redesigning 
 
 ### Home
 
-Home foregrounds the working task `Find the right car for your trip`. Its first interaction asks only for rental start and rental end, then uses one dominant `Find cars` action. Passenger count, maximum total base-rental budget, and vehicle preference remain available as optional refinement on Find a Car/results. Quiet helper copy makes that capability discoverable without turning the hero into a questionnaire.
+Home foregrounds the working task `Find the right car for your trip`. Its first interaction asks only for rental start and rental end, then uses one dominant `Find cars` action. Passenger count, maximum total base-rental budget, and vehicle preference remain available as optional refinement on Find a Car/results. Quiet helper copy is integrated into the compact search surface, making that capability discoverable without becoming a detached line, a second CTA, or a questionnaire.
 
 Pickup area is intentionally absent because it is not a canonical Finder criterion. Optional destination is also omitted because it is captured by the backend but does not affect baseline eligibility or ranking. Direct browsing remains available through the header's `Find a Car` navigation item; no detached browse link competes beneath the hero CTA.
 
@@ -76,9 +76,9 @@ Do not:
 
 ## Image-first production
 
-Each screen was generated and inspected as a standalone high-fidelity raster reference. In this final refinement, Home and Requirements were regenerated from their approved Direction E references, inspected at original resolution, and normalized to exactly 1440 × 960. Find a Car was deliberately not regenerated because its existing Filters and trip-criteria treatment already demonstrate the optional refinement model. No mobile or Admin artifact was generated.
+Each screen was generated and inspected as a standalone high-fidelity raster reference. In the final visual-freeze pass, Home alone was regenerated from its approved Direction E reference to integrate the optional-refinement hint, inspected at original resolution, and normalized to exactly 1440 × 960. Requirements and Find a Car were deliberately retained because they already satisfy the frozen task/lifecycle and optional-refinement models. No mobile or Admin artifact was generated.
 
-See `../../DIRECTION-E-FINAL-REFINEMENTS.md` for the Lead-approved correction record and `../../DIRECTION-E-DESIGN-SYSTEM.md` for the proposed implementation contract.
+See `../../DIRECTION-E-FINAL-REFINEMENTS.md` for the Lead-approved correction record, `../../DIRECTION-E-DESIGN-SYSTEM.md` for the authoritative implementation contract, and `../../DIRECTION-E-VISUAL-FREEZE.md` for the freeze record.
 
 ## Implementation boundary
 
