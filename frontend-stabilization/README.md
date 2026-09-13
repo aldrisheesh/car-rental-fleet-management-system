@@ -1,9 +1,17 @@
 # Frontend Stabilization Specification
 
-**Status:** Draft baseline for Lead review  
+**Status:** Direction E customer visual freeze candidate; product/UX blueprint remains frozen
 **Governance:** GitHub Issue #63 — Frontend Stabilization Rewrite — First-Time Renter Guided Experience  
 **Working branch:** `stabilization/frontend-rebuild`  
 **Phase:** Final System Validation -> Stabilization -> Mock Defense Readiness
+
+## Current customer visual freeze candidate
+
+- Final review: `DIRECTION-E-FINAL-REVIEW.md`
+- Proposed visual implementation contract: `DIRECTION-E-DESIGN-SYSTEM.md`
+- Final Home, Find a Car, and Requirements references: `art-directions/DIRECTION-E/`
+
+Direction E uses Briah's Car Rental as the current operator identity inside a reusable, location-neutral product shell. Branch and location names may appear as operational data, never as permanent decorative identity.
 
 ## Purpose
 
