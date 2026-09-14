@@ -522,6 +522,7 @@ function RentalRequestPage() {
               ) : (
                 <ReviewPanel
                   draft={draft}
+                  branches={masterData?.branches ?? []}
                   handoff={handoff}
                   principal={principal}
                   submitError={submitError}
@@ -866,6 +867,7 @@ function DetailsForm({
 
 function ReviewPanel({
   draft,
+  branches,
   handoff,
   principal,
   submitError,
@@ -874,6 +876,7 @@ function ReviewPanel({
   onSend,
 }: {
   draft: BookingDraft;
+  branches: BookingMasterData["branches"];
   handoff: ReturnType<typeof parseFinderBookingHandoff>;
   principal: ReturnType<typeof getClientPrincipal>;
   submitError: string;
@@ -881,6 +884,29 @@ function ReviewPanel({
   onEdit: () => void;
   onSend: () => void;
 }) {
+  const pickupBranchName =
+    branches.find((branch) => branch.id === draft.pickupBranchId)?.name ??
+    "Branch not recorded";
+  const returnBranchName =
+    branches.find((branch) => branch.id === draft.returnBranchId)?.name ??
+    "Branch not recorded";
+  const handoffDetails = [
+    `Pickup branch · ${pickupBranchName}`,
+    `Return branch · ${returnBranchName}`,
+    `Service · ${
+      draft.pickupDeliveryOption === "delivery"
+        ? "Delivery"
+        : "Pickup at branch"
+    }`,
+    ...(draft.pickupDeliveryOption === "delivery"
+      ? [
+          `Pickup address · ${draft.pickupLocation}`,
+          `Drop-off address · ${draft.dropoffLocation}`,
+        ]
+      : []),
+    ...(draft.destination ? [`Destination · ${draft.destination}`] : []),
+  ].join("\n");
+
   return (
     <section className="request-form" aria-labelledby="review-title">
       <h2 id="review-title" className="sr-only">
@@ -906,12 +932,7 @@ function ReviewPanel({
               Edit
             </button>
           </div>
-          <p>
-            {draft.pickupDeliveryOption === "delivery"
-              ? `Delivery · ${draft.pickupLocation} → ${draft.dropoffLocation}`
-              : "Pickup at branch"}
-            {draft.destination ? `\nDestination · ${draft.destination}` : ""}
-          </p>
+          <p>{handoffDetails}</p>
         </div>
         <div className="review-group">
           <div className="review-group-heading">

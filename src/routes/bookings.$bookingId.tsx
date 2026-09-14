@@ -46,6 +46,12 @@ const ACCEPTED_FILE_TYPES = new Set([
   "image/png",
   "application/pdf",
 ]);
+const REQUIREMENTS_TASKS = [
+  "Before you start",
+  "Upload documents",
+  "Review",
+  "Send for verification",
+] as const;
 
 function RequirementsPage() {
   const { bookingId } = Route.useParams();
@@ -274,30 +280,20 @@ function RequirementsPage() {
                 className="requirements-task-progress"
                 aria-label="Requirements task progress"
               >
-                <span>Task progress</span>
-                <ol>
-                  {[
-                    "Before you start",
-                    "Upload documents",
-                    "Review",
-                    "Send for verification",
-                  ].map((label, index) => {
-                    const number = index + 1;
-                    const complete = number < taskStep;
-                    const current = number === taskStep;
-                    return (
-                      <li
-                        className={`${complete ? "is-complete" : ""} ${current ? "is-current" : ""}`}
-                        key={label}
-                      >
-                        <span className="task-marker" aria-hidden="true">
-                          {complete ? <CheckCircle2 size={13} /> : number}
-                        </span>
-                        <span>{label}</span>
-                      </li>
-                    );
-                  })}
-                </ol>
+                <span className="requirements-task-progress-title">
+                  Task progress
+                </span>
+                <RequirementsTaskList
+                  className="requirements-task-progress-desktop-list"
+                  taskStep={taskStep}
+                />
+                <details className="requirements-task-progress-mobile">
+                  <summary aria-current="step">
+                    <span>Step {taskStep} of 4</span>
+                    <strong>{REQUIREMENTS_TASKS[taskStep - 1]}</strong>
+                  </summary>
+                  <RequirementsTaskList taskStep={taskStep} />
+                </details>
               </div>
 
               <div className="requirements-layout">
@@ -629,6 +625,36 @@ function RequirementsPage() {
       </main>
       <Footer />
     </CustomerPage>
+  );
+}
+
+function RequirementsTaskList({
+  taskStep,
+  className = "",
+}: {
+  taskStep: number;
+  className?: string;
+}) {
+  return (
+    <ol className={`requirements-task-list ${className}`.trim()}>
+      {REQUIREMENTS_TASKS.map((label, index) => {
+        const number = index + 1;
+        const complete = number < taskStep;
+        const current = number === taskStep;
+        return (
+          <li
+            className={`${complete ? "is-complete" : ""} ${current ? "is-current" : ""}`}
+            key={label}
+            aria-current={current ? "step" : undefined}
+          >
+            <span className="task-marker" aria-hidden="true">
+              {complete ? <CheckCircle2 size={13} /> : number}
+            </span>
+            <span>{label}</span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 

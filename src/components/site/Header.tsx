@@ -60,11 +60,15 @@ export function Header() {
 
   const isCustomer = principal?.role === "Customer/Renter";
   const isAdmin = principal?.role === "Owner/Admin";
+  const isStaff = principal?.role === "Operations Staff";
+  const isAdminWorkspace = isAdmin || isStaff;
   const accountLabel = isCustomer
     ? principal.fullName
     : isAdmin
       ? "Admin"
-      : "Sign in";
+      : isStaff
+        ? "Operations Staff"
+        : "Sign in";
 
   return (
     <>
@@ -95,7 +99,7 @@ export function Header() {
             {principal ? (
               <>
                 <Link
-                  to={isAdmin ? "/admin" : "/customer"}
+                  to={isAdminWorkspace ? "/admin" : "/customer"}
                   className="customer-account-link"
                 >
                   <UserRound size={24} strokeWidth={1.7} aria-hidden="true" />
@@ -171,7 +175,7 @@ export function Header() {
                       Edit profile
                     </Link>
                   ) : null}
-                  {isAdmin ? (
+                  {isAdminWorkspace ? (
                     <Link
                       to="/admin"
                       className="customer-mobile-link"
