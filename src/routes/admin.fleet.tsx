@@ -23,7 +23,12 @@ import {
 } from "@/lib/admin-fleet";
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 import { createMaintenancePayload } from "@/lib/maintenance-admin";
-import { saveMasterData } from "@/lib/master-data-client";
+import {
+  buildVehicleBranchUpdateInput,
+  fetchMasterData,
+  saveMasterData,
+  type ApiMasterVehicle,
+} from "@/lib/master-data-client";
 import {
   Dialog,
   DialogContent,
@@ -235,29 +240,22 @@ function FleetPage() {
 
   async function changeBranch(vehicle: FleetVehicleRow, branchId: string) {
     if (!branchId || branchId === vehicle.branchId) return;
-    if (!vehicle.categoryId) {
-      setMutationError(
-        "This vehicle has no canonical category, so its branch assignment cannot be changed safely.",
-      );
-      return;
-    }
     setBranchSavingId(vehicle.id);
     setMutationError("");
     setMutationFeedback("");
     try {
+      const canonicalVehicle = (
+        await fetchMasterData<ApiMasterVehicle>("vehicles")
+      ).find((candidate) => candidate.id === vehicle.id);
+      if (!canonicalVehicle) {
+        throw new Error(
+          "The selected vehicle is no longer available in canonical data. Reload the fleet before changing its branch.",
+        );
+      }
       await saveMasterData({
         resource: "vehicles",
         id: vehicle.id,
-        input: {
-          name: vehicle.name,
-          branchId,
-          categoryId: vehicle.categoryId,
-          licensePlate: vehicle.plate,
-          transmission: vehicle.transmission,
-          seatCapacity: vehicle.seats,
-          dailyRate: vehicle.pricePerDay,
-          isActive: vehicle.isActive,
-        },
+        input: buildVehicleBranchUpdateInput(canonicalVehicle, branchId),
       });
       setMutationFeedback(`${vehicle.name} branch assignment updated.`);
       await loadFleet();
