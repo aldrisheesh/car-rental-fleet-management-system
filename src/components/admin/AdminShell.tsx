@@ -112,7 +112,7 @@ function SidebarLinks({
               activeOptions={item.exact ? { exact: true } : undefined}
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
-              className={`group flex min-h-11 items-center gap-3 rounded-md border border-transparent px-3 text-sm font-medium transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground focus-visible:outline-none ${active ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
+              className={`group flex min-h-11 items-center gap-3 rounded-md border border-transparent px-3 text-sm font-medium transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
             >
               <Icon
                 aria-hidden="true"
@@ -258,10 +258,7 @@ export function AdminShell() {
       </a>
 
       <aside className="sticky top-0 hidden h-screen w-[236px] shrink-0 flex-col border-r border-border bg-white lg:flex">
-        <Link
-          to="/admin"
-          className="border-b border-border px-7 py-6 focus-visible:outline-none"
-        >
+        <Link to="/admin" className="border-b border-border px-7 py-6">
           <div className="text-[1.65rem] font-semibold leading-7 tracking-[-0.045em] text-primary">
             Briah&apos;s Car Rental
           </div>

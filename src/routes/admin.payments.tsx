@@ -294,7 +294,7 @@ function PaymentRow({ payment }: { payment: AdminPayment }) {
 function PaymentDisclosure({ payment }: { payment: AdminPayment }) {
   return (
     <details className="rounded-lg border border-border bg-card">
-      <summary className="cursor-pointer list-none px-4 py-4 focus-visible:outline-none">
+      <summary className="cursor-pointer list-none px-4 py-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="truncate font-semibold">

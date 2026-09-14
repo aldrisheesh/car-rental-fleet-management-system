@@ -160,7 +160,7 @@ function RequirementsQueuePage() {
                 to={
                   `/admin/requirements/${encodeURIComponent(set.booking_id)}` as never
                 }
-                className="group grid gap-3 px-5 py-4 transition-colors hover:bg-secondary/35 focus-visible:outline-none md:grid-cols-[minmax(0,1fr)_minmax(160px,0.65fr)_auto] md:items-center"
+                className="group grid gap-3 px-5 py-4 transition-colors hover:bg-secondary/35 md:grid-cols-[minmax(0,1fr)_minmax(160px,0.65fr)_auto] md:items-center"
               >
                 <div className="min-w-0">
                   <p className="truncate font-semibold">
