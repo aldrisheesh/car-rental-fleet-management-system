@@ -6,24 +6,25 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
-  CalendarRange,
-  Users,
-  Car,
-  CreditCard,
-  Wrench,
-  CalendarDays,
   BarChart3,
+  Bell,
   Brain,
   Building2,
-  Bell,
-  ShieldCheck,
-  Search,
-  MoreHorizontal,
+  CalendarDays,
+  CalendarRange,
+  Car,
+  ChevronDown,
+  CreditCard,
+  FileText,
+  LayoutDashboard,
   LogOut,
-  UserRound,
+  Menu,
   ScrollText,
+  ShieldCheck,
+  Wrench,
+  X,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,10 +35,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   ADMIN_SESSION_CHANGED_EVENT,
-  canAccessPayments,
   getAdminSession,
   isStaffRole,
   signOutAdmin,
+  type AdminRole,
+  type AdminSession,
 } from "@/lib/admin-auth";
 import { clearCustomerSession } from "@/lib/customer-auth";
 import {
@@ -48,101 +50,100 @@ import {
 type NavItem = {
   to: string;
   label: string;
-  icon: typeof LayoutDashboard;
+  icon: LucideIcon;
   exact?: boolean;
 };
-const navStaffModules: NavItem[] = [
+
+const ownerNav: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
-  { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
-  { to: "/admin/notifications", label: "Notifications", icon: Bell },
-  { to: "/admin/reports", label: "Reports & Analytics", icon: BarChart3 },
-];
-
-const navCoreOperations: NavItem[] = [
-  { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
-  { to: "/admin/customers", label: "Customers", icon: Users },
-  { to: "/admin/payments", label: "Payments", icon: CreditCard },
-  { to: "/admin/fleet", label: "Fleet Management", icon: Car },
+  { to: "/admin/requirements", label: "Requirements", icon: FileText },
+  { to: "/admin/fleet", label: "Fleet", icon: Car },
   { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/admin/maintenance", label: "Maintenance", icon: Wrench },
-  { to: "/admin/notifications", label: "Notifications", icon: Bell },
-];
-
-const navDecisionSupport: NavItem[] = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/reports", label: "Reports & Analytics", icon: BarChart3 },
+  { to: "/admin/payments", label: "Payments", icon: CreditCard },
   { to: "/admin/decisions", label: "Decision Support", icon: Brain },
-];
-
-const navAdminOnly: NavItem[] = [
-  { to: "/admin/activity", label: "Audit Trail", icon: ScrollText },
+  { to: "/admin/reports", label: "Reports", icon: BarChart3 },
   { to: "/admin/users", label: "Users & Roles", icon: ShieldCheck },
   { to: "/admin/branches", label: "Branches", icon: Building2 },
+  { to: "/admin/activity", label: "Audit Trail", icon: ScrollText },
+];
+
+const staffNav: NavItem[] = [
+  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
+  { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+  { to: "/admin/notifications", label: "Notifications", icon: Bell },
+  { to: "/admin/reports", label: "Reports", icon: BarChart3 },
 ];
 
 function isActive(pathname: string, item: NavItem) {
   return item.exact ? pathname === item.to : pathname.startsWith(item.to);
 }
 
-function SidebarSection({ title, items }: { title: string; items: NavItem[] }) {
+function getInitials(name: string) {
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+  return initials || "A";
+}
+
+function SidebarLinks({
+  items,
+  pathname,
+  onNavigate,
+}: {
+  items: NavItem[];
+  pathname: string;
+  onNavigate?: () => void;
+}) {
   return (
-    <div>
-      {title ? (
-        <div className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          {title}
-        </div>
-      ) : null}
-      <ul className="space-y-0.5">
-        {items.map((n) => (
-          <li key={n.to}>
+    <ul className="space-y-1">
+      {items.map((item) => {
+        const active = isActive(pathname, item);
+        const Icon = item.icon;
+        return (
+          <li key={item.to}>
             <Link
-              to={n.to as never}
-              activeOptions={n.exact ? { exact: true } : undefined}
-              className="group flex items-center gap-3 rounded-md border border-transparent border-l-2 border-l-transparent px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-card/60 hover:text-foreground"
-              activeProps={{
-                className: "text-foreground border-l-primary bg-transparent",
-              }}
+              to={item.to as never}
+              activeOptions={item.exact ? { exact: true } : undefined}
+              onClick={onNavigate}
+              aria-current={active ? "page" : undefined}
+              className={`group flex min-h-11 items-center gap-3 rounded-md border border-transparent px-3 text-sm font-medium transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground focus-visible:outline-none ${active ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
             >
-              <n.icon className="h-4 w-4 shrink-0 opacity-80" />
-              <span className="truncate">{n.label}</span>
+              <Icon
+                aria-hidden="true"
+                className={`h-5 w-5 shrink-0 ${active ? "text-primary" : "text-[#19385e]"}`}
+                strokeWidth={1.9}
+              />
+              <span className="min-w-0 truncate">{item.label}</span>
             </Link>
           </li>
-        ))}
-      </ul>
-    </div>
+        );
+      })}
+    </ul>
   );
 }
 
 export function AdminShell() {
   const navigate = useNavigate();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const [session, setSession] = useState<
-    ReturnType<typeof getAdminSession> | undefined
-  >();
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  const [session, setSession] = useState<AdminSession | null | undefined>();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
-  const role = session?.role;
+  const role = session?.role as AdminRole | undefined;
   const staffView = isStaffRole(role);
-  const canViewPayments = canAccessPayments(role);
-  const coreOperations = canViewPayments
-    ? navCoreOperations
-    : navCoreOperations.filter((item) => item.to !== "/admin/payments");
-  const navAdmin = staffView ? [] : navAdminOnly;
-  const navAll: NavItem[] = staffView
-    ? navStaffModules
-    : [...navDecisionSupport, ...coreOperations, ...navAdmin];
-  const current = navAll.find((n) => isActive(pathname, n));
-  const currentLabel = pathname.startsWith("/admin/profile")
-    ? "Edit Profile"
-    : (current?.label ?? "Dashboard");
-  const userInitials = getInitials(session?.name ?? "");
-  const mobileNavItems = staffView
-    ? navStaffModules
-    : [...navDecisionSupport, ...coreOperations];
+  const navItems = staffView ? staffNav : ownerNav;
 
   useEffect(() => {
     const activeSession = getAdminSession();
     if (!activeSession) {
+      setSession(null);
       void navigate({ to: "/sign-in", replace: true });
       return;
     }
@@ -153,7 +154,6 @@ export function AdminShell() {
     function syncSession() {
       setSession(getAdminSession());
     }
-
     window.addEventListener(ADMIN_SESSION_CHANGED_EVENT, syncSession);
     window.addEventListener("storage", syncSession);
     return () => {
@@ -164,13 +164,39 @@ export function AdminShell() {
 
   useEffect(() => {
     if (!session) return;
-    if (
-      !canAccessPayments(session.role) &&
-      pathname.startsWith("/admin/payments")
-    ) {
+    const staffPrefixes = [
+      "/admin/bookings",
+      "/admin/calendar",
+      "/admin/notifications",
+      "/admin/reports",
+    ];
+    const unsupportedSharedPaths = [
+      "/admin/customers",
+      "/admin/profile",
+      "/admin/settings",
+    ];
+    const staffCanStay =
+      pathname === "/admin" ||
+      staffPrefixes.some(
+        (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+      );
+    const unsupported = unsupportedSharedPaths.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    );
+    if ((staffView && !staffCanStay) || unsupported) {
       void navigate({ to: "/admin", replace: true });
+      return;
     }
-  }, [navigate, pathname, session]);
+    setMobileNavOpen(false);
+  }, [navigate, pathname, session, staffView]);
+
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setMobileNavOpen(false);
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, []);
 
   useEffect(() => {
     if (!session) {
@@ -186,8 +212,9 @@ export function AdminShell() {
         const body = (await response
           .json()
           .catch(() => null)) as NotificationsResponse | null;
-        if (!cancelled && response.ok && body)
+        if (!cancelled && response.ok && body) {
           setNotificationUnreadCount(body.unreadCount);
+        }
       } catch {
         if (!cancelled) setNotificationUnreadCount(0);
       }
@@ -198,29 +225,7 @@ export function AdminShell() {
       cancelled = true;
       window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, loadUnreadCount);
     };
-  }, [session, pathname]);
-
-  useEffect(() => {
-    if (!session) return;
-    if (!isStaffRole(session.role)) return;
-
-    const allowedPrefixes = [
-      "/admin/bookings",
-      "/admin/calendar",
-      "/admin/notifications",
-      "/admin/reports",
-      "/admin/profile",
-    ];
-
-    if (
-      pathname !== "/admin" &&
-      !allowedPrefixes.some(
-        (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-      )
-    ) {
-      void navigate({ to: "/admin/bookings", replace: true });
-    }
-  }, [navigate, pathname, session]);
+  }, [pathname, session]);
 
   function handleSignOut() {
     signOutAdmin();
@@ -229,81 +234,59 @@ export function AdminShell() {
     void navigate({ to: "/", replace: true });
   }
 
-  if (session == null) {
+  if (session === undefined) {
     return (
-      <div className="grid min-h-screen place-items-center bg-background px-6 text-center text-foreground">
+      <div className="admin-app grid min-h-screen place-items-center px-6 text-center">
         <div>
-          <div className="font-display text-lg font-semibold tracking-tight">
+          <div className="text-lg font-semibold tracking-tight">
             Briah&apos;s Car Rental
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Checking admin session...
+          <p className="mt-3 text-sm text-muted-foreground">
+            Checking admin session…
           </p>
         </div>
       </div>
     );
   }
 
-  function getInitials(name: string) {
-    const initials = name
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join("");
-
-    return initials || "A";
-  }
+  if (!session) return null;
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      {/* Sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-surface/80 backdrop-blur lg:flex">
+    <div className="admin-app flex min-h-screen overflow-x-hidden">
+      <a className="skip-link" href="#admin-main">
+        Skip to main content
+      </a>
+
+      <aside className="sticky top-0 hidden h-screen w-[236px] shrink-0 flex-col border-r border-border bg-white lg:flex">
         <Link
-          to="/"
-          className="flex h-16 items-center gap-3 border-b border-border px-5"
+          to="/admin"
+          className="border-b border-border px-7 py-6 focus-visible:outline-none"
         >
-          <div className="leading-tight">
-            <div className="font-display text-sm font-semibold tracking-tight">
-              Briah&apos;s Car Rental
-            </div>
-            <div className="font-display text-sm font-semibold uppercase tracking-wider">
-              {isStaffRole(role) ? "Staff" : "Admin"}
-            </div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Operations
-            </div>
+          <div className="text-[1.65rem] font-semibold leading-7 tracking-[-0.045em] text-primary">
+            Briah&apos;s Car Rental
+          </div>
+          <div className="mt-1 text-base text-muted-foreground">
+            {staffView ? "Operations Staff" : "Admin Operations"}
           </div>
         </Link>
 
-        <nav className="no-scrollbar flex-1 overflow-y-auto px-3 py-5">
-          <div className="space-y-6">
-            {staffView ? (
-              <SidebarSection title="Modules" items={navStaffModules} />
-            ) : (
-              <>
-                <SidebarSection
-                  title="Decision Support"
-                  items={navDecisionSupport}
-                />
-                <SidebarSection
-                  title="Core Operations"
-                  items={coreOperations}
-                />
-                <SidebarSection title="" items={navAdmin} />
-              </>
-            )}
-          </div>
+        <nav
+          aria-label={staffView ? "Staff operations" : "Admin operations"}
+          className="admin-scroll-region flex-1 overflow-y-auto px-3 py-7"
+        >
+          <SidebarLinks items={navItems} pathname={pathname} />
         </nav>
 
-        <div className="border-t border-border p-4">
-          <div className="flex items-center gap-3 rounded-md bg-card px-3 py-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-primary/15 font-display text-xs font-semibold text-primary">
-              {userInitials}
+        <div className="border-t border-border px-4 py-4">
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-semibold text-white">
+              {getInitials(session.name)}
             </span>
-            <div className="leading-tight">
-              <div className="text-[13px] font-medium">{session.name}</div>
-              <div className="text-[11px] text-muted-foreground">
+            <div className="min-w-0 leading-5">
+              <div className="truncate text-sm font-semibold">
+                {session.name}
+              </div>
+              <div className="truncate text-xs text-muted-foreground">
                 {session.role}
               </div>
             </div>
@@ -311,138 +294,150 @@ export function AdminShell() {
         </div>
       </aside>
 
-      {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex min-h-16 items-center gap-4 border-b border-border bg-background/85 px-4 backdrop-blur md:px-8">
-          <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
-            <span>{isStaffRole(role) ? "Staff" : "Admin"}</span>
-            <span className="text-border">/</span>
-            <span className="truncate text-foreground">{currentLabel}</span>
-          </div>
-          <div className="ml-auto flex items-center gap-3">
-            <label className="hidden min-h-11 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm text-muted-foreground md:flex">
-              <Search className="h-4 w-4" />
-              <input
-                className="w-56 bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
-                placeholder="Search bookings, plates, customers"
-              />
-              <kbd className="rounded border border-border px-1.5 py-0.5 text-[10px]">
-                ⌘K
-              </kbd>
-            </label>
-            {!staffView && (
+        <header className="sticky top-0 z-30 border-b border-border bg-white">
+          <div className="flex min-h-[76px] items-center gap-4 px-5 md:px-8 xl:px-10">
+            <button
+              type="button"
+              className="touch-target inline-flex items-center gap-2 rounded-md border border-primary px-3 text-sm font-semibold text-primary lg:hidden"
+              aria-controls="admin-mobile-navigation"
+              aria-expanded={mobileNavOpen}
+              onClick={() => setMobileNavOpen((open) => !open)}
+            >
+              {mobileNavOpen ? (
+                <X aria-hidden="true" className="h-5 w-5" />
+              ) : (
+                <Menu aria-hidden="true" className="h-5 w-5" />
+              )}
+              <span>Menu</span>
+            </button>
+
+            <div className="flex min-w-0 items-center gap-3 lg:hidden">
+              <span className="hidden text-xl font-semibold tracking-[-0.04em] text-primary sm:inline">
+                Briah&apos;s Car Rental
+              </span>
+              <span className="truncate text-sm text-muted-foreground sm:border-l sm:border-border sm:pl-3">
+                {staffView ? "Operations Staff" : "Owner/Admin"}
+              </span>
+            </div>
+
+            <div className="hidden min-w-0 items-center gap-3 text-sm lg:flex">
               <Link
-                to={"/admin/notifications" as never}
-                aria-label={`Notifications${notificationUnreadCount ? `, ${notificationUnreadCount} unread` : ""}`}
-                className="touch-target relative grid place-items-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:text-foreground"
+                to="/admin"
+                className="text-muted-foreground hover:text-primary"
               >
-                <Bell className="h-4 w-4" />
-                {notificationUnreadCount > 0 && (
-                  <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                Home
+              </Link>
+              <span aria-hidden="true" className="text-border">
+                /
+              </span>
+              <span className="truncate font-medium text-foreground">
+                {currentLabel(pathname)}
+              </span>
+            </div>
+
+            <div className="ml-auto flex items-center gap-3">
+              <Link
+                to="/admin/notifications"
+                className="touch-target relative inline-flex items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+                aria-label={`Notifications${notificationUnreadCount ? `, ${notificationUnreadCount} unread` : ""}`}
+              >
+                <Bell aria-hidden="true" className="h-5 w-5" />
+                <span className="hidden md:inline">Notifications</span>
+                {notificationUnreadCount > 0 ? (
+                  <span className="absolute right-0 top-1 grid h-4 min-w-4 -translate-y-1/2 translate-x-1/2 place-items-center rounded-full bg-[#b43b3b] px-1 text-[10px] font-bold text-white">
                     {notificationUnreadCount > 99
                       ? "99+"
                       : notificationUnreadCount}
                   </span>
-                )}
+                ) : null}
               </Link>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  aria-label="Open user menu"
-                  className="touch-target grid place-items-center rounded-md border border-border bg-card px-2.5 text-sm transition-colors hover:bg-secondary"
-                >
-                  <span className="grid h-6 w-6 place-items-center rounded-full bg-primary/15 text-[10px] font-semibold text-primary">
-                    {userInitials}
-                  </span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="py-2">
-                  <div className="text-sm font-medium text-foreground">
-                    {session.name}
-                  </div>
-                  <div className="text-xs font-normal text-muted-foreground">
-                    {session.role}
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to={"/admin/profile" as never}>
-                    <UserRound className="h-4 w-4" />
-                    Edit Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={handleSignOut}
-                  className="text-rose-400 focus:text-rose-400"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
-
-        <nav className="border-b border-border bg-surface/80 px-4 py-3 lg:hidden">
-          <div
-            className="flex gap-2 overflow-x-auto pb-1"
-            aria-label="Admin sections"
-          >
-            {mobileNavItems.map((n) => (
-              <Link
-                key={n.to}
-                to={n.to as never}
-                activeOptions={n.exact ? { exact: true } : undefined}
-                className="touch-target inline-flex shrink-0 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                activeProps={{
-                  className: "border-primary/30 bg-primary/10 text-primary",
-                }}
-              >
-                <n.icon className="h-4 w-4 shrink-0" />
-                <span>{n.label}</span>
-              </Link>
-            ))}
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="touch-target inline-flex shrink-0 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  aria-label="More admin sections"
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                  <span>More</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  {isStaffRole(role) ? "Management" : "Admin"}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {navAdmin.map((n) => (
-                  <DropdownMenuItem key={n.to} asChild>
-                    <Link
-                      to={n.to as never}
-                      activeOptions={n.exact ? { exact: true } : undefined}
-                    >
-                      <n.icon className="h-4 w-4" />
-                      {n.label}
+              <span
+                aria-hidden="true"
+                className="hidden h-8 w-px bg-border md:block"
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="touch-target inline-flex items-center gap-2 rounded-md px-1.5 text-left hover:bg-secondary"
+                    aria-label="Open account menu"
+                  >
+                    <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-semibold text-white">
+                      {getInitials(session.name)}
+                    </span>
+                    <span className="hidden min-w-0 leading-5 md:block">
+                      <span className="block max-w-32 truncate text-sm font-semibold">
+                        {session.name}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {session.role}
+                      </span>
+                    </span>
+                    <ChevronDown
+                      aria-hidden="true"
+                      className="hidden h-4 w-4 text-primary md:block"
+                    />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-60">
+                  <DropdownMenuLabel>
+                    <span className="block text-sm font-semibold text-foreground">
+                      {session.name}
+                    </span>
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      {session.role}
+                    </span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/notifications">
+                      <Bell aria-hidden="true" className="h-4 w-4" />
+                      Notifications
                     </Link>
                   </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <DropdownMenuItem onSelect={handleSignOut}>
+                    <LogOut aria-hidden="true" className="h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </nav>
 
-        <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+          <nav
+            id="admin-mobile-navigation"
+            aria-label={staffView ? "Staff operations" : "Admin operations"}
+            hidden={!mobileNavOpen}
+            className="border-t border-border bg-white px-5 py-4 lg:hidden"
+          >
+            <SidebarLinks
+              items={navItems}
+              pathname={pathname}
+              onNavigate={() => setMobileNavOpen(false)}
+            />
+          </nav>
+        </header>
+
+        <main
+          id="admin-main"
+          tabIndex={-1}
+          className="min-w-0 flex-1 px-5 py-7 md:px-8 md:py-8 xl:px-10"
+        >
           <Outlet />
         </main>
       </div>
     </div>
+  );
+}
+
+function currentLabel(pathname: string) {
+  if (pathname.startsWith("/admin/bookings/")) return "Booking detail";
+  if (pathname.startsWith("/admin/requirements")) return "Requirements review";
+  if (pathname.startsWith("/admin/payments")) return "Payment review";
+  if (pathname.startsWith("/admin/notifications")) return "Notifications";
+  return (
+    [...ownerNav, ...staffNav].find((item) => isActive(pathname, item))
+      ?.label ?? "Dashboard"
   );
 }

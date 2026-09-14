@@ -130,6 +130,58 @@
     min-width: 2.75rem;
   }
 
+  .admin-app {
+    --background: #f6f3ec;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --card-foreground: #182321;
+    --popover: #ffffff;
+    --popover-foreground: #182321;
+    --foreground: #182321;
+    --charcoal: #182321;
+    --primary: #123f3a;
+    --primary-foreground: #ffffff;
+    --secondary: #efede6;
+    --secondary-foreground: #182321;
+    --muted: #efede6;
+    --muted-foreground: #52635f;
+    --accent: #e77a3d;
+    --accent-foreground: #182321;
+    --destructive: #b43b3b;
+    --destructive-foreground: #ffffff;
+    --border: #d8d5cc;
+    --input: #d8d5cc;
+    --ring: #0b6158;
+    min-height: 100vh;
+    background: var(--background);
+    color: var(--foreground);
+    color-scheme: light;
+    font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .admin-app h1,
+  .admin-app h2,
+  .admin-app h3,
+  .admin-app h4,
+  .admin-app .font-display {
+    font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .admin-app .admin-scroll-region {
+    scrollbar-width: thin;
+    scrollbar-color: #d8d5cc transparent;
+  }
+
+  .admin-app .admin-scroll-region::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .admin-app .admin-scroll-region::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #d8d5cc;
+  }
+
   .input-control {
     width: 100%;
     min-height: 2.75rem;

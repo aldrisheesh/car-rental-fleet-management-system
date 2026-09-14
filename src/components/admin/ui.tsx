@@ -1,32 +1,67 @@
-import type { ReactNode } from "react";
+import type {
+  ButtonHTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+} from "react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  CircleDot,
+  Clock3,
+  Info,
+  LockKeyhole,
+  XCircle,
+} from "lucide-react";
 
 export function PageHeader({
   title,
   subtitle,
   actions,
+  eyebrow,
 }: {
   title: string;
   subtitle?: string;
   actions?: ReactNode;
+  eyebrow?: string;
 }) {
   return (
-    <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
       <div className="min-w-0">
-        <h1 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">{title}</h1>
-        {subtitle && (
-          <p className="mt-1.5 max-w-3xl text-sm leading-6 text-muted-foreground">{subtitle}</p>
-        )}
+        {eyebrow ? (
+          <p className="mb-2 text-sm font-semibold text-primary">{eyebrow}</p>
+        ) : null}
+        <h1 className="text-[2rem] font-semibold leading-10 tracking-[-0.03em] text-foreground [text-wrap:balance]">
+          {title}
+        </h1>
+        {subtitle ? (
+          <p className="mt-1 max-w-3xl text-xl leading-7 text-muted-foreground [text-wrap:pretty]">
+            {subtitle}
+          </p>
+        ) : null}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions ? (
+        <div className="flex flex-wrap items-center gap-2">{actions}</div>
+      ) : null}
     </div>
   );
 }
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function Card({
+  children,
+  className = "",
+  as: Component = "section",
+}: {
+  children: ReactNode;
+  className?: string;
+  as?: "section" | "div" | "aside";
+}) {
   return (
-    <div className={`rounded-xl border border-border bg-card shadow-soft ${className}`}>
+    <Component
+      className={`rounded-lg border border-border bg-card ${className}`}
+    >
       {children}
-    </div>
+    </Component>
   );
 }
 
@@ -34,19 +69,171 @@ export function CardHeader({
   title,
   hint,
   right,
+  level = 2,
 }: {
   title: string;
   hint?: string;
   right?: ReactNode;
+  level?: 2 | 3;
+}) {
+  const Heading = level === 3 ? "h3" : "h2";
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
+      <div className="min-w-0">
+        <Heading className="text-xl font-semibold leading-7 tracking-[-0.02em] text-foreground [text-wrap:balance]">
+          {title}
+        </Heading>
+        {hint ? (
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">{hint}</p>
+        ) : null}
+      </div>
+      {right ? <div className="shrink-0">{right}</div> : null}
+    </div>
+  );
+}
+
+export function Toolbar({ children }: { children: ReactNode }) {
+  return (
+    <div className="mb-5 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-3">
+      {children}
+    </div>
+  );
+}
+
+export function TInput(props: InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      className={`input-control min-h-11 ${props.className ?? ""}`}
+    />
+  );
+}
+
+export function TSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      {...props}
+      className={`input-control min-h-11 bg-white ${props.className ?? ""}`}
+    />
+  );
+}
+
+export function Btn({
+  children,
+  variant = "default",
+  type = "button",
+  ...rest
+}: {
+  children: ReactNode;
+  variant?: "default" | "ghost" | "primary" | "danger";
+} & ButtonHTMLAttributes<HTMLButtonElement>) {
+  const variants = {
+    primary:
+      "bg-primary text-primary-foreground hover:bg-[#0d322e] active:bg-[#0a2b27]",
+    default: "border border-border bg-white text-foreground hover:bg-secondary",
+    ghost: "text-muted-foreground hover:bg-secondary hover:text-foreground",
+    danger:
+      "border border-[#b43b3b] bg-white text-[#b43b3b] hover:bg-[#fff2f1]",
+  } as const;
+
+  return (
+    <button
+      {...rest}
+      type={type}
+      className={`touch-target inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition-[background-color,border-color,color,opacity] duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${variants[variant]} ${rest.className ?? ""}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+export type StatusTone =
+  | "success"
+  | "warning"
+  | "error"
+  | "info"
+  | "locked"
+  | "neutral";
+
+const statusToneClasses: Record<StatusTone, string> = {
+  success: "text-[#267a55]",
+  warning: "text-[#a45b13]",
+  error: "text-[#b43b3b]",
+  info: "text-[#2e647b]",
+  locked: "text-[#52635f]",
+  neutral: "text-[#52635f]",
+};
+
+const statusIcons: Record<StatusTone, typeof CircleDot> = {
+  success: CheckCircle2,
+  warning: AlertCircle,
+  error: XCircle,
+  info: Info,
+  locked: LockKeyhole,
+  neutral: CircleDot,
+};
+
+export function DomainStatus({
+  label,
+  tone = "neutral",
+  detail,
+  compact = false,
+}: {
+  label: string;
+  tone?: StatusTone;
+  detail?: string;
+  compact?: boolean;
+}) {
+  const Icon = statusIcons[tone];
+  return (
+    <span
+      className={`inline-flex min-w-0 items-start gap-2 ${statusToneClasses[tone]} ${compact ? "text-sm" : "text-sm"}`}
+    >
+      <Icon
+        aria-hidden="true"
+        className={`${compact ? "mt-0.5 h-4 w-4" : "mt-0.5 h-[18px] w-[18px]"} shrink-0`}
+        strokeWidth={2}
+      />
+      <span className="min-w-0">
+        <span className="font-medium">{label}</span>
+        {detail ? (
+          <span className="block text-muted-foreground">{detail}</span>
+        ) : null}
+      </span>
+    </span>
+  );
+}
+
+const badgeTone: Record<string, StatusTone> = {
+  Submitted: "info",
+  Confirmed: "success",
+  Rejected: "error",
+  Cancelled: "neutral",
+  "Pending Review": "warning",
+  "Needs Resubmission": "error",
+  Verified: "success",
+  "Not Submitted": "locked",
+  "Pending Verification": "warning",
+  "Active rental": "success",
+  Returned: "info",
+  "Not started": "neutral",
+};
+
+export function Badge({
+  children,
+  className = "",
+}: {
+  children: string;
+  className?: string;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
-      <div className="min-w-0">
-        <h3 className="font-display text-sm font-semibold tracking-wide">{title}</h3>
-        {hint && <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{hint}</p>}
-      </div>
-      {right}
-    </div>
+    <span className={`inline-flex ${className}`}>
+      <DomainStatus
+        label={children}
+        tone={badgeTone[children] ?? "neutral"}
+        compact
+      />
+    </span>
   );
 }
 
@@ -55,7 +242,6 @@ export function KPI({
   value,
   delta,
   icon,
-  accent,
 }: {
   label: string;
   value: string;
@@ -64,18 +250,18 @@ export function KPI({
   accent?: boolean;
 }) {
   return (
-    <div
-      className={`relative overflow-hidden rounded-xl border ${accent ? "border-primary/30 bg-gradient-to-br from-card to-primary/10" : "border-border bg-card"} p-5 shadow-soft`}
-    >
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            {label}
-          </div>
-          <div className="mt-2.5 font-display text-2xl font-semibold tracking-tight">{value}</div>
-          {delta && <div className="mt-1 text-xs text-primary">{delta}</div>}
+    <div className="border-b border-border py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums tracking-[-0.03em]">
+            {value}
+          </p>
+          {delta ? (
+            <p className="mt-1 text-xs text-muted-foreground">{delta}</p>
+          ) : null}
         </div>
-        <span className="grid h-9 w-9 place-items-center rounded-md bg-primary/15 text-primary">
+        <span className="mt-1 text-primary" aria-hidden="true">
           {icon}
         </span>
       </div>
@@ -83,84 +269,88 @@ export function KPI({
   );
 }
 
-const badgeMap: Record<string, string> = {
-  // booking
-  Pending: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  Confirmed: "bg-sky-500/15 text-sky-400 border-sky-500/30",
-  Ongoing: "bg-primary/15 text-primary border-primary/30",
-  Completed: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  Cancelled: "bg-zinc-500/15 text-zinc-400 border-zinc-500/30",
-  // payment
-  Paid: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  Invalid: "bg-rose-500/15 text-rose-400 border-rose-500/30",
-  // vehicle
-  Available: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  Reserved: "bg-sky-500/15 text-sky-400 border-sky-500/30",
-  Rented: "bg-primary/15 text-primary border-primary/30",
-  Maintenance: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  Inactive: "bg-zinc-500/15 text-zinc-400 border-zinc-500/30",
-  // maintenance
-  Scheduled: "bg-sky-500/15 text-sky-400 border-sky-500/30",
-  "In Progress": "bg-primary/15 text-primary border-primary/30",
-  Overdue: "bg-rose-500/15 text-rose-400 border-rose-500/30",
-  // verification
-  Verified: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  "Pending Verification": "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  Rejected: "bg-rose-500/15 text-rose-400 border-rose-500/30",
-  // users
-  Active: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  Invited: "bg-sky-500/15 text-sky-400 border-sky-500/30",
-  Suspended: "bg-rose-500/15 text-rose-400 border-rose-500/30",
-};
-
-export function Badge({ children, className = "" }: { children: string; className?: string }) {
-  const cls = badgeMap[children] ?? "bg-muted text-muted-foreground border-border";
+export function LoadingRows({ count = 4 }: { count?: number }) {
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${cls} ${className}`}
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
-      {children}
-    </span>
-  );
-}
-
-export function Toolbar({ children }: { children: ReactNode }) {
-  return (
-    <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-soft">
-      {children}
+    <div aria-label="Loading" className="divide-y divide-border" role="status">
+      {Array.from({ length: count }, (_, index) => (
+        <div key={index} className="grid min-h-14 grid-cols-3 gap-4 px-5 py-4">
+          <span className="h-4 w-28 animate-pulse rounded bg-secondary" />
+          <span className="h-4 w-36 animate-pulse rounded bg-secondary" />
+          <span className="h-4 w-20 animate-pulse rounded bg-secondary" />
+        </div>
+      ))}
+      <span className="sr-only">Loading…</span>
     </div>
   );
 }
 
-export function TInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={`input-control min-h-11 ${props.className ?? ""}`} />;
-}
-
-export function TSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={`input-control min-h-11 ${props.className ?? ""}`} />;
-}
-
-export function Btn({
-  children,
-  variant = "default",
-  ...rest
+export function EmptyState({
+  title,
+  description,
+  action,
 }: {
-  children: ReactNode;
-  variant?: "default" | "ghost" | "primary" | "danger";
-} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const map = {
-    primary: "bg-primary text-primary-foreground hover:bg-primary/90",
-    default: "border border-border bg-card text-foreground hover:bg-secondary",
-    ghost: "text-muted-foreground hover:text-foreground hover:bg-card",
-    danger: "border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20",
-  } as const;
+  title: string;
+  description: string;
+  action?: ReactNode;
+}) {
   return (
-    <button
-      {...rest}
-      className={`touch-target inline-flex items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-70 ${map[variant]} ${rest.className ?? ""}`}
-    >
-      {children}
-    </button>
+    <div className="px-5 py-12 text-center">
+      <CircleDot
+        className="mx-auto h-6 w-6 text-muted-foreground"
+        aria-hidden="true"
+      />
+      <h3 className="mt-3 text-base font-semibold">{title}</h3>
+      <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-muted-foreground">
+        {description}
+      </p>
+      {action ? <div className="mt-4">{action}</div> : null}
+    </div>
+  );
+}
+
+export function ErrorState({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="px-5 py-10 text-center" role="alert">
+      <AlertCircle
+        className="mx-auto h-6 w-6 text-[#b43b3b]"
+        aria-hidden="true"
+      />
+      <h3 className="mt-3 text-base font-semibold">Unable to load this area</h3>
+      <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-muted-foreground">
+        {message}
+      </p>
+      <Btn className="mt-4" onClick={onRetry}>
+        Try again
+      </Btn>
+    </div>
+  );
+}
+
+export function ClockStatus({
+  label,
+  detail,
+}: {
+  label: string;
+  detail?: string;
+}) {
+  return (
+    <span className="inline-flex items-start gap-2 text-sm text-[#a45b13]">
+      <Clock3
+        className="mt-0.5 h-[18px] w-[18px] shrink-0"
+        aria-hidden="true"
+      />
+      <span>
+        <span className="font-medium">{label}</span>
+        {detail ? (
+          <span className="block text-muted-foreground">{detail}</span>
+        ) : null}
+      </span>
+    </span>
   );
 }

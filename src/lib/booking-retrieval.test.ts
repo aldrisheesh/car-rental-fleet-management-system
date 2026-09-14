@@ -33,6 +33,13 @@ test("admin booking retrieval accepts its collection and candidate vehicle contr
     parseAdminBookingResponse(response({ bookings: [] })),
     /Unable to load booking requests/,
   );
+  assert.deepEqual(
+    await parseAdminBookingResponse(
+      response({ bookings: [{ id: "staff-booking" }] }),
+      { allowStaffResponse: true },
+    ),
+    { bookings: [{ id: "staff-booking" }], candidateVehicles: [] },
+  );
 });
 
 test("booking retrieval preserves the API failure message instead of treating it as an empty collection", async () => {
