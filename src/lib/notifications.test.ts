@@ -152,6 +152,18 @@ test("operational types project and route without changing existing destinations
     related_entity_type: "payment",
     related_entity_id: "payment-1",
   });
+  const requirements = projectNotification({
+    ...base,
+    notification_type: "requirements_verified",
+    related_entity_type: "requirements",
+    related_entity_id: "requirements-1",
+  });
+  const rental = projectNotification({
+    ...base,
+    notification_type: "upcoming_return",
+    related_entity_type: "rental",
+    related_entity_id: "rental-1",
+  });
   const booking = projectNotification({
     ...base,
     notification_type: "booking_confirmed",
@@ -160,10 +172,91 @@ test("operational types project and route without changing existing destinations
   });
   assert.equal(notificationRoute(payment, "admin"), "/admin/payments");
   assert.equal(notificationRoute(booking, "admin"), "/admin/bookings");
-  assert.equal(notificationRoute(payment, "customer"), "/customer");
+  assert.equal(
+    notificationRoute(payment, "customer", [
+      { bookingId: "booking-1", paymentId: "payment-1" },
+    ]),
+    "/bookings/booking-1",
+  );
+  assert.equal(
+    notificationRoute(requirements, "customer", [
+      { bookingId: "booking-1", requirementSetId: "requirements-1" },
+    ]),
+    "/bookings/booking-1",
+  );
+  assert.equal(
+    notificationRoute(rental, "customer", [
+      { bookingId: "booking-1", rentalId: "rental-1" },
+    ]),
+    "/bookings/booking-1",
+  );
   assert.equal(notificationRoute(booking, "customer"), "/bookings/booking-1");
   assert.match(operationalMigration, /'maintenance_attention'/);
   assert.match(operationalMigration, /'low_availability'/);
+});
+
+test("customer child notification routing fails safely without an exact owned binding", () => {
+  const payment = projectNotification({
+    id: "notification-payment",
+    notification_type: "payment_verified",
+    title: "Payment verified",
+    message: "Your payment was verified.",
+    related_entity_type: "payment",
+    related_entity_id: "payment-1",
+    created_at: "2026-09-02T01:00:00.000Z",
+    read_at: null,
+  });
+  const requirements = projectNotification({
+    ...payment,
+    id: "notification-requirements",
+    notification_type: "requirements_verified",
+    related_entity_type: "requirements",
+    related_entity_id: "requirements-stale",
+  });
+  const maintenance = projectNotification({
+    ...payment,
+    id: "notification-maintenance",
+    notification_type: "maintenance_attention",
+    related_entity_type: "vehicle",
+    related_entity_id: "vehicle-1",
+  });
+  const missingChildId = projectNotification({
+    ...payment,
+    id: "notification-missing-child",
+    related_entity_id: "",
+  });
+
+  assert.equal(notificationRoute(payment, "customer"), "/customer");
+  assert.equal(
+    notificationRoute(missingChildId, "customer", [
+      { bookingId: "booking-1", paymentId: "payment-1" },
+    ]),
+    "/customer",
+  );
+  assert.equal(
+    notificationRoute(payment, "customer", [
+      { bookingId: "booking-2", paymentId: "payment-2" },
+    ]),
+    "/customer",
+  );
+  assert.equal(
+    notificationRoute(requirements, "customer", [
+      { bookingId: "booking-1", requirementSetId: "requirements-1" },
+    ]),
+    "/customer",
+  );
+  assert.equal(
+    notificationRoute(payment, "customer", [
+      { bookingId: "booking-1", paymentId: "payment-1" },
+      { bookingId: "booking-2", paymentId: "payment-1" },
+    ]),
+    "/customer",
+  );
+  assert.equal(notificationRoute(maintenance, "customer"), "/customer");
+  assert.notEqual(
+    notificationRoute(payment, "customer"),
+    "/bookings/payment-1",
+  );
 });
 
 test("VS019 contains no external delivery, scheduler, or audit implementation", () => {

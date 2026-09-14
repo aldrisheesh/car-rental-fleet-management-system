@@ -17,6 +17,7 @@ import {
   NOTIFICATIONS_CHANGED_EVENT,
   notificationRoute,
   type CanonicalNotification,
+  type CustomerNotificationBinding,
   type NotificationsResponse,
 } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
@@ -24,11 +25,13 @@ import { cn } from "@/lib/utils";
 type NotificationsPanelProps = {
   audience: "admin" | "customer";
   compact?: boolean;
+  customerBindings?: readonly CustomerNotificationBinding[];
 };
 
 export function NotificationsPanel({
   audience,
   compact = false,
+  customerBindings = [],
 }: NotificationsPanelProps) {
   const [data, setData] = useState<NotificationsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -272,6 +275,7 @@ export function NotificationsPanel({
               key={notification.id}
               notification={notification}
               audience={audience}
+              customerBindings={customerBindings}
               marking={markingId === notification.id}
               onMarkRead={markRead}
             />
@@ -285,11 +289,13 @@ export function NotificationsPanel({
 function NotificationRow({
   notification,
   audience,
+  customerBindings,
   marking,
   onMarkRead,
 }: {
   notification: CanonicalNotification;
   audience: "admin" | "customer";
+  customerBindings: readonly CustomerNotificationBinding[];
   marking: boolean;
   onMarkRead: (notification: CanonicalNotification) => Promise<void>;
 }) {
@@ -310,7 +316,11 @@ function NotificationRow({
                 : notification.relatedEntityType === "requirements"
                   ? FileCheck2
                   : CalendarRange;
-  const destination = notificationRoute(notification, audience);
+  const destination = notificationRoute(
+    notification,
+    audience,
+    customerBindings,
+  );
 
   return (
     <article

@@ -42,6 +42,13 @@ export type NotificationsResponse = {
   emailNotificationsEnabled: boolean;
 };
 
+export type CustomerNotificationBinding = {
+  bookingId: string;
+  requirementSetId?: string | null;
+  paymentId?: string | null;
+  rentalId?: string | null;
+};
+
 type NotificationRow = {
   id: string;
   notification_type: string;
@@ -77,12 +84,11 @@ export function projectNotification(
 export function notificationRoute(
   notification: CanonicalNotification,
   audience: "admin" | "customer",
+  customerBindings: readonly CustomerNotificationBinding[] = [],
 ) {
   if (audience === "customer") {
-    if (notification.relatedEntityType === "booking") {
-      return bookingPath(notification.relatedEntityId);
-    }
-    return "/customer";
+    const bookingId = customerBookingId(notification, customerBindings);
+    return bookingId ? bookingPath(bookingId) : "/customer";
   }
   if (notification.notificationType === "maintenance_attention")
     return "/admin/maintenance";
@@ -92,4 +98,26 @@ export function notificationRoute(
   return notification.relatedEntityType === "payment"
     ? "/admin/payments"
     : "/admin/bookings";
+}
+
+function customerBookingId(
+  notification: CanonicalNotification,
+  customerBindings: readonly CustomerNotificationBinding[],
+) {
+  const entityId = notification.relatedEntityId.trim();
+  if (!entityId) return null;
+  if (notification.relatedEntityType === "booking") return entityId;
+
+  const matchingBindings = customerBindings.filter((binding) => {
+    if (!binding.bookingId.trim()) return false;
+    if (notification.relatedEntityType === "requirements")
+      return binding.requirementSetId === entityId;
+    if (notification.relatedEntityType === "payment")
+      return binding.paymentId === entityId;
+    if (notification.relatedEntityType === "rental")
+      return binding.rentalId === entityId;
+    return false;
+  });
+
+  return matchingBindings.length === 1 ? matchingBindings[0].bookingId : null;
 }

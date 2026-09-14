@@ -30,6 +30,7 @@ import {
   type CustomerVehicle,
   type RequirementsResponse,
 } from "@/lib/customer-data";
+import type { CustomerNotificationBinding } from "@/lib/notifications";
 import {
   deriveCustomerLifecycle,
   paymentForBooking,
@@ -126,6 +127,20 @@ function MyBookingsPage() {
   const filteredRecords = useMemo(
     () => records.filter((record) => matchesFilter(record, filter)),
     [filter, records],
+  );
+  const customerNotificationBindings = useMemo(
+    () =>
+      records.map(({ booking, requirements, payment }) => ({
+        bookingId: booking.id,
+        requirementSetId:
+          requirements?.requirementSet?.booking_id === booking.id
+            ? requirements.requirementSet.id
+            : null,
+        paymentId: payment?.booking_id === booking.id ? payment.id : null,
+        rentalId:
+          booking.rental?.booking_id === booking.id ? booking.rental.id : null,
+      })) satisfies CustomerNotificationBinding[],
+    [records],
   );
 
   return (
@@ -231,7 +246,11 @@ function MyBookingsPage() {
                 className="booking-notifications"
                 aria-label="Notifications"
               >
-                <NotificationsPanel audience="customer" compact />
+                <NotificationsPanel
+                  audience="customer"
+                  compact
+                  customerBindings={customerNotificationBindings}
+                />
               </section>
             </>
           )}
