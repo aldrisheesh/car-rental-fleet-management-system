@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { MapPin, Plus, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Badge,
   Btn,
@@ -28,6 +28,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type BranchRecord = CanonicalBranchRecord;
 
@@ -57,6 +67,11 @@ function BranchesPage() {
   const [branchError, setBranchError] = useState("");
   const [saving, setSaving] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [deactivationBranch, setDeactivationBranch] =
+    useState<BranchRecord | null>(null);
+  const [deactivationSaving, setDeactivationSaving] = useState(false);
+  const deactivationTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const deactivationSubmissionRef = useRef(false);
   const [feedback, setFeedback] = useState("");
 
   const loadBranches = useCallback(async () => {
@@ -157,7 +172,7 @@ function BranchesPage() {
     }
   }
 
-  async function toggleBranch(branch: BranchRecord) {
+  async function toggleBranch(branch: BranchRecord): Promise<boolean> {
     setSavingId(branch.id);
     setBranchError("");
     setFeedback("");
@@ -177,12 +192,43 @@ function BranchesPage() {
       setFeedback(
         `${saved.name} is now ${saved.is_active ? "active" : "inactive"}.`,
       );
+      return true;
     } catch (error) {
       setBranchError(
         error instanceof Error ? error.message : "Unable to update branch.",
       );
+      return false;
     } finally {
       setSavingId(null);
+    }
+  }
+
+  function requestBranchToggle(
+    branch: BranchRecord,
+    trigger: HTMLButtonElement,
+  ) {
+    if (branch.is_active) {
+      deactivationTriggerRef.current = trigger;
+      setDeactivationBranch(branch);
+      setBranchError("");
+      setFeedback("");
+      return;
+    }
+    void toggleBranch(branch);
+  }
+
+  async function confirmBranchDeactivation() {
+    const branch = deactivationBranch;
+    if (!branch || deactivationSubmissionRef.current) return;
+
+    deactivationSubmissionRef.current = true;
+    setDeactivationSaving(true);
+    try {
+      const succeeded = await toggleBranch(branch);
+      if (succeeded) setDeactivationBranch(null);
+    } finally {
+      deactivationSubmissionRef.current = false;
+      setDeactivationSaving(false);
     }
   }
 
@@ -206,7 +252,7 @@ function BranchesPage() {
           {feedback}
         </p>
       ) : null}
-      {branchError && !dialogOpen ? (
+      {branchError && !dialogOpen && !deactivationBranch ? (
         <p
           className="mb-4 rounded-md border border-[#b43b3b]/30 bg-[#b43b3b]/5 px-4 py-3 text-sm text-[#b43b3b]"
           role="alert"
@@ -305,7 +351,9 @@ function BranchesPage() {
                       vehicleLoading || Boolean(vehicleLoadError)
                     }
                     onEdit={() => openBranchDialog(row.record)}
-                    onToggle={() => void toggleBranch(row.record)}
+                    onToggle={(trigger) =>
+                      requestBranchToggle(row.record, trigger)
+                    }
                   />
                 ))}
               </tbody>
@@ -321,7 +369,7 @@ function BranchesPage() {
                   vehicleLoading || Boolean(vehicleLoadError)
                 }
                 onEdit={() => openBranchDialog(row.record)}
-                onToggle={() => void toggleBranch(row.record)}
+                onToggle={(trigger) => requestBranchToggle(row.record, trigger)}
               />
             ))}
           </div>
@@ -371,6 +419,61 @@ function BranchesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={Boolean(deactivationBranch)}
+        onOpenChange={(open) => {
+          if (!open && !deactivationSaving) setDeactivationBranch(null);
+        }}
+      >
+        <AlertDialogContent
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            const trigger = deactivationTriggerRef.current;
+            deactivationTriggerRef.current = null;
+            if (trigger?.isConnected) {
+              trigger.focus();
+            } else {
+              document
+                .querySelector<HTMLElement>('[aria-label="Search branches"]')
+                ?.focus();
+            }
+          }}
+        >
+          <AlertDialogHeader>
+            <AlertDialogTitle className="break-words">
+              Deactivate {deactivationBranch?.name}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This branch will become inactive. Existing historical records
+              remain unchanged.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {branchError && deactivationBranch ? (
+            <p className="text-sm text-[#b43b3b]" role="alert">
+              {branchError}
+            </p>
+          ) : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={deactivationSaving}
+              className="min-h-11"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deactivationSaving}
+              onClick={(event) => {
+                event.preventDefault();
+                void confirmBranchDeactivation();
+              }}
+              className="min-h-11 border border-[#b43b3b] bg-white px-4 text-sm font-semibold text-[#b43b3b] shadow-none hover:bg-[#fff2f1] focus-visible:ring-2 focus-visible:ring-[#0b6158] focus-visible:ring-offset-2"
+            >
+              {deactivationSaving ? "Deactivating…" : "Deactivate branch"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -386,7 +489,7 @@ function BranchRow({
   saving: boolean;
   assignmentsUnavailable: boolean;
   onEdit: () => void;
-  onToggle: () => void;
+  onToggle: (trigger: HTMLButtonElement) => void;
 }) {
   return (
     <tr className="border-b border-border/60 align-top hover:bg-secondary/30">
@@ -422,7 +525,11 @@ function BranchRow({
           <Btn variant="ghost" onClick={onEdit}>
             Edit
           </Btn>
-          <Btn variant="ghost" disabled={saving} onClick={onToggle}>
+          <Btn
+            variant="ghost"
+            disabled={saving}
+            onClick={(event) => onToggle(event.currentTarget)}
+          >
             {saving
               ? "Saving…"
               : row.record.is_active
@@ -446,7 +553,7 @@ function BranchDisclosure({
   saving: boolean;
   assignmentsUnavailable: boolean;
   onEdit: () => void;
-  onToggle: () => void;
+  onToggle: (trigger: HTMLButtonElement) => void;
 }) {
   return (
     <details className="group px-5 py-4">
@@ -489,7 +596,11 @@ function BranchDisclosure({
         <Btn variant="ghost" onClick={onEdit}>
           Edit
         </Btn>
-        <Btn variant="ghost" disabled={saving} onClick={onToggle}>
+        <Btn
+          variant="ghost"
+          disabled={saving}
+          onClick={(event) => onToggle(event.currentTarget)}
+        >
           {saving
             ? "Saving…"
             : row.record.is_active
