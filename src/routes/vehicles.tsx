@@ -13,10 +13,13 @@ import {
 } from "@tanstack/react-router";
 import {
   ArrowRight,
+  CalendarDays,
+  CarFront,
+  CircleDollarSign,
   Filter,
   RefreshCw,
-  Search,
   SlidersHorizontal,
+  Users,
 } from "lucide-react";
 
 import { Footer } from "@/components/site/Footer";
@@ -41,6 +44,10 @@ import {
   validateFinderBookingSearch,
   type FinderBookingSearch,
 } from "@/lib/finder-booking";
+import {
+  filterFinderRecommendations,
+  finderCriteriaSummary,
+} from "@/lib/finder-presentation";
 
 export const Route = createFileRoute("/vehicles")({
   validateSearch: (search) => validateFinderBookingSearch(search),
@@ -267,6 +274,15 @@ function FindCarPage() {
     ? `${formatDateForSummary(search.finderStart)} – ${formatDateForSummary(search.finderEnd)}`
     : "No dates selected";
   const finderForm = finderFormFromSearch(search);
+  const compactCriteria: FinderResponse["criteria"] =
+    finderResponse?.criteria ?? {
+      requestedStart: search.finderStart ?? "",
+      requestedEnd: search.finderEnd ?? "",
+      passengerCount: Number(search.finderPassengers),
+      maximumBudget: Number(search.finderBudget),
+      preferredCategory: search.finderCategory ?? null,
+      destination: search.finderDestination ?? null,
+    };
   const finderSummaryErrors = [
     finderErrors.requestedStart
       ? {
@@ -319,50 +335,88 @@ function FindCarPage() {
       <Header />
       <main id="main-content" className="finder-main">
         <div className="customer-container">
-          <div className="finder-heading">
-            <div>
-              <p className="eyebrow">Find a car</p>
-              <h1>
-                {finderResponse
-                  ? "Cars that fit your trip"
-                  : "Explore the active fleet"}
-              </h1>
-              <p>
-                {finderResponse
-                  ? "These results reflect the criteria you submitted to the Finder."
-                  : "Browse canonical active vehicle data, then add trip details when you want a closer fit."}
-              </p>
+          {hasFullFinderCriteria ? (
+            <div
+              className="trip-summary trip-summary--evaluated"
+              aria-label="Current Finder criteria"
+            >
+              <dl className="finder-criteria-summary">
+                {finderCriteriaSummary(compactCriteria).map((item) => {
+                  const Icon = {
+                    dates: CalendarDays,
+                    passengers: Users,
+                    budget: CircleDollarSign,
+                    category: CarFront,
+                  }[item.id];
+                  return (
+                    <div className="finder-criteria-item" key={item.id}>
+                      <dt>
+                        <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
+                        <span>{item.label}</span>
+                      </dt>
+                      <dd>{item.value}</dd>
+                    </div>
+                  );
+                })}
+              </dl>
+              <button
+                className="customer-primary-button trip-summary-action"
+                type="button"
+                aria-controls="finder-refinement"
+                aria-expanded={refinementOpen}
+                onClick={() => setRefinementOpen((open) => !open)}
+              >
+                {refinementOpen ? "Close filters" : "Change trip"}
+              </button>
             </div>
-            {finderResponse ? (
-              <a className="customer-secondary-button" href="/vehicles">
-                <Search size={17} aria-hidden="true" /> Start over
-              </a>
-            ) : null}
-          </div>
+          ) : null}
 
-          <div className="trip-summary" aria-label="Current trip dates">
-            <div className="trip-summary-copy">
-              <span className="trip-summary-label">Trip dates</span>
-              <span className="trip-summary-value">{summaryText}</span>
-              {hasFullFinderCriteria ? (
-                <span className="trip-summary-value">
-                  {search.finderPassengers} passengers · {search.finderBudget}{" "}
-                  maximum budget
-                </span>
-              ) : null}
+          {!finderResponse ? (
+            <div className="finder-heading">
+              <div>
+                <p className="eyebrow">Find a car</p>
+                <h1>Explore the active fleet</h1>
+                <p>
+                  Browse canonical active vehicle data, then add trip details
+                  when you want a closer fit.
+                </p>
+              </div>
             </div>
-            <a className="customer-link" href="#finder-refinement">
-              {hasDates ? "Refine this search" : "Add trip details"}
-            </a>
-          </div>
+          ) : null}
+
+          {!hasFullFinderCriteria ? (
+            <div className="trip-summary" aria-label="Current trip dates">
+              <div className="trip-summary-copy">
+                <span className="trip-summary-label">Trip dates</span>
+                <span className="trip-summary-value">{summaryText}</span>
+              </div>
+              <button
+                className="customer-tertiary-button"
+                type="button"
+                onClick={() => setRefinementOpen(true)}
+              >
+                {hasDates ? "Refine this search" : "Add trip details"}
+              </button>
+            </div>
+          ) : null}
 
           <details
             id="finder-refinement"
-            className="finder-refinement"
-            open={refinementOpen || hasFullFinderCriteria}
+            className={`finder-refinement${hasFullFinderCriteria && finderResponse ? " finder-refinement--evaluated" : ""}`}
+            open={refinementOpen}
             onToggle={(event) => setRefinementOpen(event.currentTarget.open)}
           >
-            <summary>
+            <summary
+              className={
+                hasFullFinderCriteria && finderResponse
+                  ? "finder-refinement-summary-hidden"
+                  : undefined
+              }
+              tabIndex={
+                hasFullFinderCriteria && finderResponse ? -1 : undefined
+              }
+              aria-hidden={hasFullFinderCriteria && Boolean(finderResponse)}
+            >
               <span>
                 <SlidersHorizontal size={17} aria-hidden="true" /> Narrow by
                 trip details
@@ -569,7 +623,16 @@ function FindCarPage() {
           ) : null}
 
           {finderResponse ? (
-            <FinderResults response={finderResponse} search={search} />
+            <FinderResults
+              response={finderResponse}
+              search={search}
+              categories={categories}
+              browseCategory={browseCategory}
+              onBrowseCategory={setBrowseCategory}
+              refinementOpen={refinementOpen}
+              onToggleRefinement={() => setRefinementOpen((open) => !open)}
+              onOpenRefinement={() => setRefinementOpen(true)}
+            />
           ) : (
             <section
               className="finder-results-section"
@@ -608,26 +671,11 @@ function FindCarPage() {
               ) : null}
               {!vehiclesLoading && !vehiclesError && vehicles.length > 0 ? (
                 <>
-                  <div className="finder-filter-row" aria-label="Fleet filters">
-                    <span className="finder-filter-label">Category</span>
-                    <button
-                      className={`finder-filter-button ${browseCategory === "" ? "is-active" : ""}`}
-                      type="button"
-                      onClick={() => setBrowseCategory("")}
-                    >
-                      All cars
-                    </button>
-                    {categories.map((category) => (
-                      <button
-                        className={`finder-filter-button ${browseCategory === category ? "is-active" : ""}`}
-                        type="button"
-                        key={category}
-                        onClick={() => setBrowseCategory(category)}
-                      >
-                        {category}
-                      </button>
-                    ))}
-                  </div>
+                  <CategoryFilterRail
+                    categories={categories}
+                    selectedCategory={browseCategory}
+                    onCategoryChange={setBrowseCategory}
+                  />
                   {directVehicles.length ? (
                     <div className="vehicle-grid">
                       {directVehicles.map((vehicle) => (
@@ -668,23 +716,65 @@ function FindCarPage() {
 function FinderResults({
   response,
   search,
+  categories,
+  browseCategory,
+  onBrowseCategory,
+  refinementOpen,
+  onToggleRefinement,
+  onOpenRefinement,
 }: {
   response: FinderResponse;
   search: FinderBookingSearch;
+  categories: string[];
+  browseCategory: string;
+  onBrowseCategory: (category: string) => void;
+  refinementOpen: boolean;
+  onToggleRefinement: () => void;
+  onOpenRefinement: () => void;
 }) {
-  if (response.noMatch || response.recommendations.length === 0) {
-    return (
-      <section
-        className="finder-results-section"
-        aria-labelledby="no-match-title"
-      >
-        <div className="finder-empty-state">
-          <p className="eyebrow">Finder result</p>
+  const noMatch =
+    Boolean(response.noMatch) || response.recommendations.length === 0;
+  const visibleRecommendations = filterFinderRecommendations(
+    response.recommendations,
+    browseCategory,
+  );
+
+  return (
+    <section
+      className="finder-results-section"
+      aria-labelledby={noMatch ? "no-match-title" : "finder-results-title"}
+    >
+      {noMatch ? (
+        <>
           <h2 id="no-match-title">No cars match these trip details</h2>
-          <p>
+          <p className="finder-results-meta">
             {response.noMatch?.message ??
               "No eligible vehicles were returned for these criteria."}
           </p>
+        </>
+      ) : (
+        <>
+          <h2 id="finder-results-title">Cars that fit your trip</h2>
+          <p className="finder-results-meta">
+            {visibleRecommendations.length}{" "}
+            {visibleRecommendations.length === 1 ? "car" : "cars"} shown for{" "}
+            {response.rentalDays} rental{" "}
+            {response.rentalDays === 1 ? "day" : "days"}.
+          </p>
+        </>
+      )}
+
+      <CategoryFilterRail
+        categories={categories}
+        selectedCategory={browseCategory}
+        onCategoryChange={onBrowseCategory}
+        showCategories={!noMatch}
+        onOpenRefinement={onToggleRefinement}
+        refinementOpen={refinementOpen}
+      />
+
+      {noMatch ? (
+        <div className="finder-empty-state">
           {response.noMatch?.factors?.length ? (
             <p className="customer-helper">
               Try adjusting:{" "}
@@ -694,73 +784,146 @@ function FinderResults({
               .
             </p>
           ) : null}
-          <a className="customer-secondary-button" href="#finder-refinement">
+          <button
+            className="customer-secondary-button"
+            type="button"
+            onClick={onOpenRefinement}
+          >
             <SlidersHorizontal size={17} aria-hidden="true" /> Edit trip
             criteria
-          </a>
+          </button>
         </div>
-      </section>
-    );
-  }
-
-  return (
-    <section
-      className="finder-results-section"
-      aria-labelledby="finder-results-title"
-    >
-      <h2 id="finder-results-title">Cars that fit your trip</h2>
-      <p className="finder-results-meta">
-        {response.recommendations.length}{" "}
-        {response.recommendations.length === 1 ? "car" : "cars"} returned for{" "}
-        {response.rentalDays} rental{" "}
-        {response.rentalDays === 1 ? "day" : "days"}.
-      </p>
-      <div className="vehicle-grid">
-        {response.recommendations.map((recommendation) => {
-          const vehicle: CustomerVehicle = {
-            id: recommendation.vehicleId,
-            name: recommendation.name,
-            license_plate: null,
-            transmission: recommendation.transmission,
-            fuel_type: recommendation.fuelType,
-            seat_capacity: recommendation.passengerCapacity,
-            daily_rate: recommendation.baseRentalRate,
-            image_url: recommendation.imageUrl,
-            branch: recommendation.branchName
-              ? { name: recommendation.branchName }
-              : null,
-            category: recommendation.category
-              ? { name: recommendation.category }
-              : null,
-          };
-          return (
-            <VehicleCard
-              key={recommendation.vehicleId}
-              vehicle={vehicle}
-              reason={recommendation.reasons[0]}
-              href={`/vehicles/${encodeURIComponent(recommendation.vehicleId)}${encodeSearch(
-                {
-                  vehicle: recommendation.vehicleId,
-                  finderStart: search.finderStart,
-                  finderEnd: search.finderEnd,
-                  finderPassengers: search.finderPassengers,
-                  finderBudget: search.finderBudget,
-                  finderCategory: search.finderCategory,
-                  finderDestination: search.finderDestination,
-                  finderRank: recommendation.rank,
-                },
-              )}`}
-            />
-          );
-        })}
-      </div>
-      <div className="finder-results-meta" style={{ marginTop: "1.5rem" }}>
-        <a className="customer-link" href="/vehicles">
-          Browse the active fleet without trip evaluation{" "}
-          <ArrowRight size={16} aria-hidden="true" />
-        </a>
-      </div>
+      ) : visibleRecommendations.length === 0 ? (
+        <div className="finder-empty-state">
+          <h2>No evaluated cars in this category</h2>
+          <p>
+            Show all evaluated cars to compare the complete Finder result set.
+          </p>
+          <button
+            className="customer-secondary-button"
+            type="button"
+            onClick={() => onBrowseCategory("")}
+          >
+            Show all cars
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="vehicle-grid">
+            {visibleRecommendations.map((recommendation) => {
+              const vehicle: CustomerVehicle = {
+                id: recommendation.vehicleId,
+                name: recommendation.name,
+                license_plate: null,
+                transmission: recommendation.transmission,
+                fuel_type: recommendation.fuelType,
+                seat_capacity: recommendation.passengerCapacity,
+                daily_rate: recommendation.baseRentalRate,
+                image_url: recommendation.imageUrl,
+                branch: recommendation.branchName
+                  ? { name: recommendation.branchName }
+                  : null,
+                category: recommendation.category
+                  ? { name: recommendation.category }
+                  : null,
+              };
+              return (
+                <VehicleCard
+                  key={recommendation.vehicleId}
+                  vehicle={vehicle}
+                  reason={recommendation.reasons[0]}
+                  href={`/vehicles/${encodeURIComponent(recommendation.vehicleId)}${encodeSearch(
+                    {
+                      vehicle: recommendation.vehicleId,
+                      finderStart: search.finderStart,
+                      finderEnd: search.finderEnd,
+                      finderPassengers: search.finderPassengers,
+                      finderBudget: search.finderBudget,
+                      finderCategory: search.finderCategory,
+                      finderDestination: search.finderDestination,
+                      finderRank: recommendation.rank,
+                    },
+                  )}`}
+                />
+              );
+            })}
+          </div>
+          <div className="finder-results-meta finder-results-browse-link">
+            <a className="customer-link" href="/vehicles">
+              Browse the active fleet without trip evaluation{" "}
+              <ArrowRight size={16} aria-hidden="true" />
+            </a>
+          </div>
+        </>
+      )}
     </section>
+  );
+}
+
+function CategoryFilterRail({
+  categories,
+  selectedCategory,
+  onCategoryChange,
+  showCategories = true,
+  onOpenRefinement,
+  refinementOpen = false,
+}: {
+  categories: string[];
+  selectedCategory: string;
+  onCategoryChange: (category: string) => void;
+  showCategories?: boolean;
+  onOpenRefinement?: () => void;
+  refinementOpen?: boolean;
+}) {
+  return (
+    <div
+      className="finder-filter-row"
+      role="group"
+      aria-label={
+        showCategories
+          ? "Filter results by vehicle category"
+          : "Finder result controls"
+      }
+    >
+      {showCategories ? (
+        <div className="finder-filter-options">
+          <span className="finder-filter-label">Vehicle category</span>
+          <button
+            className={`finder-filter-button ${selectedCategory === "" ? "is-active" : ""}`}
+            type="button"
+            aria-pressed={selectedCategory === ""}
+            onClick={() => onCategoryChange("")}
+          >
+            <CarFront size={19} strokeWidth={1.8} aria-hidden="true" />
+            All cars
+          </button>
+          {categories.map((category) => (
+            <button
+              className={`finder-filter-button ${selectedCategory === category ? "is-active" : ""}`}
+              type="button"
+              aria-pressed={selectedCategory === category}
+              key={category}
+              onClick={() => onCategoryChange(category)}
+            >
+              <CarFront size={19} strokeWidth={1.8} aria-hidden="true" />
+              {category}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {onOpenRefinement ? (
+        <button
+          className="finder-filter-action"
+          type="button"
+          aria-controls="finder-refinement"
+          aria-expanded={refinementOpen}
+          onClick={onOpenRefinement}
+        >
+          <SlidersHorizontal size={18} strokeWidth={1.8} aria-hidden="true" />
+          {refinementOpen ? "Close filters" : "Filters"}
+        </button>
+      ) : null}
+    </div>
   );
 }
 

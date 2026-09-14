@@ -1,7 +1,7 @@
 import {
   instantToManilaDateTimeLocal,
   manilaDateTimeLocalToInstant,
-} from "./business-time";
+} from "./business-time.ts";
 
 export type CustomerVehicle = {
   id: string;

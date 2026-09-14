@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { LogOut, Menu, UserRound, X } from "lucide-react";
 
 import { getClientPrincipal } from "@/lib/auth-client";
 import { clearCustomerSession } from "@/lib/customer-auth";
 import type { AppPrincipal } from "@/lib/auth";
+import { isMyBookingsPath } from "@/lib/customer-navigation";
 
 const navItems = [
   { to: "/" as const, label: "Home", exact: true },
@@ -15,6 +16,9 @@ const navItems = [
 
 export function Header() {
   const navigate = useNavigate();
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuPanelRef = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -69,6 +73,7 @@ export function Header() {
       : isStaff
         ? "Operations Staff"
         : "Sign in";
+  const myBookingsActive = isMyBookingsPath(pathname);
 
   return (
     <>
@@ -88,7 +93,12 @@ export function Header() {
                 to={item.to}
                 activeOptions={item.exact ? { exact: true } : undefined}
                 activeProps={{ className: "customer-nav-link is-active" }}
-                className="customer-nav-link"
+                className={`customer-nav-link${item.label === "My Bookings" && myBookingsActive ? " is-active" : ""}`}
+                aria-current={
+                  item.label === "My Bookings" && myBookingsActive
+                    ? "page"
+                    : undefined
+                }
               >
                 {item.label}
               </Link>
@@ -158,7 +168,12 @@ export function Header() {
                   to={item.to}
                   activeOptions={item.exact ? { exact: true } : undefined}
                   activeProps={{ className: "customer-mobile-link is-active" }}
-                  className="customer-mobile-link"
+                  className={`customer-mobile-link${item.label === "My Bookings" && myBookingsActive ? " is-active" : ""}`}
+                  aria-current={
+                    item.label === "My Bookings" && myBookingsActive
+                      ? "page"
+                      : undefined
+                  }
                   onClick={() => setMenuOpen(false)}
                 >
                   {item.label}
