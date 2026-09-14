@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   Area,
@@ -40,19 +40,17 @@ export const Route = createFileRoute("/admin/decisions")({
   beforeLoad: () => {
     if (typeof window === "undefined") return;
     const session = getAdminSession();
-    if (!session) return;
+    if (!session) throw redirect({ to: "/sign-in" });
+    // Some decision-support GET handlers currently accept Staff. The frozen
+    // UI boundary remains Owner/Admin-only until that architecture conflict is
+    // resolved; this route does not broaden access.
+    if (isStaffRole(session.role)) throw redirect({ to: "/admin" });
   },
   component: DecisionPage,
 });
 
-const goldGrid = "rgba(255,255,255,0.06)";
-const forecastColors = [
-  "oklch(0.84 0.16 92)",
-  "oklch(0.72 0.15 210)",
-  "oklch(0.72 0.14 150)",
-  "oklch(0.75 0.14 35)",
-  "oklch(0.72 0.12 300)",
-];
+const goldGrid = "rgba(24,35,33,0.12)";
+const forecastColors = ["#123f3a", "#2e647b", "#267a55", "#a45b13", "#52635f"];
 
 type ForecastResponse = {
   runs: CanonicalForecastRun[];
@@ -151,7 +149,13 @@ function formatDay(value: string | null | undefined) {
 }
 
 function formatDateTime(value: string | null | undefined) {
-  return value ? new Date(value).toLocaleString() : "Unavailable";
+  return value
+    ? new Intl.DateTimeFormat("en-PH", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Asia/Manila",
+      }).format(new Date(value))
+    : "Unavailable";
 }
 
 function DecisionPage() {
@@ -484,6 +488,15 @@ function DecisionPage() {
         subtitle="Canonical WMA forecasts, projected supply, allocation recommendations, and vehicle analysis."
       />
 
+      <div
+        className="mb-4 rounded-md border border-[#2e647b]/30 bg-[#2e647b]/5 px-4 py-3 text-sm text-[#2e647b]"
+        role="note"
+      >
+        <strong>Advisory only.</strong> These persisted outputs support human
+        review; they do not issue autonomous decisions or guarantee forecast
+        accuracy. Every stage below shows its data basis and uncertainty.
+      </div>
+
       <Card className="mb-4">
         <CardHeader
           title="Demand forecasting"
@@ -537,20 +550,21 @@ function DecisionPage() {
                   <CartesianGrid stroke={goldGrid} vertical={false} />
                   <XAxis
                     dataKey="d"
-                    tick={{ fill: "oklch(0.72 0.015 250)", fontSize: 11 }}
+                    tick={{ fill: "#52635f", fontSize: 11 }}
                     axisLine={{ stroke: goldGrid }}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: "oklch(0.72 0.015 250)", fontSize: 11 }}
+                    tick={{ fill: "#52635f", fontSize: 11 }}
                     axisLine={{ stroke: goldGrid }}
                     tickLine={false}
                     allowDecimals={false}
                   />
                   <Tooltip
                     contentStyle={{
-                      background: "oklch(0.23 0.03 260)",
-                      border: "1px solid rgba(255,255,255,0.1)",
+                      background: "#ffffff",
+                      border: "1px solid #d8d5cc",
+                      color: "#182321",
                       borderRadius: 8,
                       fontSize: 12,
                     }}
@@ -950,11 +964,11 @@ function DecisionPage() {
                 <p className="text-[11px] text-muted-foreground">
                   VS015 evaluated: destination{" "}
                   {row.destination_evaluated_at
-                    ? new Date(row.destination_evaluated_at).toLocaleString()
+                    ? formatDateTime(row.destination_evaluated_at)
                     : "unknown"}
                   ; source{" "}
                   {row.source_evaluated_at
-                    ? new Date(row.source_evaluated_at).toLocaleString()
+                    ? formatDateTime(row.source_evaluated_at)
                     : "unknown"}
                 </p>
                 <div className="space-y-1">

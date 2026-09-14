@@ -1,12 +1,24 @@
-import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { ChevronDown, RefreshCw } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
+  AUDIT_ACTOR_TYPES,
   AUDIT_DOMAINS,
   humanizeAction,
   summarizeAuditEvent,
   type AuditEvent,
 } from "@/lib/audit";
-import { Card, CardHeader, PageHeader } from "@/components/admin/ui";
+import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
+import {
+  Badge,
+  Btn,
+  Card,
+  CardHeader,
+  PageHeader,
+  TInput,
+  TSelect,
+  Toolbar,
+} from "@/components/admin/ui";
 
 type AuditResponse = {
   events: AuditEvent[];
@@ -15,24 +27,43 @@ type AuditResponse = {
   total: number;
 };
 
+type AuditFilters = {
+  domain: string;
+  actorType: string;
+  from: string;
+  to: string;
+};
+
+const emptyFilters: AuditFilters = {
+  domain: "",
+  actorType: "",
+  from: "",
+  to: "",
+};
+
 export const Route = createFileRoute("/admin/activity")({
+  beforeLoad: () => {
+    if (typeof window === "undefined") return;
+    const session = getAdminSession();
+    if (!session) throw redirect({ to: "/sign-in" });
+    if (isStaffRole(session.role)) throw redirect({ to: "/admin" });
+  },
   component: ActivityPage,
 });
 
 function ActivityPage() {
+  const [draft, setDraft] = useState<AuditFilters>(emptyFilters);
+  const [applied, setApplied] = useState<AuditFilters>(emptyFilters);
   const [data, setData] = useState<AuditResponse>({
     events: [],
     page: 1,
     limit: 25,
     total: 0,
   });
-  const [domain, setDomain] = useState("");
-  const [actorType, setActorType] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [filterError, setFilterError] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -40,19 +71,21 @@ function ActivityPage() {
       setLoading(true);
       setMessage("");
       const params = new URLSearchParams({ page: String(page), limit: "25" });
-      if (domain) params.set("domain", domain);
-      if (actorType) params.set("actorType", actorType);
-      if (from) params.set("from", new Date(`${from}T00:00:00`).toISOString());
-      if (to) params.set("to", new Date(`${to}T23:59:59.999`).toISOString());
+      if (applied.domain) params.set("domain", applied.domain);
+      if (applied.actorType) params.set("actorType", applied.actorType);
+      if (applied.from) params.set("from", manilaStart(applied.from));
+      if (applied.to) params.set("to", manilaEnd(applied.to));
       try {
         const response = await fetch(`/api/audit-events?${params}`, {
           credentials: "same-origin",
           signal: controller.signal,
         });
-        const body = await response.json().catch(() => null);
+        const body = (await response.json().catch(() => null)) as
+          | (AuditResponse & { message?: string })
+          | null;
         if (!response.ok)
           throw new Error(body?.message || "Unable to load audit trail.");
-        setData(body);
+        setData(body ?? { events: [], page, limit: 25, total: 0 });
       } catch (error) {
         if (!controller.signal.aborted)
           setMessage(
@@ -66,31 +99,56 @@ function ActivityPage() {
     }
     void load();
     return () => controller.abort();
-  }, [actorType, domain, from, page, to]);
+  }, [applied, page]);
+
+  function updateDraft<K extends keyof AuditFilters>(
+    key: K,
+    value: AuditFilters[K],
+  ) {
+    setDraft((current) => ({ ...current, [key]: value }));
+    setFilterError("");
+  }
+
+  function applyFilters() {
+    if ((draft.from && !draft.to) || (!draft.from && draft.to)) {
+      setFilterError("Choose both audit date bounds or leave both blank.");
+      return;
+    }
+    if (draft.from && draft.to && draft.from > draft.to) {
+      setFilterError("From date must be on or before To date.");
+      return;
+    }
+    setFilterError("");
+    setPage(1);
+    setApplied({ ...draft });
+  }
+
+  function clearFilters() {
+    setDraft(emptyFilters);
+    setApplied(emptyFilters);
+    setFilterError("");
+    setPage(1);
+  }
 
   const totalPages = Math.max(1, Math.ceil(data.total / data.limit));
-  const updateFilter = (setter: (value: string) => void, value: string) => {
-    setter(value);
-    setPage(1);
-  };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
+    <div>
       <PageHeader
         title="Audit Trail"
-        subtitle="Append-only history of core booking and fleet lifecycle activity."
+        subtitle="Append-only history of canonical booking, payment, rental, requirements, and maintenance activity."
       />
       <Card>
         <CardHeader
-          title="Activity"
-          hint={`${data.total.toLocaleString()} recorded events`}
+          title="Audit events"
+          hint={`${data.total.toLocaleString()} recorded events · read only`}
         />
-        <div className="grid gap-3 border-b border-border p-4 md:grid-cols-4">
+        <Toolbar>
           <Filter label="Domain">
-            <select
-              className="input-control"
-              value={domain}
-              onChange={(event) => updateFilter(setDomain, event.target.value)}
+            <TSelect
+              value={draft.domain}
+              onChange={(event) => updateDraft("domain", event.target.value)}
+              aria-label="Filter audit domain"
             >
               <option value="">All domains</option>
               {AUDIT_DOMAINS.map((value) => (
@@ -98,113 +156,89 @@ function ActivityPage() {
                   {titleCase(value)}
                 </option>
               ))}
-            </select>
+            </TSelect>
           </Filter>
           <Filter label="Actor">
-            <select
-              className="input-control"
-              value={actorType}
-              onChange={(event) =>
-                updateFilter(setActorType, event.target.value)
-              }
+            <TSelect
+              value={draft.actorType}
+              onChange={(event) => updateDraft("actorType", event.target.value)}
+              aria-label="Filter audit actor"
             >
               <option value="">All actors</option>
-              <option value="User">Users</option>
-              <option value="System">System</option>
-            </select>
+              {AUDIT_ACTOR_TYPES.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </TSelect>
           </Filter>
           <Filter label="From">
-            <input
-              className="input-control"
+            <TInput
               type="date"
-              value={from}
-              onChange={(event) => updateFilter(setFrom, event.target.value)}
+              value={draft.from}
+              onChange={(event) => updateDraft("from", event.target.value)}
             />
           </Filter>
           <Filter label="To">
-            <input
-              className="input-control"
+            <TInput
               type="date"
-              value={to}
-              onChange={(event) => updateFilter(setTo, event.target.value)}
+              value={draft.to}
+              onChange={(event) => updateDraft("to", event.target.value)}
             />
           </Filter>
-        </div>
-
+          <Btn variant="primary" onClick={applyFilters}>
+            Apply
+          </Btn>
+          <Btn variant="ghost" onClick={clearFilters}>
+            Clear
+          </Btn>
+        </Toolbar>
+        {filterError ? (
+          <p
+            className="border-b border-border px-5 pb-4 text-sm text-[#b43b3b]"
+            role="alert"
+          >
+            {filterError}
+          </p>
+        ) : null}
         {message ? (
-          <p className="p-5 text-sm text-destructive">{message}</p>
+          <div className="px-5 py-5" role="alert">
+            <p className="text-sm text-[#b43b3b]">{message}</p>
+            <Btn className="mt-3" onClick={() => setApplied({ ...applied })}>
+              <RefreshCw className="h-4 w-4" /> Retry
+            </Btn>
+          </div>
         ) : null}
         {loading ? (
-          <p className="p-5 text-sm text-muted-foreground">Loading activity…</p>
+          <p className="px-5 py-8 text-sm text-muted-foreground" role="status">
+            Loading audit events…
+          </p>
         ) : null}
         {!loading && !message && data.events.length === 0 ? (
-          <p className="p-5 text-sm text-muted-foreground">
+          <p className="px-5 py-8 text-sm text-muted-foreground">
             No audit events match these filters.
           </p>
         ) : null}
-        {!loading && data.events.length ? (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left text-sm">
-              <thead className="border-b border-border bg-secondary/30 text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Time</th>
-                  <th className="px-4 py-3 font-medium">Actor</th>
-                  <th className="px-4 py-3 font-medium">Action</th>
-                  <th className="px-4 py-3 font-medium">Entity</th>
-                  <th className="px-4 py-3 font-medium">Summary</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {data.events.map((event) => (
-                  <tr key={event.id} className="align-top">
-                    <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">
-                      {new Date(event.occurred_at).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium">
-                        {event.actor?.full_name || event.actor_type}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {event.actor?.user_type || event.actor_type}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-medium">
-                      {humanizeAction(event.action)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div>{titleCase(event.entity_type)}</div>
-                      <div className="font-mono text-xs text-muted-foreground">
-                        {event.entity_id.slice(0, 8)}
-                      </div>
-                    </td>
-                    <td className="max-w-md px-4 py-3 text-muted-foreground">
-                      {summarizeAuditEvent(event)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {!loading && !message && data.events.length ? (
+          <AuditEvents events={data.events} />
         ) : null}
-        <div className="flex items-center justify-between border-t border-border p-4 text-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-4 text-sm">
           <span className="text-muted-foreground">
             Page {data.page} of {totalPages}
           </span>
           <div className="flex gap-2">
-            <button
-              className="rounded-md border border-border px-3 py-2 disabled:opacity-40"
+            <Btn
               disabled={page <= 1 || loading}
               onClick={() => setPage((value) => Math.max(1, value - 1))}
             >
               Previous
-            </button>
-            <button
-              className="rounded-md border border-border px-3 py-2 disabled:opacity-40"
+            </Btn>
+            <Btn
               disabled={page >= totalPages || loading}
               onClick={() => setPage((value) => value + 1)}
             >
               Next
-            </button>
+            </Btn>
           </div>
         </div>
       </Card>
@@ -212,21 +246,153 @@ function ActivityPage() {
   );
 }
 
-function Filter({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function AuditEvents({ events }: { events: AuditEvent[] }) {
   return (
-    <label className="space-y-1 text-xs font-medium text-muted-foreground">
+    <>
+      <div className="hidden overflow-x-auto lg:block">
+        <table className="w-full text-left text-sm">
+          <caption className="sr-only">Immutable audit events</caption>
+          <thead className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
+            <tr>
+              <th className="px-5 py-3 font-semibold">Time</th>
+              <th className="px-5 py-3 font-semibold">Actor</th>
+              <th className="px-5 py-3 font-semibold">Action</th>
+              <th className="px-5 py-3 font-semibold">Entity / context</th>
+              <th className="px-5 py-3 font-semibold">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {events.map((event) => (
+              <AuditRow key={event.id} event={event} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="divide-y divide-border lg:hidden">
+        {events.map((event) => (
+          <AuditDisclosure key={event.id} event={event} />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function AuditRow({ event }: { event: AuditEvent }) {
+  return (
+    <tr className="border-b border-border/60 align-top hover:bg-secondary/30">
+      <td className="whitespace-nowrap px-5 py-4 text-xs text-muted-foreground">
+        {formatManila(event.occurred_at)}
+      </td>
+      <td className="px-5 py-4">
+        <div className="font-medium">
+          {event.actor?.full_name || event.actor_type}
+        </div>
+        <div className="text-xs text-muted-foreground">
+          {event.actor?.user_type || event.actor_type}
+        </div>
+      </td>
+      <td className="px-5 py-4">
+        <div className="font-medium">{humanizeAction(event.action)}</div>
+        <Badge>{event.actor_type}</Badge>
+      </td>
+      <td className="px-5 py-4">
+        <div>{titleCase(event.entity_type)}</div>
+        <div className="font-mono text-xs text-muted-foreground">
+          {event.entity_id}
+        </div>
+        {event.booking_id ? (
+          <div className="mt-1 text-xs text-muted-foreground">
+            Booking {event.booking_id}
+          </div>
+        ) : null}
+      </td>
+      <td className="max-w-md px-5 py-4 text-muted-foreground">
+        {summarizeAuditEvent(event)}
+      </td>
+    </tr>
+  );
+}
+
+function AuditDisclosure({ event }: { event: AuditEvent }) {
+  return (
+    <details className="group px-5 py-4">
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
+        <div className="min-w-0">
+          <div className="font-medium">{humanizeAction(event.action)}</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {formatManila(event.occurred_at)} ·{" "}
+            {event.actor?.full_name || event.actor_type}
+          </div>
+        </div>
+        <ChevronDown
+          className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+          aria-hidden="true"
+        />
+      </summary>
+      <dl className="mt-4 grid gap-3 border-t border-border pt-4 text-sm">
+        <div>
+          <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+            Actor
+          </dt>
+          <dd className="mt-1">
+            {event.actor?.full_name || event.actor_type} ·{" "}
+            {event.actor?.user_type || event.actor_type}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+            Entity
+          </dt>
+          <dd className="mt-1">
+            {titleCase(event.entity_type)}{" "}
+            <span className="font-mono text-xs text-muted-foreground">
+              {event.entity_id}
+            </span>
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+            Canonical details
+          </dt>
+          <dd className="mt-1 text-muted-foreground">
+            {summarizeAuditEvent(event)}
+          </dd>
+        </div>
+        {event.booking_id ? (
+          <div>
+            <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+              Booking context
+            </dt>
+            <dd className="mt-1 font-mono text-xs">{event.booking_id}</dd>
+          </div>
+        ) : null}
+      </dl>
+    </details>
+  );
+}
+
+function Filter({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="flex min-w-36 flex-col gap-1 text-xs font-medium text-muted-foreground">
       <span>{label}</span>
       {children}
     </label>
   );
 }
 
+function manilaStart(value: string) {
+  return new Date(`${value}T00:00:00+08:00`).toISOString();
+}
+function manilaEnd(value: string) {
+  return new Date(`${value}T23:59:59.999+08:00`).toISOString();
+}
+function formatManila(value: string) {
+  return new Intl.DateTimeFormat("en-PH", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Manila",
+  }).format(new Date(value));
+}
 function titleCase(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }

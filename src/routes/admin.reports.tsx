@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { BarChart3, CalendarCheck, Car, RotateCcw, Wrench } from "lucide-react";
 import {
@@ -16,10 +16,15 @@ import {
   defaultReportRange,
   type AdminReportsResponse,
 } from "@/lib/admin-reports";
+import { getAdminSession } from "@/lib/admin-auth";
 
 type ReportSearch = { from?: string; to?: string; branch?: string };
 
 export const Route = createFileRoute("/admin/reports")({
+  beforeLoad: () => {
+    if (typeof window === "undefined") return;
+    if (!getAdminSession()) throw redirect({ to: "/sign-in" });
+  },
   validateSearch: (search: Record<string, unknown>): ReportSearch => ({
     from: typeof search.from === "string" ? search.from : undefined,
     to: typeof search.to === "string" ? search.to : undefined,
@@ -35,10 +40,20 @@ function ReportsPage() {
   const start = search.from ?? defaults.start;
   const end = search.to ?? defaults.end;
   const branch = search.branch ?? ALL_BRANCHES;
+  const [draftStart, setDraftStart] = useState(start);
+  const [draftEnd, setDraftEnd] = useState(end);
+  const [draftBranch, setDraftBranch] = useState(branch);
+  const [filterError, setFilterError] = useState("");
   const [report, setReport] = useState<AdminReportsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    setDraftStart(start);
+    setDraftEnd(end);
+    setDraftBranch(branch);
+  }, [branch, end, start]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -88,15 +103,20 @@ function ReportsPage() {
     });
   }
 
-  function changeDate(part: "from" | "to", value: string) {
-    if (!value) return;
-    let nextStart = part === "from" ? value : start;
-    let nextEnd = part === "to" ? value : end;
-    if (nextStart > nextEnd) {
-      if (part === "from") nextEnd = nextStart;
-      else nextStart = nextEnd;
+  function applyFilters() {
+    setFilterError("");
+    if (!draftStart || !draftEnd) {
+      setFilterError("Choose both a start and end date.");
+      return;
     }
-    updateFilters({ from: nextStart, to: nextEnd });
+    if (draftStart > draftEnd) {
+      setFilterError("Start date must be on or before end date.");
+      return;
+    }
+    void navigate({
+      to: "/admin/reports",
+      search: { from: draftStart, to: draftEnd, branch: draftBranch },
+    });
   }
 
   function reset() {
@@ -121,24 +141,22 @@ function ReportsPage() {
           <FilterField label="From">
             <TInput
               type="date"
-              value={start}
-              onChange={(event) => changeDate("from", event.target.value)}
+              value={draftStart}
+              onChange={(event) => setDraftStart(event.target.value)}
             />
           </FilterField>
           <FilterField label="To">
             <TInput
               type="date"
-              value={end}
-              onChange={(event) => changeDate("to", event.target.value)}
+              value={draftEnd}
+              onChange={(event) => setDraftEnd(event.target.value)}
             />
           </FilterField>
           <FilterField label="Branch">
             <TSelect
               className="min-w-52"
-              value={branch}
-              onChange={(event) =>
-                updateFilters({ branch: event.target.value })
-              }
+              value={draftBranch}
+              onChange={(event) => setDraftBranch(event.target.value)}
             >
               <option value={ALL_BRANCHES}>All branches</option>
               {branches.map((row) => (
@@ -148,19 +166,27 @@ function ReportsPage() {
               ))}
             </TSelect>
           </FilterField>
+          <Btn type="button" variant="primary" onClick={applyFilters}>
+            Apply
+          </Btn>
           <Btn
             type="button"
             variant="ghost"
             onClick={reset}
-            className="border border-primary/20 bg-primary/5 text-primary"
+            className="border border-border"
           >
-            <RotateCcw className="h-4 w-4" /> Last 30 days
+            <RotateCcw className="h-4 w-4" /> Reset
           </Btn>
           <span className="text-xs text-muted-foreground sm:ml-auto">
             {formatDate(start)} to {formatDate(end)} · {branchLabel}
           </span>
         </div>
       </Toolbar>
+      {filterError ? (
+        <p className="mb-4 text-sm text-[#b43b3b]" role="alert">
+          {filterError}
+        </p>
+      ) : null}
       {loading ? (
         <Card>
           <p className="p-6 text-sm text-muted-foreground">

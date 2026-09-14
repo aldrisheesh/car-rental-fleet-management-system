@@ -1,12 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import {
-  AlertTriangle,
-  History,
-  Plus,
-  RefreshCw,
-  ShieldAlert,
-  Wrench,
-} from "lucide-react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { History, Plus, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   MaintenanceRecordDialog,
@@ -17,13 +10,11 @@ import {
   Btn,
   Card,
   CardHeader,
-  KPI,
   PageHeader,
   TInput,
 } from "@/components/admin/ui";
 import {
   createMaintenancePayload,
-  maintenanceSummary,
   partitionMaintenanceRecords,
   transitionMaintenancePayload,
   type MaintenanceDraft,
@@ -38,8 +29,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/maintenance")({
+  beforeLoad: () => {
+    if (typeof window === "undefined") return;
+    const session = getAdminSession();
+    if (!session) throw redirect({ to: "/sign-in" });
+    if (isStaffRole(session.role)) throw redirect({ to: "/admin" });
+  },
   component: MaintenancePage,
 });
 
@@ -122,6 +120,7 @@ function MaintenancePage() {
   );
   const [mutationPending, setMutationPending] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
     kind: "success" | "warning";
     message: string;
@@ -167,7 +166,6 @@ function MaintenancePage() {
     void loadCanonicalData();
   }, [loadCanonicalData]);
 
-  const summary = useMemo(() => maintenanceSummary(records), [records]);
   const { active, history: maintenanceHistory } = useMemo(
     () => partitionMaintenanceRecords(records),
     [records],
@@ -176,6 +174,22 @@ function MaintenancePage() {
     () => readiness.filter((item) => !item.maintenanceReady),
     [readiness],
   );
+  const selectedRecord = useMemo(
+    () =>
+      records.find((record) => record.id === selectedRecordId) ??
+      active[0] ??
+      maintenanceHistory[0] ??
+      null,
+    [active, maintenanceHistory, records, selectedRecordId],
+  );
+
+  useEffect(() => {
+    setSelectedRecordId((current) =>
+      current && records.some((record) => record.id === current)
+        ? current
+        : (active[0]?.id ?? maintenanceHistory[0]?.id ?? null),
+    );
+  }, [active, maintenanceHistory, records]);
 
   function openCreateDialog() {
     setDraft(emptyDraft());
@@ -311,6 +325,7 @@ function MaintenancePage() {
       {feedback && (
         <div
           role={feedback.kind === "warning" ? "alert" : "status"}
+          aria-live="polite"
           className={`mb-5 rounded-lg border px-4 py-3 text-sm ${
             feedback.kind === "warning"
               ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
@@ -327,82 +342,88 @@ function MaintenancePage() {
         </p>
       )}
 
-      <section aria-labelledby="maintenance-summary">
-        <h2 id="maintenance-summary" className="sr-only">
-          Maintenance summary
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <KPI
-            accent
-            label="Open Maintenance"
-            value={String(summary.open)}
-            icon={<Wrench className="h-4 w-4" />}
-          />
-          <KPI
-            label="Blocking Maintenance"
-            value={String(summary.blocking)}
-            icon={<ShieldAlert className="h-4 w-4" />}
-          />
-          <KPI
-            label="PMS / Readiness Attention"
-            value={String(attention.length)}
-            icon={<AlertTriangle className="h-4 w-4" />}
-          />
-        </div>
-      </section>
+      <p className="mb-5 text-sm text-muted-foreground">
+        {active.length} open record{active.length === 1 ? "" : "s"} ·{" "}
+        {attention.length} vehicle{attention.length === 1 ? "" : "s"} with
+        derived readiness attention. Record status is canonical; readiness is
+        derived and is not persisted.
+      </p>
 
       <Card className="mt-6">
         <CardHeader
           title="Maintenance / readiness attention"
           hint="Canonical PMS and vehicle readiness checks"
         />
-        <div className="grid gap-3 p-5 lg:grid-cols-2">
+        <div className="overflow-x-auto">
           {attention.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="p-5 text-sm text-muted-foreground">
               All vehicles are maintenance-ready.
             </p>
           ) : (
-            attention.map((item) => (
-              <div
-                key={item.vehicleId}
-                className="rounded-lg border border-amber-500/25 bg-amber-500/5 p-4"
-              >
-                <div className="font-medium">{item.vehicleName}</div>
-                <div className="font-mono text-xs text-muted-foreground">
-                  {item.licensePlate}
-                </div>
-                <div className="mt-2 text-xs font-semibold uppercase tracking-wider text-amber-400">
-                  Not maintenance-ready
-                </div>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                  {item.reasons.map((reason) => (
-                    <li key={reason}>{reason}</li>
-                  ))}
-                </ul>
-              </div>
-            ))
+            <table className="w-full min-w-[620px] text-sm">
+              <caption className="sr-only">
+                Vehicles with maintenance readiness attention
+              </caption>
+              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                <tr className="border-b border-border">
+                  <th className="px-5 py-3 text-left font-semibold">Vehicle</th>
+                  <th className="px-5 py-3 text-left font-semibold">
+                    Readiness
+                  </th>
+                  <th className="px-5 py-3 text-left font-semibold">
+                    Canonical evidence
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {attention.map((item) => (
+                  <tr
+                    key={item.vehicleId}
+                    className="border-b border-border/60 align-top"
+                  >
+                    <td className="px-5 py-4">
+                      <div className="font-medium">{item.vehicleName}</div>
+                      <div className="font-mono text-xs text-muted-foreground">
+                        {item.licensePlate}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <Badge>Not maintenance-ready</Badge>
+                    </td>
+                    <td className="px-5 py-4 text-muted-foreground">
+                      {item.reasons.join("; ")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </Card>
 
-      <Card className="mt-6">
-        <CardHeader
-          title="Active maintenance"
-          hint="Open records; blocking work is prioritized"
-        />
-        {active.length === 0 ? (
-          <p className="p-5 text-sm text-muted-foreground">
-            No active maintenance.
-          </p>
-        ) : (
-          <MaintenanceTable
-            records={active}
-            active
-            onComplete={(record) => openTransition(record, "Completed")}
-            onCancel={(record) => openTransition(record, "Cancelled")}
+      <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
+        <Card>
+          <CardHeader
+            title="Active maintenance"
+            hint="Open records; blocking work is prioritized"
           />
-        )}
-      </Card>
+          {active.length === 0 ? (
+            <p className="p-5 text-sm text-muted-foreground">
+              No active maintenance.
+            </p>
+          ) : (
+            <MaintenanceTable
+              records={active}
+              active
+              selectedId={selectedRecord?.id}
+              onSelect={setSelectedRecordId}
+              onComplete={(record) => openTransition(record, "Completed")}
+              onCancel={(record) => openTransition(record, "Cancelled")}
+            />
+          )}
+        </Card>
+        <MaintenanceDetail record={selectedRecord} />
+      </div>
 
       <Card className="mt-6">
         <CardHeader
@@ -454,100 +475,321 @@ function MaintenancePage() {
 function MaintenanceTable({
   records,
   active = false,
+  selectedId,
+  onSelect,
   onComplete,
   onCancel,
 }: {
   records: MaintenanceRecord[];
   active?: boolean;
+  selectedId?: string;
+  onSelect?: (id: string) => void;
   onComplete?: (record: MaintenanceRecord) => void;
   onCancel?: (record: MaintenanceRecord) => void;
 }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[1100px] text-sm">
-        <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-          <tr className="border-b border-border">
-            <th className="px-4 py-3 text-left font-semibold">Vehicle</th>
-            <th className="px-4 py-3 text-left font-semibold">Service</th>
-            <th className="px-4 py-3 text-left font-semibold">Started</th>
-            <th className="px-4 py-3 text-left font-semibold">Odometer</th>
-            <th className="px-4 py-3 text-left font-semibold">Next service</th>
-            <th className="px-4 py-3 text-right font-semibold">Cost</th>
-            <th className="px-4 py-3 text-left font-semibold">Status</th>
-            {active && (
-              <th className="px-4 py-3 text-right font-semibold">Actions</th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {records.map((record) => (
-            <tr
-              key={record.id}
-              className="border-b border-border/60 align-top hover:bg-secondary/40"
-            >
-              <td className="px-4 py-3">
-                <div className="font-medium">
-                  {record.vehicle?.name ?? "Unknown vehicle"}
-                </div>
-                <div className="font-mono text-xs text-muted-foreground">
-                  {record.vehicle?.license_plate ?? "Plate unavailable"}
-                </div>
-                {record.blocks_rental_use && (
-                  <div className="mt-2 text-xs font-semibold text-amber-400">
-                    Blocks rental use
-                  </div>
-                )}
-              </td>
-              <td className="max-w-xs px-4 py-3">
-                <div className="font-medium">{record.maintenance_type}</div>
-                <div className="mt-1 text-muted-foreground">
-                  {record.description}
-                </div>
-                {record.remarks && (
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    Remarks: {record.remarks}
-                  </div>
-                )}
-              </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {formatDate(record.service_started_at, true)}
-                {record.completed_at && (
-                  <div className="mt-1 text-xs">
-                    Completed {formatDate(record.completed_at, true)}
-                  </div>
-                )}
-              </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {formatOdometer(record.odometer_at_service)}
-              </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                <div>{formatDate(record.next_service_date)}</div>
-                <div className="mt-1 text-xs">
-                  {formatOdometer(record.next_service_odometer)}
-                </div>
-              </td>
-              <td className="px-4 py-3 text-right font-display font-semibold">
-                {formatMoney(record.cost_php)}
-              </td>
-              <td className="px-4 py-3">
-                <Badge>{record.status}</Badge>
-              </td>
-              {active && (
-                <td className="px-4 py-3">
-                  <div className="flex justify-end gap-2">
-                    <Btn variant="primary" onClick={() => onComplete?.(record)}>
-                      Complete
-                    </Btn>
-                    <Btn variant="danger" onClick={() => onCancel?.(record)}>
-                      Cancel
-                    </Btn>
-                  </div>
-                </td>
-              )}
+    <div>
+      <div className="hidden overflow-x-auto lg:block">
+        <table className="w-full text-sm">
+          <caption className="sr-only">Canonical maintenance records</caption>
+          <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            <tr className="border-b border-border">
+              <th className="px-5 py-3 text-left font-semibold">Vehicle</th>
+              <th className="px-5 py-3 text-left font-semibold">
+                Service facts
+              </th>
+              <th className="px-5 py-3 text-left font-semibold">
+                Due evidence
+              </th>
+              <th className="px-5 py-3 text-left font-semibold">Status</th>
+              {active ? (
+                <th className="px-5 py-3 text-right font-semibold">Actions</th>
+              ) : null}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {records.map((record) => (
+              <MaintenanceRow
+                key={record.id}
+                record={record}
+                active={active}
+                selected={selectedId === record.id}
+                onSelect={onSelect}
+                onComplete={onComplete}
+                onCancel={onCancel}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="divide-y divide-border lg:hidden">
+        {records.map((record) => (
+          <MaintenanceDisclosure
+            key={record.id}
+            record={record}
+            active={active}
+            selected={selectedId === record.id}
+            onSelect={onSelect}
+            onComplete={onComplete}
+            onCancel={onCancel}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MaintenanceRow({
+  record,
+  active,
+  selected,
+  onSelect,
+  onComplete,
+  onCancel,
+}: {
+  record: MaintenanceRecord;
+  active: boolean;
+  selected: boolean;
+  onSelect?: (id: string) => void;
+  onComplete?: (record: MaintenanceRecord) => void;
+  onCancel?: (record: MaintenanceRecord) => void;
+}) {
+  return (
+    <tr
+      className={`border-b border-border/60 align-top ${selected ? "bg-secondary/50" : "hover:bg-secondary/30"}`}
+    >
+      <td className="px-5 py-4">
+        {onSelect ? (
+          <button
+            className="min-h-11 text-left"
+            onClick={() => onSelect(record.id)}
+            aria-label={`View maintenance record for ${record.vehicle?.name ?? "vehicle"}`}
+          >
+            <span className="block font-medium">
+              {record.vehicle?.name ?? "Unknown vehicle"}
+            </span>
+            <span className="block font-mono text-xs text-muted-foreground">
+              {record.vehicle?.license_plate ?? "Plate unavailable"}
+            </span>
+          </button>
+        ) : (
+          <>
+            <div className="font-medium">
+              {record.vehicle?.name ?? "Unknown vehicle"}
+            </div>
+            <div className="font-mono text-xs text-muted-foreground">
+              {record.vehicle?.license_plate ?? "Plate unavailable"}
+            </div>
+          </>
+        )}
+        {record.blocks_rental_use ? (
+          <div className="mt-2 text-xs font-semibold text-[#a45b13]">
+            Blocks rental use
+          </div>
+        ) : null}
+      </td>
+      <td className="max-w-md px-5 py-4">
+        <div className="font-medium">{record.maintenance_type}</div>
+        <div className="mt-1 text-muted-foreground">{record.description}</div>
+        <div className="mt-2 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+          <span>Started: {formatDate(record.service_started_at, true)}</span>
+          <span>Odometer: {formatOdometer(record.odometer_at_service)}</span>
+          <span>Cost: {formatMoney(record.cost_php)}</span>
+          {record.completed_at ? (
+            <span>Completed: {formatDate(record.completed_at, true)}</span>
+          ) : null}
+        </div>
+        {record.remarks ? (
+          <div className="mt-2 text-xs text-muted-foreground">
+            Remarks: {record.remarks}
+          </div>
+        ) : null}
+      </td>
+      <td className="px-5 py-4 text-sm text-muted-foreground">
+        <div>{formatDate(record.next_service_date)}</div>
+        <div className="mt-1 text-xs">
+          {formatOdometer(record.next_service_odometer)}
+        </div>
+      </td>
+      <td className="px-5 py-4">
+        <Badge>{record.status}</Badge>
+      </td>
+      {active ? (
+        <td className="px-5 py-4">
+          <div className="flex justify-end gap-2">
+            <Btn variant="primary" onClick={() => onComplete?.(record)}>
+              Complete
+            </Btn>
+            <Btn variant="danger" onClick={() => onCancel?.(record)}>
+              Cancel
+            </Btn>
+          </div>
+        </td>
+      ) : null}
+    </tr>
+  );
+}
+
+function MaintenanceDisclosure({
+  record,
+  active,
+  selected,
+  onSelect,
+  onComplete,
+  onCancel,
+}: {
+  record: MaintenanceRecord;
+  active: boolean;
+  selected: boolean;
+  onSelect?: (id: string) => void;
+  onComplete?: (record: MaintenanceRecord) => void;
+  onCancel?: (record: MaintenanceRecord) => void;
+}) {
+  return (
+    <details
+      className={`group px-5 py-4 ${selected ? "bg-secondary/50" : ""}`}
+      onToggle={() => onSelect?.(record.id)}
+    >
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
+        <div className="min-w-0">
+          <div className="font-medium">
+            {record.vehicle?.name ?? "Unknown vehicle"}
+          </div>
+          <div className="mt-1 font-mono text-xs text-muted-foreground">
+            {record.vehicle?.license_plate ?? "Plate unavailable"}
+          </div>
+        </div>
+        <Badge>{record.status}</Badge>
+      </summary>
+      <div className="mt-4 grid gap-3 border-t border-border pt-4 text-sm">
+        <div>
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">
+            Service
+          </span>
+          <p className="mt-1 font-medium">{record.maintenance_type}</p>
+          <p className="text-muted-foreground">{record.description}</p>
+        </div>
+        <dl className="grid gap-2 text-muted-foreground sm:grid-cols-2">
+          <div>
+            <dt>Started</dt>
+            <dd className="text-foreground">
+              {formatDate(record.service_started_at, true)}
+            </dd>
+          </div>
+          <div>
+            <dt>Odometer</dt>
+            <dd className="text-foreground">
+              {formatOdometer(record.odometer_at_service)}
+            </dd>
+          </div>
+          <div>
+            <dt>Next service</dt>
+            <dd className="text-foreground">
+              {formatDate(record.next_service_date)} ·{" "}
+              {formatOdometer(record.next_service_odometer)}
+            </dd>
+          </div>
+          <div>
+            <dt>Cost</dt>
+            <dd className="text-foreground">{formatMoney(record.cost_php)}</dd>
+          </div>
+        </dl>
+        {record.blocks_rental_use ? (
+          <p className="text-xs font-semibold text-[#a45b13]">
+            Blocks rental use
+          </p>
+        ) : null}
+        {record.remarks ? (
+          <p className="text-xs text-muted-foreground">
+            Remarks: {record.remarks}
+          </p>
+        ) : null}
+        {active ? (
+          <div className="flex flex-wrap gap-2">
+            <Btn variant="primary" onClick={() => onComplete?.(record)}>
+              Complete
+            </Btn>
+            <Btn variant="danger" onClick={() => onCancel?.(record)}>
+              Cancel
+            </Btn>
+          </div>
+        ) : null}
+      </div>
+    </details>
+  );
+}
+
+function MaintenanceDetail({ record }: { record: MaintenanceRecord | null }) {
+  return (
+    <Card as="aside" className="h-fit xl:sticky xl:top-6">
+      {!record ? (
+        <p className="p-6 text-sm text-muted-foreground">
+          Select a maintenance record to inspect its canonical service facts.
+        </p>
+      ) : (
+        <>
+          <div className="border-b border-border px-5 py-4">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              Selected record
+            </p>
+            <h2 className="mt-1 text-xl font-semibold">
+              {record.vehicle?.name ?? "Unknown vehicle"}
+            </h2>
+            <p className="mt-1 font-mono text-xs text-muted-foreground">
+              {record.vehicle?.license_plate ?? "Plate unavailable"} ·{" "}
+              {record.id}
+            </p>
+            <div className="mt-3">
+              <Badge>{record.status}</Badge>
+            </div>
+          </div>
+          <dl className="grid gap-3 px-5 py-5 text-sm sm:grid-cols-2 xl:grid-cols-1">
+            <Detail label="Maintenance type">{record.maintenance_type}</Detail>
+            <Detail label="Description">{record.description}</Detail>
+            <Detail label="Started">
+              {formatDate(record.service_started_at, true)}
+            </Detail>
+            <Detail label="Next service">
+              {formatDate(record.next_service_date)} ·{" "}
+              {formatOdometer(record.next_service_odometer)}
+            </Detail>
+            <Detail label="Odometer">
+              {formatOdometer(record.odometer_at_service)}
+            </Detail>
+            <Detail label="Cost">{formatMoney(record.cost_php)}</Detail>
+            <Detail label="Rental use">
+              {record.blocks_rental_use
+                ? "Blocks rental use"
+                : "Does not block rental use"}
+            </Detail>
+            {record.remarks ? (
+              <Detail label="Remarks">{record.remarks}</Detail>
+            ) : null}
+          </dl>
+          <p className="border-t border-border px-5 py-4 text-xs leading-5 text-muted-foreground">
+            Record facts are read from the canonical maintenance API. State
+            transitions remain limited to the supported Open → Completed or Open
+            → Cancelled mutations.
+          </p>
+        </>
+      )}
+    </Card>
+  );
+}
+
+function Detail({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="mt-1 break-words">{children}</dd>
     </div>
   );
 }
@@ -700,6 +942,7 @@ function formatDate(value: string | null, includeTime = false) {
   return new Intl.DateTimeFormat("en-PH", {
     dateStyle: "medium",
     ...(includeTime ? { timeStyle: "short" as const } : {}),
+    timeZone: "Asia/Manila",
   }).format(date);
 }
 
