@@ -1,3 +1,5 @@
+import { bookingPath } from "./customer-data.ts";
+
 export type NotificationType =
   | "requirements_needs_resubmission"
   | "requirements_verified"
@@ -76,10 +78,12 @@ export function notificationRoute(
   notification: CanonicalNotification,
   audience: "admin" | "customer",
 ) {
-  if (audience === "customer")
-    return notification.relatedEntityType === "payment"
-      ? "/payment-details"
-      : "/customer";
+  if (audience === "customer") {
+    if (notification.relatedEntityType === "booking") {
+      return bookingPath(notification.relatedEntityId);
+    }
+    return "/customer";
+  }
   if (notification.notificationType === "maintenance_attention")
     return "/admin/maintenance";
   if (notification.notificationType === "low_availability") return "/admin";

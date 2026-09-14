@@ -162,6 +162,10 @@ export type RequirementsResponse = {
   requiredTypes: string[];
 };
 
+export function bookingPath(bookingId: string) {
+  return `/bookings/${encodeURIComponent(bookingId)}`;
+}
+
 export class ApiRequestError extends Error {
   readonly status: number;
   readonly fieldErrors: Record<string, string>;
@@ -184,9 +188,16 @@ export async function fetchJson<T>(
 ): Promise<T> {
   let response: Response;
   try {
+    const headers = new Headers(init?.headers);
+    const isMultipart =
+      typeof FormData !== "undefined" && init?.body instanceof FormData;
+    if (!isMultipart && !headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
+    }
     response = await fetch(input, {
       credentials: "same-origin",
       ...init,
+      headers,
     });
   } catch {
     throw new ApiRequestError(

@@ -7,16 +7,43 @@ export const CUSTOMER_PAYMENT_STATUSES = [
 
 export type CustomerPaymentStatus = (typeof CUSTOMER_PAYMENT_STATUSES)[number];
 
+export type CustomerPaymentProof = {
+  id: string;
+  original_filename?: string | null;
+  mime_type?: string | null;
+  size_bytes?: number | null;
+  version?: number | null;
+  is_current?: boolean | null;
+  uploaded_at?: string | null;
+};
+
+export type CustomerPaymentMethod = {
+  id: string;
+  code?: string | null;
+  label: string;
+  instructions?: string | null;
+  is_demo?: boolean | null;
+};
+
 export type CustomerPayment = {
   id: string;
   booking_id: string;
   status: CustomerPaymentStatus;
+  payment_method_id?: string | null;
   payment_method_label?: string | null;
   submitted_amount?: number | string | null;
+  required_amount?: number | string | null;
   transaction_reference?: string | null;
   resubmission_reason?: string | null;
   submitted_at?: string | null;
   updated_at?: string | null;
+  payment_methods?: CustomerPaymentMethod | null;
+  payment_proofs?: CustomerPaymentProof[];
+};
+
+export type CustomerPaymentResponse = {
+  payments: CustomerPayment[];
+  paymentMethods: CustomerPaymentMethod[];
 };
 
 type JsonResponse = {

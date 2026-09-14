@@ -20,6 +20,7 @@ import {
 
 import type { CustomerVehicle } from "@/lib/customer-data";
 import { formatMoney } from "@/lib/customer-data";
+import type { LifecycleJourneyStep } from "@/lib/customer-lifecycle";
 
 export type CalloutTone = "info" | "success" | "warning" | "error" | "locked";
 
@@ -359,6 +360,44 @@ export function RentalJourney({
   );
 }
 
+export function LifecycleJourney({ steps }: { steps: LifecycleJourneyStep[] }) {
+  return (
+    <section
+      className="booking-journey"
+      aria-labelledby="booking-journey-title"
+    >
+      <div className="customer-container booking-journey-inner">
+        <h2 id="booking-journey-title" className="booking-journey-title">
+          Rental journey
+        </h2>
+        <ol className="booking-journey-list">
+          {steps.map((step) => (
+            <li
+              className={`booking-journey-step is-${step.state}`}
+              key={step.key}
+              aria-current={step.state === "current" ? "step" : undefined}
+            >
+              <span className="booking-journey-marker" aria-hidden="true">
+                {step.state === "complete" ? (
+                  <Check size={16} strokeWidth={2.5} />
+                ) : step.state === "locked" ? (
+                  <LockKeyhole size={15} />
+                ) : (
+                  <Circle size={17} />
+                )}
+              </span>
+              <span className="booking-journey-copy">
+                <strong>{step.label}</strong>
+                {step.note ? <small>{step.note}</small> : null}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
 export function ErrorSummary({
   errors,
   focusKey,
@@ -406,11 +445,13 @@ export function FieldError({ id, message }: { id: string; message?: string }) {
 export function FileTarget({
   id,
   label,
+  name,
   disabled,
   onChange,
 }: {
   id: string;
   label: string;
+  name?: string;
   disabled?: boolean;
   onChange: (file: File | undefined, input: HTMLInputElement) => void;
 }) {
@@ -423,6 +464,7 @@ export function FileTarget({
       <span>{label}</span>
       <input
         id={id}
+        name={name ?? id}
         type="file"
         accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
         disabled={disabled}

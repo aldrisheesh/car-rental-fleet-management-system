@@ -160,8 +160,8 @@ test("operational types project and route without changing existing destinations
   });
   assert.equal(notificationRoute(payment, "admin"), "/admin/payments");
   assert.equal(notificationRoute(booking, "admin"), "/admin/bookings");
-  assert.equal(notificationRoute(payment, "customer"), "/payment-details");
-  assert.equal(notificationRoute(booking, "customer"), "/customer");
+  assert.equal(notificationRoute(payment, "customer"), "/customer");
+  assert.equal(notificationRoute(booking, "customer"), "/bookings/booking-1");
   assert.match(operationalMigration, /'maintenance_attention'/);
   assert.match(operationalMigration, /'low_availability'/);
 });
