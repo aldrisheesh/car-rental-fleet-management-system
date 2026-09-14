@@ -5,6 +5,29 @@ import {
   type FinderResponse,
 } from "./customer-data.ts";
 
+export type FinderEvaluationState =
+  | "direct-browse"
+  | "evaluating"
+  | "failed"
+  | "evaluated";
+
+export function finderEvaluationState({
+  hasCompleteCriteria,
+  hasResponse,
+  hasError,
+  hasValidationErrors,
+}: {
+  hasCompleteCriteria: boolean;
+  hasResponse: boolean;
+  hasError: boolean;
+  hasValidationErrors: boolean;
+}): FinderEvaluationState {
+  if (!hasCompleteCriteria) return "direct-browse";
+  if (hasResponse) return "evaluated";
+  if (hasError || hasValidationErrors) return "failed";
+  return "evaluating";
+}
+
 export type FinderCriteriaSummaryItem = {
   id: "dates" | "passengers" | "budget" | "category";
   label: string;

@@ -47,6 +47,7 @@ import {
 import {
   filterFinderRecommendations,
   finderCriteriaSummary,
+  finderEvaluationState,
 } from "@/lib/finder-presentation";
 
 export const Route = createFileRoute("/vehicles")({
@@ -111,6 +112,7 @@ function FindCarPage() {
   const [finderFocusKey, setFinderFocusKey] = useState(0);
   const [refinementOpen, setRefinementOpen] = useState(false);
   const [browseCategory, setBrowseCategory] = useState("");
+  const finderValuesRef = useRef<FinderFormState | null>(null);
   const evaluatedKey = useRef("");
 
   const categories = useMemo(
@@ -163,6 +165,7 @@ function FindCarPage() {
 
   const evaluateFinder = useCallback(
     async (values: FinderFormState, updateUrl: boolean) => {
+      finderValuesRef.current = values;
       const nextErrors: FinderFormErrors = {};
       const start = manilaDateTimeLocalToInstant(values.requestedStart);
       const end = manilaDateTimeLocalToInstant(values.requestedEnd);
@@ -193,12 +196,14 @@ function FindCarPage() {
       }
       if (Object.keys(nextErrors).length) {
         setFinderErrors(nextErrors);
+        setRefinementOpen(true);
         setFinderFocusKey((key) => key + 1);
         return;
       }
 
       setFinderErrors({});
       setFinderError("");
+      setFinderResponse(null);
       setFinderLoading(true);
       try {
         const result = await fetchJson<FinderResponse>("/api/vehicle-finder", {
@@ -235,6 +240,7 @@ function FindCarPage() {
             "The Finder is unavailable right now. Try again in a moment.",
           );
         }
+        setRefinementOpen(true);
       } finally {
         setFinderLoading(false);
       }
@@ -274,6 +280,13 @@ function FindCarPage() {
     ? `${formatDateForSummary(search.finderStart)} – ${formatDateForSummary(search.finderEnd)}`
     : "No dates selected";
   const finderForm = finderFormFromSearch(search);
+  const finderState = finderEvaluationState({
+    hasCompleteCriteria: hasFullFinderCriteria,
+    hasResponse: Boolean(finderResponse),
+    hasError: Boolean(finderError),
+    hasValidationErrors: Object.keys(finderErrors).length > 0,
+  });
+  const finderRetryValues = finderValuesRef.current ?? finderForm;
   const compactCriteria: FinderResponse["criteria"] =
     finderResponse?.criteria ?? {
       requestedStart: search.finderStart ?? "",
@@ -371,7 +384,7 @@ function FindCarPage() {
             </div>
           ) : null}
 
-          {!finderResponse ? (
+          {finderState === "direct-browse" ? (
             <div className="finder-heading">
               <div>
                 <p className="eyebrow">Find a car</p>
@@ -579,11 +592,6 @@ function FindCarPage() {
                 errors={finderSummaryErrors}
                 focusKey={finderFocusKey}
               />
-              {finderError ? (
-                <StatusCallout tone="error" title="Finder unavailable">
-                  {finderError}
-                </StatusCallout>
-              ) : null}
               <div className="finder-refinement-actions">
                 <button
                   className="customer-primary-button"
@@ -608,7 +616,7 @@ function FindCarPage() {
             </form>
           </details>
 
-          {finderLoading && !finderResponse ? (
+          {finderState === "evaluating" ? (
             <div
               className="finder-empty-state"
               role="status"
@@ -622,7 +630,42 @@ function FindCarPage() {
             </div>
           ) : null}
 
-          {finderResponse ? (
+          {finderState === "failed" ? (
+            <div className="finder-empty-state">
+              <StatusCallout
+                tone="error"
+                title="Finder evaluation failed"
+                action={
+                  <div className="finder-refinement-actions">
+                    <button
+                      className="customer-primary-button"
+                      type="button"
+                      onClick={() =>
+                        void evaluateFinder(finderRetryValues, false)
+                      }
+                      disabled={finderLoading}
+                    >
+                      <RefreshCw size={17} aria-hidden="true" />
+                      Try again
+                    </button>
+                    <button
+                      className="customer-tertiary-button"
+                      type="button"
+                      onClick={() => setRefinementOpen(true)}
+                    >
+                      <SlidersHorizontal size={17} aria-hidden="true" />
+                      Change trip
+                    </button>
+                  </div>
+                }
+              >
+                {finderError ||
+                  "Review the highlighted Finder details and try again."}
+              </StatusCallout>
+            </div>
+          ) : null}
+
+          {finderState === "evaluated" && finderResponse ? (
             <FinderResults
               response={finderResponse}
               search={search}
@@ -633,7 +676,9 @@ function FindCarPage() {
               onToggleRefinement={() => setRefinementOpen((open) => !open)}
               onOpenRefinement={() => setRefinementOpen(true)}
             />
-          ) : (
+          ) : null}
+
+          {finderState === "direct-browse" ? (
             <section
               className="finder-results-section"
               aria-labelledby="active-fleet-title"
@@ -705,7 +750,7 @@ function FindCarPage() {
                 </>
               ) : null}
             </section>
-          )}
+          ) : null}
         </div>
       </main>
       <Footer />
