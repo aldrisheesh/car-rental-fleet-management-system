@@ -27,6 +27,8 @@ export type BookingSpec = {
   status: string;
   pickupBranchId: string;
   returnBranchId: string;
+  pickupAt: string;
+  returnAt: string;
   requestedVehicleId: string;
   requestedVehicleKey: string;
   assignedVehicleId: string | null;
@@ -169,6 +171,8 @@ export type BookingSnapshotRow = {
   status: string | null;
   pickupBranchId: string | null;
   returnBranchId: string | null;
+  pickupAt: string | null;
+  returnAt: string | null;
   requestedVehicleId: string | null;
   assignedVehicleId: string | null;
 };
@@ -388,7 +392,7 @@ type ReadSupabaseClient = {
 const TABLE_SELECTS = {
   profiles: "id,full_name,user_type,account_status",
   bookings:
-    "id,customer_id,pickup_branch_id,return_branch_id,requested_vehicle_id,assigned_vehicle_id,booking_status",
+    "id,customer_id,pickup_branch_id,return_branch_id,pickup_at,return_at,requested_vehicle_id,assigned_vehicle_id,booking_status",
   requirements: "id,booking_id,customer_id,status",
   documents:
     "id,requirement_set_id,booking_id,customer_id,requirement_type,version,is_current,storage_path",
@@ -579,6 +583,8 @@ export async function readDefenseSnapshot(
       status: stringOrNull(row.booking_status),
       pickupBranchId: stringOrNull(row.pickup_branch_id),
       returnBranchId: stringOrNull(row.return_branch_id),
+      pickupAt: stringOrNull(row.pickup_at),
+      returnAt: stringOrNull(row.return_at),
       requestedVehicleId: stringOrNull(row.requested_vehicle_id),
       assignedVehicleId: stringOrNull(row.assigned_vehicle_id),
     })),
@@ -926,6 +932,15 @@ function validateManifestShape(
       )
         throw new ManifestError("Manifest baseline record is invalid.");
     }
+  }
+  for (const booking of value.bookings) {
+    requiredString(booking.pickupAt, "bookings.pickupAt");
+    requiredString(booking.returnAt, "bookings.returnAt");
+    if (
+      !Number.isFinite(Date.parse(booking.pickupAt)) ||
+      !Number.isFinite(Date.parse(booking.returnAt))
+    )
+      throw new ManifestError("Manifest booking schedule is invalid.");
   }
   const secretLike = allStrings(value).find((text) =>
     /(service[_-]?role|password|secret[_-]?key|access[_-]?token|api[_-]?key)/i.test(
@@ -1688,6 +1703,8 @@ export function verifyDefenseSnapshot(
       ["status", "status"],
       ["pickupBranchId", "pickupBranchId"],
       ["returnBranchId", "returnBranchId"],
+      ["pickupAt", "pickupAt"],
+      ["returnAt", "returnAt"],
       ["requestedVehicleId", "requestedVehicleId"],
       ["assignedVehicleId", "assignedVehicleId"],
     ],

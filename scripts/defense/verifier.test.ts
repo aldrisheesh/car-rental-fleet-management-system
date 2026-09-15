@@ -59,6 +59,8 @@ function baselineSnapshot(source: DefenseManifest = manifest): DefenseSnapshot {
       status: booking.status,
       pickupBranchId: booking.pickupBranchId,
       returnBranchId: booking.returnBranchId,
+      pickupAt: booking.pickupAt,
+      returnAt: booking.returnAt,
       requestedVehicleId: booking.requestedVehicleId,
       assignedVehicleId: booking.assignedVehicleId,
     })),
@@ -181,6 +183,65 @@ test("modified baseline booking state is drift", () => {
         issue.kind === "MODIFIED BASELINE RECORD" && issue.area === "Bookings",
     ),
   );
+});
+
+test("unchanged baseline booking schedule passes", () => {
+  const report = verifyDefenseSnapshot(manifest, cloneSnapshot());
+  assert.equal(report.classification, "DEFENSE BASELINE VERIFIED");
+  assert.equal(
+    report.checks.find((check) => check.label === "Bookings")?.pass,
+    true,
+  );
+});
+
+test("modified baseline pickup schedule is drift", () => {
+  const snapshot = cloneSnapshot();
+  snapshot.bookings[0].pickupAt = "2026-09-18T03:16:44.832+00:00";
+  const report = verifyDefenseSnapshot(manifest, snapshot);
+  assert.equal(report.classification, "DEFENSE BASELINE DRIFT DETECTED");
+  assert.ok(
+    report.issues.some(
+      (issue) =>
+        issue.kind === "MODIFIED BASELINE RECORD" && issue.area === "Bookings",
+    ),
+  );
+});
+
+test("modified baseline return schedule is drift", () => {
+  const snapshot = cloneSnapshot();
+  snapshot.bookings[0].returnAt = "2026-09-20T03:16:44.832+00:00";
+  const report = verifyDefenseSnapshot(manifest, snapshot);
+  assert.equal(report.classification, "DEFENSE BASELINE DRIFT DETECTED");
+  assert.ok(
+    report.issues.some(
+      (issue) =>
+        issue.kind === "MODIFIED BASELINE RECORD" && issue.area === "Bookings",
+    ),
+  );
+});
+
+test("equivalent booking schedule timestamp representations pass", () => {
+  const snapshot = cloneSnapshot();
+  snapshot.bookings[0].pickupAt = "2026-09-18T10:16:44.832+08:00";
+  snapshot.bookings[0].returnAt = "2026-09-20T10:16:44.832+08:00";
+  const report = verifyDefenseSnapshot(manifest, snapshot);
+  assert.equal(report.classification, "DEFENSE BASELINE VERIFIED");
+  assert.equal(report.issues.length, 0);
+});
+
+test("modified pickup and return schedules are both reported as drift", () => {
+  const snapshot = cloneSnapshot();
+  snapshot.bookings[0].pickupAt = "2026-09-18T03:16:44.832+00:00";
+  snapshot.bookings[0].returnAt = "2026-09-20T03:16:44.832+00:00";
+  const report = verifyDefenseSnapshot(manifest, snapshot);
+  assert.equal(report.classification, "DEFENSE BASELINE DRIFT DETECTED");
+  const bookingIssue = report.issues.find(
+    (issue) =>
+      issue.kind === "MODIFIED BASELINE RECORD" && issue.area === "Bookings",
+  );
+  assert.ok(bookingIssue);
+  assert.match(bookingIssue.message, /pickupAt/);
+  assert.match(bookingIssue.message, /returnAt/);
 });
 
 test("extra UAT account and booking do not corrupt the baseline classification", () => {
