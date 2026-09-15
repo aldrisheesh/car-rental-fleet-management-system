@@ -6,6 +6,25 @@ Do not add passwords, reset tokens, service-role keys, database credentials,
 session cookies, signed URLs, private document/proof contents, or real personal
 information. Do not create a GitHub Finding merely for expected behavior.
 
+## Approved UAT account inventory
+
+Exactly seven approved UAT accounts were provisioned in project
+`vkfacfjkwomhfvrieaza`. The Auth/profile IDs below are safe traceability
+identifiers. No UAT test session has been recorded yet.
+
+| UAT label | Role | Auth/profile ID | Readiness | Credential handoff |
+| --- | --- | --- | --- | --- |
+| UAT-A01 | Owner/Admin | `03a85037-a5f8-4fb0-9de0-da158d72a207` | Active; sign-in and role boundary verified | Stored securely; Lead-controlled handoff pending |
+| UAT-S01 | Operations Staff | `a67911f2-44f1-487a-ad91-0c2e1a3e684e` | Active; sign-in and role boundary verified | Stored securely; Lead-controlled handoff pending |
+| UAT-C01 | Customer/Renter | `78e786b5-dc4b-478e-ae6e-3daa6f9f78d3` | Active; sign-in and role boundary verified | Stored securely; Lead-controlled handoff pending |
+| UAT-C02 | Customer/Renter | `59347401-8a31-4794-ba92-c670d653922c` | Active; sign-in and role boundary verified | Stored securely; Lead-controlled handoff pending |
+| UAT-C03 | Customer/Renter | `423e574f-17ac-4bc1-97cd-882c9aff3bb4` | Active; sign-in and role boundary verified | Stored securely; Lead-controlled handoff pending |
+| UAT-C04 | Customer/Renter | `f0e55c51-3f54-408f-82ef-228bbfaaa28a` | Active; sign-in and role boundary verified | Stored securely; Lead-controlled handoff pending |
+| UAT-C05 | Customer/Renter | `3d3f97a7-d546-4c71-8a99-e8e94e0f23af` | Active; sign-in and role boundary verified | Stored securely; Lead-controlled handoff pending |
+
+The seven IDs are absent from the Defense Manifest and remain NON-BASELINE.
+Credentials are not recorded here.
+
 ## Session entry template
 
 Copy the following block for each meaningful, Lead-authorized UAT session:

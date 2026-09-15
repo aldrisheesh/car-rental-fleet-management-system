@@ -1,7 +1,7 @@
 # Group User Acceptance Testing Plan
 
-Status: **Planning only — Lead approval is required before account creation or
-testing.**
+Status: **Approved account setup completed; UAT workflow testing has not
+started.**
 
 This plan is prepared from `stabilization/frontend-rebuild` at the Defense
 verifier merge commit `fdffa62b340e98828c292b032d18b59731d18614`.
@@ -13,7 +13,8 @@ Current verified state:
   approved runtime environment loaded.
 - Current dataset classification: `DEFENSE DATASET PARTIALLY READY — HISTORY
   TIME-GATED`.
-- No UAT accounts or UAT records were created for this plan.
+- Exactly seven approved UAT accounts are provisioned; no UAT workflow records
+  have been created.
 
 ## Purpose
 
@@ -171,8 +172,9 @@ mutating baseline records or inventing customer-facing labels.
 
 ## Session logging
 
-`frontend-stabilization/UAT-SESSION-LOG.md` is a template only until testing
-is authorized. Add one entry for each meaningful session and no credentials.
+`frontend-stabilization/UAT-SESSION-LOG.md` contains the approved account
+inventory and remains a session-results template until workflow testing begins.
+Add one entry for each meaningful session and no credentials.
 Each entry records the date/time with timezone, tester label, QA lane, UAT
 account label, scenario, created booking/Requirement/Payment/Rental IDs where
 safe, expected behavior, observed result, Finding/Issue link if applicable,
@@ -392,8 +394,9 @@ credential handoff.
 
 ## Authorization required
 
-Before any UAT account or UAT record is created, the Lead must approve in one
-place:
+The Lead has approved the seven-account population documented in the session
+log. Any additional account or UAT workflow record still requires explicit
+approval of:
 
 1. the exact account count and role breakdown;
 2. the internal labels, synthetic display names, and approved synthetic email
@@ -406,6 +409,6 @@ place:
 8. the escalation path for `DEFENSE BASELINE DRIFT DETECTED`; and
 9. any later decision to retain or selectively retire UAT records.
 
-Until those approvals exist, this document authorizes no account creation, no
-signup campaign, no booking, no upload, no payment proof, no rental mutation,
-no Maintenance mutation, and no cleanup.
+No additional account is authorized. Until a bounded workflow session is
+approved, this document authorizes no signup campaign, booking, upload, payment
+proof, rental mutation, Maintenance mutation, or cleanup.
