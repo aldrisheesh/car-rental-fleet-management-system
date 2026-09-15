@@ -5,6 +5,7 @@ Repository branch: `stabilization/frontend-rebuild`
 Production project: `vkfacfjkwomhfvrieaza`
 Baseline verification: `frontend-stabilization/PRODUCTION-SUPABASE-BASELINE-VERIFICATION.md`
 Baseline verification commit: `886a64d15e352a167783779cb413528a208a5bd3`
+Revision starting point: `36348396f8f25335cb40ff9043f617d591643700`
 
 This document is a design and execution specification only. It does not authorize data creation, and no Auth users, profiles, bookings, requirements, payments, rentals, maintenance rows, historical rows, notifications, audit events, or Decision Support outputs are created by this specification.
 
@@ -39,37 +40,96 @@ The production project remains the only hosted Supabase environment. Existing mi
 
 ## Account population
 
-The recommended final population is **13 Auth users and 13 profiles**.
+The revised final population is **21 Auth users and 21 profiles**. It is intentionally larger than a compact test matrix so the panel can see a believable registration funnel rather than a population in which every customer reaches a successful rental.
 
 | Role | Count | Purpose | Creation method |
 | --- | ---: | --- | --- |
 | Owner/Admin | 1 | Performs requirements/payment review, vehicle assignment and confirmation, release/return, maintenance actions, Reports, and Decision Support generation. | Privileged account provisioning, separately authorized. |
 | Operations Staff | 2 | Provides two realistic staff sessions for Dashboard, booking/calendar, Notifications, and Reports read surfaces. | Privileged account provisioning with the canonical role; public signup cannot create this role. |
-| Customer/Renter | 10 | One meaningful synthetic persona per defense scenario, with several reused for historical rentals. | Normal application signup workflow. |
-| **Total** | **13** | Enough for role separation and scenario coverage without duplicate accounts. | — |
+| Customer/Renter | 18 | Uneven mix of registered-only accounts, one-time renters, occasional repeat renters, frequent repeat renters, and current workflow personas. | Normal application signup workflow. |
+| **Total** | **21** | A small operating population with a natural funnel and no artificial one-row-per-customer rule. | — |
 
 The two Operations Staff accounts are intentionally not used as substitute Owners. The current authorization model allows them to view the operational surfaces but restricts users, maintenance, requirements, payments, fleet mutation, and Decision Support actions to Owner/Admin. The single Owner/Admin account is therefore necessary for the complete defense path.
 
 All accounts must be Active and use synthetic `.test` contact values. Credentials are execution-time secrets and must not be written into this document, source files, or committed configuration.
 
+Customer behavior is intentionally uneven. The booking distribution is a sanity-check grouping, not a set of mutually exclusive business roles:
+
+- Four customers have zero bookings: C15–C18. They are valid registered accounts with no Requirements, Payments, Rentals, or booking rows.
+- Three customers have exactly one booking: C02, C06, and C13.
+- Four customers have exactly two bookings: C07, C10, C11, and C12.
+- Four customers have exactly three bookings: C03, C04, C05, and C14.
+- Three customers are frequent repeat renters: C01 has eight total bookings, C08 has seven, and C09 has seven.
+
+The current-scenario group is C01–C09, the historical-only group is C10–C14, and the registered-only group is C15–C18. These dimensions overlap with repeat behavior where appropriate. In particular, C01, C08, and C09 are both current-scenario customers and frequent repeat renters.
+
 ## Customer personas
 
-The following labels are specification-only scenario labels. They are not required to be stored in business names or identifiers.
+The following labels are specification-only scenario labels. They are not required to be stored in business names or identifiers. All names are synthetic, and all contact/identity/payment values must be generated placeholders.
 
-| Label | Synthetic persona | Branch focus | Primary purpose |
-| --- | --- | --- | --- |
-| C01 | Ari Santos | Taft, Manila | Upcoming confirmed booking with verified requirements and payment. |
-| C02 | Bea Navarro | Antipolo, Rizal | First-time renter with a submitted booking and no requirement set yet. |
-| C03 | Celine Rivera | Taft, Manila | Submitted booking with requirements Pending Review. |
-| C04 | Diego Cruz | Antipolo, Rizal | Submitted booking with requirements Needs Resubmission. |
-| C05 | Elena Lim | Taft, Manila | Submitted booking with verified requirements and payment still actionable; also demonstrates a completed requirements correction history. |
-| C06 | Felix Go | Antipolo, Rizal | Submitted booking with verified requirements and payment Pending Verification. |
-| C07 | Gia Ramos | Taft, Manila | Submitted booking with verified requirements and payment Needs Resubmission. |
-| C08 | Hana Villanueva | Antipolo, Rizal | Confirmed booking with one active rental. |
-| C09 | Ivo Castillo | Taft, Manila | Confirmed booking with a recently returned rental and repeat-renter history. |
-| C10 | Jules Mendoza | Antipolo, Rizal | Historical repeat renter without a current booking, keeping the current workflow set distinct from the analytical history. |
+| Label | Synthetic persona | Branch affinity | Current scenario | Historical returned target | Current bookings | Repeat/demo purpose |
+| --- | --- | --- | --- | ---: | ---: | --- |
+| C01 | Ari Santos | Taft, Manila | Confirmed future booking; Verified requirements and payment. | 7 | 1 | Frequent repeat renter and upcoming successful path. |
+| C02 | Bea Navarro | Antipolo, Rizal | Submitted booking with no requirement set. | 0 | 1 | First-time, one-booking incomplete funnel. |
+| C03 | Celine Rivera | Taft, Manila | Submitted booking; Requirements Pending Review. | 2 | 1 | Occasional repeat renter and review queue example. |
+| C04 | Diego Cruz | Antipolo, Rizal | Submitted booking; Requirements Needs Resubmission. | 2 | 1 | Occasional repeat renter and requirements correction. |
+| C05 | Elena Lim | Taft, Manila | Submitted booking; Requirements Verified and no Payment yet. | 2 | 1 | Occasional repeat renter and payment-actionable path; completed requirements correction history. |
+| C06 | Felix Go | Antipolo, Rizal | Submitted booking; Payment Pending Verification. | 0 | 1 | First-time, one-booking payment review path. |
+| C07 | Gia Ramos | Taft, Manila | Submitted booking; Payment Needs Resubmission. | 1 | 1 | Occasional repeat renter and payment correction. |
+| C08 | Hana Villanueva | Antipolo, Rizal | Confirmed booking with one active rental. | 6 | 1 | Frequent repeat renter and active-rental path. |
+| C09 | Ivo Castillo | Taft, Manila | Confirmed booking with one returned rental. | 6 | 1 | Frequent repeat renter, return path, and richest customer history. |
+| C10 | Jules Mendoza | Antipolo, Rizal | No current booking. | 2 | 0 | Historical-only occasional repeat renter. |
+| C11 | Kira Bautista | Taft, Manila | No current booking. | 2 | 0 | Historical-only occasional repeat renter. |
+| C12 | Leo Mercado | Antipolo, Rizal | No current booking. | 2 | 0 | Historical-only occasional repeat renter. |
+| C13 | Mira Salazar | Taft, Manila | No current booking. | 1 | 0 | Historical-only one-time renter. |
+| C14 | Nico Villanueva | Antipolo, Rizal | No current booking. | 3 | 0 | Historical-only repeat renter with three returned rentals. |
+| C15 | Quinn Reyes | Taft, Manila | Registered account; no booking. | 0 | 0 | Intentional registration drop-off; not customer-facingly labelled dormant or unused. |
+| C16 | Rina Flores | Antipolo, Rizal | Registered account; no booking. | 0 | 0 | Intentional registration drop-off; not customer-facingly labelled dormant or unused. |
+| C17 | Sol Navarro | Taft, Manila | Registered account; no booking. | 0 | 0 | Intentional registration drop-off; not customer-facingly labelled dormant or unused. |
+| C18 | Tori Alcantara | Antipolo, Rizal | Registered account; no booking. | 0 | 0 | Intentional registration drop-off; not customer-facingly labelled dormant or unused. |
 
-The personas are synthetic and intentionally have distinct stories. A single customer may own several historical rentals, but current workflow rows should not be duplicated merely to increase volume.
+The personas show a natural funnel: some accounts stop at registration, some submit only one booking, some progress through review/payment, and a smaller frequent-repeat group supplies most historical activity. A single customer may own several historical rentals, but current workflow rows should not be duplicated merely to increase volume.
+
+## Booking distribution by Customer
+
+The Customer-level distribution is exact and reconciles the unchanged booking targets:
+
+| Label | Current booking count | Historical returned booking count | Total bookings | Primary role |
+| --- | ---: | ---: | ---: | --- |
+| C01 | 1 | 7 | 8 | Frequent repeat renter; confirmed future booking. |
+| C02 | 1 | 0 | 1 | First-time incomplete workflow. |
+| C03 | 1 | 2 | 3 | Requirements Pending Review. |
+| C04 | 1 | 2 | 3 | Requirements Needs Resubmission. |
+| C05 | 1 | 2 | 3 | Verified requirements; payment actionable. |
+| C06 | 1 | 0 | 1 | Payment Pending Verification. |
+| C07 | 1 | 1 | 2 | Payment Needs Resubmission. |
+| C08 | 1 | 6 | 7 | Frequent repeat renter; active rental. |
+| C09 | 1 | 6 | 7 | Frequent repeat renter; returned rental. |
+| C10 | 0 | 2 | 2 | Historical-only occasional repeat renter. |
+| C11 | 0 | 2 | 2 | Historical-only occasional repeat renter. |
+| C12 | 0 | 2 | 2 | Historical-only occasional repeat renter. |
+| C13 | 0 | 1 | 1 | Historical-only one-time renter. |
+| C14 | 0 | 3 | 3 | Historical-only repeat renter. |
+| C15 | 0 | 0 | 0 | Registered-only account. |
+| C16 | 0 | 0 | 0 | Registered-only account. |
+| C17 | 0 | 0 | 0 | Registered-only account. |
+| C18 | 0 | 0 | 0 | Registered-only account. |
+| **Total** | **9** | **36** | **45** | — |
+
+## Account / booking realism check
+
+The distribution is intentionally uneven but mathematically reconciled:
+
+- Customers: **18**;
+- bookings: **45** = 9 current + 36 historical;
+- mean bookings per Customer: **2.5** (`45 / 18`);
+- median bookings per Customer: **2**;
+- Customers with zero bookings: **4** (C15–C18);
+- Customers with exactly one booking: **3** (C02, C06, C13);
+- repeat renters with at least two total bookings: **11**;
+- frequent repeat renters in the planned defense group: **3** (C01, C08, C09).
+
+The mean and median are sanity checks only. The design does not attempt to make the customer distribution mathematically neat or to give every account an equal share of the 36-row historical window.
 
 ## Current operational scenarios
 
@@ -131,6 +191,8 @@ Target distribution for the 36 historical rows:
 | **Total** | — | **36** | **All 12 canonical vehicles used at least once** | — |
 
 The six weekly totals are six returned bookings per week. The Taft Economy series is `[2, 2, 2, 2, 2, 2]`; the Taft Sedan series is `[1, 1, 1, 2, 2, 2]`; the Antipolo Sedan series is `[1, 1, 1, 0, 0, 0]`. The remaining 12 rows are distributed two per week across the SUV, MPV, Van, and Pickup pairs to meet the table totals. The exact dates should vary across the week, with one-to-three-day rental durations and sequential, non-overlapping assignments for single-vehicle categories.
+
+Customer ownership is a separate dimension from the branch/category plan. The generator must assign the exact Customer counts in the booking-distribution table to those existing 36 scheduled rows without changing the weekly, branch, category, or vehicle totals. Historical assignments must be sequenced so a Customer never has two overlapping rentals. C01, C08, and C09 may carry substantial historical volume, but their current future/active/returned scenarios are scheduled after H6 and do not alter the trusted forecast window. C10–C14 provide history without current bookings, while C15–C18 receive no booking, requirement, payment, rental, or storage rows.
 
 Every historical booking remains `Confirmed`, has a valid assigned vehicle, and has one matching rental with a non-null `ended_at`. Historical records do not receive unnecessary requirements, payment proofs, or customer-facing correction stories. Those tables are not inputs to Reports or forecasting and would make provenance harder to defend.
 
@@ -244,7 +306,7 @@ Notification preferences and operational conditions must be reconciled by the ex
 
 | Class | Dataset component | Target | Method and boundary |
 | --- | --- | ---: | --- |
-| A. Application workflow | Owner/Admin, Operations Staff, and Customer accounts/profiles | 13 | Customer accounts through signup; privileged roles through an explicitly authorized account-provisioning workflow because public signup defaults to Customer/Renter. |
+| A. Application workflow | Owner/Admin, Operations Staff, and Customer accounts/profiles | 21 | 18 Customer accounts through signup; privileged roles through an explicitly authorized account-provisioning workflow because public signup defaults to Customer/Renter. Four Customers intentionally stop at registration. |
 | A. Application workflow | Current bookings | 9 | Customer booking flow, with no direct status fabrication. |
 | A. Application workflow | Current requirement sets/documents/reviews | 8 sets | Upload and review through the application; one visible current Needs Resubmission case and one completed correction history. |
 | A. Application workflow | Current payments/proofs/reviews | 5 payments | Payment submission and review through the application; one visible Needs Resubmission case. |
@@ -263,16 +325,17 @@ The only controlled historical exception is the six-week analytical coverage and
 
 ## Dataset storyboard
 
-1. **Customer landing and signup:** C02 can be shown as a first-time customer with a Submitted booking and no requirements submitted. C03 can be shown as the same workflow after documents are uploaded and awaiting Owner/Admin review.
+1. **Customer landing and signup:** C15–C18 can be shown as valid registered Customers with no booking history, while C02 can be shown as a first-time customer with a Submitted booking and no requirements submitted. C03 can be shown as the same workflow after documents are uploaded and awaiting Owner/Admin review.
 2. **Requirements review:** the Owner/Admin opens C03’s Pending Review set, then opens C04’s Needs Resubmission reason. C05 demonstrates a completed correction path and a final Verified state.
 3. **Payment review:** C06 appears in Pending Verification with a synthetic proof. C07 appears in Needs Resubmission with a correction reason. C05 remains actionable because no payment has been submitted after requirements verification.
 4. **Booking confirmation:** C01 shows the full successful path: Verified requirements, Verified payment, assigned vehicle, and Confirmed future booking.
 5. **Calendar and Dashboard:** Submitted bookings create reservation visibility; C01 creates future pickup/return events; C08 creates active-rental events; maintenance creates current service attention; the remaining fleet visibly remains available.
 6. **Active rental:** C08 demonstrates a released vehicle with an active rental and no `ended_at`. The panel can show the assignment and current rental details without creating a transaction live.
-7. **Return and customer history:** C09 demonstrates the canonical return closure and a returned rental. C10 demonstrates that historical repeat activity does not require a current booking.
+7. **Return and customer history:** C09 demonstrates the canonical return closure and a returned rental. C10–C14 demonstrate historical repeat activity without current bookings, while C01, C08, and C09 show that frequent repeat renters can also be in current operational scenarios.
 8. **Reports:** an H1-H6 range shows six complete weeks, both branches, all categories with the intentional Antipolo Economy zero pair, varied utilization, and maintenance transitions.
 9. **Decision Support:** after H6, the Owner/Admin generates the WMA forecast, evaluates supply, and generates the advisory allocation batch. The Taft Sedan shortage and Antipolo Sedan surplus are explainable from the source rows.
 10. **Staff view:** either Operations Staff account can inspect Dashboard, bookings, Calendar, Notifications, and Reports without receiving permissions that the role does not have.
+11. **Natural funnel:** the Customer list visibly contains registration drop-off, one-time renters, occasional repeat renters, and a smaller frequent-repeat group; not every account reaches Requirements, Payment, Confirmation, or Rental.
 
 The storyboard is designed so the panel can inspect existing rows and derived outputs. Live creation during the defense is optional, not required.
 
@@ -280,8 +343,13 @@ The storyboard is designed so the panel can inspect existing rows and derived ou
 
 | Dataset class | Exact target / expected shape | Notes |
 | --- | ---: | --- |
-| Auth users | 13 | 1 Owner/Admin, 2 Operations Staff, 10 Customer/Renter. |
-| Profiles | 13 | One active profile per Auth user. |
+| Auth users | 21 | 1 Owner/Admin, 2 Operations Staff, 18 Customer/Renter. |
+| Profiles | 21 | One active profile per Auth user. |
+| Customers with zero bookings | 4 | C15–C18; no Requirements, Payments, Rentals, or booking rows. |
+| Customers with exactly one booking | 3 | C02, C06, and C13. |
+| Repeat renters | 11 | At least two total current or historical bookings. |
+| Mean bookings per Customer | 2.5 | 45 total bookings divided by 18 Customers. |
+| Median bookings per Customer | 2 | Sanity check for the deliberately uneven distribution. |
 | Current bookings | 9 | 6 Submitted, 3 Confirmed. |
 | Historical returned bookings | 36 | Six complete weeks, all Confirmed with matching returned rentals. |
 | Total booking rows after execution | 45 | Current set plus controlled historical set; C09 is the one current returned booking. |
@@ -305,17 +373,41 @@ The exact number of document and proof objects is not a substitute for workflow 
 Every row must be explainable as one of four classes:
 
 1. **Canonical migration reference data:** branches, categories, the 12 `DEV-*` vehicles, the active demo payment method, and the migration-established initial vehicle state events. These rows predate the defense dataset and must not be relabeled or duplicated.
-2. **Defense current-state workflow data:** the 13 accounts, nine current bookings, eight requirement sets, five payments, three rental-state examples, and current maintenance record. An execution manifest should map C01–C10 to user IDs, booking IDs, and intended scenario without changing customer-facing names to QA-style markers.
+2. **Defense current-state workflow data:** the 21 accounts, nine current bookings, eight requirement sets, five payments, three rental-state examples, and current maintenance record. An execution manifest should map C01–C18 to user IDs, booking IDs, and intended scenario without changing customer-facing names to QA-style markers. C15–C18 must have no child workflow rows.
 3. **Controlled historical analytical data:** the 36 historical booking/rental pairs and, only if required, two historical maintenance records. The generator manifest must record H1–H6, source branch/category, vehicle, customer, timestamps, and the reason the row exists. It must be idempotent and scoped to `vkfacfjkwomhfvrieaza`.
 4. **Derived application output:** forecast runs, forecast inputs, forecasts, supply evaluations, vehicle snapshots, allocation batches, candidates, decisions, and MAPE. These must be generated by their application services with recorded idempotency keys and never inserted as hand-authored facts.
 
 The execution record should preserve the source commit, target project ref, generation timestamp, manifest version, and verification query results. It must not contain passwords, service-role keys, payment secrets, or real personal information. Existing `DEV-*` vehicle names are canonical reference identifiers; no new QA or VS naming convention is introduced.
 
+## Dataset manifest
+
+After execution, create the future canonical restore and verification map:
+
+`frontend-stabilization/DEFENSE-DATASET-MANIFEST.md`
+
+This file must not be created before the dataset exists. It will eventually record, using safe labels rather than secrets:
+
+- approved account identities for C01–C18 and the Owner/Admin/Staff roles;
+- scenario ownership and the intentional no-booking status of C15–C18;
+- current booking IDs and their lifecycle scenarios;
+- historical booking and rental IDs mapped to H1–H6, branch/category, vehicle, and Customer label;
+- maintenance record IDs and their three approved scenarios;
+- document and payment-proof object ownership and paths, without file contents or credentials;
+- forecast run, forecast, supply-evaluation, allocation-batch, recommendation, and later finalization IDs;
+- final expected counts and verification results;
+- provenance class for every baseline record.
+
+The manifest becomes the canonical restore/verification map after execution. It is not a second business dataset, must not contain passwords or service-role keys, and must not be used to label customers as test or dormant in customer-facing surfaces.
+
 ## Freeze criteria
 
-The dataset becomes frozen only after all of the following are verified against the new production project:
+Before all of the conditions below are satisfied, the dataset status is **DEFENSE DATASET READY**. It must not be described as permanently `FROZEN` while the manifest or reproducibility/restore approval is missing.
 
-- the 13-account role matrix is correct and all accounts are Active;
+A permanent `FROZEN` classification requires all of the following to be verified against the new production project:
+
+- the 21-account role matrix is correct and all accounts are Active;
+- C15–C18 have no bookings, Requirements, Payments, Rentals, or other child workflow rows;
+- the Customer-level booking distribution sums to 9 current, 36 historical, and 45 total bookings;
 - current booking, requirement, payment, rental, and maintenance counts match the target matrix;
 - all booking/rental intervals are coherent and no vehicle has an impossible overlap;
 - C01, C08, and C09 pass the canonical confirmation/release/return gates;
@@ -327,18 +419,55 @@ The dataset becomes frozen only after all of the following are verified against 
 - no QA/VS residue, unexpected accounts, or unrelated runtime records are present;
 - synthetic storage objects contain no real identity or payment data;
 - application tests/build and read-only verification pass after the data is created.
+- `frontend-stabilization/DEFENSE-DATASET-MANIFEST.md` exists and matches the verified database, Auth, Storage, audit, notification, and derived-output identifiers;
+- a reproducibility/restore strategy has been designed, explicitly scoped to `vkfacfjkwomhfvrieaza`, and Lead-approved.
 
 After freeze there are no casual edits, cleanup passes, extra demo rows, or ad hoc status changes. Only a bounded, defect-driven correction approved by the Lead is allowed. A correction must record the reason, affected scenario, before/after counts, and whether derived outputs were regenerated. If a source row changes, dependent forecasts/evaluations/recommendations must be regenerated through their normal services.
+
+## Defense Baseline Reproducibility and User Testing
+
+The production project will eventually serve both the approved defense demonstration and controlled group/user testing. The two datasets must be distinguished explicitly.
+
+### A. DEFENSE BASELINE
+
+The Defense Baseline is the intentional dataset described by this specification and identified by the future `DEFENSE-DATASET-MANIFEST.md`. It includes the 21 approved accounts, 45 bookings, current workflow rows, six-week historical rows, maintenance scenarios, synthetic Storage objects, naturally generated audit/notification evidence, and canonically generated Decision Support state. It is the only dataset that may be called the defense baseline.
+
+### B. POST-FREEZE UAT DATA
+
+Post-Freeze UAT Data consists of accounts or records created later by group/user testing against the same production project. UAT activity is not part of the Defense Baseline, must not be silently merged into its counts, and must be recorded separately from the manifest. UAT users must not alter baseline lifecycle rows merely to try a workflow. If the current schema cannot safely distinguish a UAT record from a baseline record, testing must pause until an explicit engineering plan is approved.
+
+Before the baseline is permanently frozen, the team must design and obtain Lead approval for a reproducibility strategy. A future implementation may expose explicit engineering commands such as:
+
+```text
+npm run defense:verify
+npm run defense:restore
+```
+
+Those scripts are not implemented in this revision. No hidden UI shortcut, destructive secret keyboard shortcut, or undocumented reset route is permitted.
+
+Any later restore mechanism must:
+
+- bind to the exact production project ref `vkfacfjkwomhfvrieaza` and refuse an old or ambiguous target;
+- require explicit confirmation at execution time and fail closed when the target or manifest does not match;
+- protect service credentials and Auth provisioning secrets outside the manifest and tracked repository files;
+- restore the approved Defense Baseline, including Auth, Storage, current workflow rows, historical booking/rental rows, maintenance, audit, Notifications, Reports inputs, and derived Decision Support state;
+- distinguish baseline records from later UAT records using the approved manifest and a safe allowlist, rather than customer-facing `QA-*` or `VS*` labels;
+- regenerate or reconcile derived forecasts, supply evaluations, allocation recommendations, Reports inputs, Notifications, and audit evidence through canonical services where direct restoration would violate provenance;
+- never silently delete legitimate baseline accounts, rows, objects, audit events, Notifications, or derived outputs;
+- stop and report if UAT data cannot be safely isolated from the approved baseline or if a restore would require an unapproved destructive operation.
+
+The read-only verification command should be designed before restore execution and should compare counts, status matrices, IDs, object ownership, provenance, and the current project ref against the manifest. A restore is not authorized merely because a count happens to match.
 
 ## Execution phases
 
 1. **Lead approval and time gate:** approve this specification, record `tracking_started_at`, and schedule H1-H6 only after six complete Manila weeks are available. Confirm the exact project ref and verify the old project is not targeted.
-2. **Account bootstrap:** create the single Owner/Admin and two Operations Staff accounts through the authorized privileged path; create the ten Customer/Renter accounts through normal signup; verify role and account-status boundaries.
+2. **Account bootstrap:** create the single Owner/Admin and two Operations Staff accounts through the authorized privileged path; create the 18 Customer/Renter accounts through normal signup; verify role and account-status boundaries, including the four intentional registered-only accounts.
 3. **Historical analytical load:** run the bounded generator for 36 confirmed booking/rental pairs and, only if necessary, the two historical maintenance rows. Validate exact week/branch/category/vehicle/customer mapping and non-overlap before proceeding.
 4. **Current workflow creation:** create the nine current bookings and drive requirements, reviews, payments, assignment, confirmation, release, return, and current maintenance through the application. Upload only synthetic documents and payment proofs.
 5. **Canonical evidence processing:** run the trusted scheduled notification cycle and verify the resulting notifications and audit trail. Do not insert either table directly.
 6. **Derived Decision Support:** generate the WMA forecast, supply evaluations, and allocation batch through Owner/Admin APIs. Record idempotency keys and inspect the generated inputs, snapshots, candidate reasons, and any legitimate insufficient-data/eligibility result.
-7. **Verification and freeze:** run count, status, overlap, branch/category, reports, analytics, RLS/access, storage-safety, application smoke, test, and build checks. Freeze only after all criteria pass.
+7. **Verification and Defense Dataset Ready classification:** run count, status, overlap, branch/category, reports, analytics, RLS/access, storage-safety, application smoke, test, and build checks. If the revised specification matches, classify the result as `DEFENSE DATASET READY`; do not call it permanently frozen yet.
+8. **Manifest and freeze promotion:** create `frontend-stabilization/DEFENSE-DATASET-MANIFEST.md`, verify it against Auth, Storage, database, audit, Notifications, Reports inputs, and derived outputs, and obtain Lead approval of the reproducibility/restore strategy. Only then may the dataset be classified `FROZEN`.
 
 No phase in this document is to be executed during the specification session. A failure in a migration, schema contract, workflow gate, or derived service is a stop-and-report condition, not permission to edit source, migrations, or production data ad hoc.
 
@@ -346,15 +475,18 @@ No phase in this document is to be executed during the specification session. A 
 
 Before execution, the Lead must explicitly authorize:
 
-- creation of the 13 Auth users and profiles;
+- creation of the 21 Auth users and profiles, including the four registered-only Customers;
 - creation of synthetic requirement documents and payment proofs in the production project;
 - the bounded historical generator and its exact manifest;
 - the three maintenance scenarios;
 - generation of forecasts, supply evaluations, allocation recommendations, and later forecast finalization;
-- the verification queries and final freeze.
+- the verification queries, future manifest creation, and the reproducibility/restore design;
+- final promotion from `DEFENSE DATASET READY` to `FROZEN` only after the manifest and restore strategy are verified.
 
 The authorization must name `vkfacfjkwomhfvrieaza`, the branch `stabilization/frontend-rebuild`, the approved specification commit, and the rule that no old project, QA fixtures, defense data outside this manifest, schema edits, deployment, merge, or push to another branch is allowed.
 
 ## Readiness
 
-READY FOR LEAD APPROVAL TO CREATE DEFENSE DATASET
+DEFENSE DATASET READY
+
+This is a pre-execution specification classification, not a claim that production data exists and not a permanent `FROZEN` classification. Execution still requires the explicit authorization above; freeze promotion additionally requires the future manifest and Lead-approved reproducibility/restore strategy.
