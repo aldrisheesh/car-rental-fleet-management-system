@@ -69,17 +69,17 @@ Customer/Renter accounts. Auth and profile counts are both 21.
 All rows below are `CURRENT DEFENSE WORKFLOW` records. There are no H1–H6
 historical rows in this execution.
 
-| Label | Booking ID                             | Status    | Branch          | Assigned/requested vehicle | Scenario                                                                   |
-| ----- | -------------------------------------- | --------- | --------------- | -------------------------- | -------------------------------------------------------------------------- |
-| C01   | `ac1df55a-6342-43df-a5f9-18d0c6a2dbc7` | Confirmed | Taft, Manila    | `DEV-EVST-001`             | Future confirmed booking; verified requirements and payment; no rental row |
-| C02   | `ad4caf7e-f25c-467f-81a6-73ae7fbc4401` | Submitted | Antipolo, Rizal | `DEV-AVAN-001`             | Submitted with no requirement set                                          |
-| C03   | `8dcb959f-7f42-456c-974b-9ba56227c288` | Submitted | Taft, Manila    | `DEV-WIGO-001`             | Requirements Pending Review                                                |
-| C04   | `4d7fc0b1-5cda-47fb-981a-5859f2e27212` | Submitted | Antipolo, Rizal | `DEV-VIOS-001`             | Requirements Needs Resubmission                                            |
-| C05   | `4f5ee393-aef2-4012-85d0-0cdb3d25d3ea` | Submitted | Taft, Manila    | `DEV-CITY-001`             | Requirements Verified after correction; no payment row                     |
-| C06   | `d6cdd04a-608d-4bce-9d22-eb34cfc1c9d6` | Submitted | Antipolo, Rizal | `DEV-RANG-001`             | Requirements Verified; Payment Pending Verification                        |
-| C07   | `651cdf46-4982-4b1b-bcbe-cc8ddebb6a8a` | Submitted | Taft, Manila    | `DEV-HILX-001`             | Requirements Verified; Payment Needs Resubmission                          |
-| C08   | `b99d85f2-0063-433f-b329-6786b8b50972` | Confirmed | Antipolo, Rizal | `DEV-RUSH-001`             | Confirmed active rental                                                    |
-| C09   | `d0fcd76c-0572-4a6b-a5c7-d3d10fc8086c` | Confirmed | Taft, Manila    | `DEV-INNO-001`             | Confirmed returned rental                                                  |
+| Label | Booking ID                             | Status    | Branch          | Pickup (UTC)                    | Return (UTC)                    | Assigned/requested vehicle | Scenario                                                                   |
+| ----- | -------------------------------------- | --------- | --------------- | ------------------------------- | ------------------------------- | -------------------------- | -------------------------------------------------------------------------- |
+| C01   | `ac1df55a-6342-43df-a5f9-18d0c6a2dbc7` | Confirmed | Taft, Manila    | `2026-09-18T02:16:44.832+00:00` | `2026-09-20T02:16:44.832+00:00` | `DEV-EVST-001`             | Future confirmed booking; verified requirements and payment; no rental row |
+| C02   | `ad4caf7e-f25c-467f-81a6-73ae7fbc4401` | Submitted | Antipolo, Rizal | `2026-09-16T02:16:44.832+00:00` | `2026-09-18T02:16:44.832+00:00` | `DEV-AVAN-001`             | Submitted with no requirement set                                          |
+| C03   | `8dcb959f-7f42-456c-974b-9ba56227c288` | Submitted | Taft, Manila    | `2026-09-17T02:16:44.832+00:00` | `2026-09-19T02:16:44.832+00:00` | `DEV-WIGO-001`             | Requirements Pending Review                                                |
+| C04   | `4d7fc0b1-5cda-47fb-981a-5859f2e27212` | Submitted | Antipolo, Rizal | `2026-09-18T02:16:44.832+00:00` | `2026-09-21T02:16:44.832+00:00` | `DEV-VIOS-001`             | Requirements Needs Resubmission                                            |
+| C05   | `4f5ee393-aef2-4012-85d0-0cdb3d25d3ea` | Submitted | Taft, Manila    | `2026-09-19T02:16:44.832+00:00` | `2026-09-21T02:16:44.832+00:00` | `DEV-CITY-001`             | Requirements Verified after correction; no payment row                     |
+| C06   | `d6cdd04a-608d-4bce-9d22-eb34cfc1c9d6` | Submitted | Antipolo, Rizal | `2026-09-20T02:16:44.832+00:00` | `2026-09-23T02:16:44.832+00:00` | `DEV-RANG-001`             | Requirements Verified; Payment Pending Verification                        |
+| C07   | `651cdf46-4982-4b1b-bcbe-cc8ddebb6a8a` | Submitted | Taft, Manila    | `2026-09-21T02:16:44.832+00:00` | `2026-09-23T02:16:44.832+00:00` | `DEV-HILX-001`             | Requirements Verified; Payment Needs Resubmission                          |
+| C08   | `b99d85f2-0063-433f-b329-6786b8b50972` | Confirmed | Antipolo, Rizal | `2026-09-15T01:16:44.832+00:00` | `2026-09-17T02:16:44.832+00:00` | `DEV-RUSH-001`             | Confirmed active rental                                                    |
+| C09   | `d0fcd76c-0572-4a6b-a5c7-d3d10fc8086c` | Confirmed | Taft, Manila    | `2026-09-14T02:16:44.832+00:00` | `2026-09-16T02:16:44.832+00:00` | `DEV-INNO-001`             | Confirmed returned rental                                                  |
 
 Current booking distribution is nine rows: one each for C01–C09 and zero for
 C10–C18. This is the truthful gate-C snapshot; it does not claim the approved
