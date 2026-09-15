@@ -1,30 +1,45 @@
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  createFileRoute,
-  Link,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import {
-  CreditCard,
+  AlertCircle,
+  ArrowRight,
+  CalendarDays,
+  CarFront,
+  CheckCircle2,
+  Clock3,
   FileCheck2,
-  FileUp,
-  History,
-  UserRound,
+  Info,
+  MapPin,
+  RefreshCw,
 } from "lucide-react";
-import { toast } from "sonner";
+
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
-import type { Booking } from "@/data/admin";
-import { peso } from "@/data/vehicles";
-import { getAdminSession } from "@/lib/admin-auth";
-import { parseCustomerBookingResponse } from "@/lib/booking-retrieval";
-import { getCustomerSession, type CustomerSession } from "@/lib/customer-auth";
 import {
-  parseCustomerPaymentResponse,
-  type CustomerPayment,
-} from "@/lib/payment-retrieval";
+  CustomerPage,
+  StatusCallout,
+  VehicleImage,
+} from "@/components/customer/CustomerPrimitives";
+import {
+  ApiRequestError,
+  fetchJson,
+  formatDateRange,
+  formatInstant,
+  type CustomerBooking,
+  type CustomerVehicle,
+  type RequirementsResponse,
+} from "@/lib/customer-data";
+import type { CustomerNotificationBinding } from "@/lib/notifications";
+import {
+  deriveCustomerLifecycle,
+  paymentForBooking,
+  type CustomerBookingComposition,
+  type LifecyclePresentation,
+} from "@/lib/customer-lifecycle";
+import type { CustomerPaymentResponse } from "@/lib/payment-retrieval";
+import { getAdminSession } from "@/lib/admin-auth";
+import { getCustomerSession } from "@/lib/customer-auth";
 
 export const Route = createFileRoute("/customer")({
   beforeLoad: () => {
@@ -40,779 +55,472 @@ export const Route = createFileRoute("/customer")({
   },
   head: () => ({
     meta: [
-      { title: "Customer View - Briah's Car Rental" },
+      { title: "My Bookings | Briah's Car Rental" },
       {
         name: "description",
         content:
-          "Customer portal for requirement uploads and payment status tracking.",
+          "Review your rental requests, booking stages, and the next action for each trip.",
       },
     ],
     links: [{ rel: "canonical", href: "/customer" }],
   }),
-  component: CustomerViewPage,
+  component: MyBookingsPage,
 });
 
-type CustomerBooking = {
-  id: string;
-  booking_status: string;
-  pickup_at: string;
-  requested_vehicle_id: string | null;
-  requested_vehicle?: { name: string | null } | null;
-  assigned_vehicle?: { id: string; name: string | null } | null;
-  rental?: {
-    started_at: string;
-    scheduled_return_at: string;
-    ended_at: string | null;
-  } | null;
+type BookingRecord = CustomerBookingComposition & {
+  vehicle: CustomerVehicle | null;
+  lifecycle: LifecyclePresentation;
 };
 
-type RequirementDocument = {
-  requirement_type: string;
-  is_current: boolean;
-  original_filename?: string | null;
-};
+type BookingFilter = "all" | "needs-action" | "current";
 
-type RequirementData = {
-  requirementSet?: { status?: string | null } | null;
-  documents?: RequirementDocument[];
-  review?: {
-    governmentIdOutcome?: string | null;
-    governmentIdReason?: string | null;
-    driversLicenseOutcome?: string | null;
-    driversLicenseReason?: string | null;
-  } | null;
-};
+function MyBookingsPage() {
+  const [records, setRecords] = useState<BookingRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [vehicleWarning, setVehicleWarning] = useState("");
+  const [filter, setFilter] = useState<BookingFilter>("all");
 
-function CustomerViewPage() {
-  const navigate = useNavigate();
-  const showRequirementsOnly = false;
-  const [session, setSession] = useState<CustomerSession | null | undefined>(
-    undefined,
-  );
-  const [bookingRequests, setBookingRequests] = useState<CustomerBooking[]>([]);
-  const [bookingRequestsLoading, setBookingRequestsLoading] = useState(true);
-  const [bookingRequestsError, setBookingRequestsError] = useState("");
-  const [customerPayments, setCustomerPayments] = useState<CustomerPayment[]>(
-    [],
-  );
-  const [customerPaymentsLoading, setCustomerPaymentsLoading] = useState(true);
-  const [customerPaymentsError, setCustomerPaymentsError] = useState("");
-  const [idFileName, setIdFileName] = useState("");
-  const [licenseFileName, setLicenseFileName] = useState("");
-  const pastCustomerBookings: Booking[] = [];
+  const loadBookings = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    setVehicleWarning("");
 
-  const loadBookingRequests = useCallback(async () => {
-    setBookingRequestsLoading(true);
-    setBookingRequestsError("");
     try {
-      const requests = await parseCustomerBookingResponse(
-        await fetch("/api/bookings", { credentials: "same-origin" }),
+      const [bookings, vehiclesResult] = await Promise.all([
+        fetchJson<CustomerBooking[]>("/api/bookings"),
+        fetchJson<CustomerVehicle[]>("/api/vehicles").catch((requestError) => {
+          setVehicleWarning(
+            requestError instanceof ApiRequestError
+              ? requestError.message
+              : "Vehicle images and specifications are unavailable right now.",
+          );
+          return [];
+        }),
+      ]);
+
+      const composed = await Promise.all(
+        bookings.map(async (booking) =>
+          composeBookingRecord(booking, vehiclesResult),
+        ),
       );
-      setBookingRequests(requests as CustomerBooking[]);
-    } catch (error) {
-      setBookingRequestsError(
-        error instanceof Error
-          ? error.message
-          : "Unable to load booking requests.",
+      setRecords(composed);
+    } catch (requestError) {
+      setError(
+        requestError instanceof ApiRequestError
+          ? requestError.message
+          : "Your bookings cannot be loaded right now.",
       );
     } finally {
-      setBookingRequestsLoading(false);
-    }
-  }, []);
-
-  const loadCustomerPayments = useCallback(async () => {
-    setCustomerPaymentsLoading(true);
-    setCustomerPaymentsError("");
-    try {
-      const payments = await parseCustomerPaymentResponse(
-        await fetch("/api/payments", { credentials: "same-origin" }),
-      );
-      setCustomerPayments(payments);
-    } catch (error) {
-      setCustomerPaymentsError(
-        error instanceof Error
-          ? error.message
-          : "Unable to load payment status.",
-      );
-    } finally {
-      setCustomerPaymentsLoading(false);
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    const activeSession = getCustomerSession();
-    if (!activeSession) {
-      void navigate({ to: "/sign-in", replace: true });
-      setSession(null);
-      return;
-    }
-    setSession(activeSession);
-    void loadBookingRequests();
-    void loadCustomerPayments();
-  }, [loadBookingRequests, loadCustomerPayments, navigate]);
+    void loadBookings();
+  }, [loadBookings]);
 
-  if (session === undefined) {
-    return (
-      <div className="grid min-h-screen place-items-center bg-background px-6 text-center text-foreground">
-        <div>
-          <div className="font-display text-lg font-semibold tracking-tight">
-            Briah&apos;s Car Rental
-          </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Checking customer session...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (session === null) return null;
-
-  if (showRequirementsOnly) {
-    return (
-      <div>
-        <Header />
-
-        <section className="border-b border-border bg-secondary/60">
-          <div className="container-page py-14 text-center">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
-              Next step
-            </p>
-            <h1 className="mt-2 font-display text-4xl font-semibold md:text-5xl">
-              Requirement Submission
-            </h1>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-              Upload your valid ID and driver&apos;s license to speed up
-              approval.
-            </p>
-          </div>
-        </section>
-
-        <section className="container-page mt-10">
-          <Card
-            title="Requirement Submission"
-            icon={<FileCheck2 className="h-4 w-4 text-primary" />}
-          >
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-
-                const missing: string[] = [];
-                if (!idFileName) missing.push("Valid ID");
-                if (!licenseFileName) missing.push("Driver's License");
-
-                if (missing.length > 0) {
-                  toast.error("Please upload the required documents.", {
-                    description: `Missing: ${missing.join(" and ")}.`,
-                  });
-                  return;
-                }
-
-                toast.success("Requirements uploaded", {
-                  description: "Your documents are queued for verification.",
-                });
-
-                window.setTimeout(() => {
-                  void navigate({ to: "/payment-details" });
-                }, 700);
-              }}
-              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
-            >
-              <UploadField
-                label="Valid ID"
-                helper={idFileName || "Upload government ID"}
-                onFilePick={(name) => setIdFileName(name)}
-              />
-              <UploadField
-                label="Driver's License"
-                helper={licenseFileName || "Upload front/back copy"}
-                onFilePick={(name) => setLicenseFileName(name)}
-              />
-              <button
-                type="submit"
-                className="touch-target inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:col-span-2 lg:col-span-3"
-              >
-                <FileUp className="h-4 w-4" />
-                Submit Requirements
-              </button>
-            </form>
-
-            <div className="mt-4 text-center text-sm">
-              <Link
-                to="/customer"
-                className="font-semibold text-primary transition-colors hover:text-primary/80"
-              >
-                Go to Customer Dashboard
-              </Link>
-            </div>
-          </Card>
-        </section>
-
-        <Footer />
-      </div>
-    );
-  }
+  const attentionRecords = useMemo(
+    () => records.filter((record) => record.lifecycle.actionRequired),
+    [records],
+  );
+  const filteredRecords = useMemo(
+    () => records.filter((record) => matchesFilter(record, filter)),
+    [filter, records],
+  );
+  const customerNotificationBindings = useMemo(
+    () =>
+      records.map(({ booking, requirements, payment }) => ({
+        bookingId: booking.id,
+        requirementSetId:
+          requirements?.requirementSet?.booking_id === booking.id
+            ? requirements.requirementSet.id
+            : null,
+        paymentId: payment?.booking_id === booking.id ? payment.id : null,
+        rentalId:
+          booking.rental?.booking_id === booking.id ? booking.rental.id : null,
+      })) satisfies CustomerNotificationBinding[],
+    [records],
+  );
 
   return (
-    <div>
+    <CustomerPage className="booking-list-page">
       <Header />
-
-      <section className="border-b border-border bg-secondary/60">
-        <div className="container-page py-10">
-          <div className="flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
+      <main id="main-content" className="booking-list-main">
+        <div className="customer-container">
+          <div className="booking-list-heading">
             <div>
-              <h1 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">
-                Your booking and payment status
-              </h1>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Review the booking and payment records linked to your account.
+              <h1>My bookings</h1>
+              <p>
+                Your current requests and rentals, with the next step shown
+                first.
               </p>
             </div>
-            <Link
-              to="/customer/profile"
-              className="touch-target inline-flex items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
-            >
-              <UserRound className="h-4 w-4 text-primary" />
-              Edit Profile
+            <Link className="customer-primary-button" to="/vehicles">
+              <CarFront size={20} aria-hidden="true" />
+              Find another car
             </Link>
           </div>
-        </div>
-      </section>
 
-      <section className="container-page mt-8">
-        <div className="mx-auto max-w-4xl space-y-6">
-          <Card
-            title="Payment status"
-            icon={<CreditCard className="h-4 w-4 text-primary" />}
-          >
-            <div className="space-y-2">
-              {customerPaymentsLoading && (
-                <p className="text-sm text-muted-foreground">
-                  Loading payment status…
-                </p>
-              )}
-              {customerPaymentsError && (
-                <div
-                  role="alert"
-                  className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-3 text-sm text-foreground"
-                >
-                  <p>{customerPaymentsError}</p>
-                  <button
-                    type="button"
-                    onClick={() => void loadCustomerPayments()}
-                    className="mt-2 text-xs font-semibold text-primary underline underline-offset-2"
-                  >
-                    Retry loading payment status
-                  </button>
-                </div>
-              )}
-              {!customerPaymentsLoading &&
-                !customerPaymentsError &&
-                customerPayments.length === 0 && (
-                  <div className="rounded-md border border-dashed border-border bg-secondary/20 px-4 py-5 text-center">
-                    <p className="text-sm font-medium text-foreground">
-                      No payment submitted
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                      Persisted payment status will appear here after you submit
-                      a payment proof.
-                    </p>
-                  </div>
-                )}
-              {!customerPaymentsLoading &&
-                !customerPaymentsError &&
-                customerPayments.map((payment) => (
-                  <CustomerPaymentRow key={payment.id} payment={payment} />
-                ))}
-            </div>
-          </Card>
+          {vehicleWarning ? (
+            <StatusCallout tone="info" title="Vehicle details are limited">
+              {vehicleWarning} Booking dates and lifecycle state remain tied to
+              your account records.
+            </StatusCallout>
+          ) : null}
 
-          {bookingRequests[0] && (
-            <RequirementSubmission booking={bookingRequests[0]} />
-          )}
-
-          <NotificationsPanel audience="customer" compact />
-
-          <Card
-            title="Past bookings"
-            icon={<History className="h-4 w-4 text-primary" />}
-          >
-            {bookingRequestsLoading && (
-              <p className="mb-4 text-sm text-muted-foreground">
-                Loading booking requests…
-              </p>
-            )}
-            {bookingRequestsError && (
-              <div
-                role="alert"
-                className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-3 text-sm text-foreground"
-              >
-                <p>{bookingRequestsError}</p>
+          {loading ? (
+            <BookingListLoading />
+          ) : error ? (
+            <StatusCallout
+              tone="error"
+              title="Bookings unavailable"
+              action={
                 <button
+                  className="customer-secondary-button"
                   type="button"
-                  onClick={() => void loadBookingRequests()}
-                  className="mt-2 text-xs font-semibold text-primary underline underline-offset-2"
+                  onClick={() => void loadBookings()}
                 >
-                  Retry loading bookings
+                  <RefreshCw size={16} aria-hidden="true" />
+                  Try again
                 </button>
-              </div>
-            )}
-            {bookingRequests.length > 0 && (
-              <div className="mb-4 space-y-3">
-                {bookingRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="rounded-md border border-primary/30 bg-primary/5 px-3 py-3"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold">
-                          Request {request.id.slice(0, 8)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Requested: {request.requested_vehicle?.name ?? "—"} ·{" "}
-                          {new Date(request.pickup_at).toLocaleString()}
-                        </p>
-                        {request.assigned_vehicle && (
-                          <p className="text-xs text-foreground">
-                            Assigned: {request.assigned_vehicle.name}
-                            {request.assigned_vehicle.id !==
-                            request.requested_vehicle_id
-                              ? " (substituted)"
-                              : ""}
-                          </p>
-                        )}
-                        {request.rental?.started_at && (
-                          <div className="mt-2 rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-2 text-xs">
-                            <b>
-                              {request.rental.ended_at
-                                ? "Vehicle returned"
-                                : "Active rental"}
-                            </b>{" "}
-                            · Started{" "}
-                            {new Date(
-                              request.rental.started_at,
-                            ).toLocaleString()}{" "}
-                            · Scheduled return{" "}
-                            {new Date(
-                              request.rental.scheduled_return_at,
-                            ).toLocaleString()}
-                            {request.rental.ended_at && (
-                              <>
-                                {" "}
-                                · Actual return{" "}
-                                {new Date(
-                                  request.rental.ended_at,
-                                ).toLocaleString()}
-                              </>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <StatusPill status={request.booking_status} />
-                    </div>
+              }
+            >
+              {error}
+            </StatusCallout>
+          ) : (
+            <>
+              {attentionRecords.length > 0 ? (
+                <section
+                  className="booking-attention"
+                  aria-labelledby="booking-attention-title"
+                >
+                  <div className="booking-section-heading">
+                    <h2 id="booking-attention-title">Needs your attention</h2>
+                    <span>{attentionRecords.length} request(s)</span>
                   </div>
-                ))}
-              </div>
-            )}
-            <PastBookings rows={pastCustomerBookings} />
-          </Card>
-        </div>
-      </section>
+                  <div className="booking-attention-list">
+                    {attentionRecords.map((record) => (
+                      <BookingListItem
+                        key={record.booking.id}
+                        record={record}
+                        featured
+                      />
+                    ))}
+                  </div>
+                </section>
+              ) : null}
 
+              <section
+                className="booking-all-section"
+                aria-labelledby="booking-all-title"
+              >
+                <div className="booking-section-heading booking-all-heading">
+                  <div>
+                    <h2 id="booking-all-title">All bookings</h2>
+                    <p>
+                      Open any request for its exact requirements, payment, and
+                      rental record.
+                    </p>
+                  </div>
+                  <BookingFilterTabs filter={filter} onChange={setFilter} />
+                </div>
+
+                {filteredRecords.length > 0 ? (
+                  <div id="booking-list" className="booking-list" role="list">
+                    {filteredRecords.map((record) => (
+                      <BookingListItem
+                        key={record.booking.id}
+                        record={record}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <BookingEmpty
+                    filter={filter}
+                    hasBookings={records.length > 0}
+                  />
+                )}
+              </section>
+              <section
+                className="booking-notifications"
+                aria-label="Notifications"
+              >
+                <NotificationsPanel
+                  audience="customer"
+                  compact
+                  customerBindings={customerNotificationBindings}
+                />
+              </section>
+            </>
+          )}
+        </div>
+      </main>
       <Footer />
+    </CustomerPage>
+  );
+}
+
+async function composeBookingRecord(
+  booking: CustomerBooking,
+  vehicles: CustomerVehicle[],
+): Promise<BookingRecord> {
+  const [requirementsResult, paymentResult] = await Promise.allSettled([
+    fetchJson<RequirementsResponse>(
+      `/api/requirements?bookingId=${encodeURIComponent(booking.id)}`,
+    ),
+    fetchJson<CustomerPaymentResponse>(
+      `/api/payments?bookingId=${encodeURIComponent(booking.id)}`,
+    ),
+  ]);
+  const requirementsAvailable = requirementsResult.status === "fulfilled";
+  const paymentAvailable = paymentResult.status === "fulfilled";
+  const requirements = requirementsAvailable ? requirementsResult.value : null;
+  const payment = paymentAvailable
+    ? paymentForBooking(booking.id, paymentResult.value.payments)
+    : null;
+  const requirementsError = requirementsAvailable
+    ? null
+    : describeError(
+        requirementsResult.reason,
+        "Requirements status is unavailable.",
+      );
+  const paymentError = paymentAvailable
+    ? null
+    : describeError(paymentResult.reason, "Payment status is unavailable.");
+  const composition: CustomerBookingComposition = {
+    booking,
+    requirements,
+    payment,
+    paymentMethods: [],
+    requirementsAvailable,
+    paymentAvailable,
+    requirementsError,
+    paymentError,
+  };
+
+  return {
+    ...composition,
+    vehicle: vehicleForBooking(booking, vehicles),
+    lifecycle: deriveCustomerLifecycle(composition),
+  };
+}
+
+function vehicleForBooking(
+  booking: CustomerBooking,
+  vehicles: CustomerVehicle[],
+) {
+  const vehicleId =
+    booking.rental?.vehicle_id ??
+    booking.assigned_vehicle?.id ??
+    booking.requested_vehicle?.id ??
+    "";
+  const fromFleet = vehicles.find((vehicle) => vehicle.id === vehicleId);
+  if (fromFleet) return fromFleet;
+
+  const fallback = booking.rental
+    ? ([booking.assigned_vehicle, booking.requested_vehicle].find(
+        (candidate) => candidate?.id === booking.rental?.vehicle_id,
+      ) ?? null)
+    : (booking.assigned_vehicle ?? booking.requested_vehicle);
+  if (!fallback) return null;
+  return {
+    id: fallback.id,
+    name: fallback.name,
+    license_plate: fallback.license_plate,
+    transmission: null,
+    fuel_type: null,
+    seat_capacity: null,
+    daily_rate: null,
+    image_url: null,
+    branch: booking.pickup_branch,
+    category: null,
+  } satisfies CustomerVehicle;
+}
+
+function describeError(reason: unknown, fallback: string) {
+  return reason instanceof ApiRequestError || reason instanceof Error
+    ? reason.message
+    : fallback;
+}
+
+function matchesFilter(record: BookingRecord, filter: BookingFilter) {
+  if (filter === "needs-action") return record.lifecycle.actionRequired;
+  if (filter === "current") {
+    return !["returned", "rejected", "cancelled"].includes(
+      record.lifecycle.state,
+    );
+  }
+  return true;
+}
+
+function BookingFilterTabs({
+  filter,
+  onChange,
+}: {
+  filter: BookingFilter;
+  onChange: (filter: BookingFilter) => void;
+}) {
+  const filters: Array<{ value: BookingFilter; label: string }> = [
+    { value: "all", label: "All" },
+    { value: "needs-action", label: "Needs action" },
+    { value: "current", label: "Current" },
+  ];
+  return (
+    <div
+      className="booking-filter-tabs"
+      role="group"
+      aria-label="Filter bookings"
+    >
+      {filters.map((item) => (
+        <button
+          className={filter === item.value ? "is-active" : ""}
+          key={item.value}
+          type="button"
+          aria-pressed={filter === item.value}
+          onClick={() => onChange(item.value)}
+        >
+          {item.label}
+        </button>
+      ))}
     </div>
   );
 }
 
-function RequirementSubmission({ booking }: { booking: CustomerBooking }) {
-  const [data, setData] = useState<RequirementData | null>(null);
-  const [busy, setBusy] = useState(false);
-  const load = useCallback(
-    () =>
-      fetch(`/api/requirements?bookingId=${encodeURIComponent(booking.id)}`, {
-        credentials: "same-origin",
-      })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((body) => setData(body as RequirementData | null))
-        .catch(() => undefined),
-    [booking.id],
-  );
-  useEffect(() => {
-    void load();
-  }, [load]);
-  const current = (type: string) =>
-    data?.documents?.find(
-      (document) => document.requirement_type === type && document.is_current,
-    );
-  async function upload(type: string, file: File | undefined) {
-    if (!file) return;
-    setBusy(true);
-    const form = new FormData();
-    form.set("bookingId", booking.id);
-    form.set("requirementType", type);
-    form.set("file", file);
-    const response = await fetch("/api/requirements", {
-      method: "POST",
-      body: form,
-      credentials: "same-origin",
-    });
-    const body = await response.json().catch(() => ({}));
-    setBusy(false);
-    if (!response.ok) {
-      toast.error(body.message || "Unable to upload document.");
-      return;
-    }
-    toast.success(`${type} uploaded`);
-    load();
-  }
-  async function submit() {
-    setBusy(true);
-    const form = new FormData();
-    form.set("bookingId", booking.id);
-    form.set("action", "submit");
-    const response = await fetch("/api/requirements", {
-      method: "POST",
-      body: form,
-      credentials: "same-origin",
-    });
-    const body = await response.json().catch(() => ({}));
-    setBusy(false);
-    if (!response.ok) {
-      toast.error(body.message || "Unable to submit requirements.");
-      return;
-    }
-    toast.success("Requirements submitted", {
-      description:
-        "Pending Review. Payment becomes available after Owner/Admin verification.",
-    });
-    load();
-  }
-  async function resubmit() {
-    setBusy(true);
-    const form = new FormData();
-    form.set("bookingId", booking.id);
-    form.set("action", "resubmit");
-    const response = await fetch("/api/requirements", {
-      method: "POST",
-      body: form,
-      credentials: "same-origin",
-    });
-    const body = await response.json().catch(() => ({}));
-    setBusy(false);
-    if (!response.ok) {
-      toast.error(body.message || "Unable to resubmit requirements.");
-      return;
-    }
-    toast.success("Requirements resubmitted for review.");
-    load();
-  }
-  const ready = Boolean(
-    current("Valid Government ID") && current("Driver's License"),
-  );
+function BookingListItem({
+  record,
+  featured = false,
+}: {
+  record: BookingRecord;
+  featured?: boolean;
+}) {
+  const { booking, lifecycle, vehicle } = record;
+  const actionLabel = lifecycle.actionLabel ?? defaultActionLabel(lifecycle);
+  const vehicleName =
+    vehicle?.name ??
+    (booking.rental
+      ? "Vehicle details unavailable"
+      : (booking.requested_vehicle?.name ?? "Vehicle not recorded"));
+  const pickup = booking.pickup_branch?.name ?? "Pickup branch not recorded";
+  const returnAt = booking.rental?.ended_at
+    ? `Returned ${formatInstant(booking.rental.ended_at)}`
+    : booking.rental?.started_at
+      ? `Return ${formatInstant(booking.rental.scheduled_return_at)}`
+      : lifecycle.state === "unavailable"
+        ? "Booking details need attention"
+        : lifecycle.statusLabel;
+  const StatusIcon = statusIcon(lifecycle);
+
   return (
-    <Card
-      title="Renter requirements"
-      icon={<FileCheck2 className="h-4 w-4 text-primary" />}
+    <article
+      className={`booking-list-item${featured ? " is-featured" : ""}`}
+      role="listitem"
     >
-      <p className="mb-3 text-xs text-muted-foreground">
-        Request {booking.id.slice(0, 8)} · upload exactly one current file for
-        each required document.
-      </p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {["Valid Government ID", "Driver's License"].map((type) => {
-          const review = data?.review;
-          const flagged =
-            type === "Valid Government ID"
-              ? review?.governmentIdOutcome === "Needs Replacement"
-              : review?.driversLicenseOutcome === "Needs Replacement";
-          const reason =
-            type === "Valid Government ID"
-              ? review?.governmentIdReason
-              : review?.driversLicenseReason;
-          return (
-            <label
-              key={type}
-              className="rounded-md border border-border bg-secondary/20 p-3 text-sm"
-            >
-              <span className="font-medium">{type}</span>
-              {review && (
-                <span
-                  className={`ml-2 rounded-full border px-2 py-0.5 text-[10px] ${flagged ? "text-rose-300" : "text-emerald-300"}`}
-                >
-                  {flagged ? "Needs Replacement" : "Accepted"}
-                </span>
-              )}
-              <input
-                type="file"
-                accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                disabled={
-                  busy ||
-                  !(
-                    data?.requirementSet?.status === "Not Submitted" ||
-                    (data?.requirementSet?.status === "Needs Resubmission" &&
-                      flagged)
-                  )
-                }
-                onChange={(e) => upload(type, e.target.files?.[0])}
-                className="mt-2 block w-full text-xs"
-              />
-              <span className="mt-1 block text-xs text-muted-foreground">
-                {current(type)?.original_filename || "Not submitted"}
-              </span>
-              {flagged && (
-                <span className="mt-1 block text-xs text-rose-300">
-                  {reason}
-                </span>
-              )}
-            </label>
-          );
-        })}
+      <div className="booking-list-image">
+        <VehicleImage
+          src={vehicle?.image_url}
+          alt={vehicleName}
+          sizes="(max-width: 767px) 100vw, 14rem"
+        />
       </div>
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <StatusPill status={data?.requirementSet?.status || "Not Submitted"} />
-        {data?.requirementSet?.status === "Needs Resubmission" ? (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={resubmit}
-            className="touch-target rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:opacity-50"
-          >
-            Resubmit for Review
-          </button>
-        ) : (
-          <button
-            type="button"
-            disabled={
-              !ready || busy || data?.requirementSet?.status !== "Not Submitted"
-            }
-            onClick={submit}
-            className="touch-target rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Submit for review
-          </button>
-        )}
-      </div>
-      {data?.requirementSet?.status === "Pending Review" && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Uploads are not verification. Owner/Admin review is required before
-          payment.
+      <div className="booking-list-identity">
+        <h3>{vehicleName}</h3>
+        <p>
+          <CalendarDays size={18} aria-hidden="true" />
+          <span>{formatDateRange(booking.pickup_at, booking.return_at)}</span>
         </p>
-      )}
-    </Card>
+        <p>
+          <MapPin size={18} aria-hidden="true" />
+          <span>Pickup: {pickup}</span>
+        </p>
+      </div>
+      <div className={`booking-list-status is-${lifecycle.statusTone}`}>
+        <div className="booking-status-heading">
+          <StatusIcon size={20} aria-hidden="true" />
+          <strong>{lifecycle.statusLabel}</strong>
+        </div>
+        <p>{lifecycle.reason || returnAt}</p>
+        {lifecycle.state === "unavailable" ? (
+          <p className="booking-list-unavailable">
+            {record.requirementsError || record.paymentError}
+          </p>
+        ) : null}
+      </div>
+      <div className="booking-list-action">
+        <Link
+          className={
+            lifecycle.actionRequired
+              ? "customer-primary-button"
+              : "customer-link"
+          }
+          to="/bookings/$bookingId"
+          params={{ bookingId: booking.id }}
+        >
+          {actionLabel}
+          {lifecycle.actionRequired ? (
+            <ArrowRight size={20} aria-hidden="true" />
+          ) : (
+            <ArrowRight size={18} aria-hidden="true" />
+          )}
+        </Link>
+      </div>
+    </article>
   );
 }
 
-function PastBookings({ rows }: { rows: Booking[] }) {
-  if (rows.length === 0) {
-    return (
-      <div className="rounded-md border border-dashed border-border bg-secondary/20 px-4 py-5 text-center">
-        <p className="text-sm font-medium text-foreground">
-          No past bookings yet
-        </p>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          Completed and cancelled reservations will appear here after your trips
-          are finalized.
-        </p>
-      </div>
-    );
+function statusIcon(lifecycle: LifecyclePresentation) {
+  if (lifecycle.actionRequired) return AlertCircle;
+  if (lifecycle.state === "unavailable") return Info;
+  if (["active-rental", "returned", "confirmed"].includes(lifecycle.state)) {
+    return CheckCircle2;
   }
+  return Clock3;
+}
 
+function defaultActionLabel(lifecycle: LifecyclePresentation) {
+  if (lifecycle.state === "active-rental") return "View rental";
+  if (lifecycle.state === "returned") return "View details";
+  if (lifecycle.state === "confirmed") return "View booking";
+  if (lifecycle.state === "unavailable") return "View request";
+  return "View request";
+}
+
+function BookingListLoading() {
   return (
-    <div className="space-y-3">
-      {rows.map((booking) => (
-        <div
-          key={booking.id}
-          className="rounded-md border border-border bg-secondary/30 px-3 py-3"
-        >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {booking.id} - {booking.vehicle}
-              </p>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                {booking.branch} -{" "}
-                {formatBookingRange(booking.from, booking.to)}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Plate {booking.plate} - {peso(booking.amount)}
-              </p>
-            </div>
-
-            <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
-              <StatusPill status={booking.status} />
-              <StatusPill status={booking.payment} />
-            </div>
-          </div>
+    <div className="booking-loading" role="status" aria-live="polite">
+      <span>Loading your bookings…</span>
+      {[1, 2].map((item) => (
+        <div className="booking-skeleton" key={item} aria-hidden="true">
+          <div />
+          <div />
+          <div />
         </div>
       ))}
     </div>
   );
 }
 
-function Card({
-  title,
-  icon,
-  children,
+function BookingEmpty({
+  filter,
+  hasBookings,
 }: {
-  title: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
+  filter: BookingFilter;
+  hasBookings: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
-      <div className="mb-4 flex items-center gap-2">
-        {icon}
-        <h2 className="font-display text-lg font-semibold">{title}</h2>
-      </div>
-      {children}
+    <div className="booking-empty">
+      <FileCheck2 size={28} aria-hidden="true" />
+      <h3>{hasBookings ? "No bookings in this view" : "No bookings yet"}</h3>
+      <p>
+        {hasBookings
+          ? filter === "needs-action"
+            ? "Nothing needs your action right now. You can review all booking records instead."
+            : "There are no current requests or rentals in this view."
+          : "When you send a rental request, its requirements, payment, and rental stages will appear here."}
+      </p>
+      <Link className="customer-secondary-button" to="/vehicles">
+        Find a car
+      </Link>
     </div>
   );
-}
-
-function StatusPill({ status }: { status: string }) {
-  const style =
-    status === "Completed" || status === "Paid"
-      ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/25"
-      : status === "Invalid"
-        ? "bg-rose-500/10 text-rose-300 border-rose-500/25"
-        : status === "Cancelled"
-          ? "bg-zinc-500/10 text-zinc-300 border-zinc-500/25"
-          : "bg-amber-500/10 text-amber-300 border-amber-500/25";
-
-  return (
-    <span
-      className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${style}`}
-    >
-      {status}
-    </span>
-  );
-}
-
-function UploadField({
-  label,
-  helper,
-  onFilePick,
-}: {
-  label: string;
-  helper: string;
-  onFilePick: (name: string) => void;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
-        {label}
-      </span>
-      <input
-        type="file"
-        onChange={(event) => {
-          const fileName = event.target.files?.[0]?.name ?? "";
-          onFilePick(fileName);
-        }}
-        className="input-control py-2.5 file:mr-2 file:rounded-md file:border-0 file:bg-primary/15 file:px-2 file:py-1 file:text-xs file:font-semibold file:text-primary"
-      />
-      <span className="mt-1 block text-xs text-muted-foreground">{helper}</span>
-    </label>
-  );
-}
-
-function Row({
-  title,
-  subtitle,
-  status,
-  action,
-}: {
-  title: string;
-  subtitle: string;
-  status: string;
-  action?: React.ReactNode;
-}) {
-  const style =
-    status === "Verified"
-      ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/25"
-      : status === "Needs Resubmission"
-        ? "bg-rose-500/10 text-rose-300 border-rose-500/25"
-        : "bg-amber-500/10 text-amber-300 border-amber-500/25";
-
-  return (
-    <div className="rounded-md border border-border bg-secondary/30 px-3 py-2">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="text-sm font-medium">{title}</p>
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span
-            className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${style}`}
-          >
-            {status}
-          </span>
-          {action}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CustomerPaymentRow({ payment }: { payment: CustomerPayment }) {
-  const bookingReference = payment.booking_id.slice(0, 8);
-  const transactionReference = payment.transaction_reference?.trim();
-  const title = transactionReference
-    ? `Reference ${transactionReference}`
-    : `Payment for booking ${bookingReference}`;
-  const subtitle = [
-    `Booking ${bookingReference}`,
-    payment.payment_method_label?.trim() || "Payment method not recorded",
-    formatPaymentAmount(payment.submitted_amount),
-  ].join(" · ");
-
-  return (
-    <Row
-      title={title}
-      subtitle={subtitle}
-      status={payment.status}
-      action={
-        payment.status === "Needs Resubmission" ? (
-          <Link
-            to="/payment-details"
-            className="inline-flex items-center rounded-md border border-border bg-background px-2 py-1 text-[11px] font-semibold text-foreground transition-colors hover:bg-accent"
-          >
-            Resubmit
-          </Link>
-        ) : null
-      }
-    />
-  );
-}
-
-function formatPaymentAmount(amount: CustomerPayment["submitted_amount"]) {
-  const numericAmount =
-    typeof amount === "number"
-      ? amount
-      : typeof amount === "string"
-        ? Number(amount)
-        : NaN;
-  return Number.isFinite(numericAmount)
-    ? peso(numericAmount)
-    : "Amount not recorded";
-}
-
-function normalizeCustomerName(name: string) {
-  return name.trim().toLowerCase();
-}
-
-function bookingDateValue(date: string) {
-  return new Date(`${date}T00:00:00`).getTime();
-}
-
-function formatBookingRange(from: string, to: string) {
-  return `${formatBookingDate(from)} to ${formatBookingDate(to)}`;
-}
-
-function formatBookingDate(date: string) {
-  return new Intl.DateTimeFormat("en-PH", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(`${date}T00:00:00`));
 }

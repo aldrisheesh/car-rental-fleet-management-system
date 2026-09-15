@@ -245,5 +245,5 @@ export function isStaffRole(role: AdminRole | undefined | null) {
 }
 
 export function canAccessPayments(role: AdminRole | undefined | null) {
-  return role === "Business Owner" || role === "Owner/Admin";
+  return role === "Owner/Admin";
 }

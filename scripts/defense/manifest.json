@@ -1,0 +1,966 @@
+{
+  "schemaVersion": 1,
+  "markdownManifest": "frontend-stabilization/DEFENSE-DATASET-MANIFEST.md",
+  "markdownSha256": "1cb739501b00ae87637a708d19288f0d7ea15f896eecd3dff6f8ddcd8067e937",
+  "projectRef": "vkfacfjkwomhfvrieaza",
+  "sourceCommit": "9519b62655df4d2212adbeb4a495a43511c7fced",
+  "executionEvidenceCommit": "60ddeb7ded6381b53e201150f4312d2e1c4d9c42",
+  "coverage": {
+    "id": 1,
+    "trackingStartedAt": "2026-09-14T20:17:49.748203Z"
+  },
+  "expectedCounts": {
+    "accounts": 21,
+    "profiles": 21,
+    "bookings": 9,
+    "requirements": 8,
+    "requirementDocuments": 17,
+    "requirementReviews": 8,
+    "payments": 5,
+    "paymentProofs": 5,
+    "rentals": 2,
+    "maintenance": 3,
+    "storageObjects": 22,
+    "notificationEvidence": 39,
+    "auditEvidence": 50,
+    "forecastRuns": 0,
+    "forecastInputs": 0,
+    "forecasts": 0,
+    "supplyEvaluations": 0,
+    "supplyEvaluationVehicles": 0,
+    "allocationBatches": 0,
+    "allocationRecommendations": 0,
+    "allocationCandidates": 0
+  },
+  "accounts": [
+    {
+      "label": "A01",
+      "id": "9a416420-324e-49eb-a737-975e5432bd71",
+      "fullName": "Defense Owner Admin",
+      "role": "Owner/Admin",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "S01",
+      "id": "060e20ca-acb3-4f8f-878a-45f0aa496e09",
+      "fullName": "Defense Operations One",
+      "role": "Operations Staff",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "S02",
+      "id": "189488f5-3fc4-4690-900d-1e6492690aa2",
+      "fullName": "Defense Operations Two",
+      "role": "Operations Staff",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C01",
+      "id": "4504b6ad-3ee0-4482-88a2-e3f015dd033d",
+      "fullName": "Ari Santos",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C02",
+      "id": "0badf004-d6ce-4a36-8360-cd1f998a4f83",
+      "fullName": "Bea Navarro",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C03",
+      "id": "8a87f14f-32e4-4347-a2ff-e2e3b623641a",
+      "fullName": "Celine Rivera",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C04",
+      "id": "bbf01016-c3b7-4a90-b036-afe83fc391c6",
+      "fullName": "Diego Cruz",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C05",
+      "id": "1937a020-64a5-42e0-9c35-ae4a441854fd",
+      "fullName": "Elena Lim",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C06",
+      "id": "0a9d6a88-9912-4b62-9e5f-32fc6427283a",
+      "fullName": "Felix Go",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C07",
+      "id": "71aacc49-c99e-42c2-809a-0d06b704f36e",
+      "fullName": "Gia Ramos",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C08",
+      "id": "b08c63c4-fba0-42d5-95b7-0cdc57ba5bdc",
+      "fullName": "Hana Villanueva",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C09",
+      "id": "6d357eac-d383-479a-9b99-d0419ed8a742",
+      "fullName": "Ivo Castillo",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C10",
+      "id": "b17bb97c-3be9-4333-b588-8df1486cc702",
+      "fullName": "Jules Mendoza",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C11",
+      "id": "5aad17e6-5be7-4eed-92eb-8268c84e706d",
+      "fullName": "Kira Bautista",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C12",
+      "id": "e07b1d5d-904c-4807-a396-b99bb225ba75",
+      "fullName": "Leo Mercado",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C13",
+      "id": "33191bee-8ef9-4062-b2c0-9d2aad251ef8",
+      "fullName": "Mira Salazar",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C14",
+      "id": "39df0fb2-e813-451c-b01b-faad3150c2fe",
+      "fullName": "Nico Villanueva",
+      "role": "Customer/Renter",
+      "accountStatus": "Active"
+    },
+    {
+      "label": "C15",
+      "id": "3aa113cb-a856-4db9-aae3-74487afb6907",
+      "fullName": "Quinn Reyes",
+      "role": "Customer/Renter",
+      "accountStatus": "Active",
+      "noChildWorkflow": true
+    },
+    {
+      "label": "C16",
+      "id": "f3469861-b101-403e-a3ae-c4fc41962786",
+      "fullName": "Rina Flores",
+      "role": "Customer/Renter",
+      "accountStatus": "Active",
+      "noChildWorkflow": true
+    },
+    {
+      "label": "C17",
+      "id": "4ed007d7-df12-4533-ae9e-2b066d3be88f",
+      "fullName": "Sol Navarro",
+      "role": "Customer/Renter",
+      "accountStatus": "Active",
+      "noChildWorkflow": true
+    },
+    {
+      "label": "C18",
+      "id": "6701f797-b784-44e9-96cb-a8572f20b892",
+      "fullName": "Tori Alcantara",
+      "role": "Customer/Renter",
+      "accountStatus": "Active",
+      "noChildWorkflow": true
+    }
+  ],
+  "bookings": [
+    {
+      "label": "C01",
+      "id": "ac1df55a-6342-43df-a5f9-18d0c6a2dbc7",
+      "customerId": "4504b6ad-3ee0-4482-88a2-e3f015dd033d",
+      "status": "Confirmed",
+      "pickupBranchId": "a8cc9334-114f-4924-a406-61716c997592",
+      "returnBranchId": "a8cc9334-114f-4924-a406-61716c997592",
+      "pickupAt": "2026-09-18T02:16:44.832+00:00",
+      "returnAt": "2026-09-20T02:16:44.832+00:00",
+      "requestedVehicleId": "8ff9e22a-c68a-4ec2-b00f-d92e06115ea7",
+      "requestedVehicleKey": "DEV-EVST-001",
+      "assignedVehicleId": "8ff9e22a-c68a-4ec2-b00f-d92e06115ea7",
+      "assignedVehicleKey": "DEV-EVST-001"
+    },
+    {
+      "label": "C02",
+      "id": "ad4caf7e-f25c-467f-81a6-73ae7fbc4401",
+      "customerId": "0badf004-d6ce-4a36-8360-cd1f998a4f83",
+      "status": "Submitted",
+      "pickupBranchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+      "returnBranchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+      "pickupAt": "2026-09-16T02:16:44.832+00:00",
+      "returnAt": "2026-09-18T02:16:44.832+00:00",
+      "requestedVehicleId": "57023c46-e608-41be-bbae-e8b2bcb2f495",
+      "requestedVehicleKey": "DEV-AVAN-001",
+      "assignedVehicleId": null,
+      "assignedVehicleKey": null
+    },
+    {
+      "label": "C03",
+      "id": "8dcb959f-7f42-456c-974b-9ba56227c288",
+      "customerId": "8a87f14f-32e4-4347-a2ff-e2e3b623641a",
+      "status": "Submitted",
+      "pickupBranchId": "a8cc9334-114f-4924-a406-61716c997592",
+      "returnBranchId": "a8cc9334-114f-4924-a406-61716c997592",
+      "pickupAt": "2026-09-17T02:16:44.832+00:00",
+      "returnAt": "2026-09-19T02:16:44.832+00:00",
+      "requestedVehicleId": "e328fd5f-caf3-4589-8656-cb2822ac8081",
+      "requestedVehicleKey": "DEV-WIGO-001",
+      "assignedVehicleId": null,
+      "assignedVehicleKey": null
+    },
+    {
+      "label": "C04",
+      "id": "4d7fc0b1-5cda-47fb-981a-5859f2e27212",
+      "customerId": "bbf01016-c3b7-4a90-b036-afe83fc391c6",
+      "status": "Submitted",
+      "pickupBranchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+      "returnBranchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+      "pickupAt": "2026-09-18T02:16:44.832+00:00",
+      "returnAt": "2026-09-21T02:16:44.832+00:00",
+      "requestedVehicleId": "0cbe92db-b263-4824-80c9-68ea9f84fcef",
+      "requestedVehicleKey": "DEV-VIOS-001",
+      "assignedVehicleId": null,
+      "assignedVehicleKey": null
+    },
+    {
+      "label": "C05",
+      "id": "4f5ee393-aef2-4012-85d0-0cdb3d25d3ea",
+      "customerId": "1937a020-64a5-42e0-9c35-ae4a441854fd",
+      "status": "Submitted",
+      "pickupBranchId": "a8cc9334-114f-4924-a406-61716c997592",
+      "returnBranchId": "a8cc9334-114f-4924-a406-61716c997592",
+      "pickupAt": "2026-09-19T02:16:44.832+00:00",
+      "returnAt": "2026-09-21T02:16:44.832+00:00",
+      "requestedVehicleId": "0845b297-9dfb-4d99-95ab-d641fd84bc63",
+      "requestedVehicleKey": "DEV-CITY-001",
+      "assignedVehicleId": null,
+      "assignedVehicleKey": null
+    },
+    {
+      "label": "C06",
+      "id": "d6cdd04a-608d-4bce-9d22-eb34cfc1c9d6",
+      "customerId": "0a9d6a88-9912-4b62-9e5f-32fc6427283a",
+      "status": "Submitted",
+      "pickupBranchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+      "returnBranchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+      "pickupAt": "2026-09-20T02:16:44.832+00:00",
+      "returnAt": "2026-09-23T02:16:44.832+00:00",
+      "requestedVehicleId": "163d368b-79f9-4163-83af-d34cc5acab30",
+      "requestedVehicleKey": "DEV-RANG-001",
+      "assignedVehicleId": null,
+      "assignedVehicleKey": null
+    },
+    {
+      "label": "C07",
+      "id": "651cdf46-4982-4b1b-bcbe-cc8ddebb6a8a",
+      "customerId": "71aacc49-c99e-42c2-809a-0d06b704f36e",
+      "status": "Submitted",
+      "pickupBranchId": "a8cc9334-114f-4924-a406-61716c997592",
+      "returnBranchId": "a8cc9334-114f-4924-a406-61716c997592",
+      "pickupAt": "2026-09-21T02:16:44.832+00:00",
+      "returnAt": "2026-09-23T02:16:44.832+00:00",
+      "requestedVehicleId": "1d46ed98-a485-42b0-bac7-b853bca8e7f0",
+      "requestedVehicleKey": "DEV-HILX-001",
+      "assignedVehicleId": null,
+      "assignedVehicleKey": null
+    },
+    {
+      "label": "C08",
+      "id": "b99d85f2-0063-433f-b329-6786b8b50972",
+      "customerId": "b08c63c4-fba0-42d5-95b7-0cdc57ba5bdc",
+      "status": "Confirmed",
+      "pickupBranchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+      "returnBranchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+      "pickupAt": "2026-09-15T01:16:44.832+00:00",
+      "returnAt": "2026-09-17T02:16:44.832+00:00",
+      "requestedVehicleId": "6fbbb99a-885b-4ed1-84c5-084cd6afdb45",
+      "requestedVehicleKey": "DEV-RUSH-001",
+      "assignedVehicleId": "6fbbb99a-885b-4ed1-84c5-084cd6afdb45",
+      "assignedVehicleKey": "DEV-RUSH-001"
+    },
+    {
+      "label": "C09",
+      "id": "d0fcd76c-0572-4a6b-a5c7-d3d10fc8086c",
+      "customerId": "6d357eac-d383-479a-9b99-d0419ed8a742",
+      "status": "Confirmed",
+      "pickupBranchId": "a8cc9334-114f-4924-a406-61716c997592",
+      "returnBranchId": "a8cc9334-114f-4924-a406-61716c997592",
+      "pickupAt": "2026-09-14T02:16:44.832+00:00",
+      "returnAt": "2026-09-16T02:16:44.832+00:00",
+      "requestedVehicleId": "bf1cb4db-3b58-473a-9d3b-ab56ecfbc97f",
+      "requestedVehicleKey": "DEV-INNO-001",
+      "assignedVehicleId": "bf1cb4db-3b58-473a-9d3b-ab56ecfbc97f",
+      "assignedVehicleKey": "DEV-INNO-001"
+    }
+  ],
+  "requirements": [
+    {
+      "label": "C01",
+      "id": "bb42bd6d-0949-4340-9e95-f74abb293ac1",
+      "bookingId": "ac1df55a-6342-43df-a5f9-18d0c6a2dbc7",
+      "customerId": "4504b6ad-3ee0-4482-88a2-e3f015dd033d",
+      "status": "Verified",
+      "documents": [
+        {
+          "id": "5aee51d2-2f46-4784-a4ab-ce3bd8e1215c",
+          "type": "Valid Government ID",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "46898d3fc99fcf25b044cc6671ff756fdb407894619883e54b3afc8384d4dab8"
+        },
+        {
+          "id": "799c3e28-d70e-4438-aea8-64c64e474504",
+          "type": "Driver's License",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "45d727a824b3f6b89b83fd25df6ef60ceeabe51c8cbb64fc66f572d565184d46"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "50d3ada1-7ab3-4d5f-8cc4-44df34843db6",
+          "reviewerId": "9a416420-324e-49eb-a737-975e5432bd71",
+          "resultingStatus": "Verified",
+          "governmentIdDocumentId": "5aee51d2-2f46-4784-a4ab-ce3bd8e1215c",
+          "governmentIdVersion": 1,
+          "driversLicenseDocumentId": "799c3e28-d70e-4438-aea8-64c64e474504",
+          "driversLicenseVersion": 1
+        }
+      ]
+    },
+    {
+      "label": "C03",
+      "id": "db99c848-20fb-49dd-9fec-ec68dad92cfd",
+      "bookingId": "8dcb959f-7f42-456c-974b-9ba56227c288",
+      "customerId": "8a87f14f-32e4-4347-a2ff-e2e3b623641a",
+      "status": "Pending Review",
+      "documents": [
+        {
+          "id": "7eff812d-1f3a-4de2-ae5a-5588929e7977",
+          "type": "Valid Government ID",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "881b923a2b045f822f3dd371750a001146b072027ae0655c436d318513e02890"
+        },
+        {
+          "id": "60f1bf96-689e-4c41-8ef6-42db770d0a31",
+          "type": "Driver's License",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "6e8423bf0af2b48167d9d03f53690085c2b87c91bbc3fc5481bf46ea36fe92ff"
+        }
+      ],
+      "reviews": []
+    },
+    {
+      "label": "C04",
+      "id": "4e668c51-fb17-45a0-8f9e-eb4aad1f623d",
+      "bookingId": "4d7fc0b1-5cda-47fb-981a-5859f2e27212",
+      "customerId": "bbf01016-c3b7-4a90-b036-afe83fc391c6",
+      "status": "Needs Resubmission",
+      "documents": [
+        {
+          "id": "9c1a215e-bd24-4a19-be14-800bfcacf031",
+          "type": "Valid Government ID",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "9b16fe368cefcd0335654355073992fc0e39a731cc2977feb24d8c1461edc5c0"
+        },
+        {
+          "id": "5d4335be-538f-43ea-a2ad-f0df64bea3a3",
+          "type": "Driver's License",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "5ed42cc3311847f447b7209d33658c524d2b307c1f2565d9d9dbeb2d0a936a1f"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "7b5e7d19-238d-4b13-b36b-4024f460a4f5",
+          "reviewerId": "9a416420-324e-49eb-a737-975e5432bd71",
+          "resultingStatus": "Needs Resubmission",
+          "governmentIdDocumentId": "9c1a215e-bd24-4a19-be14-800bfcacf031",
+          "governmentIdVersion": 1,
+          "driversLicenseDocumentId": "5d4335be-538f-43ea-a2ad-f0df64bea3a3",
+          "driversLicenseVersion": 1
+        }
+      ]
+    },
+    {
+      "label": "C05",
+      "id": "03531c61-b4f4-41f7-bd06-dc2bda8fafe6",
+      "bookingId": "4f5ee393-aef2-4012-85d0-0cdb3d25d3ea",
+      "customerId": "1937a020-64a5-42e0-9c35-ae4a441854fd",
+      "status": "Verified",
+      "documents": [
+        {
+          "id": "cb2a92a2-c81f-4285-938f-3846d918aba8",
+          "type": "Valid Government ID",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "bfd7c60fc2690715ad4c005be19360fe4c684d189a0151c4ee18f966317715e5"
+        },
+        {
+          "id": "718ff468-6274-4371-adfe-8d619279a304",
+          "type": "Driver's License",
+          "version": 1,
+          "isCurrent": false,
+          "storagePathSha256": "f96556ec21e3084090647a227533198d81540a09375d3ef5bc44eae917193fcc"
+        },
+        {
+          "id": "0ea2afd2-6fce-4fa7-abb9-d65c54e7c3ac",
+          "type": "Driver's License",
+          "version": 2,
+          "isCurrent": true,
+          "storagePathSha256": "bdc68d42c8803500e7bae75a950770eb0fd59456f5fd25dd5953be7e8c3de2f8"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "4f9df7ed-09c0-4842-9881-2ba4e4129775",
+          "reviewerId": "9a416420-324e-49eb-a737-975e5432bd71",
+          "resultingStatus": "Needs Resubmission",
+          "governmentIdDocumentId": "cb2a92a2-c81f-4285-938f-3846d918aba8",
+          "governmentIdVersion": 1,
+          "driversLicenseDocumentId": "718ff468-6274-4371-adfe-8d619279a304",
+          "driversLicenseVersion": 1
+        },
+        {
+          "id": "e111bdac-361d-4b72-8fd1-ef108cd66004",
+          "reviewerId": "9a416420-324e-49eb-a737-975e5432bd71",
+          "resultingStatus": "Verified",
+          "governmentIdDocumentId": "cb2a92a2-c81f-4285-938f-3846d918aba8",
+          "governmentIdVersion": 1,
+          "driversLicenseDocumentId": "0ea2afd2-6fce-4fa7-abb9-d65c54e7c3ac",
+          "driversLicenseVersion": 2
+        }
+      ]
+    },
+    {
+      "label": "C06",
+      "id": "85a59211-9ea5-444c-99a8-49656cc10ed8",
+      "bookingId": "d6cdd04a-608d-4bce-9d22-eb34cfc1c9d6",
+      "customerId": "0a9d6a88-9912-4b62-9e5f-32fc6427283a",
+      "status": "Verified",
+      "documents": [
+        {
+          "id": "9dd3d32f-d4f0-4b5c-9907-d2aa0dcc09c3",
+          "type": "Valid Government ID",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "2b497156e32b1a3bae6d1b7eb8aeaad4c78f5268fffcecf3964ce4b20dac5586"
+        },
+        {
+          "id": "90f19069-f60c-49ed-b075-6934b632eaeb",
+          "type": "Driver's License",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "3346213d7b1b0ed2dab49ae725751fbdc31b1a6bee8ba4726620ce3b7a463b08"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "f5cb01b3-9513-4e22-b4a1-a8253edf7e21",
+          "reviewerId": "9a416420-324e-49eb-a737-975e5432bd71",
+          "resultingStatus": "Verified",
+          "governmentIdDocumentId": "9dd3d32f-d4f0-4b5c-9907-d2aa0dcc09c3",
+          "governmentIdVersion": 1,
+          "driversLicenseDocumentId": "90f19069-f60c-49ed-b075-6934b632eaeb",
+          "driversLicenseVersion": 1
+        }
+      ]
+    },
+    {
+      "label": "C07",
+      "id": "8a756d9b-f333-4dee-ac50-9f12a4fcacbf",
+      "bookingId": "651cdf46-4982-4b1b-bcbe-cc8ddebb6a8a",
+      "customerId": "71aacc49-c99e-42c2-809a-0d06b704f36e",
+      "status": "Verified",
+      "documents": [
+        {
+          "id": "b794ffbd-cd3d-493e-b8e4-acbecadab6e5",
+          "type": "Valid Government ID",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "6b06b7e004e1ca46e7f109062c1967b54307153933decae5c814d825c2419fe3"
+        },
+        {
+          "id": "660675c0-c048-4ac4-8b13-11812b659b4a",
+          "type": "Driver's License",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "662958be2b2e4b0c93906a70b4749d671eaea0c01a89b2e902e66baec9909ca7"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "924fc673-aac5-47df-bef2-e9d694652f80",
+          "reviewerId": "9a416420-324e-49eb-a737-975e5432bd71",
+          "resultingStatus": "Verified",
+          "governmentIdDocumentId": "b794ffbd-cd3d-493e-b8e4-acbecadab6e5",
+          "governmentIdVersion": 1,
+          "driversLicenseDocumentId": "660675c0-c048-4ac4-8b13-11812b659b4a",
+          "driversLicenseVersion": 1
+        }
+      ]
+    },
+    {
+      "label": "C08",
+      "id": "b3662c5a-e8cf-48b3-a4a7-0b27d197ac31",
+      "bookingId": "b99d85f2-0063-433f-b329-6786b8b50972",
+      "customerId": "b08c63c4-fba0-42d5-95b7-0cdc57ba5bdc",
+      "status": "Verified",
+      "documents": [
+        {
+          "id": "ef495ceb-12bc-46d0-950b-452121c131e7",
+          "type": "Valid Government ID",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "e21afa0b9e27ce8cbc0f8498849df410c48606aebca8e7ceb4e6e84c21bb0e69"
+        },
+        {
+          "id": "00ece5df-1be0-4829-84de-480fda251124",
+          "type": "Driver's License",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "2c5746752e069a32035eaa75ff043725319df05af64d3eac202f4963a56c84e2"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "b9fba24e-799b-4208-b5d4-3c9cdebfd2b6",
+          "reviewerId": "9a416420-324e-49eb-a737-975e5432bd71",
+          "resultingStatus": "Verified",
+          "governmentIdDocumentId": "ef495ceb-12bc-46d0-950b-452121c131e7",
+          "governmentIdVersion": 1,
+          "driversLicenseDocumentId": "00ece5df-1be0-4829-84de-480fda251124",
+          "driversLicenseVersion": 1
+        }
+      ]
+    },
+    {
+      "label": "C09",
+      "id": "71f99c98-baaa-4d0b-9d3e-960018a209c3",
+      "bookingId": "d0fcd76c-0572-4a6b-a5c7-d3d10fc8086c",
+      "customerId": "6d357eac-d383-479a-9b99-d0419ed8a742",
+      "status": "Verified",
+      "documents": [
+        {
+          "id": "c9863607-a5e0-4f5e-9c69-c18d60840be9",
+          "type": "Valid Government ID",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "8211927dd2711cc153b179ecc15a6b130cdcf5b4fb1f71c96d6579ba76ace25e"
+        },
+        {
+          "id": "a1297a46-a03c-4663-b001-5a558a24ba71",
+          "type": "Driver's License",
+          "version": 1,
+          "isCurrent": true,
+          "storagePathSha256": "5d7c12a6ae58a760061b4f233763071f9776a2bf7fbf620cd5d7af1ce8624f63"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "1f3ddb36-511f-4d1c-a2b8-b18cda00becf",
+          "reviewerId": "9a416420-324e-49eb-a737-975e5432bd71",
+          "resultingStatus": "Verified",
+          "governmentIdDocumentId": "c9863607-a5e0-4f5e-9c69-c18d60840be9",
+          "governmentIdVersion": 1,
+          "driversLicenseDocumentId": "a1297a46-a03c-4663-b001-5a558a24ba71",
+          "driversLicenseVersion": 1
+        }
+      ]
+    }
+  ],
+  "payments": [
+    {
+      "label": "C01",
+      "id": "d71bd0bf-f43f-4f3c-ad22-100fea93e90f",
+      "bookingId": "ac1df55a-6342-43df-a5f9-18d0c6a2dbc7",
+      "customerId": "4504b6ad-3ee0-4482-88a2-e3f015dd033d",
+      "status": "Verified",
+      "paymentMethodId": "0115eb1e-47a7-4bf4-b81c-9012c57d42eb",
+      "proof": {
+        "id": "155649a0-d43c-41d6-a0c2-4f4b6c4c6ce7",
+        "version": 1,
+        "isCurrent": true,
+        "storagePathSha256": "330a2cc825cfe74056bf15a5a3e119ff1ba04131d7fc5b494c7f47d930672c59"
+      }
+    },
+    {
+      "label": "C06",
+      "id": "8d33eb4e-3690-4a7f-a6e7-3acdd48f35c5",
+      "bookingId": "d6cdd04a-608d-4bce-9d22-eb34cfc1c9d6",
+      "customerId": "0a9d6a88-9912-4b62-9e5f-32fc6427283a",
+      "status": "Pending Verification",
+      "paymentMethodId": "0115eb1e-47a7-4bf4-b81c-9012c57d42eb",
+      "proof": {
+        "id": "17d85f56-4c55-41ee-bc02-64a97d353469",
+        "version": 1,
+        "isCurrent": true,
+        "storagePathSha256": "9d3c18ff132fe28cea9b0679edc6033500a24b2c91ce04036c0ea09dd7ed72f2"
+      }
+    },
+    {
+      "label": "C07",
+      "id": "194e999b-a60b-478f-8dd3-2afcc4b26e41",
+      "bookingId": "651cdf46-4982-4b1b-bcbe-cc8ddebb6a8a",
+      "customerId": "71aacc49-c99e-42c2-809a-0d06b704f36e",
+      "status": "Needs Resubmission",
+      "paymentMethodId": "0115eb1e-47a7-4bf4-b81c-9012c57d42eb",
+      "proof": {
+        "id": "eeb65754-8ce1-46bb-87d3-8d4f250e0446",
+        "version": 1,
+        "isCurrent": true,
+        "storagePathSha256": "7bf282218da85abc65af8157b7de5f092db56df67892e06f8b81aa2ae7af9bee"
+      }
+    },
+    {
+      "label": "C08",
+      "id": "8e8d4587-a4b7-4cae-bcfb-bb76a4d76d9f",
+      "bookingId": "b99d85f2-0063-433f-b329-6786b8b50972",
+      "customerId": "b08c63c4-fba0-42d5-95b7-0cdc57ba5bdc",
+      "status": "Verified",
+      "paymentMethodId": "0115eb1e-47a7-4bf4-b81c-9012c57d42eb",
+      "proof": {
+        "id": "22e94c0a-0690-4b40-9e8b-d315741586b1",
+        "version": 1,
+        "isCurrent": true,
+        "storagePathSha256": "c71475e3ee6dc1ed6a2b7b7b9cd897ab8beff8d4bc6f6c59f8cdb4bc832b7278"
+      }
+    },
+    {
+      "label": "C09",
+      "id": "442e0043-3afb-47e9-aada-624e42e0eeab",
+      "bookingId": "d0fcd76c-0572-4a6b-a5c7-d3d10fc8086c",
+      "customerId": "6d357eac-d383-479a-9b99-d0419ed8a742",
+      "status": "Verified",
+      "paymentMethodId": "0115eb1e-47a7-4bf4-b81c-9012c57d42eb",
+      "proof": {
+        "id": "bbbefb70-85b2-48fe-92ad-8daa23a3873f",
+        "version": 1,
+        "isCurrent": true,
+        "storagePathSha256": "ce25f65387625b52f88d3a7b06fb83b96bff1b68e69fa8aa5dfc897fabadce41"
+      }
+    }
+  ],
+  "rentals": [
+    {
+      "label": "C08",
+      "id": "d992a451-08e7-4f8f-bbc5-a6085a5a3cc7",
+      "bookingId": "b99d85f2-0063-433f-b329-6786b8b50972",
+      "customerId": "b08c63c4-fba0-42d5-95b7-0cdc57ba5bdc",
+      "vehicleId": "6fbbb99a-885b-4ed1-84c5-084cd6afdb45",
+      "vehicleKey": "DEV-RUSH-001",
+      "state": "Active"
+    },
+    {
+      "label": "C09",
+      "id": "d4669028-e574-4b0f-9367-a94bbbd5bba7",
+      "bookingId": "d0fcd76c-0572-4a6b-a5c7-d3d10fc8086c",
+      "customerId": "6d357eac-d383-479a-9b99-d0419ed8a742",
+      "vehicleId": "bf1cb4db-3b58-473a-9d3b-ab56ecfbc97f",
+      "vehicleKey": "DEV-INNO-001",
+      "state": "Returned"
+    }
+  ],
+  "maintenance": [
+    {
+      "label": "M01",
+      "id": "974bf9c6-7c5f-4fdd-b788-f8abef089637",
+      "vehicleId": "db69e12c-9fa7-4275-90fe-c5e02b78f235",
+      "vehicleKey": "DEV-HIAC-001",
+      "status": "Completed",
+      "blocksRentalUse": false
+    },
+    {
+      "label": "M02",
+      "id": "5722c058-3880-4cdc-bbec-afe4ac7ba547",
+      "vehicleId": "163d368b-79f9-4163-83af-d34cc5acab30",
+      "vehicleKey": "DEV-RANG-001",
+      "status": "Cancelled",
+      "blocksRentalUse": false
+    },
+    {
+      "label": "M03",
+      "id": "1ed9a28e-1093-4e55-907e-998c73cda6ff",
+      "vehicleId": "0d1b1380-e02c-4b1d-bdd8-4652375af992",
+      "vehicleKey": "DEV-URVN-001",
+      "status": "Open",
+      "blocksRentalUse": true
+    }
+  ],
+  "notificationEvidence": [
+    {
+      "notificationType": "new_booking_request",
+      "relatedEntityType": "booking",
+      "entityRefs": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C08",
+        "C09"
+      ],
+      "recipientRef": "A01"
+    },
+    {
+      "notificationType": "requirements_submitted",
+      "relatedEntityType": "requirements",
+      "entityRefs": ["C01", "C03", "C04", "C06", "C07", "C08", "C09"],
+      "recipientRef": "A01"
+    },
+    {
+      "notificationType": "requirements_submitted",
+      "relatedEntityType": "requirements",
+      "entityRefs": ["C05"],
+      "recipientRef": "A01",
+      "minimumCount": 2
+    },
+    {
+      "notificationType": "requirements_verified",
+      "relatedEntityType": "requirements",
+      "entityRefs": ["C01"],
+      "recipientRef": "C01"
+    },
+    {
+      "notificationType": "requirements_needs_resubmission",
+      "relatedEntityType": "requirements",
+      "entityRefs": ["C04"],
+      "recipientRef": "C04"
+    },
+    {
+      "notificationType": "requirements_needs_resubmission",
+      "relatedEntityType": "requirements",
+      "entityRefs": ["C05"],
+      "recipientRef": "C05"
+    },
+    {
+      "notificationType": "requirements_verified",
+      "relatedEntityType": "requirements",
+      "entityRefs": ["C05"],
+      "recipientRef": "C05"
+    },
+    {
+      "notificationType": "requirements_verified",
+      "relatedEntityType": "requirements",
+      "entityRefs": ["C06"],
+      "recipientRef": "C06"
+    },
+    {
+      "notificationType": "requirements_verified",
+      "relatedEntityType": "requirements",
+      "entityRefs": ["C07"],
+      "recipientRef": "C07"
+    },
+    {
+      "notificationType": "requirements_verified",
+      "relatedEntityType": "requirements",
+      "entityRefs": ["C08"],
+      "recipientRef": "C08"
+    },
+    {
+      "notificationType": "requirements_verified",
+      "relatedEntityType": "requirements",
+      "entityRefs": ["C09"],
+      "recipientRef": "C09"
+    },
+    {
+      "notificationType": "payment_proof_submitted",
+      "relatedEntityType": "payment",
+      "entityRefs": ["C01", "C06", "C07", "C08", "C09"],
+      "recipientRef": "A01"
+    },
+    {
+      "notificationType": "payment_verified",
+      "relatedEntityType": "payment",
+      "entityRefs": ["C01"],
+      "recipientRef": "C01"
+    },
+    {
+      "notificationType": "payment_needs_resubmission",
+      "relatedEntityType": "payment",
+      "entityRefs": ["C07"],
+      "recipientRef": "C07"
+    },
+    {
+      "notificationType": "payment_verified",
+      "relatedEntityType": "payment",
+      "entityRefs": ["C08"],
+      "recipientRef": "C08"
+    },
+    {
+      "notificationType": "payment_verified",
+      "relatedEntityType": "payment",
+      "entityRefs": ["C09"],
+      "recipientRef": "C09"
+    },
+    {
+      "notificationType": "booking_confirmed",
+      "relatedEntityType": "booking",
+      "entityRefs": ["C01"],
+      "recipientRef": "C01"
+    },
+    {
+      "notificationType": "booking_confirmed",
+      "relatedEntityType": "booking",
+      "entityRefs": ["C08"],
+      "recipientRef": "C08"
+    },
+    {
+      "notificationType": "booking_confirmed",
+      "relatedEntityType": "booking",
+      "entityRefs": ["C09"],
+      "recipientRef": "C09"
+    },
+    {
+      "notificationType": "maintenance_attention",
+      "relatedEntityType": "vehicle",
+      "entityIds": ["0d1b1380-e02c-4b1d-bdd8-4652375af992"],
+      "recipientRef": "A01"
+    }
+  ],
+  "auditEvidence": [
+    {
+      "action": "booking.created",
+      "entityType": "booking",
+      "entityRefs": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C08",
+        "C09"
+      ],
+      "actorRefMode": "customer"
+    },
+    {
+      "action": "requirements.submitted",
+      "entityType": "requirements",
+      "entityRefs": ["C01", "C03", "C04", "C05", "C06", "C07", "C08", "C09"],
+      "actorRefMode": "customer"
+    },
+    {
+      "action": "requirements.verified",
+      "entityType": "requirements",
+      "entityRefs": ["C01", "C05", "C06", "C07", "C08", "C09"],
+      "actorRef": "A01"
+    },
+    {
+      "action": "requirements.needs_resubmission",
+      "entityType": "requirements",
+      "entityRefs": ["C04", "C05"],
+      "actorRef": "A01"
+    },
+    {
+      "action": "requirements.resubmitted",
+      "entityType": "requirements",
+      "entityRefs": ["C05"],
+      "actorRefMode": "customer"
+    },
+    {
+      "action": "payment.submitted",
+      "entityType": "payment",
+      "entityRefs": ["C01", "C06", "C07", "C08", "C09"],
+      "actorRefMode": "customer"
+    },
+    {
+      "action": "payment.verified",
+      "entityType": "payment",
+      "entityRefs": ["C01", "C08", "C09"],
+      "actorRef": "A01"
+    },
+    {
+      "action": "payment.needs_resubmission",
+      "entityType": "payment",
+      "entityRefs": ["C07"],
+      "actorRef": "A01"
+    },
+    {
+      "action": "booking.vehicle_assigned",
+      "entityType": "booking",
+      "entityRefs": ["C01", "C08", "C09"],
+      "actorRef": "A01"
+    },
+    {
+      "action": "booking.confirmed",
+      "entityType": "booking",
+      "entityRefs": ["C01", "C08", "C09"],
+      "actorRef": "A01"
+    },
+    {
+      "action": "rental.released",
+      "entityType": "rental",
+      "entityRefs": ["C08", "C09"],
+      "actorRef": "A01"
+    },
+    {
+      "action": "rental.released",
+      "entityType": "rental",
+      "entityId": "6ef8b455-6fb6-43c8-82f7-ac32d6306884",
+      "bookingRef": "C01",
+      "actorRef": "A01"
+    },
+    {
+      "action": "rental.returned",
+      "entityType": "rental",
+      "entityRefs": ["C09"],
+      "actorRef": "A01"
+    },
+    {
+      "action": "maintenance.created",
+      "entityType": "maintenance",
+      "entityRefs": ["M01", "M02", "M03"],
+      "actorRef": "A01"
+    },
+    {
+      "action": "maintenance.completed",
+      "entityType": "maintenance",
+      "entityRefs": ["M01"],
+      "actorRef": "A01"
+    },
+    {
+      "action": "maintenance.cancelled",
+      "entityType": "maintenance",
+      "entityRefs": ["M02"],
+      "actorRef": "A01"
+    }
+  ],
+  "decisionSupport": {
+    "forecastRuns": [],
+    "forecastInputs": [],
+    "forecasts": [],
+    "supplyEvaluations": [],
+    "supplyEvaluationVehicles": [],
+    "allocationBatches": [],
+    "allocationRecommendations": [],
+    "allocationCandidates": []
+  }
+}

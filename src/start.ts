@@ -7,13 +7,16 @@ import { renderErrorPage } from "./lib/error-page";
 
 const authBoundaryMiddleware = createMiddleware().server(
   async ({ next, request }) => {
-    const pathname = new URL(request.url).pathname;
+    const requestUrl = new URL(request.url);
+    const pathname = requestUrl.pathname;
     const isAdminArea = pathname === "/admin" || pathname.startsWith("/admin/");
     const isCustomerArea =
       pathname === "/customer" ||
       pathname.startsWith("/customer/") ||
       pathname === "/customer-landing" ||
-      pathname === "/payment-details";
+      pathname === "/payment-details" ||
+      pathname === "/bookings" ||
+      pathname.startsWith("/bookings/");
 
     if (!isAdminArea && !isCustomerArea) return next();
 
@@ -29,7 +32,11 @@ const authBoundaryMiddleware = createMiddleware().server(
       pathname,
       !!principal,
     );
-    return Response.redirect(new URL(destination, request.url), 302);
+    const recoveryDestination =
+      destination === "/sign-in" && pathname.startsWith("/bookings/")
+        ? `/sign-in?returnTo=${encodeURIComponent(`${pathname}${requestUrl.search}`)}`
+        : destination;
+    return Response.redirect(new URL(recoveryDestination, request.url), 302);
   },
 );
 

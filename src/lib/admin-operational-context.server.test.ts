@@ -348,19 +348,48 @@ test("operational context endpoint permits only Owner/Admin", async () => {
   assert.equal(unauthenticated.status, 401);
 });
 
-test("Admin UI contains advisory booking and current allocation context without the obsolete recommendation", async () => {
-  const [bookings, decisions] = await Promise.all([
+test("Admin UI exposes exact booking detail links and staff-safe detail context", async () => {
+  const [bookings, bookingDetail, decisions] = await Promise.all([
     readFile(new URL("../routes/admin.bookings.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../routes/admin.bookings.$bookingId.tsx", import.meta.url),
+      "utf8",
+    ),
     readFile(new URL("../routes/admin.decisions.tsx", import.meta.url), "utf8"),
   ]);
-  assert.match(bookings, /OperationalContextPanel/);
-  assert.match(bookings, /getAdminSession/);
-  assert.match(bookings, /staffView \|\| !selected\?\.id/);
   assert.match(
     bookings,
-    /!staffView && selected\?\.booking_status === "Submitted"/,
+    /to=\{`\/admin\/bookings\/\$\{encodeURIComponent\(booking\.id\)\}` as never\}/,
   );
-  assert.match(bookings, /vehicleId/);
+  assert.doesNotMatch(
+    bookings,
+    /\bselected\b|OperationalContextPanel|getAdminSession|staffView/,
+  );
+  assert.match(
+    bookingDetail,
+    /createFileRoute\("\/admin\/bookings\/\$bookingId"\)/,
+  );
+  assert.match(bookingDetail, /const \{ bookingId \} = Route\.useParams\(\);/);
+  assert.match(
+    bookingDetail,
+    /const booking = exactAdminEntity\(bookings, bookingId\);/,
+  );
+  assert.match(bookingDetail, /body\.requirementSet\.booking_id !== bookingId/);
+  assert.match(
+    bookingDetail,
+    /body\.payments\.some\(\(payment\) => payment\.booking_id !== bookingId\)/,
+  );
+  assert.match(
+    bookingDetail,
+    /role: ownerView \? "Owner\/Admin" : "Operations Staff"/,
+  );
+  assert.match(bookingDetail, /ownerView \? \(\s*<OwnerActionArea/s);
+  assert.match(bookingDetail, /<StaffReadOnlyCard \/>/);
+  assert.match(
+    bookingDetail,
+    /Lifecycle mutations, requirement proofs, payment proofs, and[\s\S]*Owner\/Admin review controls are not shown/,
+  );
+  assert.doesNotMatch(bookingDetail, /OperationalContextPanel/);
   assert.match(decisions, /Current route context for transfer review/);
   assert.match(
     decisions,

@@ -1,15 +1,16 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { MapPin, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Badge, Btn, Card, PageHeader } from "@/components/admin/ui";
-import { TInput } from "@/components/admin/ui";
+import { MapPin, Plus, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Badge,
+  Btn,
+  Card,
+  CardHeader,
+  PageHeader,
+  TInput,
+  TSelect,
+  Toolbar,
+} from "@/components/admin/ui";
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 import {
   buildAdminBranchRows,
@@ -20,6 +21,23 @@ import {
   saveMasterData,
   type ApiMasterVehicle,
 } from "@/lib/master-data-client";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type BranchRecord = CanonicalBranchRecord;
 
@@ -37,172 +55,331 @@ function BranchesPage() {
   const [branches, setBranches] = useState<BranchRecord[]>([]);
   const [vehicles, setVehicles] = useState<ApiMasterVehicle[]>([]);
   const [branchLoading, setBranchLoading] = useState(true);
-  const [branchLoadError, setBranchLoadError] = useState("");
   const [vehicleLoading, setVehicleLoading] = useState(true);
+  const [branchLoadError, setBranchLoadError] = useState("");
   const [vehicleLoadError, setVehicleLoadError] = useState("");
-  const [branchDialogOpen, setBranchDialogOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("All");
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBranch, setEditingBranch] = useState<BranchRecord | null>(null);
   const [branchName, setBranchName] = useState("");
   const [branchAddress, setBranchAddress] = useState("");
   const [branchError, setBranchError] = useState("");
-  useEffect(() => {
-    void fetchMasterData<BranchRecord>("branches")
-      .then(setBranches)
-      .catch((error: unknown) =>
-        setBranchLoadError(
-          error instanceof Error
-            ? error.message
-            : "Unable to load canonical branch data.",
-        ),
-      )
-      .finally(() => setBranchLoading(false));
-    void fetchMasterData<ApiMasterVehicle>("vehicles")
-      .then(setVehicles)
-      .catch((error: unknown) =>
-        setVehicleLoadError(
-          error instanceof Error
-            ? error.message
-            : "Unable to load canonical vehicle assignments.",
-        ),
-      )
-      .finally(() => setVehicleLoading(false));
+  const [saving, setSaving] = useState(false);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [deactivationBranch, setDeactivationBranch] =
+    useState<BranchRecord | null>(null);
+  const [deactivationSaving, setDeactivationSaving] = useState(false);
+  const deactivationTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const deactivationSubmissionRef = useRef(false);
+  const [feedback, setFeedback] = useState("");
+
+  const loadBranches = useCallback(async () => {
+    setBranchLoading(true);
+    setBranchLoadError("");
+    try {
+      const nextBranches = await fetchMasterData<BranchRecord>("branches");
+      setBranches(nextBranches);
+    } catch (error) {
+      setBranchLoadError(
+        error instanceof Error
+          ? error.message
+          : "Unable to load canonical branch data.",
+      );
+    } finally {
+      setBranchLoading(false);
+    }
   }, []);
-  const displayedBranches = buildAdminBranchRows(branches, vehicles);
+
+  const loadVehicles = useCallback(async () => {
+    setVehicleLoading(true);
+    setVehicleLoadError("");
+    try {
+      const nextVehicles = await fetchMasterData<ApiMasterVehicle>("vehicles");
+      setVehicles(nextVehicles);
+    } catch (error) {
+      setVehicleLoadError(
+        error instanceof Error
+          ? error.message
+          : "Unable to load canonical vehicle assignments.",
+      );
+    } finally {
+      setVehicleLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadBranches();
+    void loadVehicles();
+  }, [loadBranches, loadVehicles]);
+
+  const displayedBranches = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    return buildAdminBranchRows(branches, vehicles).filter((row) => {
+      if (
+        status !== "All" &&
+        (row.record.is_active ? "Active" : "Inactive") !== status
+      )
+        return false;
+      if (!normalized) return true;
+      return `${row.record.name} ${row.record.address ?? ""}`
+        .toLowerCase()
+        .includes(normalized);
+    });
+  }, [branches, query, status, vehicles]);
+
   function openBranchDialog(branch?: BranchRecord) {
     setEditingBranch(branch ?? null);
     setBranchName(branch?.name ?? "");
     setBranchAddress(branch?.address ?? "");
     setBranchError("");
-    setBranchDialogOpen(true);
+    setDialogOpen(true);
   }
-  function saveBranch() {
-    void saveMasterData<BranchRecord>({
-      resource: "branches",
-      ...(editingBranch ? { id: editingBranch.id } : {}),
-      input: {
-        name: branchName,
-        address: branchAddress,
-        isActive: editingBranch?.is_active ?? true,
-      },
-    })
-      .then((saved) => {
-        setBranches((current) =>
-          editingBranch
-            ? current.map((row) => (row.id === saved.id ? saved : row))
-            : [...current, saved],
-        );
-        setBranchDialogOpen(false);
-      })
-      .catch((error: unknown) =>
-        setBranchError(
-          error instanceof Error ? error.message : "Unable to save branch.",
-        ),
+
+  async function saveBranch() {
+    if (!branchName.trim()) {
+      setBranchError("Branch name is required.");
+      return;
+    }
+    setSaving(true);
+    setBranchError("");
+    setFeedback("");
+    try {
+      const saved = await saveMasterData<BranchRecord>({
+        resource: "branches",
+        ...(editingBranch ? { id: editingBranch.id } : {}),
+        input: {
+          name: branchName.trim(),
+          address: branchAddress.trim() || null,
+          isActive: editingBranch?.is_active ?? true,
+        },
+      });
+      setBranches((current) =>
+        editingBranch
+          ? current.map((row) => (row.id === saved.id ? saved : row))
+          : [...current, saved],
       );
-  }
-  function toggleBranch(branch: BranchRecord) {
-    void saveMasterData<BranchRecord>({
-      resource: "branches",
-      id: branch.id,
-      input: {
-        name: branch.name,
-        address: branch.address,
-        isActive: !branch.is_active,
-      },
-    })
-      .then((saved) =>
-        setBranches((current) =>
-          current.map((row) => (row.id === saved.id ? saved : row)),
-        ),
-      )
-      .catch((error: unknown) =>
-        setBranchError(
-          error instanceof Error ? error.message : "Unable to update branch.",
-        ),
+      setDialogOpen(false);
+      setFeedback(
+        editingBranch ? "Branch details updated." : "Branch created.",
       );
+    } catch (error) {
+      setBranchError(
+        error instanceof Error ? error.message : "Unable to save branch.",
+      );
+    } finally {
+      setSaving(false);
+    }
   }
+
+  async function toggleBranch(branch: BranchRecord): Promise<boolean> {
+    setSavingId(branch.id);
+    setBranchError("");
+    setFeedback("");
+    try {
+      const saved = await saveMasterData<BranchRecord>({
+        resource: "branches",
+        id: branch.id,
+        input: {
+          name: branch.name,
+          address: branch.address,
+          isActive: !branch.is_active,
+        },
+      });
+      setBranches((current) =>
+        current.map((row) => (row.id === saved.id ? saved : row)),
+      );
+      setFeedback(
+        `${saved.name} is now ${saved.is_active ? "active" : "inactive"}.`,
+      );
+      return true;
+    } catch (error) {
+      setBranchError(
+        error instanceof Error ? error.message : "Unable to update branch.",
+      );
+      return false;
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  function requestBranchToggle(
+    branch: BranchRecord,
+    trigger: HTMLButtonElement,
+  ) {
+    if (branch.is_active) {
+      deactivationTriggerRef.current = trigger;
+      setDeactivationBranch(branch);
+      setBranchError("");
+      setFeedback("");
+      return;
+    }
+    void toggleBranch(branch);
+  }
+
+  async function confirmBranchDeactivation() {
+    const branch = deactivationBranch;
+    if (!branch || deactivationSubmissionRef.current) return;
+
+    deactivationSubmissionRef.current = true;
+    setDeactivationSaving(true);
+    try {
+      const succeeded = await toggleBranch(branch);
+      if (succeeded) setDeactivationBranch(null);
+    } finally {
+      deactivationSubmissionRef.current = false;
+      setDeactivationSaving(false);
+    }
+  }
+
   return (
     <div>
       <PageHeader
         title="Branches"
-        subtitle="Manage canonical branches and their assigned vehicles."
+        subtitle="Manage supported branch identity and active state from the canonical master data."
         actions={
           <Btn variant="primary" onClick={() => openBranchDialog()}>
             <Plus className="h-4 w-4" /> New branch
           </Btn>
         }
       />
+      {feedback ? (
+        <p
+          className="mb-4 rounded-md border border-[#267a55]/30 bg-[#267a55]/5 px-4 py-3 text-sm text-[#267a55]"
+          role="status"
+          aria-live="polite"
+        >
+          {feedback}
+        </p>
+      ) : null}
+      {branchError && !dialogOpen && !deactivationBranch ? (
+        <p
+          className="mb-4 rounded-md border border-[#b43b3b]/30 bg-[#b43b3b]/5 px-4 py-3 text-sm text-[#b43b3b]"
+          role="alert"
+        >
+          {branchError}
+        </p>
+      ) : null}
 
-      {branchLoading || vehicleLoading ? (
-        <Card>
-          <p className="p-6 text-sm text-muted-foreground">
+      <Toolbar>
+        <label className="min-w-60 flex-1">
+          <span className="sr-only">Search branches</span>
+          <TInput
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search branch or address…"
+            aria-label="Search branches"
+          />
+        </label>
+        <label>
+          <span className="sr-only">Filter branch status</span>
+          <TSelect
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+            aria-label="Filter branch status"
+          >
+            <option>All</option>
+            <option>Active</option>
+            <option>Inactive</option>
+          </TSelect>
+        </label>
+        <span className="text-xs text-muted-foreground sm:ml-auto">
+          {branchLoading
+            ? "Loading branches…"
+            : `${displayedBranches.length} canonical branches`}
+        </span>
+      </Toolbar>
+
+      {branchLoading ? (
+        <div role="status">
+          <Card className="p-8 text-center text-sm text-muted-foreground">
             Loading canonical branch data…
-          </p>
-        </Card>
+          </Card>
+        </div>
       ) : branchLoadError ? (
-        <Card>
-          <p className="p-6 text-sm text-destructive" role="alert">
+        <Card className="p-8 text-center">
+          <p role="alert" className="text-sm text-[#b43b3b]">
             {branchLoadError}
           </p>
+          <Btn className="mt-4" onClick={() => void loadBranches()}>
+            <RefreshCw className="h-4 w-4" /> Retry branches
+          </Btn>
         </Card>
-      ) : displayedBranches.length === 0 ? (
-        <Card>
-          <p className="p-6 text-sm text-muted-foreground">
-            No canonical branches are available.
-          </p>
+      ) : !displayedBranches.length ? (
+        <Card className="p-8 text-center text-sm text-muted-foreground">
+          {branches.length
+            ? "No branches match these filters."
+            : "No canonical branches are available."}
         </Card>
       ) : (
-        <div className="grid gap-4 xl:grid-cols-2">
-          {displayedBranches.map((branch) => (
-            <Card key={branch.record.id}>
-              <div className="p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5 text-primary" /> Branch
-                    </div>
-                    <h3 className="mt-1 break-words font-display text-2xl font-semibold">
-                      {branch.record.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {branch.record.address ?? "Address unavailable"}
-                    </p>
-                  </div>
-                  <Badge>
-                    {branch.record.is_active ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-
-                <div className="mt-5 border-y border-border py-4">
-                  <Stat
-                    label="Assigned vehicles"
-                    value={
-                      vehicleLoadError
-                        ? "Unavailable"
-                        : String(branch.assignedVehicleCount)
+        <Card className="overflow-hidden">
+          <CardHeader
+            title="Branch register"
+            hint="Assigned vehicles are counted from canonical vehicle branch_id relationships."
+          />
+          {vehicleLoadError ? (
+            <p
+              className="border-b border-border px-5 py-3 text-sm text-[#a45b13]"
+              role="status"
+            >
+              Vehicle assignments unavailable: {vehicleLoadError}
+            </p>
+          ) : null}
+          <div className="hidden overflow-x-auto lg:block">
+            <table className="w-full text-sm">
+              <caption className="sr-only">
+                Canonical branch management list
+              </caption>
+              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                <tr className="border-b border-border">
+                  <th className="px-5 py-3 text-left font-semibold">Branch</th>
+                  <th className="px-5 py-3 text-left font-semibold">Address</th>
+                  <th className="px-5 py-3 text-left font-semibold">
+                    Assigned vehicles
+                  </th>
+                  <th className="px-5 py-3 text-left font-semibold">Status</th>
+                  <th className="px-5 py-3 text-right font-semibold">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayedBranches.map((row) => (
+                  <BranchRow
+                    key={row.record.id}
+                    row={row}
+                    saving={savingId === row.record.id}
+                    assignmentsUnavailable={
+                      vehicleLoading || Boolean(vehicleLoadError)
+                    }
+                    onEdit={() => openBranchDialog(row.record)}
+                    onToggle={(trigger) =>
+                      requestBranchToggle(row.record, trigger)
                     }
                   />
-                </div>
-
-                <div className="mt-4 flex gap-2">
-                  <Btn
-                    variant="ghost"
-                    onClick={() => openBranchDialog(branch.record)}
-                  >
-                    Edit
-                  </Btn>
-                  <Btn
-                    variant="ghost"
-                    onClick={() => toggleBranch(branch.record)}
-                  >
-                    {branch.record.is_active ? "Deactivate" : "Activate"}
-                  </Btn>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="divide-y divide-border lg:hidden">
+            {displayedBranches.map((row) => (
+              <BranchDisclosure
+                key={row.record.id}
+                row={row}
+                saving={savingId === row.record.id}
+                assignmentsUnavailable={
+                  vehicleLoading || Boolean(vehicleLoadError)
+                }
+                onEdit={() => openBranchDialog(row.record)}
+                onToggle={(trigger) => requestBranchToggle(row.record, trigger)}
+              />
+            ))}
+          </div>
+        </Card>
       )}
-      <Dialog open={branchDialogOpen} onOpenChange={setBranchDialogOpen}>
+
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => !saving && setDialogOpen(open)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -210,45 +387,253 @@ function BranchesPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-2">
-            <label className="text-sm">
-              Name
+            <Field label="Name *">
               <TInput
                 value={branchName}
                 onChange={(event) => setBranchName(event.target.value)}
               />
-            </label>
-            <label className="text-sm">
-              Address
+            </Field>
+            <Field label="Address">
               <TInput
                 value={branchAddress}
                 onChange={(event) => setBranchAddress(event.target.value)}
               />
-            </label>
-            {branchError && (
-              <p className="text-sm text-destructive" role="alert">
-                {branchError}
-              </p>
-            )}
+            </Field>
           </div>
+          {branchError ? (
+            <p className="text-sm text-[#b43b3b]" role="alert">
+              {branchError}
+            </p>
+          ) : null}
           <DialogFooter>
-            <Btn onClick={() => setBranchDialogOpen(false)}>Cancel</Btn>
-            <Btn variant="primary" onClick={saveBranch}>
-              Save branch
+            <Btn disabled={saving} onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Btn>
+            <Btn
+              variant="primary"
+              disabled={saving}
+              onClick={() => void saveBranch()}
+            >
+              {saving ? "Saving…" : "Save branch"}
             </Btn>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={Boolean(deactivationBranch)}
+        onOpenChange={(open) => {
+          if (!open && !deactivationSaving) setDeactivationBranch(null);
+        }}
+      >
+        <AlertDialogContent
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            const trigger = deactivationTriggerRef.current;
+            deactivationTriggerRef.current = null;
+            if (trigger?.isConnected) {
+              trigger.focus();
+            } else {
+              document
+                .querySelector<HTMLElement>('[aria-label="Search branches"]')
+                ?.focus();
+            }
+          }}
+        >
+          <AlertDialogHeader>
+            <AlertDialogTitle className="break-words">
+              Deactivate {deactivationBranch?.name}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This branch will become inactive. Existing historical records
+              remain unchanged.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {branchError && deactivationBranch ? (
+            <p className="text-sm text-[#b43b3b]" role="alert">
+              {branchError}
+            </p>
+          ) : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={deactivationSaving}
+              className="min-h-11"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deactivationSaving}
+              onClick={(event) => {
+                event.preventDefault();
+                void confirmBranchDeactivation();
+              }}
+              className="min-h-11 border border-[#b43b3b] bg-white px-4 text-sm font-semibold text-[#b43b3b] shadow-none hover:bg-[#fff2f1] focus-visible:ring-2 focus-visible:ring-[#0b6158] focus-visible:ring-offset-2"
+            >
+              {deactivationSaving ? "Deactivating…" : "Deactivate branch"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function BranchRow({
+  row,
+  saving,
+  assignmentsUnavailable,
+  onEdit,
+  onToggle,
+}: {
+  row: ReturnType<typeof buildAdminBranchRows>[number];
+  saving: boolean;
+  assignmentsUnavailable: boolean;
+  onEdit: () => void;
+  onToggle: (trigger: HTMLButtonElement) => void;
+}) {
   return (
-    <div>
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-        {label}
+    <tr className="border-b border-border/60 align-top hover:bg-secondary/30">
+      <td className="px-5 py-4">
+        <div className="flex items-start gap-2">
+          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <div>
+            <div className="font-medium">{row.record.name}</div>
+            <div className="font-mono text-xs text-muted-foreground">
+              {row.record.id}
+            </div>
+          </div>
+        </div>
+      </td>
+      <td className="px-5 py-4 text-muted-foreground">
+        {row.record.address || "Address unavailable"}
+      </td>
+      <td className="px-5 py-4">
+        <AssignmentCount
+          label="Assigned vehicles"
+          value={
+            assignmentsUnavailable
+              ? "Unavailable"
+              : String(row.assignedVehicleCount)
+          }
+        />
+      </td>
+      <td className="px-5 py-4">
+        <Badge>{row.record.is_active ? "Active" : "Inactive"}</Badge>
+      </td>
+      <td className="px-5 py-4 text-right">
+        <div className="flex justify-end gap-2">
+          <Btn variant="ghost" onClick={onEdit}>
+            Edit
+          </Btn>
+          <Btn
+            variant="ghost"
+            disabled={saving}
+            onClick={(event) => onToggle(event.currentTarget)}
+          >
+            {saving
+              ? "Saving…"
+              : row.record.is_active
+                ? "Deactivate"
+                : "Activate"}
+          </Btn>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+function BranchDisclosure({
+  row,
+  saving,
+  assignmentsUnavailable,
+  onEdit,
+  onToggle,
+}: {
+  row: ReturnType<typeof buildAdminBranchRows>[number];
+  saving: boolean;
+  assignmentsUnavailable: boolean;
+  onEdit: () => void;
+  onToggle: (trigger: HTMLButtonElement) => void;
+}) {
+  return (
+    <details className="group px-5 py-4">
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 shrink-0 text-primary" />
+            <span className="font-medium">{row.record.name}</span>
+          </div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {row.record.address || "Address unavailable"}
+          </div>
+        </div>
+        <Badge>{row.record.is_active ? "Active" : "Inactive"}</Badge>
+      </summary>
+      <dl className="mt-4 grid gap-3 border-t border-border pt-4 text-sm">
+        <div>
+          <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+            Assigned vehicles
+          </dt>
+          <dd className="mt-1">
+            <AssignmentCount
+              label="Assigned vehicles"
+              value={
+                assignmentsUnavailable
+                  ? "Unavailable"
+                  : String(row.assignedVehicleCount)
+              }
+            />
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+            Canonical id
+          </dt>
+          <dd className="mt-1 font-mono text-xs">{row.record.id}</dd>
+        </div>
+      </dl>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Btn variant="ghost" onClick={onEdit}>
+          Edit
+        </Btn>
+        <Btn
+          variant="ghost"
+          disabled={saving}
+          onClick={(event) => onToggle(event.currentTarget)}
+        >
+          {saving
+            ? "Saving…"
+            : row.record.is_active
+              ? "Deactivate"
+              : "Activate"}
+        </Btn>
       </div>
-      <div className="font-display text-xl font-semibold">{value}</div>
-    </div>
+    </details>
+  );
+}
+
+function AssignmentCount({ label, value }: { label: string; value: string }) {
+  return (
+    <>
+      <span className="sr-only">{label}</span>
+      <span className="tabular-nums">{value}</span>
+    </>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+      {children}
+    </label>
   );
 }

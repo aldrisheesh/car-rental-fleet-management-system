@@ -19,7 +19,9 @@ import { Route as BookingRouteImport } from './routes/booking'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as VehiclesVehicleIdRouteImport } from './routes/vehicles.$vehicleId'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
+import { Route as BookingsBookingIdRouteImport } from './routes/bookings.$bookingId'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
 import { Route as ApiVehicleFinderRouteImport } from './routes/api.vehicle-finder'
 import { Route as ApiVehicleAnalyticsRouteImport } from './routes/api.vehicle-analytics'
@@ -44,6 +46,7 @@ import { Route as ApiAdminDashboardRouteImport } from './routes/api.admin-dashbo
 import { Route as ApiAdminCalendarRouteImport } from './routes/api.admin-calendar'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminRequirementsRouteImport } from './routes/admin.requirements'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminProfileRouteImport } from './routes/admin.profile'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
@@ -62,6 +65,9 @@ import { Route as ApiAuthSignOutRouteImport } from './routes/api.auth.sign-out'
 import { Route as ApiAuthSignInRouteImport } from './routes/api.auth.sign-in'
 import { Route as ApiAuthSessionRouteImport } from './routes/api.auth.session'
 import { Route as ApiAuthProfileRouteImport } from './routes/api.auth.profile'
+import { Route as AdminRequirementsBookingIdRouteImport } from './routes/admin.requirements.$bookingId'
+import { Route as AdminPaymentsPaymentIdRouteImport } from './routes/admin.payments.$paymentId'
+import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings.$bookingId'
 
 const VehiclesRoute = VehiclesRouteImport.update({
   id: '/vehicles',
@@ -113,9 +119,19 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const VehiclesVehicleIdRoute = VehiclesVehicleIdRouteImport.update({
+  id: '/$vehicleId',
+  path: '/$vehicleId',
+  getParentRoute: () => VehiclesRoute,
+} as any)
 const CustomerProfileRoute = CustomerProfileRouteImport.update({
   id: '/customer_/profile',
   path: '/customer/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingsBookingIdRoute = BookingsBookingIdRouteImport.update({
+  id: '/bookings/$bookingId',
+  path: '/bookings/$bookingId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
@@ -239,6 +255,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminRequirementsRoute = AdminRequirementsRouteImport.update({
+  id: '/requirements',
+  path: '/requirements',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminReportsRoute = AdminReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -329,6 +350,22 @@ const ApiAuthProfileRoute = ApiAuthProfileRouteImport.update({
   path: '/api/auth/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRequirementsBookingIdRoute =
+  AdminRequirementsBookingIdRouteImport.update({
+    id: '/$bookingId',
+    path: '/$bookingId',
+    getParentRoute: () => AdminRequirementsRoute,
+  } as any)
+const AdminPaymentsPaymentIdRoute = AdminPaymentsPaymentIdRouteImport.update({
+  id: '/$paymentId',
+  path: '/$paymentId',
+  getParentRoute: () => AdminPaymentsRoute,
+} as any)
+const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
+  id: '/$bookingId',
+  path: '/$bookingId',
+  getParentRoute: () => AdminBookingsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -339,9 +376,9 @@ export interface FileRoutesByFullPath {
   '/customer-landing': typeof CustomerLandingRoute
   '/payment-details': typeof PaymentDetailsRoute
   '/sign-in': typeof SignInRoute
-  '/vehicles': typeof VehiclesRoute
+  '/vehicles': typeof VehiclesRouteWithChildren
   '/admin/activity': typeof AdminActivityRoute
-  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/bookings': typeof AdminBookingsRouteWithChildren
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -349,9 +386,10 @@ export interface FileRoutesByFullPath {
   '/admin/fleet': typeof AdminFleetRoute
   '/admin/maintenance': typeof AdminMaintenanceRoute
   '/admin/notifications': typeof AdminNotificationsRoute
-  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/payments': typeof AdminPaymentsRouteWithChildren
   '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/requirements': typeof AdminRequirementsRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
@@ -376,8 +414,13 @@ export interface FileRoutesByFullPath {
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer/profile': typeof CustomerProfileRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
+  '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
+  '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
@@ -393,9 +436,9 @@ export interface FileRoutesByTo {
   '/customer-landing': typeof CustomerLandingRoute
   '/payment-details': typeof PaymentDetailsRoute
   '/sign-in': typeof SignInRoute
-  '/vehicles': typeof VehiclesRoute
+  '/vehicles': typeof VehiclesRouteWithChildren
   '/admin/activity': typeof AdminActivityRoute
-  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/bookings': typeof AdminBookingsRouteWithChildren
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -403,9 +446,10 @@ export interface FileRoutesByTo {
   '/admin/fleet': typeof AdminFleetRoute
   '/admin/maintenance': typeof AdminMaintenanceRoute
   '/admin/notifications': typeof AdminNotificationsRoute
-  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/payments': typeof AdminPaymentsRouteWithChildren
   '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/requirements': typeof AdminRequirementsRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
@@ -430,8 +474,13 @@ export interface FileRoutesByTo {
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer/profile': typeof CustomerProfileRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
+  '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
+  '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
@@ -449,9 +498,9 @@ export interface FileRoutesById {
   '/customer-landing': typeof CustomerLandingRoute
   '/payment-details': typeof PaymentDetailsRoute
   '/sign-in': typeof SignInRoute
-  '/vehicles': typeof VehiclesRoute
+  '/vehicles': typeof VehiclesRouteWithChildren
   '/admin/activity': typeof AdminActivityRoute
-  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/bookings': typeof AdminBookingsRouteWithChildren
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -459,9 +508,10 @@ export interface FileRoutesById {
   '/admin/fleet': typeof AdminFleetRoute
   '/admin/maintenance': typeof AdminMaintenanceRoute
   '/admin/notifications': typeof AdminNotificationsRoute
-  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/payments': typeof AdminPaymentsRouteWithChildren
   '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/requirements': typeof AdminRequirementsRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
@@ -486,8 +536,13 @@ export interface FileRoutesById {
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer_/profile': typeof CustomerProfileRoute
+  '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
+  '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
+  '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
@@ -519,6 +574,7 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/profile'
     | '/admin/reports'
+    | '/admin/requirements'
     | '/admin/settings'
     | '/admin/users'
     | '/api/admin-calendar'
@@ -543,8 +599,13 @@ export interface FileRouteTypes {
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
     | '/api/vehicles'
+    | '/bookings/$bookingId'
     | '/customer/profile'
+    | '/vehicles/$vehicleId'
     | '/admin/'
+    | '/admin/bookings/$bookingId'
+    | '/admin/payments/$paymentId'
+    | '/admin/requirements/$bookingId'
     | '/api/auth/profile'
     | '/api/auth/session'
     | '/api/auth/sign-in'
@@ -573,6 +634,7 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/profile'
     | '/admin/reports'
+    | '/admin/requirements'
     | '/admin/settings'
     | '/admin/users'
     | '/api/admin-calendar'
@@ -597,8 +659,13 @@ export interface FileRouteTypes {
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
     | '/api/vehicles'
+    | '/bookings/$bookingId'
     | '/customer/profile'
+    | '/vehicles/$vehicleId'
     | '/admin'
+    | '/admin/bookings/$bookingId'
+    | '/admin/payments/$paymentId'
+    | '/admin/requirements/$bookingId'
     | '/api/auth/profile'
     | '/api/auth/session'
     | '/api/auth/sign-in'
@@ -628,6 +695,7 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/profile'
     | '/admin/reports'
+    | '/admin/requirements'
     | '/admin/settings'
     | '/admin/users'
     | '/api/admin-calendar'
@@ -652,8 +720,13 @@ export interface FileRouteTypes {
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
     | '/api/vehicles'
+    | '/bookings/$bookingId'
     | '/customer_/profile'
+    | '/vehicles/$vehicleId'
     | '/admin/'
+    | '/admin/bookings/$bookingId'
+    | '/admin/payments/$paymentId'
+    | '/admin/requirements/$bookingId'
     | '/api/auth/profile'
     | '/api/auth/session'
     | '/api/auth/sign-in'
@@ -671,7 +744,7 @@ export interface RootRouteChildren {
   CustomerLandingRoute: typeof CustomerLandingRoute
   PaymentDetailsRoute: typeof PaymentDetailsRoute
   SignInRoute: typeof SignInRoute
-  VehiclesRoute: typeof VehiclesRoute
+  VehiclesRoute: typeof VehiclesRouteWithChildren
   ApiAdminCalendarRoute: typeof ApiAdminCalendarRoute
   ApiAdminDashboardRoute: typeof ApiAdminDashboardRoute
   ApiAdminFleetRoute: typeof ApiAdminFleetRoute
@@ -694,6 +767,7 @@ export interface RootRouteChildren {
   ApiVehicleAnalyticsRoute: typeof ApiVehicleAnalyticsRoute
   ApiVehicleFinderRoute: typeof ApiVehicleFinderRoute
   ApiVehiclesRoute: typeof ApiVehiclesRoute
+  BookingsBookingIdRoute: typeof BookingsBookingIdRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
   ApiAuthProfileRoute: typeof ApiAuthProfileRoute
   ApiAuthSessionRoute: typeof ApiAuthSessionRoute
@@ -775,11 +849,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/vehicles/$vehicleId': {
+      id: '/vehicles/$vehicleId'
+      path: '/$vehicleId'
+      fullPath: '/vehicles/$vehicleId'
+      preLoaderRoute: typeof VehiclesVehicleIdRouteImport
+      parentRoute: typeof VehiclesRoute
+    }
     '/customer_/profile': {
       id: '/customer_/profile'
       path: '/customer/profile'
       fullPath: '/customer/profile'
       preLoaderRoute: typeof CustomerProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bookings/$bookingId': {
+      id: '/bookings/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/bookings/$bookingId'
+      preLoaderRoute: typeof BookingsBookingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/vehicles': {
@@ -950,6 +1038,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/requirements': {
+      id: '/admin/requirements'
+      path: '/requirements'
+      fullPath: '/admin/requirements'
+      preLoaderRoute: typeof AdminRequirementsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/reports': {
       id: '/admin/reports'
       path: '/reports'
@@ -1076,12 +1171,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/requirements/$bookingId': {
+      id: '/admin/requirements/$bookingId'
+      path: '/$bookingId'
+      fullPath: '/admin/requirements/$bookingId'
+      preLoaderRoute: typeof AdminRequirementsBookingIdRouteImport
+      parentRoute: typeof AdminRequirementsRoute
+    }
+    '/admin/payments/$paymentId': {
+      id: '/admin/payments/$paymentId'
+      path: '/$paymentId'
+      fullPath: '/admin/payments/$paymentId'
+      preLoaderRoute: typeof AdminPaymentsPaymentIdRouteImport
+      parentRoute: typeof AdminPaymentsRoute
+    }
+    '/admin/bookings/$bookingId': {
+      id: '/admin/bookings/$bookingId'
+      path: '/$bookingId'
+      fullPath: '/admin/bookings/$bookingId'
+      preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
+      parentRoute: typeof AdminBookingsRoute
+    }
   }
 }
 
+interface AdminBookingsRouteChildren {
+  AdminBookingsBookingIdRoute: typeof AdminBookingsBookingIdRoute
+}
+
+const AdminBookingsRouteChildren: AdminBookingsRouteChildren = {
+  AdminBookingsBookingIdRoute: AdminBookingsBookingIdRoute,
+}
+
+const AdminBookingsRouteWithChildren = AdminBookingsRoute._addFileChildren(
+  AdminBookingsRouteChildren,
+)
+
+interface AdminPaymentsRouteChildren {
+  AdminPaymentsPaymentIdRoute: typeof AdminPaymentsPaymentIdRoute
+}
+
+const AdminPaymentsRouteChildren: AdminPaymentsRouteChildren = {
+  AdminPaymentsPaymentIdRoute: AdminPaymentsPaymentIdRoute,
+}
+
+const AdminPaymentsRouteWithChildren = AdminPaymentsRoute._addFileChildren(
+  AdminPaymentsRouteChildren,
+)
+
+interface AdminRequirementsRouteChildren {
+  AdminRequirementsBookingIdRoute: typeof AdminRequirementsBookingIdRoute
+}
+
+const AdminRequirementsRouteChildren: AdminRequirementsRouteChildren = {
+  AdminRequirementsBookingIdRoute: AdminRequirementsBookingIdRoute,
+}
+
+const AdminRequirementsRouteWithChildren =
+  AdminRequirementsRoute._addFileChildren(AdminRequirementsRouteChildren)
+
 interface AdminRouteChildren {
   AdminActivityRoute: typeof AdminActivityRoute
-  AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminBookingsRoute: typeof AdminBookingsRouteWithChildren
   AdminBranchesRoute: typeof AdminBranchesRoute
   AdminCalendarRoute: typeof AdminCalendarRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
@@ -1089,9 +1240,10 @@ interface AdminRouteChildren {
   AdminFleetRoute: typeof AdminFleetRoute
   AdminMaintenanceRoute: typeof AdminMaintenanceRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
-  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRouteWithChildren
   AdminProfileRoute: typeof AdminProfileRoute
   AdminReportsRoute: typeof AdminReportsRoute
+  AdminRequirementsRoute: typeof AdminRequirementsRouteWithChildren
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -1099,7 +1251,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminActivityRoute: AdminActivityRoute,
-  AdminBookingsRoute: AdminBookingsRoute,
+  AdminBookingsRoute: AdminBookingsRouteWithChildren,
   AdminBranchesRoute: AdminBranchesRoute,
   AdminCalendarRoute: AdminCalendarRoute,
   AdminCustomersRoute: AdminCustomersRoute,
@@ -1107,15 +1259,28 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminFleetRoute: AdminFleetRoute,
   AdminMaintenanceRoute: AdminMaintenanceRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
-  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminPaymentsRoute: AdminPaymentsRouteWithChildren,
   AdminProfileRoute: AdminProfileRoute,
   AdminReportsRoute: AdminReportsRoute,
+  AdminRequirementsRoute: AdminRequirementsRouteWithChildren,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface VehiclesRouteChildren {
+  VehiclesVehicleIdRoute: typeof VehiclesVehicleIdRoute
+}
+
+const VehiclesRouteChildren: VehiclesRouteChildren = {
+  VehiclesVehicleIdRoute: VehiclesVehicleIdRoute,
+}
+
+const VehiclesRouteWithChildren = VehiclesRoute._addFileChildren(
+  VehiclesRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -1126,7 +1291,7 @@ const rootRouteChildren: RootRouteChildren = {
   CustomerLandingRoute: CustomerLandingRoute,
   PaymentDetailsRoute: PaymentDetailsRoute,
   SignInRoute: SignInRoute,
-  VehiclesRoute: VehiclesRoute,
+  VehiclesRoute: VehiclesRouteWithChildren,
   ApiAdminCalendarRoute: ApiAdminCalendarRoute,
   ApiAdminDashboardRoute: ApiAdminDashboardRoute,
   ApiAdminFleetRoute: ApiAdminFleetRoute,
@@ -1149,6 +1314,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVehicleAnalyticsRoute: ApiVehicleAnalyticsRoute,
   ApiVehicleFinderRoute: ApiVehicleFinderRoute,
   ApiVehiclesRoute: ApiVehiclesRoute,
+  BookingsBookingIdRoute: BookingsBookingIdRoute,
   CustomerProfileRoute: CustomerProfileRoute,
   ApiAuthProfileRoute: ApiAuthProfileRoute,
   ApiAuthSessionRoute: ApiAuthSessionRoute,

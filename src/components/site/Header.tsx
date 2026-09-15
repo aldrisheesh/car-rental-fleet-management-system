@@ -1,215 +1,228 @@
-import { useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronDown, LayoutDashboard, LogOut, Menu, UserRound, X } from "lucide-react";
-import { SignInDialog } from "@/components/site/SignInDialog";
-import { clearCustomerSession, getCustomerSession } from "@/lib/customer-auth";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { LogOut, Menu, UserRound, X } from "lucide-react";
 
-type NavLink = {
-  to: "/" | "/vehicles" | "/booking" | "/contact" | "/customer";
-  label: string;
-  exact?: boolean;
-};
+import { getClientPrincipal } from "@/lib/auth-client";
+import { clearCustomerSession } from "@/lib/customer-auth";
+import type { AppPrincipal } from "@/lib/auth";
+import { isMyBookingsPath } from "@/lib/customer-navigation";
+
+const navItems = [
+  { to: "/" as const, label: "Home", exact: true },
+  { to: "/vehicles" as const, label: "Find a Car" },
+  { to: "/customer" as const, label: "My Bookings" },
+  { to: "/contact" as const, label: "Contact" },
+];
 
 export function Header() {
   const navigate = useNavigate();
-  const [signInOpen, setSignInOpen] = useState(false);
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const menuPanelRef = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
-  const [signedOut, setSignedOut] = useState(false);
-  const customerSession = signedOut ? null : getCustomerSession();
-  const showCustomerDashboardLink = customerSession != null;
-  const navLinks: NavLink[] = [
-    { to: "/", label: "Home", exact: true },
-    { to: "/vehicles", label: "Vehicles" },
-    { to: "/booking", label: "Booking" },
-    { to: "/contact", label: "Contact" },
-  ];
-  if (showCustomerDashboardLink) {
-    navLinks.push({ to: "/customer", label: "Customer Dashboard" });
-  }
-  const customerInitials = getInitials(customerSession?.name ?? "");
+  const [principal, setPrincipal] = useState<AppPrincipal | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
+  const wasOpen = useRef(false);
 
-  function openSignIn() {
-    setMenuOpen(false);
-    setAccountOpen(false);
-    setSignInOpen(true);
-  }
+  useEffect(() => {
+    setPrincipal(getClientPrincipal());
+  }, []);
+
+  useEffect(() => {
+    if (!menuOpen) {
+      if (wasOpen.current) {
+        requestAnimationFrame(() => menuButtonRef.current?.focus());
+      }
+      wasOpen.current = false;
+      return;
+    }
+
+    wasOpen.current = true;
+    const firstControl =
+      menuPanelRef.current?.querySelector<HTMLElement>("a, button");
+    firstControl?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
 
   async function signOut() {
-    setSignedOut(true);
+    setSigningOut(true);
     setMenuOpen(false);
-    setAccountOpen(false);
-    setSignInOpen(false);
     await clearCustomerSession();
+    setPrincipal(null);
+    setSigningOut(false);
     void navigate({ to: "/", replace: true });
   }
 
+  const isCustomer = principal?.role === "Customer/Renter";
+  const isAdmin = principal?.role === "Owner/Admin";
+  const isStaff = principal?.role === "Operations Staff";
+  const isAdminWorkspace = isAdmin || isStaff;
+  const accountLabel = isCustomer
+    ? principal.fullName
+    : isAdmin
+      ? "Admin"
+      : isStaff
+        ? "Operations Staff"
+        : "Sign in";
+  const myBookingsActive = isMyBookingsPath(pathname);
+
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container-page flex min-h-16 items-center justify-between gap-3">
-          <Link
-            to="/"
-            onClick={() => setMenuOpen(false)}
-            className="flex min-w-0 items-center rounded-md text-foreground transition-colors hover:text-primary"
-          >
-            <span className="truncate font-display text-base font-semibold tracking-tight sm:text-lg">
-              Briah&apos;s Car Rental
-            </span>
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
+      <header className="customer-header">
+        <div className="customer-container customer-header-inner">
+          <Link to="/" className="customer-wordmark" translate="no">
+            Briah&apos;s Car Rental
           </Link>
 
-          <nav className="hidden items-center gap-9 text-sm font-medium text-muted-foreground md:flex">
-            {navLinks.map((item) => (
+          <nav className="customer-desktop-nav" aria-label="Primary navigation">
+            {navItems.map((item) => (
               <Link
-                key={item.to}
+                key={item.label}
                 to={item.to}
-                activeProps={{ className: "text-foreground" }}
                 activeOptions={item.exact ? { exact: true } : undefined}
-                className="rounded-sm transition-colors hover:text-primary"
+                activeProps={{ className: "customer-nav-link is-active" }}
+                className={`customer-nav-link${item.label === "My Bookings" && myBookingsActive ? " is-active" : ""}`}
+                aria-current={
+                  item.label === "My Bookings" && myBookingsActive
+                    ? "page"
+                    : undefined
+                }
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
-            {customerSession ? (
-              <div className="relative hidden sm:block">
-                <button
-                  type="button"
-                  aria-expanded={accountOpen}
-                  onClick={() => setAccountOpen((open) => !open)}
-                  className="touch-target inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-secondary"
+          <div className="customer-header-account">
+            {principal ? (
+              <>
+                <Link
+                  to={isAdminWorkspace ? "/admin" : "/customer"}
+                  className="customer-account-link"
                 >
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/15 font-display text-xs text-primary">
-                    {customerInitials}
-                  </span>
-                  <span className="max-w-32 truncate">{customerSession.name}</span>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                </button>
-
-                {accountOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-border bg-card text-sm shadow-card">
-                    <div className="border-b border-border px-4 py-3">
-                      <div className="truncate font-semibold text-foreground">
-                        {customerSession.name}
-                      </div>
-                      <div className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {customerSession.email}
-                      </div>
-                    </div>
-                    <div className="p-1.5">
-                      <Link
-                        to="/customer"
-                        onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-2 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                      >
-                        <LayoutDashboard className="h-4 w-4" />
-                        Customer Dashboard
-                      </Link>
-                      <Link
-                        to="/customer/profile"
-                        onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-2 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                      >
-                        <UserRound className="h-4 w-4" />
-                        Edit Profile
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={signOut}
-                        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Sign out
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+                  <UserRound size={24} strokeWidth={1.7} aria-hidden="true" />
+                  <span>{accountLabel}</span>
+                </Link>
+                {isCustomer ? (
+                  <button
+                    type="button"
+                    className="customer-sign-out"
+                    onClick={() => void signOut()}
+                    disabled={signingOut}
+                  >
+                    <LogOut size={18} strokeWidth={1.8} aria-hidden="true" />
+                    <span>{signingOut ? "Signing out…" : "Sign out"}</span>
+                  </button>
+                ) : null}
+              </>
             ) : (
-              <button
-                type="button"
-                onClick={openSignIn}
-                className="touch-target hidden items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 sm:inline-flex"
-              >
-                Sign In / Sign Up
-              </button>
+              <Link to="/sign-in" className="customer-account-link">
+                <UserRound size={24} strokeWidth={1.7} aria-hidden="true" />
+                <span>Sign in</span>
+              </Link>
             )}
-            <button
-              type="button"
-              aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-              aria-expanded={menuOpen}
-              onClick={() => {
-                setAccountOpen(false);
-                setMenuOpen((open) => !open);
-              }}
-              className="touch-target grid place-items-center rounded-md border border-border bg-card text-foreground transition-colors hover:bg-secondary md:hidden"
-            >
-              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
           </div>
+
+          <button
+            ref={menuButtonRef}
+            type="button"
+            className="customer-menu-button"
+            aria-label={
+              menuOpen ? "Close navigation menu" : "Open navigation menu"
+            }
+            aria-expanded={menuOpen}
+            aria-controls="customer-mobile-nav"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {menuOpen ? (
+              <X size={24} strokeWidth={1.7} />
+            ) : (
+              <Menu size={24} strokeWidth={1.7} />
+            )}
+            <span>Menu</span>
+          </button>
         </div>
 
-        {menuOpen && (
-          <div className="border-t border-border bg-background/95 md:hidden">
-            <nav className="container-page grid gap-2 py-3 text-sm font-medium text-muted-foreground">
-              {navLinks.map((item) => (
+        {menuOpen ? (
+          <div
+            ref={menuPanelRef}
+            id="customer-mobile-nav"
+            className="customer-mobile-nav"
+          >
+            <nav className="customer-container" aria-label="Mobile navigation">
+              {navItems.map((item) => (
                 <Link
-                  key={item.to}
+                  key={item.label}
                   to={item.to}
-                  activeProps={{ className: "bg-primary/10 text-primary border-primary/30" }}
                   activeOptions={item.exact ? { exact: true } : undefined}
+                  activeProps={{ className: "customer-mobile-link is-active" }}
+                  className={`customer-mobile-link${item.label === "My Bookings" && myBookingsActive ? " is-active" : ""}`}
+                  aria-current={
+                    item.label === "My Bookings" && myBookingsActive
+                      ? "page"
+                      : undefined
+                  }
                   onClick={() => setMenuOpen(false)}
-                  className="touch-target flex items-center rounded-md border border-transparent px-3 transition-colors hover:bg-card hover:text-foreground"
                 >
                   {item.label}
                 </Link>
               ))}
-              {customerSession ? (
+              {principal ? (
                 <>
-                  <Link
-                    to="/customer/profile"
-                    activeProps={{ className: "bg-primary/10 text-primary border-primary/30" }}
-                    onClick={() => setMenuOpen(false)}
-                    className="touch-target flex items-center rounded-md border border-transparent px-3 transition-colors hover:bg-card hover:text-foreground"
-                  >
-                    Edit Profile
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={signOut}
-                    className="touch-target inline-flex w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                  >
-                    Sign out
-                  </button>
+                  {isCustomer ? (
+                    <Link
+                      to="/customer/profile"
+                      className="customer-mobile-link"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Edit profile
+                    </Link>
+                  ) : null}
+                  {isAdminWorkspace ? (
+                    <Link
+                      to="/admin"
+                      className="customer-mobile-link"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Admin workspace
+                    </Link>
+                  ) : null}
+                  {isCustomer ? (
+                    <button
+                      type="button"
+                      className="customer-mobile-sign-out"
+                      onClick={() => void signOut()}
+                      disabled={signingOut}
+                    >
+                      {signingOut ? "Signing out…" : "Sign out"}
+                    </button>
+                  ) : null}
                 </>
               ) : (
-                <button
-                  type="button"
-                  onClick={openSignIn}
-                  className="touch-target inline-flex w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                <Link
+                  to="/sign-in"
+                  className="customer-mobile-sign-in"
+                  onClick={() => setMenuOpen(false)}
                 >
-                  Sign In / Sign Up
-                </button>
+                  Sign in
+                </Link>
               )}
             </nav>
           </div>
-        )}
+        ) : null}
       </header>
-
-      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} />
     </>
   );
-}
-
-function getInitials(name: string) {
-  const initials = name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-
-  return initials || "C";
 }

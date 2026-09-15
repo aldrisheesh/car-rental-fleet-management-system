@@ -19,15 +19,18 @@ export async function parseCustomerBookingResponse(
 
 export async function parseAdminBookingResponse(
   response: JsonResponse,
+  options: { allowStaffResponse?: boolean } = {},
 ): Promise<AdminBookingResponse> {
   const body = await response.json().catch(() => null);
   if (!response.ok) throw new Error(messageFrom(body));
-  if (
-    !isRecord(body) ||
-    !Array.isArray(body.bookings) ||
-    !Array.isArray(body.candidateVehicles)
-  ) {
+  if (!isRecord(body) || !Array.isArray(body.bookings)) {
     throw new Error("Unable to load booking requests.");
+  }
+  if (!Array.isArray(body.candidateVehicles)) {
+    if (!options.allowStaffResponse) {
+      throw new Error("Unable to load booking requests.");
+    }
+    return { bookings: body.bookings, candidateVehicles: [] };
   }
   return { bookings: body.bookings, candidateVehicles: body.candidateVehicles };
 }

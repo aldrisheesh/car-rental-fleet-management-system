@@ -164,7 +164,7 @@ test("server revalidation returns controlled mismatch and stale outcomes", () =>
   );
 });
 
-test("Finder selection uses the existing Booking route and canonical Finder server", async () => {
+test("Finder selection uses canonical fleet/Finder APIs and preserves booking context", async () => {
   const [vehiclesSource, bookingApiSource, finderApiSource] = await Promise.all(
     [
       readFile(new URL("../routes/vehicles.tsx", import.meta.url), "utf8"),
@@ -175,11 +175,19 @@ test("Finder selection uses the existing Booking route and canonical Finder serv
       ),
     ],
   );
-  assert.match(vehiclesSource, /bookingLabel="Continue to booking"/);
+  assert.match(
+    vehiclesSource,
+    /fetchJson<CustomerVehicle\[\]>\("\/api\/vehicles"\)/,
+  );
+  assert.match(
+    vehiclesSource,
+    /fetchJson<FinderResponse>\("\/api\/vehicle-finder"/,
+  );
+  assert.match(vehiclesSource, /<VehicleCard/);
   assert.match(vehiclesSource, /finderStart:/);
+  assert.match(vehiclesSource, /from "@\/lib\/finder-booking"/);
   assert.match(bookingApiSource, /evaluateCanonicalVehicleFinder/);
   assert.match(finderApiSource, /evaluateCanonicalVehicleFinder/);
-  assert.doesNotMatch(vehiclesSource, /finder-booking/);
 });
 
 test("migration creates booking and immutable 1:1 Finder context in one RPC", async () => {
@@ -254,7 +262,10 @@ test("trusted fingerprint binds the material manual and Finder request", async (
   const fingerprintStart = source.indexOf("bookingCreationFingerprint({");
   const fingerprintInput = source.slice(
     fingerprintStart,
-    source.indexOf("const client = getSupabaseServerClient();", fingerprintStart),
+    source.indexOf(
+      "const client = getSupabaseServerClient();",
+      fingerprintStart,
+    ),
   );
   for (const field of [
     "customerId",
@@ -301,12 +312,29 @@ test("Booking reuses a key for retries and rotates it for a changed payload", as
     new URL("../routes/booking.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(source, /submissionAttemptRef = useRef/);
+  assert.match(source, /const idempotency = useRef/);
   assert.match(
     source,
-    /submissionAttemptRef\.current\.payload !== serializedPayload[\s\S]*crypto\.randomUUID\(\)/,
+    /idempotency\.current\.fingerprint !== fingerprint[\s\S]*crypto\.randomUUID\(\)/,
   );
-  assert.match(source, /idempotencyKey: submissionAttemptRef\.current\.key/);
+  assert.match(source, /idempotencyKey: idempotency\.current\.key/);
+});
+
+test("Requirements operations stay bound to the exact booking route identity", async () => {
+  const source = await readFile(
+    new URL("../routes/bookings.$bookingId.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    source,
+    /bookings\.find\(\(candidate\) => candidate\.id === bookingId\)/,
+  );
+  assert.match(
+    source,
+    /\/api\/requirements\?bookingId=\$\{encodeURIComponent\(bookingId\)\}/,
+  );
+  assert.match(source, /form\.append\("bookingId", bookingId\)/);
+  assert.doesNotMatch(source, /bookings\[(?:0|-1)\]|bookings\.at\(/);
 });
 
 test("a new customer-scoped key may create a later intentional booking", async () => {

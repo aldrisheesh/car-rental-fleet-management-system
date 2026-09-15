@@ -22,13 +22,18 @@ export type FinderBookingHandoff = {
 
 export type FinderBookingSearch = {
   vehicle?: string;
+  /** Legacy browse-link compatibility; current Finder evaluation ignores this value. */
+  branch?: string;
+  /** Legacy browse-link compatibility; current customer slice does not use these fields. */
+  category?: string;
+  pickup?: string;
   finderStart?: string;
   finderEnd?: string;
-  finderPassengers?: string;
-  finderBudget?: string;
+  finderPassengers?: string | number;
+  finderBudget?: string | number;
   finderCategory?: string;
   finderDestination?: string;
-  finderRank?: string;
+  finderRank?: string | number;
 };
 
 export type FinderMaterialBooking = {
@@ -39,21 +44,35 @@ export type FinderMaterialBooking = {
   destination: string;
 };
 
-const searchText = (value: unknown) =>
-  typeof value === "string" && value.length > 0 ? value : undefined;
+const searchText = (value: unknown) => {
+  if (typeof value === "string" && value.length > 0) return value;
+  return undefined;
+};
+
+const searchNumber = (value: unknown) => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : value;
+  }
+  return undefined;
+};
 
 export function validateFinderBookingSearch(
   search: Record<string, unknown>,
 ): FinderBookingSearch {
   return {
     vehicle: searchText(search.vehicle),
+    branch: searchText(search.branch),
+    category: searchText(search.category),
+    pickup: searchText(search.pickup),
     finderStart: searchText(search.finderStart),
     finderEnd: searchText(search.finderEnd),
-    finderPassengers: searchText(search.finderPassengers),
-    finderBudget: searchText(search.finderBudget),
+    finderPassengers: searchNumber(search.finderPassengers),
+    finderBudget: searchNumber(search.finderBudget),
     finderCategory: searchText(search.finderCategory),
     finderDestination: searchText(search.finderDestination),
-    finderRank: searchText(search.finderRank),
+    finderRank: searchNumber(search.finderRank),
   };
 }
 

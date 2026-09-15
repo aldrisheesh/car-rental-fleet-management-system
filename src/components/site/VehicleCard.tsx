@@ -1,79 +1,90 @@
-import { Link } from "@tanstack/react-router";
-import { Fuel, MapPin, Settings2, Users } from "lucide-react";
-import { type Vehicle } from "@/data/vehicles";
+import type { Vehicle as LegacyVehicle } from "@/data/vehicles";
+import type { CustomerVehicle } from "@/lib/customer-data";
+import { encodeSearch } from "@/lib/customer-data";
+import {
+  FinderReasons,
+  Rate,
+  VehicleFacts,
+  VehicleImage,
+} from "@/components/customer/CustomerPrimitives";
 
-type BookingSearch = {
-  vehicle: string;
-  finderStart?: string;
-  finderEnd?: string;
-  finderPassengers?: string;
-  finderBudget?: string;
-  finderCategory?: string;
-  finderDestination?: string;
-  finderRank?: string;
+type VehicleCardProps = {
+  vehicle?: CustomerVehicle;
+  /** Kept for the older, out-of-slice customer landing route during migration. */
+  v?: LegacyVehicle;
+  href?: string;
+  reason?: string;
+  bookingSearch?: Record<string, string | undefined>;
+  bookingLabel?: string;
 };
 
-export function VehicleCard({ v, bookingSearch, bookingLabel }: { v: Vehicle; bookingSearch?: BookingSearch; bookingLabel?: string }) {
+type CardVehicle = CustomerVehicle;
+
+export function VehicleCard({
+  vehicle,
+  v,
+  href,
+  reason,
+  bookingSearch,
+  bookingLabel,
+}: VehicleCardProps) {
+  const currentVehicle = vehicle ?? legacyVehicle(v);
+  if (!currentVehicle) return null;
+
+  const destination =
+    href ??
+    `/booking${encodeSearch({
+      vehicle: currentVehicle.id,
+      ...bookingSearch,
+    })}`;
+
   return (
-    <article className="group overflow-hidden rounded-xl border border-border bg-card shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-card">
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        <img
-          src={v.image}
-          alt={v.name}
-          loading="lazy"
-          width={1024}
-          height={768}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+    <article className="vehicle-card">
+      <div className="vehicle-card-image">
+        <VehicleImage
+          src={currentVehicle.image_url}
+          alt={currentVehicle.name}
+          sizes="(max-width: 767px) 100vw, (max-width: 1100px) 50vw, 33vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-        <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-          <span className="rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-medium text-foreground backdrop-blur border border-border">
-            {v.category}
-          </span>
-          {!v.available && (
-            <span className="rounded-full bg-destructive/95 px-2.5 py-1 text-[11px] font-medium text-destructive-foreground shadow-sm">
-              Booked
-            </span>
-          )}
-        </div>
-        <div className="absolute right-3 top-3">
-          <span className="rounded-full bg-primary/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground backdrop-blur">
-            Self-drive
-          </span>
-        </div>
       </div>
-
-      <div className="space-y-3 p-5">
-        <div className="min-w-0">
-          <h3 className="font-display text-lg font-semibold leading-tight">{v.name}</h3>
-          <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="h-3 w-3" /> {v.branch}
-          </p>
+      <div className="vehicle-card-body">
+        <div className="vehicle-card-heading">
+          <div className="min-w-0">
+            <p className="vehicle-card-category">
+              {currentVehicle.category?.name || "Category not listed"}
+            </p>
+            <h3>{currentVehicle.name}</h3>
+          </div>
+          <Rate value={currentVehicle.daily_rate} />
         </div>
 
-        <div className="grid grid-cols-3 gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
-          <span className="flex min-w-0 items-center gap-1.5">
-            <Settings2 className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{v.transmission}</span>
-          </span>
-          <span className="flex min-w-0 items-center gap-1.5">
-            <Users className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{v.seats} seats</span>
-          </span>
-          <span className="flex min-w-0 items-center gap-1.5">
-            <Fuel className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{v.fuel}</span>
-          </span>
-        </div>
+        {reason ? <FinderReasons reasons={[reason]} compact /> : null}
 
-        <Link
-          to="/booking"
-          search={bookingSearch ?? { vehicle: v.id }}
-          className="touch-target mt-2 inline-flex w-full items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+        <VehicleFacts vehicle={currentVehicle} className="vehicle-card-facts" />
+
+        <a
+          className="customer-primary-button vehicle-card-action"
+          href={destination}
         >
-          {bookingLabel ?? (v.available ? "Reserve" : "Join waitlist")}
-        </Link>
+          {bookingLabel ?? "View car"}
+        </a>
       </div>
     </article>
   );
+}
+
+function legacyVehicle(value: LegacyVehicle | undefined): CardVehicle | null {
+  if (!value) return null;
+  return {
+    id: value.id,
+    name: value.name,
+    license_plate: null,
+    transmission: value.transmission,
+    fuel_type: value.fuel,
+    seat_capacity: value.seats,
+    daily_rate: value.pricePerDay,
+    image_url: value.image,
+    branch: { name: value.branch },
+    category: { name: value.category },
+  };
 }
