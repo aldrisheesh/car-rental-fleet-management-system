@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Plus, Wrench } from "lucide-react";
+import { Image, Plus, Wrench } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   MaintenanceRecordDialog,
@@ -25,6 +25,7 @@ import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 import { createMaintenancePayload } from "@/lib/maintenance-admin";
 import {
   buildVehicleBranchUpdateInput,
+  buildVehicleImageUpdateInput,
   fetchMasterData,
   saveMasterData,
   type ApiMasterVehicle,
@@ -59,6 +60,7 @@ type AddVehicleDraft = {
   branchId: string;
   transmission: (typeof transmissionOptions)[number];
   pricePerDay: string;
+  imageUrl: string;
 };
 
 function emptyAddVehicleDraft(): AddVehicleDraft {
@@ -71,6 +73,7 @@ function emptyAddVehicleDraft(): AddVehicleDraft {
     branchId: "",
     transmission: "Automatic",
     pricePerDay: "",
+    imageUrl: "",
   };
 }
 
@@ -129,6 +132,10 @@ function FleetPage() {
   );
   const [addSaving, setAddSaving] = useState(false);
   const [addError, setAddError] = useState("");
+  const [imageOpen, setImageOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageSaving, setImageSaving] = useState(false);
+  const [imageError, setImageError] = useState("");
 
   const loadFleet = useCallback(async () => {
     setLoading(true);
@@ -315,6 +322,7 @@ function FleetPage() {
           seatCapacity: seats,
           dailyRate,
           isActive: true,
+          imageUrl: addDraft.imageUrl.trim() || null,
         },
       });
       await loadFleet();
@@ -326,6 +334,43 @@ function FleetPage() {
       );
     } finally {
       setAddSaving(false);
+    }
+  }
+
+  function openImageEditor(vehicle: FleetVehicleRow) {
+    setImageError("");
+    setImageUrl(vehicle.imageUrl ?? "");
+    setImageOpen(true);
+  }
+
+  async function saveVehicleImage() {
+    if (!selectedVehicle) return;
+    const normalizedUrl = imageUrl.trim();
+    if (normalizedUrl && !/^https?:\/\//i.test(normalizedUrl)) {
+      setImageError("Enter a complete public image URL, starting with https://.");
+      return;
+    }
+    setImageSaving(true);
+    setImageError("");
+    setMutationError("");
+    setMutationFeedback("");
+    try {
+      const canonicalVehicle = (
+        await fetchMasterData<ApiMasterVehicle>("vehicles")
+      ).find((candidate) => candidate.id === selectedVehicle.id);
+      if (!canonicalVehicle) throw new Error("The selected vehicle is no longer available. Reload the fleet and try again.");
+      await saveMasterData({
+        resource: "vehicles",
+        id: selectedVehicle.id,
+        input: buildVehicleImageUpdateInput(canonicalVehicle, normalizedUrl || null),
+      });
+      setImageOpen(false);
+      setMutationFeedback(`${selectedVehicle.name} image updated.`);
+      await loadFleet();
+    } catch (error) {
+      setImageError(error instanceof Error ? error.message : "Unable to update the vehicle image.");
+    } finally {
+      setImageSaving(false);
     }
   }
 
@@ -515,7 +560,11 @@ function FleetPage() {
             </div>
           </Card>
 
-          <FleetDetail vehicle={selectedVehicle} onService={openService} />
+          <FleetDetail
+            vehicle={selectedVehicle}
+            onService={openService}
+            onEditImage={openImageEditor}
+          />
         </div>
       )}
 
@@ -545,6 +594,17 @@ function FleetPage() {
         onDraftChange={updateAddDraft}
         onOpenChange={setAddOpen}
         onSave={() => void addVehicle()}
+      />
+
+      <ImageUrlDialog
+        open={imageOpen}
+        vehicleName={selectedVehicle?.name ?? "vehicle"}
+        value={imageUrl}
+        saving={imageSaving}
+        error={imageError}
+        onChange={setImageUrl}
+        onOpenChange={setImageOpen}
+        onSave={() => void saveVehicleImage()}
       />
     </div>
   );
@@ -709,9 +769,11 @@ function Readiness({ vehicle }: { vehicle: FleetVehicleRow }) {
 function FleetDetail({
   vehicle,
   onService,
+  onEditImage,
 }: {
   vehicle: FleetVehicleRow | null;
   onService: (vehicle?: FleetVehicleRow) => void;
+  onEditImage: (vehicle: FleetVehicleRow) => void;
 }) {
   return (
     <Card as="aside" className="h-fit xl:sticky xl:top-6">
@@ -747,9 +809,14 @@ function FleetDetail({
             </Detail>
           </dl>
           <div className="border-t border-border px-5 py-4">
-            <Btn variant="primary" onClick={() => onService(vehicle)}>
-              <Wrench className="h-4 w-4" /> Add maintenance record
-            </Btn>
+            <div className="flex flex-wrap gap-2">
+              <Btn variant="primary" onClick={() => onService(vehicle)}>
+                <Wrench className="h-4 w-4" /> Add maintenance record
+              </Btn>
+              <Btn variant="ghost" onClick={() => onEditImage(vehicle)}>
+                <Image className="h-4 w-4" /> Change image
+              </Btn>
+            </div>
           </div>
         </>
       )}
@@ -908,6 +975,14 @@ function AddVehicleDialog({
               }
             />
           </Field>
+          <Field label="Vehicle image URL">
+            <TInput
+              type="url"
+              value={draft.imageUrl}
+              placeholder="https://…"
+              onChange={(event) => onDraftChange("imageUrl", event.target.value)}
+            />
+          </Field>
         </div>
         {error ? (
           <p className="text-sm text-[#b43b3b]" role="alert">
@@ -920,6 +995,56 @@ function AddVehicleDialog({
           </Btn>
           <Btn variant="primary" disabled={saving} onClick={onSave}>
             {saving ? "Saving…" : "Add vehicle"}
+          </Btn>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ImageUrlDialog({
+  open,
+  vehicleName,
+  value,
+  saving,
+  error,
+  onChange,
+  onOpenChange,
+  onSave,
+}: {
+  open: boolean;
+  vehicleName: string;
+  value: string;
+  saving: boolean;
+  error: string;
+  onChange: (value: string) => void;
+  onOpenChange: (open: boolean) => void;
+  onSave: () => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={(next) => !saving && onOpenChange(next)}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Change vehicle image</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-2 py-2">
+          <p className="text-sm text-muted-foreground">
+            Paste a public image URL for {vehicleName}. Leave it blank to remove the image.
+          </p>
+          <Field label="Public image URL">
+            <TInput
+              type="url"
+              value={value}
+              placeholder="https://…"
+              onChange={(event) => onChange(event.target.value)}
+            />
+          </Field>
+        </div>
+        {error ? <p className="text-sm text-[#b43b3b]" role="alert">{error}</p> : null}
+        <DialogFooter>
+          <Btn disabled={saving} onClick={() => onOpenChange(false)}>Cancel</Btn>
+          <Btn variant="primary" disabled={saving} onClick={onSave}>
+            {saving ? "Saving…" : "Save image"}
           </Btn>
         </DialogFooter>
       </DialogContent>

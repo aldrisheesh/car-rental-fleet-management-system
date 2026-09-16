@@ -22,6 +22,7 @@ export type FleetCanonicalVehicle = {
   transmission: string | null;
   seat_capacity: number | null;
   daily_rate: number | null;
+  image_url: string | null;
   is_active: boolean;
   branch: FleetOption | null;
   category: FleetOption | null;
@@ -68,6 +69,7 @@ export type FleetVehicleRow = {
   branch: string | null;
   branchId: string | null;
   pricePerDay: number | null;
+  imageUrl: string | null;
   isActive: boolean;
   status: FleetStatus;
   maintenanceReady: boolean;
@@ -153,6 +155,7 @@ export function buildAdminFleet(
       branch: vehicle.branch?.name ?? null,
       branchId: vehicle.branch?.id ?? null,
       pricePerDay: vehicle.daily_rate,
+      imageUrl: vehicle.image_url,
       isActive: vehicle.is_active,
       status: getFleetVehicleStatus(
         vehicle,

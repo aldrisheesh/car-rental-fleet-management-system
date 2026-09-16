@@ -24,6 +24,7 @@ function vehicle(
     transmission: "Automatic",
     seat_capacity: 5,
     daily_rate: 1000,
+    image_url: null,
     is_active: true,
     branch: { id: "branch-1", name: "Canonical Branch" },
     category: { id: "category-1", name: "Canonical Category" },

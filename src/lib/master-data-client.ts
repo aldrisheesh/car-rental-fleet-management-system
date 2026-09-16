@@ -37,9 +37,24 @@ export function buildVehicleBranchUpdateInput(
   vehicle: ApiMasterVehicle,
   branchId: string,
 ): VehicleMasterDataInput {
+  return buildVehicleUpdateInput(vehicle, { branchId });
+}
+
+export function buildVehicleImageUpdateInput(
+  vehicle: ApiMasterVehicle,
+  imageUrl: string | null,
+): VehicleMasterDataInput {
+  return buildVehicleUpdateInput(vehicle, { imageUrl });
+}
+
+function buildVehicleUpdateInput(
+  vehicle: ApiMasterVehicle,
+  overrides: Partial<Pick<VehicleMasterDataInput, "branchId" | "imageUrl">>,
+): VehicleMasterDataInput {
+  const hasImageOverride = Object.hasOwn(overrides, "imageUrl");
   return {
     name: vehicle.name,
-    branchId,
+    branchId: overrides.branchId ?? vehicle.branch_id,
     categoryId: vehicle.category_id,
     licensePlate: vehicle.license_plate,
     transmission: vehicle.transmission,
@@ -48,7 +63,7 @@ export function buildVehicleBranchUpdateInput(
     isActive: vehicle.is_active,
     fuelType: vehicle.fuel_type,
     referenceFuelEfficiency: vehicle.reference_fuel_efficiency_km_per_liter,
-    imageUrl: vehicle.image_url,
+    imageUrl: hasImageOverride ? (overrides.imageUrl ?? null) : vehicle.image_url,
     currentOdometerKm: vehicle.current_odometer_km,
     conditionBlocksRentalUse: vehicle.condition_blocks_rental_use,
   };
