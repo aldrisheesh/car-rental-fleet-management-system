@@ -19,21 +19,37 @@ test("address autocomplete preserves manual-entry fallback without a configured 
     component,
     /onChange=\{\(event\) => onChange\(event\.target\.value\)\}/,
   );
+  assert.match(component, /VITE_GEOAPIFY_API_KEY/);
 });
 
-test("a Places selection resolves the formatted address into the existing string field", async () => {
+test("a Geoapify selection resolves the formatted address into the existing string field", async () => {
   const component = await source(componentPath);
-  assert.match(component, /fields: \["formattedAddress"\]/);
-  assert.match(
-    component,
-    /onChange\(place\.formattedAddress \|\| prediction\.text\.toString\(\)\)/,
-  );
-  assert.match(component, /includedRegionCodes: \["ph"\]/);
+  assert.match(component, /buildGeoapifyAutocompleteUrl/);
+  assert.match(component, /onChange\(suggestion\.formatted\)/);
+  assert.match(component, /AbortController/);
 });
 
-test("booking keeps alternate autocomplete conditional and submits only address strings", async () => {
+test("a Geoapify provider failure preserves the manual address fallback", async () => {
+  const component = await source(componentPath);
+  assert.match(component, /if \(!response\.ok\) throw new Error/);
+  assert.match(component, /controller\.signal\.aborted/);
+  assert.match(component, /setStatus\(FALLBACK_MESSAGE\)/);
+});
+
+test("booking gives delivery and alternate return their own autocomplete inputs", async () => {
   const booking = await source(bookingPath);
   assert.match(booking, /!draft\.sameReturnLocation \? \(/);
+  assert.match(booking, /id="pickup-location"/);
+  assert.match(booking, /id="dropoff-location"/);
+  assert.match(booking, /updateDraft\("pickupLocation", value\)/);
+  assert.match(booking, /updateDraft\("dropoffLocation", value\)/);
+});
+
+test("booking submits only address strings and no provider metadata", async () => {
+  const booking = await source(bookingPath);
   assert.match(booking, /sameReturnLocation: draft\.sameReturnLocation/);
-  assert.doesNotMatch(booking, /deliveryLatitude|deliveryLongitude|placeId/);
+  assert.doesNotMatch(
+    booking,
+    /deliveryLatitude|deliveryLongitude|placeId|featureId|geoapify/i,
+  );
 });

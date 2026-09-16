@@ -602,9 +602,9 @@ function DetailsForm({
               <CalendarDays size={20} aria-hidden="true" />
               <span>
                 <small>Rental period</small>
-                <strong>
+                <span className="request-date-trigger-value">
                   {formatPickerRange(draft.pickupAt, draft.returnAt)}
-                </strong>
+                </span>
               </span>
               {pickupTime && returnTime ? (
                 <span className="request-date-trigger-times">

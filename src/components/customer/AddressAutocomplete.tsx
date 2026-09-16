@@ -1,68 +1,18 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 
-type PlaceSuggestion = {
-  placePrediction?: {
-    text: { toString: () => string };
-    toPlace: () => {
-      formattedAddress?: string;
-      fetchFields: (request: { fields: string[] }) => Promise<void>;
-    };
-  };
-};
+import {
+  buildGeoapifyAutocompleteUrl,
+  geoapifyAddressSuggestions,
+  type AddressSuggestion,
+  type GeoapifyAutocompleteResponse,
+} from "@/lib/geoapify-address";
 
-type PlacesLibrary = {
-  AutocompleteSessionToken: new () => unknown;
-  AutocompleteSuggestion: {
-    fetchAutocompleteSuggestions: (request: {
-      input: string;
-      includedRegionCodes: string[];
-      language: string;
-      region: string;
-      sessionToken: unknown;
-    }) => Promise<{ suggestions: PlaceSuggestion[] }>;
-  };
-};
-
-type GoogleMapsWindow = Window & {
-  google?: {
-    maps?: { importLibrary?: (library: string) => Promise<PlacesLibrary> };
-  };
-};
-
-let placesLibraryPromise: Promise<PlacesLibrary> | null = null;
+const FALLBACK_MESSAGE =
+  "Address suggestions are unavailable. You can enter the full address.";
 
 function configuredKey() {
-  const key = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const key = import.meta.env.VITE_GEOAPIFY_API_KEY;
   return key && !key.startsWith("your-") ? key : "";
-}
-
-async function loadPlacesLibrary() {
-  const key = configuredKey();
-  if (!key) throw new Error("Google Places is not configured.");
-  if (placesLibraryPromise) return placesLibraryPromise;
-
-  placesLibraryPromise = new Promise((resolve, reject) => {
-    const finish = () => {
-      const importLibrary = (window as GoogleMapsWindow).google?.maps
-        ?.importLibrary;
-      if (!importLibrary) {
-        reject(new Error("Google Places could not load."));
-        return;
-      }
-      importLibrary("places").then(resolve).catch(reject);
-    };
-    const existing = document.getElementById("google-maps-places");
-    if (existing) return finish();
-
-    const script = document.createElement("script");
-    script.id = "google-maps-places";
-    script.async = true;
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&v=weekly&libraries=places`;
-    script.onload = finish;
-    script.onerror = () => reject(new Error("Google Places could not load."));
-    document.head.append(script);
-  });
-  return placesLibraryPromise;
 }
 
 export function AddressAutocomplete({
@@ -79,58 +29,39 @@ export function AddressAutocomplete({
   error?: string;
 }) {
   const listId = useId();
-  const [library, setLibrary] = useState<PlacesLibrary | null>(null);
-  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [status, setStatus] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
-  const sessionToken = useRef<unknown>(null);
   const requestId = useRef(0);
 
-  async function enablePlaces() {
-    if (library) return;
-    if (!configuredKey()) {
-      setStatus(
-        "Address suggestions are unavailable. You can enter the full address.",
-      );
-      return;
-    }
-    setStatus("Loading address suggestions…");
-    try {
-      const next = await loadPlacesLibrary();
-      setLibrary(next);
-      sessionToken.current = new next.AutocompleteSessionToken();
-      setStatus("");
-    } catch {
-      setStatus(
-        "Address suggestions are unavailable. You can enter the full address.",
-      );
-    }
-  }
-
   useEffect(() => {
-    if (!library || value.trim().length < 3) {
+    const query = value.trim();
+    const apiKey = configuredKey();
+    if (!query || query.length < 3) {
       setSuggestions([]);
       setActiveIndex(-1);
       return;
     }
+    if (!apiKey) {
+      setSuggestions([]);
+      setActiveIndex(-1);
+      setStatus(FALLBACK_MESSAGE);
+      return;
+    }
+
+    const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       const current = ++requestId.current;
+      setStatus("Loading address suggestions…");
       try {
-        const token =
-          sessionToken.current ?? new library.AutocompleteSessionToken();
-        sessionToken.current = token;
-        const response =
-          await library.AutocompleteSuggestion.fetchAutocompleteSuggestions({
-            input: value,
-            includedRegionCodes: ["ph"],
-            language: "en",
-            region: "PH",
-            sessionToken: token,
-          });
-        if (current !== requestId.current) return;
-        const next = response.suggestions.filter(
-          (item) => item.placePrediction,
+        const response = await fetch(
+          buildGeoapifyAutocompleteUrl({ text: query, apiKey }),
+          { signal: controller.signal },
         );
+        if (!response.ok) throw new Error("Geoapify autocomplete failed.");
+        const payload = (await response.json()) as GeoapifyAutocompleteResponse;
+        if (current !== requestId.current) return;
+        const next = geoapifyAddressSuggestions(payload);
         setSuggestions(next);
         setActiveIndex(next.length ? 0 : -1);
         setStatus(
@@ -139,34 +70,24 @@ export function AddressAutocomplete({
             : "No address suggestions found. You can keep typing your address.",
         );
       } catch {
-        if (current !== requestId.current) return;
+        if (controller.signal.aborted || current !== requestId.current) return;
         setSuggestions([]);
         setActiveIndex(-1);
-        setStatus(
-          "Address suggestions are unavailable. You can enter the full address.",
-        );
+        setStatus(FALLBACK_MESSAGE);
       }
     }, 250);
-    return () => window.clearTimeout(timer);
-  }, [library, value]);
 
-  async function selectSuggestion(suggestion: PlaceSuggestion) {
-    const prediction = suggestion.placePrediction;
-    if (!prediction) return;
-    try {
-      const place = prediction.toPlace();
-      await place.fetchFields({ fields: ["formattedAddress"] });
-      onChange(place.formattedAddress || prediction.text.toString());
-      sessionToken.current = library
-        ? new library.AutocompleteSessionToken()
-        : null;
-      setStatus("Address selected.");
-    } catch {
-      onChange(prediction.text.toString());
-      setStatus("Suggestion selected. Review the address before continuing.");
-    }
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [value]);
+
+  function selectSuggestion(suggestion: AddressSuggestion) {
+    onChange(suggestion.formatted);
     setSuggestions([]);
     setActiveIndex(-1);
+    setStatus("Address selected.");
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -179,7 +100,7 @@ export function AddressAutocomplete({
       setActiveIndex((index) => Math.max(index - 1, 0));
     } else if (event.key === "Enter" && activeIndex >= 0) {
       event.preventDefault();
-      void selectSuggestion(suggestions[activeIndex]);
+      selectSuggestion(suggestions[activeIndex]);
     } else if (event.key === "Escape") {
       setSuggestions([]);
       setActiveIndex(-1);
@@ -194,7 +115,9 @@ export function AddressAutocomplete({
         type="text"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        onFocus={() => void enablePlaces()}
+        onFocus={() => {
+          if (!configuredKey()) setStatus(FALLBACK_MESSAGE);
+        }}
         onKeyDown={onKeyDown}
         autoComplete="street-address"
         placeholder="Building, street, barangay, city"
@@ -209,26 +132,22 @@ export function AddressAutocomplete({
       />
       {suggestions.length ? (
         <ul id={listId} className="address-autocomplete-list" role="listbox">
-          {suggestions.map((suggestion, index) => {
-            const prediction = suggestion.placePrediction;
-            if (!prediction) return null;
-            return (
-              <li
-                id={`${listId}-${index}`}
-                key={`${prediction.text.toString()}-${index}`}
-                role="option"
-                aria-selected={index === activeIndex}
+          {suggestions.map((suggestion, index) => (
+            <li
+              id={`${listId}-${index}`}
+              key={`${suggestion.formatted}-${index}`}
+              role="option"
+              aria-selected={index === activeIndex}
+            >
+              <button
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => selectSuggestion(suggestion)}
               >
-                <button
-                  type="button"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => void selectSuggestion(suggestion)}
-                >
-                  {prediction.text.toString()}
-                </button>
-              </li>
-            );
-          })}
+                {suggestion.formatted}
+              </button>
+            </li>
+          ))}
         </ul>
       ) : null}
       <p id={`${id}-help`} className="customer-helper" role="status">
