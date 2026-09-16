@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, CalendarDays, Eye, EyeOff, RefreshCw } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  Eye,
+  EyeOff,
+  Mail,
+  RefreshCw,
+} from "lucide-react";
 
 import { Footer } from "@/components/site/Footer";
+import { GoogleIcon } from "@/components/site/GoogleIcon";
 import { Header } from "@/components/site/Header";
 import {
   CustomerPage,
-  ErrorSummary,
   FieldError,
   StatusCallout,
   VehicleImage,
@@ -19,10 +27,16 @@ import {
   type CustomerVehicle,
 } from "@/lib/customer-data";
 import {
+  discoverAccountByEmail,
   signInWithCredentialsApi,
   signUpWithCredentialsApi,
 } from "@/lib/auth-integration";
 import { getSession } from "@/lib/auth-client";
+import {
+  formatPhilippineMobile,
+  isValidPhilippineMobile,
+  toPhilippineMobileE164,
+} from "@/lib/phone";
 import {
   parseFinderBookingHandoff,
   validateFinderBookingSearch,
@@ -65,6 +79,7 @@ type AuthErrors = Partial<Record<keyof AuthValues, string>>;
 function AuthenticationPage() {
   const search = Route.useSearch();
   const [mode, setMode] = useState<AuthMode>("sign-in");
+  const [emailStepComplete, setEmailStepComplete] = useState(false);
   const [values, setValues] = useState<AuthValues>({
     fullName: "",
     phoneNumber: "",
@@ -73,10 +88,10 @@ function AuthenticationPage() {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState<AuthErrors>({});
-  const [errorFocusKey, setErrorFocusKey] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
   const [notice, setNotice] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [vehicle, setVehicle] = useState<CustomerVehicle | null>(null);
@@ -115,10 +130,17 @@ function AuthenticationPage() {
 
   function validate() {
     const nextErrors: AuthErrors = {};
+    if (!emailStepComplete) {
+      if (!values.identifier.trim())
+        nextErrors.identifier = "Enter your email address.";
+      else if (!/^\S+@\S+\.\S+$/.test(values.identifier.trim()))
+        nextErrors.identifier = "Enter a valid email address.";
+      return nextErrors;
+    }
     if (mode === "registration" && values.fullName.trim().length < 2)
       nextErrors.fullName = "Enter your full name.";
-    if (mode === "registration" && !values.phoneNumber.trim())
-      nextErrors.phoneNumber = "Enter your phone number.";
+    if (mode === "registration" && !isValidPhilippineMobile(values.phoneNumber))
+      nextErrors.phoneNumber = "Enter a valid Philippine mobile number.";
     if (!values.identifier.trim())
       nextErrors.identifier = "Enter your email address.";
     else if (!/^\S+@\S+\.\S+$/.test(values.identifier.trim()))
@@ -138,7 +160,24 @@ function AuthenticationPage() {
     setNotice("");
     setSubmitError("");
     if (Object.keys(nextErrors).length) {
-      setErrorFocusKey((key) => key + 1);
+      return;
+    }
+    if (!emailStepComplete) {
+      setCheckingEmail(true);
+      const result = await discoverAccountByEmail(values.identifier.trim());
+      setCheckingEmail(false);
+      if (!result.ok) {
+        setSubmitError(result.message);
+        return;
+      }
+      if (result.next === "unavailable") {
+        setSubmitError(
+          "This account is not available. Please contact Briah's Car Rental for help.",
+        );
+        return;
+      }
+      setMode(result.next === "sign-in" ? "sign-in" : "registration");
+      setEmailStepComplete(true);
       return;
     }
 
@@ -149,7 +188,9 @@ function AuthenticationPage() {
         password: values.password,
       });
       if (!result.ok) {
-        setSubmitError(result.message ?? "Invalid email or password.");
+        setErrors({
+          password: result.message ?? "Invalid email or password.",
+        });
         setSubmitting(false);
         return;
       }
@@ -160,7 +201,7 @@ function AuthenticationPage() {
     const result = await signUpWithCredentialsApi({
       full_name: values.fullName.trim(),
       email: values.identifier.trim(),
-      phone_number: values.phoneNumber.trim(),
+      phone_number: toPhilippineMobileE164(values.phoneNumber)!,
       password: values.password,
     });
     if (!result.ok) {
@@ -223,36 +264,15 @@ function AuthenticationPage() {
     });
   }
 
-  const summaryErrors = [
-    errors.fullName
-      ? { id: "auth-full-name", label: "Full name", message: errors.fullName }
-      : null,
-    errors.phoneNumber
-      ? { id: "auth-phone", label: "Phone number", message: errors.phoneNumber }
-      : null,
-    errors.identifier
-      ? { id: "auth-email", label: "Email", message: errors.identifier }
-      : null,
-    errors.password
-      ? { id: "auth-password", label: "Password", message: errors.password }
-      : null,
-    errors.confirmPassword
-      ? {
-          id: "auth-confirm-password",
-          label: "Confirm password",
-          message: errors.confirmPassword,
-        }
-      : null,
-  ].filter((error): error is { id: string; label: string; message: string } =>
-    Boolean(error),
-  );
-
   return (
     <CustomerPage>
-      <Header />
-      <main id="main-content" className="auth-main">
-        <div className="auth-layout">
-          <aside className="auth-context" aria-label="Continuation context">
+      <Header hideWordmark />
+      <main id="main-content" className="auth-main harbor-booking-main">
+        <div className="auth-layout harbor-booking-layout">
+          <aside
+            className="auth-context harbor-booking-context"
+            aria-label="Selected vehicle"
+          >
             {vehicle ? (
               <div className="auth-context-image">
                 <VehicleImage
@@ -263,15 +283,23 @@ function AuthenticationPage() {
                 />
               </div>
             ) : null}
-            <div className="auth-context-copy">
-              <p className="eyebrow">Continue your request</p>
+            <div className="auth-context-copy harbor-booking-context-copy">
               <h2 className="auth-context-name">
                 {vehicle?.name ?? "Your rental request"}
               </h2>
               {vehicle ? (
-                <p className="auth-context-category">
-                  {vehicle.category?.name || "Category not listed"}
-                </p>
+                <div
+                  className="harbor-booking-vehicle-meta"
+                  aria-label="Vehicle details"
+                >
+                  <em>{vehicle.category?.name || "Category not listed"}</em>
+                  {vehicle.seat_capacity ? (
+                    <em>{vehicle.seat_capacity} seats</em>
+                  ) : null}
+                  {vehicle.transmission ? (
+                    <em>{vehicle.transmission}</em>
+                  ) : null}
+                </div>
               ) : null}
               <p>
                 {vehicle
@@ -299,35 +327,39 @@ function AuthenticationPage() {
             </div>
           </aside>
 
-          <section className="auth-panel" aria-labelledby="auth-title">
+          <section
+            className={`auth-panel harbor-booking-panel${mode === "registration" && emailStepComplete ? " is-registration" : ""}`}
+            aria-labelledby="auth-title"
+          >
             <div className="auth-panel-header">
               <div>
-                <p className="eyebrow">Briah&apos;s Car Rental</p>
+                <a
+                  className="harbor-booking-back"
+                  href={
+                    search.vehicle
+                      ? `/vehicles/${encodeURIComponent(search.vehicle)}${contextQuery()}`
+                      : "/vehicles"
+                  }
+                >
+                  <ArrowLeft size={16} aria-hidden="true" /> Back to vehicles
+                </a>
                 <h1 id="auth-title">
-                  {mode === "sign-in"
-                    ? "Sign in to continue"
-                    : "Create your account"}
+                  {!emailStepComplete
+                    ? vehicle
+                      ? `Keep this ${vehicle.name.replace(/^\w+\s+/, "")} for your trip.`
+                      : "Keep your trip moving."
+                    : mode === "sign-in"
+                      ? "Welcome back."
+                      : "Create your account."}
                 </h1>
                 <p>
-                  {mode === "sign-in"
-                    ? "Use your customer account to continue your rental request."
-                    : "Create a customer account to send rental requests and submit requirements."}
+                  {!emailStepComplete
+                    ? "Sign in or create an account to continue your rental request."
+                    : mode === "sign-in"
+                      ? "Use your customer account to continue your rental request."
+                      : "Create a customer account to send rental requests and submit requirements."}
                 </p>
               </div>
-              <button
-                className="auth-mode-switch"
-                type="button"
-                onClick={() => {
-                  setMode(mode === "sign-in" ? "registration" : "sign-in");
-                  setErrors({});
-                  setSubmitError("");
-                  setNotice("");
-                }}
-              >
-                {mode === "sign-in"
-                  ? "Create an account"
-                  : "Already have an account? Sign in"}
-              </button>
             </div>
 
             {notice ? (
@@ -340,199 +372,363 @@ function AuthenticationPage() {
                 {submitError}
               </StatusCallout>
             ) : null}
-            <ErrorSummary errors={summaryErrors} focusKey={errorFocusKey} />
-
             <form className="auth-form" onSubmit={submit} noValidate>
-              {mode === "registration" ? (
+              {!emailStepComplete ? (
                 <>
-                  <div className="customer-field">
-                    <label className="customer-label" htmlFor="auth-full-name">
-                      Full name
+                  <div className="customer-field harbor-booking-email-field">
+                    <label className="customer-label" htmlFor="auth-email">
+                      Email address
                     </label>
-                    <input
-                      id="auth-full-name"
-                      className="customer-input"
-                      type="text"
-                      name="fullName"
-                      autoComplete="name"
-                      value={values.fullName}
-                      aria-invalid={Boolean(errors.fullName)}
-                      aria-describedby={
-                        errors.fullName ? "auth-full-name-error" : undefined
-                      }
-                      onChange={(event) =>
-                        updateValue("fullName", event.target.value)
-                      }
-                      required
-                    />
-                    <FieldError id="auth-full-name" message={errors.fullName} />
+                    <div className="harbor-booking-email-wrap">
+                      <Mail size={20} aria-hidden="true" />
+                      <input
+                        id="auth-email"
+                        className="customer-input"
+                        type="email"
+                        name="email"
+                        autoComplete="email"
+                        spellCheck={false}
+                        value={values.identifier}
+                        aria-invalid={Boolean(errors.identifier)}
+                        aria-describedby={
+                          errors.identifier ? "auth-email-error" : undefined
+                        }
+                        onChange={(event) =>
+                          updateValue("identifier", event.target.value)
+                        }
+                        placeholder="you@example.com"
+                        required
+                      />
+                    </div>
+                    <FieldError id="auth-email" message={errors.identifier} />
                   </div>
-                  <div className="customer-field">
-                    <label className="customer-label" htmlFor="auth-phone">
-                      Phone number
-                    </label>
-                    <input
-                      id="auth-phone"
-                      className="customer-input"
-                      type="tel"
-                      name="phoneNumber"
-                      autoComplete="tel"
-                      value={values.phoneNumber}
-                      aria-invalid={Boolean(errors.phoneNumber)}
-                      aria-describedby={
-                        errors.phoneNumber ? "auth-phone-error" : undefined
-                      }
-                      onChange={(event) =>
-                        updateValue("phoneNumber", event.target.value)
-                      }
-                      required
-                    />
-                    <FieldError id="auth-phone" message={errors.phoneNumber} />
-                  </div>
-                </>
-              ) : null}
-              <div className="customer-field">
-                <label className="customer-label" htmlFor="auth-email">
-                  Email address
-                </label>
-                <input
-                  id="auth-email"
-                  className="customer-input"
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  value={values.identifier}
-                  aria-invalid={Boolean(errors.identifier)}
-                  aria-describedby={
-                    errors.identifier ? "auth-email-error" : undefined
-                  }
-                  onChange={(event) =>
-                    updateValue("identifier", event.target.value)
-                  }
-                  required
-                />
-                <FieldError id="auth-email" message={errors.identifier} />
-              </div>
-              <div className="customer-field">
-                <label className="customer-label" htmlFor="auth-password">
-                  Password
-                </label>
-                <div className="auth-password-wrap">
-                  <input
-                    id="auth-password"
-                    className="customer-input"
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    autoComplete={
-                      mode === "sign-in" ? "current-password" : "new-password"
-                    }
-                    value={values.password}
-                    aria-invalid={Boolean(errors.password)}
-                    aria-describedby={
-                      errors.password ? "auth-password-error" : undefined
-                    }
-                    onChange={(event) =>
-                      updateValue("password", event.target.value)
-                    }
-                    required
-                  />
-                  <button
-                    className="auth-password-toggle"
-                    type="button"
-                    aria-pressed={showPassword}
-                    onClick={() => setShowPassword((shown) => !shown)}
-                  >
-                    {showPassword ? (
-                      <EyeOff size={15} aria-hidden="true" />
-                    ) : (
-                      <Eye size={15} aria-hidden="true" />
-                    )}{" "}
-                    {showPassword ? "Hide" : "Show"}
-                  </button>
-                </div>
-                {mode === "registration" ? (
-                  <p className="customer-helper">Use at least 8 characters.</p>
-                ) : null}
-                <FieldError id="auth-password" message={errors.password} />
-              </div>
-              {mode === "registration" ? (
-                <div className="customer-field">
-                  <label
-                    className="customer-label"
-                    htmlFor="auth-confirm-password"
-                  >
-                    Confirm password
-                  </label>
-                  <div className="auth-password-wrap">
-                    <input
-                      id="auth-confirm-password"
-                      className="customer-input"
-                      type={showConfirmPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      autoComplete="new-password"
-                      value={values.confirmPassword}
-                      aria-invalid={Boolean(errors.confirmPassword)}
-                      aria-describedby={
-                        errors.confirmPassword
-                          ? "auth-confirm-password-error"
-                          : undefined
-                      }
-                      onChange={(event) =>
-                        updateValue("confirmPassword", event.target.value)
-                      }
-                      required
-                    />
+                  <div className="harbor-booking-actions">
                     <button
-                      className="auth-password-toggle"
-                      type="button"
-                      aria-pressed={showConfirmPassword}
-                      onClick={() => setShowConfirmPassword((shown) => !shown)}
+                      className="customer-primary-button"
+                      type="submit"
+                      disabled={checkingEmail}
                     >
-                      {showConfirmPassword ? (
-                        <EyeOff size={15} aria-hidden="true" />
-                      ) : (
-                        <Eye size={15} aria-hidden="true" />
-                      )}{" "}
-                      {showConfirmPassword ? "Hide" : "Show"}
+                      {checkingEmail ? "Checking email…" : "Continue"}{" "}
+                      <ArrowRight size={19} aria-hidden="true" />
+                    </button>
+                    <div className="harbor-booking-divider" aria-hidden="true">
+                      <span />
+                      or
+                      <span />
+                    </div>
+                    <button
+                      className="harbor-booking-google"
+                      type="button"
+                      onClick={() =>
+                        setNotice(
+                          "Google sign-in will open here once the provider is connected.",
+                        )
+                      }
+                    >
+                      <GoogleIcon /> Continue with Google
                     </button>
                   </div>
-                  <FieldError
-                    id="auth-confirm-password"
-                    message={errors.confirmPassword}
-                  />
-                </div>
-              ) : null}
-              <div className="auth-form-actions">
-                <button
-                  className="customer-primary-button"
-                  type="submit"
-                  disabled={submitting}
-                >
-                  {submitting ? (
-                    <RefreshCw
-                      className="animate-spin"
-                      size={17}
-                      aria-hidden="true"
-                    />
+                </>
+              ) : (
+                <>
+                  <div className="customer-field harbor-booking-email-field">
+                    <label className="customer-label" htmlFor="auth-email">
+                      Email address
+                    </label>
+                    <div className="harbor-booking-email-wrap">
+                      <Mail size={20} aria-hidden="true" />
+                      <input
+                        id="auth-email"
+                        className="customer-input"
+                        type="email"
+                        name="email"
+                        autoComplete="email"
+                        spellCheck={false}
+                        value={values.identifier}
+                        aria-invalid={Boolean(errors.identifier)}
+                        aria-describedby={
+                          errors.identifier ? "auth-email-error" : undefined
+                        }
+                        onChange={(event) =>
+                          updateValue("identifier", event.target.value)
+                        }
+                        placeholder="you@example.com"
+                        required
+                      />
+                    </div>
+                    <FieldError id="auth-email" message={errors.identifier} />
+                  </div>
+                  {mode === "registration" ? (
+                    <div className="harbor-booking-form-group">
+                      <div className="harbor-booking-field-pair">
+                        <div className="customer-field">
+                          <label
+                            className="customer-label"
+                            htmlFor="auth-full-name"
+                          >
+                            Full name
+                          </label>
+                          <input
+                            id="auth-full-name"
+                            className="customer-input"
+                            type="text"
+                            name="fullName"
+                            autoComplete="name"
+                            value={values.fullName}
+                            aria-invalid={Boolean(errors.fullName)}
+                            aria-describedby={
+                              errors.fullName
+                                ? "auth-full-name-error"
+                                : undefined
+                            }
+                            onChange={(event) =>
+                              updateValue("fullName", event.target.value)
+                            }
+                            placeholder="Your full name"
+                            required
+                          />
+                          <FieldError
+                            id="auth-full-name"
+                            message={errors.fullName}
+                          />
+                        </div>
+                        <div className="customer-field">
+                          <label
+                            className="customer-label"
+                            htmlFor="auth-phone"
+                          >
+                            Mobile number
+                          </label>
+                          <div className="harbor-booking-phone-wrap">
+                            <span aria-hidden="true">+63</span>
+                            <input
+                              id="auth-phone"
+                              className="customer-input"
+                              type="tel"
+                              inputMode="tel"
+                              name="phoneNumber"
+                              autoComplete="tel-national"
+                              value={values.phoneNumber}
+                              aria-invalid={Boolean(errors.phoneNumber)}
+                              aria-describedby={
+                                errors.phoneNumber
+                                  ? "auth-phone-error"
+                                  : undefined
+                              }
+                              onChange={(event) =>
+                                updateValue(
+                                  "phoneNumber",
+                                  formatPhilippineMobile(event.target.value),
+                                )
+                              }
+                              placeholder="900 000 000"
+                              required
+                            />
+                          </div>
+                          <FieldError
+                            id="auth-phone"
+                            message={errors.phoneNumber}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   ) : null}
-                  {submitting
-                    ? "Please wait…"
-                    : mode === "sign-in"
-                      ? "Sign in and continue"
-                      : "Create account and continue"}
-                </button>
-                <a
-                  className="auth-back-link"
-                  href={
-                    search.vehicle
-                      ? `/vehicles/${encodeURIComponent(search.vehicle)}${contextQuery()}`
-                      : "/"
-                  }
-                >
-                  <ArrowLeft size={15} aria-hidden="true" /> Back
-                </a>
-              </div>
+                  {mode === "registration" ? (
+                    <div className="harbor-booking-form-group harbor-booking-password-group">
+                      <div className="harbor-booking-field-pair">
+                        <div className="customer-field">
+                          <label
+                            className="customer-label"
+                            htmlFor="auth-password"
+                          >
+                            Password
+                          </label>
+                          <div className="auth-password-wrap">
+                            <input
+                              id="auth-password"
+                              className="customer-input"
+                              type={showPassword ? "text" : "password"}
+                              name="password"
+                              autoComplete="new-password"
+                              value={values.password}
+                              aria-invalid={Boolean(errors.password)}
+                              aria-describedby={
+                                errors.password
+                                  ? "auth-password-error"
+                                  : undefined
+                              }
+                              onChange={(event) =>
+                                updateValue("password", event.target.value)
+                              }
+                              placeholder="Create a password"
+                              required
+                            />
+                            <button
+                              className="auth-password-toggle"
+                              type="button"
+                              aria-label={
+                                showPassword ? "Hide password" : "Show password"
+                              }
+                              aria-pressed={showPassword}
+                              onClick={() => setShowPassword((shown) => !shown)}
+                            >
+                              {showPassword ? (
+                                <EyeOff size={15} aria-hidden="true" />
+                              ) : (
+                                <Eye size={15} aria-hidden="true" />
+                              )}
+                            </button>
+                          </div>
+                          <FieldError
+                            id="auth-password"
+                            message={errors.password}
+                          />
+                        </div>
+                        <div className="customer-field">
+                          <label
+                            className="customer-label"
+                            htmlFor="auth-confirm-password"
+                          >
+                            Confirm password
+                          </label>
+                          <div className="auth-password-wrap">
+                            <input
+                              id="auth-confirm-password"
+                              className="customer-input"
+                              type={showConfirmPassword ? "text" : "password"}
+                              name="confirmPassword"
+                              autoComplete="new-password"
+                              value={values.confirmPassword}
+                              aria-invalid={Boolean(errors.confirmPassword)}
+                              aria-describedby={
+                                errors.confirmPassword
+                                  ? "auth-confirm-password-error"
+                                  : undefined
+                              }
+                              onChange={(event) =>
+                                updateValue(
+                                  "confirmPassword",
+                                  event.target.value,
+                                )
+                              }
+                              placeholder="Confirm your password"
+                              required
+                            />
+                            <button
+                              className="auth-password-toggle"
+                              type="button"
+                              aria-label={
+                                showConfirmPassword
+                                  ? "Hide confirm password"
+                                  : "Show confirm password"
+                              }
+                              aria-pressed={showConfirmPassword}
+                              onClick={() =>
+                                setShowConfirmPassword((shown) => !shown)
+                              }
+                            >
+                              {showConfirmPassword ? (
+                                <EyeOff size={15} aria-hidden="true" />
+                              ) : (
+                                <Eye size={15} aria-hidden="true" />
+                              )}
+                            </button>
+                          </div>
+                          <FieldError
+                            id="auth-confirm-password"
+                            message={errors.confirmPassword}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="customer-field">
+                      <label className="customer-label" htmlFor="auth-password">
+                        Password
+                      </label>
+                      <div className="auth-password-wrap">
+                        <input
+                          id="auth-password"
+                          className="customer-input"
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          autoComplete="current-password"
+                          value={values.password}
+                          aria-invalid={Boolean(errors.password)}
+                          aria-describedby={
+                            errors.password ? "auth-password-error" : undefined
+                          }
+                          onChange={(event) =>
+                            updateValue("password", event.target.value)
+                          }
+                          placeholder="Your password"
+                          required
+                        />
+                        <button
+                          className="auth-password-toggle"
+                          type="button"
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                          aria-pressed={showPassword}
+                          onClick={() => setShowPassword((shown) => !shown)}
+                        >
+                          {showPassword ? (
+                            <EyeOff size={15} aria-hidden="true" />
+                          ) : (
+                            <Eye size={15} aria-hidden="true" />
+                          )}
+                        </button>
+                      </div>
+                      <FieldError
+                        id="auth-password"
+                        message={errors.password}
+                      />
+                    </div>
+                  )}
+                  <div className="auth-form-actions">
+                    <button
+                      className="customer-primary-button"
+                      type="submit"
+                      disabled={submitting}
+                    >
+                      {submitting ? (
+                        <RefreshCw
+                          className="animate-spin"
+                          size={17}
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                      {submitting
+                        ? "Please wait…"
+                        : mode === "sign-in"
+                          ? "Sign in and continue"
+                          : "Create account and continue"}
+                    </button>
+                    {emailStepComplete && mode === "registration" ? (
+                      <p className="auth-mode-prompt">
+                        Already have an account?{" "}
+                        <button
+                          className="auth-mode-switch"
+                          type="button"
+                          onClick={() => {
+                            setMode("sign-in");
+                            setErrors({});
+                            setSubmitError("");
+                            setNotice("");
+                          }}
+                        >
+                          Sign in
+                        </button>
+                      </p>
+                    ) : null}
+                  </div>
+                </>
+              )}
             </form>
+            <p className="harbor-booking-terms">
+              By continuing, you agree to Briah&apos;s Terms & Privacy Policy.
+            </p>
           </section>
         </div>
       </main>

@@ -65,6 +65,7 @@ import { Route as ApiAuthSignOutRouteImport } from './routes/api.auth.sign-out'
 import { Route as ApiAuthSignInRouteImport } from './routes/api.auth.sign-in'
 import { Route as ApiAuthSessionRouteImport } from './routes/api.auth.session'
 import { Route as ApiAuthProfileRouteImport } from './routes/api.auth.profile'
+import { Route as ApiAuthAccountStatusRouteImport } from './routes/api.auth.account-status'
 import { Route as AdminRequirementsBookingIdRouteImport } from './routes/admin.requirements.$bookingId'
 import { Route as AdminPaymentsPaymentIdRouteImport } from './routes/admin.payments.$paymentId'
 import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings.$bookingId'
@@ -350,6 +351,11 @@ const ApiAuthProfileRoute = ApiAuthProfileRouteImport.update({
   path: '/api/auth/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthAccountStatusRoute = ApiAuthAccountStatusRouteImport.update({
+  id: '/api/auth/account-status',
+  path: '/api/auth/account-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRequirementsBookingIdRoute =
   AdminRequirementsBookingIdRouteImport.update({
     id: '/$bookingId',
@@ -421,6 +427,7 @@ export interface FileRoutesByFullPath {
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
   '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
+  '/api/auth/account-status': typeof ApiAuthAccountStatusRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
@@ -481,6 +488,7 @@ export interface FileRoutesByTo {
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
   '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
+  '/api/auth/account-status': typeof ApiAuthAccountStatusRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
@@ -543,6 +551,7 @@ export interface FileRoutesById {
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
   '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
+  '/api/auth/account-status': typeof ApiAuthAccountStatusRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
@@ -606,6 +615,7 @@ export interface FileRouteTypes {
     | '/admin/bookings/$bookingId'
     | '/admin/payments/$paymentId'
     | '/admin/requirements/$bookingId'
+    | '/api/auth/account-status'
     | '/api/auth/profile'
     | '/api/auth/session'
     | '/api/auth/sign-in'
@@ -666,6 +676,7 @@ export interface FileRouteTypes {
     | '/admin/bookings/$bookingId'
     | '/admin/payments/$paymentId'
     | '/admin/requirements/$bookingId'
+    | '/api/auth/account-status'
     | '/api/auth/profile'
     | '/api/auth/session'
     | '/api/auth/sign-in'
@@ -727,6 +738,7 @@ export interface FileRouteTypes {
     | '/admin/bookings/$bookingId'
     | '/admin/payments/$paymentId'
     | '/admin/requirements/$bookingId'
+    | '/api/auth/account-status'
     | '/api/auth/profile'
     | '/api/auth/session'
     | '/api/auth/sign-in'
@@ -769,6 +781,7 @@ export interface RootRouteChildren {
   ApiVehiclesRoute: typeof ApiVehiclesRoute
   BookingsBookingIdRoute: typeof BookingsBookingIdRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
+  ApiAuthAccountStatusRoute: typeof ApiAuthAccountStatusRoute
   ApiAuthProfileRoute: typeof ApiAuthProfileRoute
   ApiAuthSessionRoute: typeof ApiAuthSessionRoute
   ApiAuthSignInRoute: typeof ApiAuthSignInRoute
@@ -1171,6 +1184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/account-status': {
+      id: '/api/auth/account-status'
+      path: '/api/auth/account-status'
+      fullPath: '/api/auth/account-status'
+      preLoaderRoute: typeof ApiAuthAccountStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/requirements/$bookingId': {
       id: '/admin/requirements/$bookingId'
       path: '/$bookingId'
@@ -1316,6 +1336,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVehiclesRoute: ApiVehiclesRoute,
   BookingsBookingIdRoute: BookingsBookingIdRoute,
   CustomerProfileRoute: CustomerProfileRoute,
+  ApiAuthAccountStatusRoute: ApiAuthAccountStatusRoute,
   ApiAuthProfileRoute: ApiAuthProfileRoute,
   ApiAuthSessionRoute: ApiAuthSessionRoute,
   ApiAuthSignInRoute: ApiAuthSignInRoute,

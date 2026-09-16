@@ -30,7 +30,7 @@ import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { VehicleCard } from "@/components/site/VehicleCard";
 import finderHero from "@/assets/destinations/elyu.jpg";
-import { Calendar } from "@/components/ui/calendar";
+import { DateRangePicker } from "@/components/site/DateRangePicker";
 import {
   Popover,
   PopoverContent,
@@ -219,7 +219,16 @@ function FindCarPage() {
     setVehiclesLoading(true);
     setVehiclesError("");
     try {
-      const rows = await fetchJson<CustomerVehicle[]>("/api/vehicles");
+      const availabilitySearch =
+        search.finderStart || search.finderEnd
+          ? encodeSearch({
+              finderStart: search.finderStart,
+              finderEnd: search.finderEnd,
+            })
+          : "";
+      const rows = await fetchJson<CustomerVehicle[]>(
+        `/api/vehicles${availabilitySearch}`,
+      );
       setVehicles(rows);
     } catch (error) {
       setVehiclesError(
@@ -230,7 +239,7 @@ function FindCarPage() {
     } finally {
       setVehiclesLoading(false);
     }
-  }, []);
+  }, [search.finderEnd, search.finderStart]);
 
   useEffect(() => {
     void loadVehicles();
@@ -607,14 +616,22 @@ function FindCarPage() {
                         <CalendarDays size={20} aria-hidden="true" />
                         <span>
                           <small>Pick-up date</small>
-                          <strong>{formatFinderSingleDate(activeFinderForm.requestedStart)}</strong>
+                          <strong>
+                            {formatFinderSingleDate(
+                              activeFinderForm.requestedStart,
+                            )}
+                          </strong>
                         </span>
                       </span>
                       <span className="finder-date-part finder-date-part--return">
                         <CalendarDays size={20} aria-hidden="true" />
                         <span>
                           <small>Drop-off date</small>
-                          <strong>{formatFinderSingleDate(activeFinderForm.requestedEnd)}</strong>
+                          <strong>
+                            {formatFinderSingleDate(
+                              activeFinderForm.requestedEnd,
+                            )}
+                          </strong>
                         </span>
                       </span>
                     </button>
@@ -625,57 +642,20 @@ function FindCarPage() {
                     sideOffset={12}
                     onOpenAutoFocus={(event) => event.preventDefault()}
                   >
-                    <div className="home-date-picker-layout">
-                      <Calendar
-                        className="home-date-calendar"
-                        mode="range"
-                        selected={finderDraftRange}
-                        onSelect={setFinderDraftRange}
-                        numberOfMonths={2}
-                        disabled={{ before: finderFirstAvailableDate }}
-                      />
-                      <div className="home-date-times">
-                        <p>Set your times</p>
-                        <label htmlFor="finder-pickup-time">Pickup time</label>
-                        <select
-                          id="finder-pickup-time"
-                          value={finderPickupTime}
-                          onChange={(event) =>
-                            setFinderPickupTime(event.target.value)
-                          }
-                        >
-                          {finderTimeOptions.map((time) => (
-                            <option key={time} value={time}>
-                              {formatFinderTime(time)}
-                            </option>
-                          ))}
-                        </select>
-                        <label htmlFor="finder-return-time">Return time</label>
-                        <select
-                          id="finder-return-time"
-                          value={finderReturnTime}
-                          onChange={(event) =>
-                            setFinderReturnTime(event.target.value)
-                          }
-                        >
-                          {finderTimeOptions.map((time) => (
-                            <option key={time} value={time}>
-                              {formatFinderTime(time)}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          className="customer-primary-button"
-                          type="button"
-                          onClick={applyFinderDates}
-                          disabled={
-                            !finderDraftRange?.from || !finderDraftRange.to
-                          }
-                        >
-                          Apply dates
-                        </button>
-                      </div>
-                    </div>
+                    <DateRangePicker
+                      selected={finderDraftRange}
+                      onSelect={setFinderDraftRange}
+                      firstAvailableDate={finderFirstAvailableDate}
+                      pickupTime={finderPickupTime}
+                      returnTime={finderReturnTime}
+                      onPickupTimeChange={setFinderPickupTime}
+                      onReturnTimeChange={setFinderReturnTime}
+                      timeOptions={finderTimeOptions}
+                      formatTime={formatFinderTime}
+                      pickupTimeId="finder-pickup-time"
+                      returnTimeId="finder-return-time"
+                      onApply={applyFinderDates}
+                    />
                   </PopoverContent>
                 </Popover>
                 <input
@@ -695,38 +675,36 @@ function FindCarPage() {
                   }
                 />
               </div>
-                <div
-                  className={`finder-smart-preferences${finderPreferencesOpen ? " is-open" : ""}`}
+              <div
+                className={`finder-smart-preferences${finderPreferencesOpen ? " is-open" : ""}`}
+              >
+                <button
+                  className="finder-smart-preferences-trigger"
+                  type="button"
+                  aria-controls="finder-smart-preferences-panel"
+                  aria-expanded={finderPreferencesOpen}
+                  onClick={() => setFinderPreferencesOpen((open) => !open)}
                 >
-                  <button
-                    className="finder-smart-preferences-trigger"
-                    type="button"
-                    aria-controls="finder-smart-preferences-panel"
-                    aria-expanded={finderPreferencesOpen}
-                    onClick={() => setFinderPreferencesOpen((open) => !open)}
-                  >
-                    <span className="finder-preferences-summary-copy">
-                      <SlidersHorizontal size={18} aria-hidden="true" />
-                      <span>
-                        <strong>Tailor this trip</strong>
-                        <small>
-                          Passengers, budget, vehicle preference
-                        </small>
-                      </span>
+                  <span className="finder-preferences-summary-copy">
+                    <SlidersHorizontal size={18} aria-hidden="true" />
+                    <span>
+                      <strong>Tailor this trip</strong>
+                      <small>Passengers, budget, vehicle preference</small>
                     </span>
-                    <ChevronDown
-                      className="finder-preferences-summary-chevron"
-                      size={18}
-                      aria-hidden="true"
-                    />
-                  </button>
+                  </span>
+                  <ChevronDown
+                    className="finder-preferences-summary-chevron"
+                    size={18}
+                    aria-hidden="true"
+                  />
+                </button>
 
-                  <div
-                    id="finder-smart-preferences-panel"
-                    className="finder-smart-preferences-panel"
-                    hidden={!finderPreferencesOpen}
-                  >
-                    <div className="customer-field finder-destination finder-preference-field">
+                <div
+                  id="finder-smart-preferences-panel"
+                  className="finder-smart-preferences-panel"
+                  hidden={!finderPreferencesOpen}
+                >
+                  <div className="customer-field finder-destination finder-preference-field">
                     <label
                       className="finder-preference-label"
                       htmlFor="finder-destination"
@@ -757,9 +735,9 @@ function FindCarPage() {
                       id="finder-destination"
                       message={finderErrors.destination}
                     />
-                    </div>
+                  </div>
 
-                    <div className="finder-smart-preferences-grid">
+                  <div className="finder-smart-preferences-grid">
                     <div className="customer-field finder-preference-field">
                       <label
                         className="finder-preference-label"
@@ -869,9 +847,9 @@ function FindCarPage() {
                         message={finderErrors.preferredCategory}
                       />
                     </div>
-                    </div>
                   </div>
                 </div>
+              </div>
               {finderState !== "direct-browse" ? (
                 <ErrorSummary
                   errors={finderSummaryErrors}
@@ -1017,12 +995,60 @@ function FleetBrowseSection({
         Available vehicles
       </h2>
       {vehiclesLoading ? <LoadingFleet /> : null}
-      {vehiclesError ? <StatusCallout tone="error" title="Fleet unavailable" action={<button className="customer-secondary-button" type="button" onClick={onRetry}><RefreshCw size={16} aria-hidden="true" /> Try again</button>}>{vehiclesError}</StatusCallout> : null}
-      {!vehiclesLoading && !vehiclesError && vehicles.length === 0 ? <StatusCallout tone="info" title="No active cars to show">The active fleet is empty right now.</StatusCallout> : null}
-      {!vehiclesLoading && !vehiclesError && vehicles.length > 0 ? <>
-        <CategoryFilterRail categories={categories} selectedCategory={selectedCategory} onCategoryChange={onCategoryChange} />
-        {visibleVehicles.length ? <div className="vehicle-grid">{visibleVehicles.map((vehicle) => <VehicleCard key={vehicle.id} vehicle={vehicle} href={`/vehicles/${encodeURIComponent(vehicle.id)}${encodeSearch({ ...search, vehicle: vehicle.id })}`} />)}</div> : <div className="finder-empty-state"><h2>No cars match this filter</h2><p>Clear the category filter to see every active vehicle.</p><button className="customer-secondary-button" type="button" onClick={() => onCategoryChange("")}>Show all cars</button></div>}
-      </> : null}
+      {vehiclesError ? (
+        <StatusCallout
+          tone="error"
+          title="Fleet unavailable"
+          action={
+            <button
+              className="customer-secondary-button"
+              type="button"
+              onClick={onRetry}
+            >
+              <RefreshCw size={16} aria-hidden="true" /> Try again
+            </button>
+          }
+        >
+          {vehiclesError}
+        </StatusCallout>
+      ) : null}
+      {!vehiclesLoading && !vehiclesError && vehicles.length === 0 ? (
+        <StatusCallout tone="info" title="No active cars to show">
+          The active fleet is empty right now.
+        </StatusCallout>
+      ) : null}
+      {!vehiclesLoading && !vehiclesError && vehicles.length > 0 ? (
+        <>
+          <CategoryFilterRail
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={onCategoryChange}
+          />
+          {visibleVehicles.length ? (
+            <div className="vehicle-grid">
+              {visibleVehicles.map((vehicle) => (
+                <VehicleCard
+                  key={vehicle.id}
+                  vehicle={vehicle}
+                  href={`/vehicles/${encodeURIComponent(vehicle.id)}${encodeSearch({ ...search, vehicle: vehicle.id })}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="finder-empty-state">
+              <h2>No cars match this filter</h2>
+              <p>Clear the category filter to see every active vehicle.</p>
+              <button
+                className="customer-secondary-button"
+                type="button"
+                onClick={() => onCategoryChange("")}
+              >
+                Show all cars
+              </button>
+            </div>
+          )}
+        </>
+      ) : null}
     </section>
   );
 }

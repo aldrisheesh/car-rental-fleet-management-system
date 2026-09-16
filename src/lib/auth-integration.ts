@@ -21,6 +21,9 @@ export type SignupResult = {
   principal?: AppPrincipal | null;
   requiresEmailConfirmation?: boolean;
 };
+export type AccountDiscoveryResult =
+  | { ok: true; next: "sign-in" | "sign-up" | "unavailable" }
+  | { ok: false; message: string };
 
 export function hasApiCredentialLogin() {
   return true;
@@ -28,6 +31,37 @@ export function hasApiCredentialLogin() {
 
 export function hasApiSignup() {
   return true;
+}
+
+export async function discoverAccountByEmail(
+  email: string,
+): Promise<AccountDiscoveryResult> {
+  try {
+    const response = await fetch("/api/auth/account-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ email }),
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      next?: "sign-in" | "sign-up" | "unavailable";
+      message?: string;
+    } | null;
+    if (!response.ok || !payload?.next) {
+      return {
+        ok: false,
+        message:
+          payload?.message ??
+          "We could not check this email. Please try again.",
+      };
+    }
+    return { ok: true, next: payload.next };
+  } catch {
+    return {
+      ok: false,
+      message: "We could not check this email. Please try again.",
+    };
+  }
 }
 
 export async function signInWithCredentialsApi({

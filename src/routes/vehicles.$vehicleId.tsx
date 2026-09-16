@@ -23,6 +23,7 @@ import {
 } from "@/lib/customer-data";
 import {
   finderContextForSubmission,
+  parseFinderDateSelection,
   parseFinderBookingHandoff,
   validateFinderBookingSearch,
 } from "@/lib/finder-booking";
@@ -42,6 +43,14 @@ export const Route = createFileRoute("/vehicles/$vehicleId")({
   }),
   component: VehicleDetailPage,
 });
+
+function formatTripDate(value: string) {
+  return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(value));
+}
 
 function VehicleDetailPage() {
   const { vehicleId } = Route.useParams();
@@ -63,6 +72,11 @@ function VehicleDetailPage() {
     () => parseFinderBookingHandoff({ ...search, vehicle: vehicleId }),
     [search, vehicleId],
   );
+  const selectedDates = useMemo(
+    () => parseFinderDateSelection(search),
+    [search],
+  );
+  const tripDates = handoff ?? selectedDates;
   const hasEvaluatedContext = Boolean(handoff);
 
   async function loadVehicle() {
@@ -253,26 +267,47 @@ function VehicleDetailPage() {
                   <h2>
                     <CalendarDays size={17} aria-hidden="true" /> Your trip
                   </h2>
-                  {handoff ? (
-                    <p>
-                      {formatDateRange(
-                        handoff.requestedStart,
-                        handoff.requestedEnd,
-                      )}{" "}
-                      · {handoff.passengerCount}{" "}
-                      {handoff.passengerCount === 1
-                        ? "passenger"
-                        : "passengers"}
-                    </p>
+                  {tripDates ? (
+                    <>
+                      <div
+                        className="detail-trip-dates"
+                        aria-label={`Trip dates: ${formatDateRange(
+                          tripDates.requestedStart,
+                          tripDates.requestedEnd,
+                        )}`}
+                      >
+                        <time dateTime={tripDates.requestedStart}>
+                          <span>Pick-up</span>
+                          <strong>
+                            {formatTripDate(tripDates.requestedStart)}
+                          </strong>
+                        </time>
+                        <span
+                          className="detail-trip-dates-divider"
+                          aria-hidden="true"
+                        />
+                        <time dateTime={tripDates.requestedEnd}>
+                          <span>Return</span>
+                          <strong>
+                            {formatTripDate(tripDates.requestedEnd)}
+                          </strong>
+                        </time>
+                      </div>
+                      {handoff ? (
+                        <p className="detail-trip-meta">
+                          {handoff.passengerCount}{" "}
+                          {handoff.passengerCount === 1
+                            ? "passenger"
+                            : "passengers"}
+                        </p>
+                      ) : null}
+                    </>
                   ) : (
                     <p>
                       No trip dates selected yet. You can continue with this car
                       and add the request details next.
                     </p>
                   )}
-                  <a className="customer-link" href={`/vehicles${backSearch}`}>
-                    Change trip or browse more cars
-                  </a>
                 </div>
 
                 <div className="detail-action-panel detail-action-panel-desktop">

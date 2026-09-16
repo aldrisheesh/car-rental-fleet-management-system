@@ -6,8 +6,15 @@ import { getClientPrincipal } from "@/lib/auth-client";
 import { clearCustomerSession } from "@/lib/customer-auth";
 import type { AppPrincipal } from "@/lib/auth";
 import { isMyBookingsPath } from "@/lib/customer-navigation";
+import { SignInDialog } from "@/components/site/SignInDialog";
 
-export function Header({ homeMarketing = false }: { homeMarketing?: boolean }) {
+export function Header({
+  homeMarketing = false,
+  hideWordmark = false,
+}: {
+  homeMarketing?: boolean;
+  hideWordmark?: boolean;
+}) {
   const navigate = useNavigate();
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
@@ -17,6 +24,7 @@ export function Header({ homeMarketing = false }: { homeMarketing?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [principal, setPrincipal] = useState<AppPrincipal | null>(null);
   const [signingOut, setSigningOut] = useState(false);
+  const [signInOpen, setSignInOpen] = useState(false);
   const wasOpen = useRef(false);
 
   useEffect(() => {
@@ -67,6 +75,7 @@ export function Header({ homeMarketing = false }: { homeMarketing?: boolean }) {
         ? "Operations Staff"
         : "Sign in";
   const myBookingsActive = isMyBookingsPath(pathname);
+  const isAuthenticationPage = pathname === "/sign-in";
   const navigationItems = isCustomer
     ? [{ to: "/customer" as const, label: "My Bookings" }]
     : [];
@@ -81,14 +90,16 @@ export function Header({ homeMarketing = false }: { homeMarketing?: boolean }) {
         <div
           className={`customer-container customer-header-inner${isCustomer ? " has-customer-journey" : ""}`}
         >
-          <Link
-            to={wordmarkDestination}
-            className="customer-wordmark"
-            translate="no"
-          >
-            <span>Briah&apos;s</span>
-            <small>Car Rental</small>
-          </Link>
+          {!hideWordmark ? (
+            <Link
+              to={wordmarkDestination}
+              className="customer-wordmark"
+              translate="no"
+            >
+              <span>Briah&apos;s</span>
+              <small>Car Rental</small>
+            </Link>
+          ) : null}
 
           {navigationItems.length ? (
             <nav
@@ -120,7 +131,7 @@ export function Header({ homeMarketing = false }: { homeMarketing?: boolean }) {
             </nav>
           ) : null}
 
-          <div className="customer-header-account">
+          {!isAuthenticationPage ? <div className="customer-header-account">
             {principal ? (
               <>
                 <Link
@@ -143,12 +154,16 @@ export function Header({ homeMarketing = false }: { homeMarketing?: boolean }) {
                 ) : null}
               </>
             ) : (
-              <Link to="/sign-in" className="customer-account-link">
+              <button
+                type="button"
+                className="customer-account-link"
+                onClick={() => setSignInOpen(true)}
+              >
                 <UserRound size={24} strokeWidth={1.7} aria-hidden="true" />
                 <span>Sign in</span>
-              </Link>
+              </button>
             )}
-          </div>
+          </div> : null}
 
           <button
             ref={menuButtonRef}
@@ -230,19 +245,23 @@ export function Header({ homeMarketing = false }: { homeMarketing?: boolean }) {
                     </button>
                   ) : null}
                 </>
-              ) : (
-                <Link
-                  to="/sign-in"
+              ) : !isAuthenticationPage ? (
+                <button
+                  type="button"
                   className="customer-mobile-sign-in"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setSignInOpen(true);
+                  }}
                 >
                   Sign in
-                </Link>
-              )}
+                </button>
+              ) : null}
             </nav>
           </div>
         ) : null}
       </header>
+      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} />
     </>
   );
 }

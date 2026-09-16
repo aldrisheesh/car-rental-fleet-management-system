@@ -61,8 +61,48 @@ export type FinderValidationResult =
   | { ok: true; value: VehicleFinderInput }
   | { ok: false; errors: Record<string, string> };
 
+export type VehicleAvailabilityInput = Pick<
+  VehicleFinderInput,
+  "requestedStart" | "requestedEnd"
+>;
+
+export type VehicleAvailabilityValidationResult =
+  | { ok: true; value: VehicleAvailabilityInput }
+  | { ok: false; errors: Record<string, string> };
+
 const cleanText = (value: unknown) =>
   typeof value === "string" ? value.trim() : "";
+
+export function validateVehicleAvailabilityInput(
+  input: Record<string, unknown> | null,
+  now: Date = new Date(),
+): VehicleAvailabilityValidationResult {
+  const errors: Record<string, string> = {};
+  const requestedStart = cleanText(input?.requestedStart);
+  const requestedEnd = cleanText(input?.requestedEnd);
+  const start = manilaDateTimeLocalToInstant(requestedStart);
+  const end = manilaDateTimeLocalToInstant(requestedEnd);
+
+  if (!start) errors.requestedStart = "Enter a valid rental start.";
+  if (!end) errors.requestedEnd = "Enter a valid rental end.";
+  if (
+    start &&
+    !Number.isNaN(now.getTime()) &&
+    start.getTime() < now.getTime() - FINDER_START_PRECISION_TOLERANCE_MS
+  )
+    errors.requestedStart = "Rental start cannot be in the past.";
+  if (start && end && start >= end)
+    errors.requestedEnd = "Rental end must be after the start.";
+
+  if (Object.keys(errors).length) return { ok: false, errors };
+  return {
+    ok: true,
+    value: {
+      requestedStart: start!.toISOString(),
+      requestedEnd: end!.toISOString(),
+    },
+  };
+}
 
 export function validateFinderInput(
   input: Record<string, unknown> | null,

@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+} from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import type { DateRange } from "react-day-picker";
 import {
@@ -8,13 +14,10 @@ import {
   ChevronLeft,
   ChevronRight,
   FileCheck2,
-  Fuel,
   Headphones,
   MapPin,
-  Settings2,
   ShieldCheck,
   Tag,
-  Users,
 } from "lucide-react";
 
 import heroCar from "@/assets/home-hero-editorial.png";
@@ -23,15 +26,13 @@ import hondaCityImage from "@/assets/home-vehicle-city.png";
 import toyotaViosImage from "@/assets/home-vehicle-vios.png";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
-import { Calendar } from "@/components/ui/calendar";
+import { DateRangePicker } from "@/components/site/DateRangePicker";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  CustomerPage,
-} from "@/components/customer/CustomerPrimitives";
+import { CustomerPage } from "@/components/customer/CustomerPrimitives";
 import {
   ApiRequestError,
   encodeSearch,
@@ -39,7 +40,10 @@ import {
   type CustomerVehicle,
 } from "@/lib/customer-data";
 import { getClientPrincipal } from "@/lib/auth-client";
-import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
+import {
+  instantToManilaDateTimeLocal,
+  manilaDateTimeLocalToInstant,
+} from "@/lib/business-time";
 
 const featuredVehicleImages: Record<string, string> = {
   "Toyota Vios": toyotaViosImage,
@@ -123,13 +127,44 @@ function HomePage() {
   );
   const [featuredVehiclesLoading, setFeaturedVehiclesLoading] = useState(true);
   const [featuredVehiclesError, setFeaturedVehiclesError] = useState("");
-  const featuredRailRef = useRef<HTMLDivElement>(null);
+  const [featuredOffset, setFeaturedOffset] = useState(0);
 
   const firstAvailableDate = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
     return date;
   }, []);
+
+  const featuredAvailabilitySearch = useMemo(() => {
+    const selectedStart = manilaDateTimeLocalToInstant(rentalStart);
+    const selectedEnd = manilaDateTimeLocalToInstant(rentalEnd);
+    const hasSelectedRange =
+      selectedStart && selectedEnd && selectedStart < selectedEnd;
+    const defaultStart = new Date(Date.now() + 5 * 60_000);
+    const defaultEnd = new Date(defaultStart.getTime() + 24 * 60 * 60_000);
+
+    return encodeSearch({
+      finderStart: hasSelectedRange
+        ? rentalStart
+        : instantToManilaDateTimeLocal(defaultStart),
+      finderEnd: hasSelectedRange
+        ? rentalEnd
+        : instantToManilaDateTimeLocal(defaultEnd),
+    });
+  }, [rentalEnd, rentalStart]);
+
+  const visibleFeaturedVehicles = useMemo(() => {
+    if (!featuredVehicles.length) return [];
+    return Array.from(
+      { length: Math.min(3, featuredVehicles.length) },
+      (_, index) =>
+        featuredVehicles[(featuredOffset + index) % featuredVehicles.length],
+    );
+  }, [featuredOffset, featuredVehicles]);
+
+  const filmstripColumnStyle = {
+    "--filmstrip-columns": visibleFeaturedVehicles.length,
+  } as CSSProperties;
 
   useEffect(() => {
     if (getClientPrincipal()?.role === "Customer/Renter") {
@@ -140,7 +175,13 @@ function HomePage() {
   useEffect(() => {
     let cancelled = false;
 
-    void fetchJson<CustomerVehicle[]>("/api/vehicles")
+    setFeaturedVehiclesLoading(true);
+    setFeaturedVehiclesError("");
+    setFeaturedOffset(0);
+
+    void fetchJson<CustomerVehicle[]>(
+      `/api/vehicles${featuredAvailabilitySearch}`,
+    )
       .then((vehicles) => {
         if (cancelled) return;
         setFeaturedVehicles(vehicles);
@@ -160,7 +201,7 @@ function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [featuredAvailabilitySearch]);
 
   function submitFinder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -202,13 +243,13 @@ function HomePage() {
     setDatePickerOpen(false);
   }
 
-  function scrollFeatured(direction: "previous" | "next") {
-    const rail = featuredRailRef.current;
-    if (!rail) return;
-    rail.scrollBy({
-      left: (direction === "next" ? 1 : -1) * rail.clientWidth * 0.82,
-      behavior: "smooth",
-    });
+  function cycleFeaturedVehicles(direction: "previous" | "next") {
+    if (featuredVehicles.length < 2) return;
+    setFeaturedOffset(
+      (offset) =>
+        (offset + (direction === "next" ? 1 : -1) + featuredVehicles.length) %
+        featuredVehicles.length,
+    );
   }
 
   return (
@@ -232,16 +273,23 @@ function HomePage() {
               preserveAspectRatio="none"
               aria-hidden="true"
             >
-              <path d="M0 0H1020C935 120 920 240 970 390C1015 525 1025 665 940 800H0Z" />
+              <path
+                className="home-hero-shape-narrow"
+                d="M0 0H860C795 120 770 240 790 390C815 525 800 665 715 800H0Z"
+              />
+              <path
+                className="home-hero-shape-wide"
+                d="M0 0H1080C1015 120 990 240 1010 390C1035 525 1020 665 935 800H0Z"
+              />
             </svg>
             <div className="home-hero-paper">
               <div className="home-hero-copy">
                 <p className="home-service-kicker">Manila and Rizal</p>
                 <h1 id="home-title">Your trip starts with the right car.</h1>
-              <p className="home-hero-lede">
+                <p className="home-hero-lede">
                   Reliable self-drive cars for Manila, Rizal, and the road
                   between.
-              </p>
+                </p>
               </div>
               <div className="home-search-zone">
                 <form
@@ -257,171 +305,181 @@ function HomePage() {
                     </span>
                   </div>
                   <div className="home-date-field">
-                  <Popover
-                    open={datePickerOpen}
-                    onOpenChange={(open) => {
-                      if (open) openDatePicker();
-                      else setDatePickerOpen(false);
-                    }}
-                  >
-                    <PopoverTrigger asChild>
-                      <button
-                        id="rental-dates"
-                        className="home-date-trigger"
-                        type="button"
-                        onClick={openDatePicker}
-                      >
-                        <CalendarDays size={20} aria-hidden="true" />
-                        <span>
-                          <small>Rental dates</small>
-                          <strong>
-                            {formatDateRange(rentalStart, rentalEnd)}
-                          </strong>
-                        </span>
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="home-date-picker-popover"
-                      align="start"
-                      sideOffset={12}
-                      onOpenAutoFocus={(event) => event.preventDefault()}
+                    <Popover
+                      open={datePickerOpen}
+                      onOpenChange={(open) => {
+                        if (open) openDatePicker();
+                        else setDatePickerOpen(false);
+                      }}
                     >
-                      <div className="home-date-picker-layout">
-                        <Calendar
-                          className="home-date-calendar"
-                          mode="range"
+                      <PopoverTrigger asChild>
+                        <button
+                          id="rental-dates"
+                          className="home-date-trigger"
+                          type="button"
+                          onClick={openDatePicker}
+                        >
+                          <CalendarDays size={20} aria-hidden="true" />
+                          <span>
+                            <small>Rental dates</small>
+                            <strong>
+                              {formatDateRange(rentalStart, rentalEnd)}
+                            </strong>
+                          </span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="home-date-picker-popover"
+                        align="start"
+                        sideOffset={12}
+                        onOpenAutoFocus={(event) => event.preventDefault()}
+                      >
+                        <DateRangePicker
                           selected={draftRange}
                           onSelect={setDraftRange}
-                          numberOfMonths={2}
-                          disabled={{ before: firstAvailableDate }}
+                          firstAvailableDate={firstAvailableDate}
+                          pickupTime={pickupTime}
+                          returnTime={returnTime}
+                          onPickupTimeChange={setPickupTime}
+                          onReturnTimeChange={setReturnTime}
+                          timeOptions={timeOptions}
+                          formatTime={formatTime}
+                          pickupTimeId="pickup-time"
+                          returnTimeId="return-time"
+                          onApply={applyDates}
                         />
-                        <div className="home-date-times">
-                          <p>Set your times</p>
-                          <label htmlFor="pickup-time">Pickup time</label>
-                          <select
-                            id="pickup-time"
-                            value={pickupTime}
-                            onChange={(event) =>
-                              setPickupTime(event.target.value)
-                            }
-                          >
-                            {timeOptions.map((time) => (
-                              <option key={time} value={time}>
-                                {formatTime(time)}
-                              </option>
-                            ))}
-                          </select>
-                          <label htmlFor="return-time">Return time</label>
-                          <select
-                            id="return-time"
-                            value={returnTime}
-                            onChange={(event) =>
-                              setReturnTime(event.target.value)
-                            }
-                          >
-                            {timeOptions.map((time) => (
-                              <option key={time} value={time}>
-                                {formatTime(time)}
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            className="customer-primary-button"
-                            type="button"
-                            onClick={applyDates}
-                            disabled={!draftRange?.from || !draftRange.to}
-                          >
-                            Apply dates
-                          </button>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <button className="customer-primary-button" type="submit">
                     Find a car <ArrowRight size={20} aria-hidden="true" />
                   </button>
                 </form>
-                <div className="home-search-helper" aria-label="Rental assurances">
-                  <span><ShieldCheck size={21} aria-hidden="true" /> Fully insured</span>
-                  <span><Tag size={21} aria-hidden="true" /> Clear daily rates</span>
-                  <span><Headphones size={21} aria-hidden="true" /> Support when you need it</span>
+                <div
+                  className="home-search-helper"
+                  aria-label="Rental assurances"
+                >
+                  <span>
+                    <ShieldCheck size={21} aria-hidden="true" /> Fully insured
+                  </span>
+                  <span>
+                    <Tag size={21} aria-hidden="true" /> Clear daily rates
+                  </span>
+                  <span>
+                    <Headphones size={21} aria-hidden="true" /> Support when you
+                    need it
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="home-featured" aria-labelledby="available-cars">
-          <div className="customer-container">
-            <div className="home-section-heading">
-              <div>
-                <h2 id="available-cars">Available Cars</h2>
-                <p className="home-section-lede">
-                  Popular choices for your next trip.
-                </p>
-                <a className="customer-link home-featured-all-link" href="/vehicles">
-                  Explore all cars <ArrowRight size={16} aria-hidden="true" />
-                </a>
+        <section
+          className="home-featured home-filmstrip"
+          aria-labelledby="available-cars"
+        >
+          <div className="home-filmstrip-masthead">
+            <div className="customer-container home-filmstrip-masthead-inner">
+              <h2 id="available-cars">Available cars for the road ahead</h2>
+              <p>Available for your trip, with more in the full fleet.</p>
+              <a className="home-filmstrip-all-link" href="/vehicles">
+                See every car <ArrowRight size={17} aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+
+          {featuredVehiclesLoading ? (
+            <div
+              className="customer-container home-featured-status"
+              aria-live="polite"
+            >
+              Loading available cars…
+            </div>
+          ) : null}
+          {featuredVehiclesError ? (
+            <div
+              className="customer-container home-featured-status"
+              role="status"
+            >
+              <p>{featuredVehiclesError}</p>
+              <a className="customer-link" href="/vehicles">
+                Browse the fleet <ArrowRight size={16} aria-hidden="true" />
+              </a>
+            </div>
+          ) : null}
+          {!featuredVehiclesLoading &&
+          !featuredVehiclesError &&
+          visibleFeaturedVehicles.length > 0 ? (
+            <>
+              <div
+                className="home-filmstrip-gallery"
+                style={filmstripColumnStyle}
+              >
+                {visibleFeaturedVehicles.map((vehicle) => (
+                  <FilmstripVehicle key={vehicle.id} vehicle={vehicle} />
+                ))}
               </div>
-              <div className="home-featured-actions">
-                <div className="home-gallery-pager" aria-label="Fleet gallery navigation">
+              <div
+                className="home-filmstrip-detail-rail"
+                style={filmstripColumnStyle}
+              >
+                {visibleFeaturedVehicles.map((vehicle) => (
+                  <FilmstripVehicleDetails key={vehicle.id} vehicle={vehicle} />
+                ))}
+              </div>
+              <div className="customer-container home-filmstrip-footer">
+                <span className="home-filmstrip-route">Manila and Rizal</span>
+                <span aria-live="polite">
+                  {String(featuredOffset + 1).padStart(2, "0")} /{" "}
+                  {String(featuredVehicles.length).padStart(2, "0")}
+                </span>
+                <div
+                  className="home-gallery-pager"
+                  aria-label="Fleet gallery navigation"
+                >
                   <button
                     type="button"
                     className="home-gallery-control"
-                    onClick={() => scrollFeatured("previous")}
+                    onClick={() => cycleFeaturedVehicles("previous")}
                     aria-label="Show previous cars"
+                    disabled={featuredVehicles.length < 2}
                   >
                     <ChevronLeft size={20} aria-hidden="true" />
                   </button>
                   <button
                     type="button"
                     className="home-gallery-control"
-                    onClick={() => scrollFeatured("next")}
+                    onClick={() => cycleFeaturedVehicles("next")}
                     aria-label="Show next cars"
+                    disabled={featuredVehicles.length < 2}
                   >
                     <ChevronRight size={20} aria-hidden="true" />
                   </button>
                 </div>
               </div>
+            </>
+          ) : null}
+          {!featuredVehiclesLoading &&
+          !featuredVehiclesError &&
+          featuredVehicles.length === 0 ? (
+            <div
+              className="customer-container home-featured-status"
+              role="status"
+            >
+              <p>There are no cars available to browse right now.</p>
+              <a className="customer-link" href="/vehicles">
+                Check the fleet <ArrowRight size={16} aria-hidden="true" />
+              </a>
             </div>
-
-            {featuredVehiclesLoading ? (
-              <p className="home-featured-status" aria-live="polite">
-                Loading available cars…
-              </p>
-            ) : null}
-            {featuredVehiclesError ? (
-              <div className="home-featured-status" role="status">
-                <p>{featuredVehiclesError}</p>
-                <a className="customer-link" href="/vehicles">
-                  Browse the fleet <ArrowRight size={16} aria-hidden="true" />
-                </a>
-              </div>
-            ) : null}
-            {!featuredVehiclesLoading &&
-            !featuredVehiclesError &&
-            featuredVehicles.length > 0 ? (
-              <div ref={featuredRailRef} className="home-featured-grid">
-                {featuredVehicles.map((vehicle) => (
-                  <HomeVehicleCard key={vehicle.id} vehicle={vehicle} />
-                ))}
-              </div>
-            ) : null}
-            {!featuredVehiclesLoading &&
-            !featuredVehiclesError &&
-            featuredVehicles.length === 0 ? (
-              <div className="home-featured-status" role="status">
-                <p>There are no cars available to browse right now.</p>
-                <a className="customer-link" href="/vehicles">
-                  Check the fleet <ArrowRight size={16} aria-hidden="true" />
-                </a>
-              </div>
-            ) : null}
-          </div>
+          ) : null}
         </section>
 
-        <section id="rental-assurances" className="home-trust" aria-label="Rental assurances">
+        <section
+          id="rental-assurances"
+          className="home-trust"
+          aria-label="Rental assurances"
+        >
           <div className="customer-container home-trust-list">
             <p>
               <ShieldCheck size={22} aria-hidden="true" /> Active fleet
@@ -441,16 +499,24 @@ function HomePage() {
   );
 }
 
-function HomeVehicleCard({ vehicle }: { vehicle: CustomerVehicle }) {
+function FilmstripVehicle({ vehicle }: { vehicle: CustomerVehicle }) {
   const image = vehicle.image_url || featuredVehicleImages[vehicle.name];
+  const dailyRate =
+    vehicle.daily_rate === null
+      ? "Rate not listed"
+      : new Intl.NumberFormat("en-PH", {
+          style: "currency",
+          currency: "PHP",
+          maximumFractionDigits: 0,
+        }).format(vehicle.daily_rate);
 
   return (
     <a
-      className="home-vehicle-card"
-      href={`/booking${encodeSearch({ vehicle: vehicle.id })}`}
+      className="home-filmstrip-vehicle"
+      href={`/vehicles/${encodeURIComponent(vehicle.id)}`}
       aria-label={`View ${vehicle.name}`}
     >
-      <div className="home-vehicle-media">
+      <div className="home-filmstrip-media">
         {image ? (
           <img
             src={image}
@@ -461,43 +527,53 @@ function HomeVehicleCard({ vehicle }: { vehicle: CustomerVehicle }) {
             sizes="(max-width: 700px) 86vw, (max-width: 1100px) 44vw, 28vw"
           />
         ) : (
-          <div className="home-vehicle-image-fallback" aria-hidden="true">
-            <CarFront size={38} strokeWidth={1.4} />
+          <div className="home-filmstrip-image-fallback" aria-hidden="true">
+            <CarFront size={36} />
           </div>
         )}
+        <span className="home-filmstrip-image-note">
+          {vehicle.category?.name ?? "Self-drive car"}
+        </span>
       </div>
-      <div className="home-vehicle-card-body">
-        <div className="home-vehicle-card-title">
-          <h3>{vehicle.name}</h3>
-          <p>
-            {vehicle.daily_rate === null
-              ? "Rate not listed"
-              : new Intl.NumberFormat("en-PH", {
-                  style: "currency",
-                  currency: "PHP",
-                  maximumFractionDigits: 0,
-                }).format(vehicle.daily_rate)}
-            {vehicle.daily_rate !== null ? <small>per day</small> : null}
-          </p>
-        </div>
-        <ul
-          className="home-vehicle-facts"
-          aria-label={`${vehicle.name} details`}
-        >
-          <li>
-            <Users size={17} aria-hidden="true" />
-            {vehicle.seat_capacity ? `${vehicle.seat_capacity} seats` : "Seats"}
-          </li>
-          <li>
-            <Settings2 size={17} aria-hidden="true" />
-            {vehicle.transmission || "Transmission"}
-          </li>
-          <li>
-            <Fuel size={17} aria-hidden="true" />
-            {vehicle.fuel_type || "Fuel"}
-          </li>
-        </ul>
+      <div className="home-filmstrip-mobile-details">
+        <span className="home-filmstrip-category">
+          {vehicle.category?.name ?? "Self-drive car"}
+        </span>
+        <h3>{vehicle.name}</h3>
+        <span>{vehicle.seat_capacity ?? "—"} seats</span>
+        <span>{vehicle.transmission ?? "Transmission not listed"}</span>
+        <strong>{dailyRate}</strong>
       </div>
+    </a>
+  );
+}
+
+function FilmstripVehicleDetails({ vehicle }: { vehicle: CustomerVehicle }) {
+  const dailyRate =
+    vehicle.daily_rate === null
+      ? "Rate not listed"
+      : new Intl.NumberFormat("en-PH", {
+          style: "currency",
+          currency: "PHP",
+          maximumFractionDigits: 0,
+        }).format(vehicle.daily_rate);
+
+  return (
+    <a
+      className="home-filmstrip-details"
+      href={`/vehicles/${encodeURIComponent(vehicle.id)}`}
+      aria-label={`View details for ${vehicle.name}`}
+    >
+      <span className="home-filmstrip-title">
+        <h3>{vehicle.name}</h3>
+        <small>{vehicle.category?.name ?? "Self-drive car"}</small>
+      </span>
+      <span>{vehicle.seat_capacity ?? "—"} seats</span>
+      <span>{vehicle.transmission ?? "Transmission not listed"}</span>
+      <strong>
+        {dailyRate}
+        {vehicle.daily_rate !== null ? <small>per day</small> : null}
+      </strong>
     </a>
   );
 }

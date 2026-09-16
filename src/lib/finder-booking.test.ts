@@ -5,6 +5,7 @@ import {
   finderBookingPrefill,
   finderContextForSubmission,
   finderProvenanceMatchesBooking,
+  parseFinderDateSelection,
   parseFinderBookingHandoff,
   revalidateFinderBookingBasis,
 } from "./finder-booking.ts";
@@ -72,6 +73,26 @@ test("Finder handoff prefills the existing Booking fields in Manila time", () =>
 
 test("ordinary vehicle navigation does not claim Finder provenance", () => {
   assert.equal(parseFinderBookingHandoff({ vehicle: "vehicle-a" }), null);
+});
+
+test("date-only browse selections remain available without Finder provenance", () => {
+  assert.deepEqual(
+    parseFinderDateSelection({
+      finderStart: "2026-09-18T10:00",
+      finderEnd: "2026-09-24T18:00",
+    }),
+    {
+      requestedStart: "2026-09-18T02:00:00.000Z",
+      requestedEnd: "2026-09-24T10:00:00.000Z",
+    },
+  );
+  assert.equal(
+    parseFinderDateSelection({
+      finderStart: "2026-09-24T18:00",
+      finderEnd: "2026-09-18T10:00",
+    }),
+    null,
+  );
 });
 
 test("only material Finder basis changes invalidate client provenance", () => {

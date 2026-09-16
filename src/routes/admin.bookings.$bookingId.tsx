@@ -620,7 +620,7 @@ function BookingRequestCard({ booking }: { booking: AdminBooking }) {
           label="Service"
           value={
             booking.pickup_delivery_option === "delivery"
-              ? `Delivery${booking.pickup_location ? ` · ${booking.pickup_location}` : ""}`
+              ? `Delivery${booking.pickup_location ? ` · ${booking.pickup_location}` : ""}${booking.dropoff_location && booking.dropoff_location !== booking.pickup_location ? ` · Return: ${booking.dropoff_location}` : ""}`
               : "Pickup at branch"
           }
         />

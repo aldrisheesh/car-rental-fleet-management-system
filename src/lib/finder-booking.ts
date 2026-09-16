@@ -20,6 +20,11 @@ export type FinderBookingHandoff = {
   displayedRank: number | null;
 };
 
+export type FinderDateSelection = Pick<
+  FinderBookingHandoff,
+  "requestedStart" | "requestedEnd"
+>;
+
 export type FinderBookingSearch = {
   vehicle?: string;
   /** Legacy browse-link compatibility; current Finder evaluation ignores this value. */
@@ -73,6 +78,32 @@ export function validateFinderBookingSearch(
     finderCategory: searchText(search.finderCategory),
     finderDestination: searchText(search.finderDestination),
     finderRank: searchNumber(search.finderRank),
+  };
+}
+
+/**
+ * Dates selected while browsing the active fleet do not imply that the user
+ * ran a full Finder evaluation. Keep them available to downstream detail pages
+ * without manufacturing recommendation provenance.
+ */
+export function parseFinderDateSelection(
+  search: FinderBookingSearch,
+): FinderDateSelection | null {
+  if (!search.finderStart || !search.finderEnd) return null;
+
+  const parseDate = (value: string) => {
+    const localDate = manilaDateTimeLocalToInstant(value);
+    if (localDate) return localDate;
+    const instant = new Date(value);
+    return Number.isNaN(instant.getTime()) ? null : instant;
+  };
+  const start = parseDate(search.finderStart);
+  const end = parseDate(search.finderEnd);
+  if (!start || !end || end <= start) return null;
+
+  return {
+    requestedStart: start.toISOString(),
+    requestedEnd: end.toISOString(),
   };
 }
 

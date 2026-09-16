@@ -14,8 +14,8 @@ export type {
 
 export async function calculateMaintenanceReadiness(
   vehicleId: string,
+  client: SupabaseClient<Database> = getSupabaseServerClient(),
 ): Promise<MaintenanceReadiness> {
-  const client = getSupabaseServerClient();
   const [
     { data: vehicle, error: vehicleError },
     { data: records, error: recordsError },

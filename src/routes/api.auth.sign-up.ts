@@ -5,6 +5,7 @@ import {
   setAuthSession,
   getServerAuthClient,
 } from "@/lib/auth.server";
+import { isValidPhilippineMobile, toPhilippineMobileE164 } from "@/lib/phone";
 
 export const Route = createFileRoute("/api/auth/sign-up")({
   server: {
@@ -34,10 +35,21 @@ export const Route = createFileRoute("/api/auth/sign-up")({
           );
         }
 
+        if (!isValidPhilippineMobile(phoneNumber)) {
+          return Response.json(
+            { message: "Enter a valid Philippine mobile number." },
+            { status: 400 },
+          );
+        }
+
+        const formattedPhoneNumber = toPhilippineMobileE164(phoneNumber)!;
+
         const { data, error } = await getServerAuthClient().auth.signUp({
           email,
           password,
-          options: { data: { full_name: fullName, phone_number: phoneNumber } },
+          options: {
+            data: { full_name: fullName, phone_number: formattedPhoneNumber },
+          },
         });
         if (error) {
           return Response.json(

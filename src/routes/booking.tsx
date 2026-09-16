@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import type { DateRange } from "react-day-picker";
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,14 +11,19 @@ import {
 
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
+import { AddressAutocomplete } from "@/components/customer/AddressAutocomplete";
+import { DateRangePicker } from "@/components/site/DateRangePicker";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   CustomerPage,
-  ErrorSummary,
   FieldError,
   Rate,
   RequestProgress,
   StatusCallout,
-  VehicleFacts,
   VehicleImage,
 } from "@/components/customer/CustomerPrimitives";
 import {
@@ -39,6 +45,7 @@ import {
   validateFinderBookingSearch,
 } from "@/lib/finder-booking";
 import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
+import { resolvedReturnLocation } from "@/lib/customer-handoff";
 
 export const Route = createFileRoute("/booking")({
   validateSearch: (search) => validateFinderBookingSearch(search),
@@ -63,11 +70,62 @@ type BookingDraft = {
   pickupDeliveryOption: "pickup" | "delivery";
   pickupLocation: string;
   dropoffLocation: string;
+  sameReturnLocation: boolean;
   destination: string;
   preferredSeatCount: string;
 };
 
 type BookingErrors = Partial<Record<keyof BookingDraft | "vehicle", string>>;
+
+const timeOptions = [
+  "08:00",
+  "09:00",
+  "10:00",
+  "11:00",
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+];
+
+function dateFromDateTimeLocal(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T/.exec(value);
+  if (!match) return undefined;
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+function timeFromDateTimeLocal(value: string, fallback: string) {
+  return /^\d{4}-\d{2}-\d{2}T(\d{2}:\d{2})/.exec(value)?.[1] ?? fallback;
+}
+
+function dateTimeLocalForDate(date: Date, time: string) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}T${time}`;
+}
+
+function formatPickerRange(start: string, end: string) {
+  const from = dateFromDateTimeLocal(start);
+  const to = dateFromDateTimeLocal(end);
+  if (!from || !to) return "Choose your dates";
+  const formatter = new Intl.DateTimeFormat("en-PH", {
+    month: "short",
+    day: "numeric",
+  });
+  return `${formatter.format(from)} – ${formatter.format(to)}`;
+}
+
+function formatTime(value: string) {
+  const [hour, minute] = value.split(":").map(Number);
+  return new Intl.DateTimeFormat("en-PH", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(2000, 0, 1, hour, minute));
+}
 
 function initialDraft(
   handoff: ReturnType<typeof parseFinderBookingHandoff>,
@@ -78,9 +136,10 @@ function initialDraft(
     pickupAt: handoff ? dateTimeInputFromIso(handoff.requestedStart) : "",
     returnAt: handoff ? dateTimeInputFromIso(handoff.requestedEnd) : "",
     purposeOfUse: "",
-    pickupDeliveryOption: "pickup",
+    pickupDeliveryOption: "delivery",
     pickupLocation: "",
     dropoffLocation: "",
+    sameReturnLocation: true,
     destination: handoff?.destination ?? "",
     preferredSeatCount: handoff ? String(handoff.passengerCount) : "",
   };
@@ -96,7 +155,6 @@ function RentalRequestPage() {
   const [draft, setDraft] = useState<BookingDraft>(() => initialDraft(handoff));
   const [step, setStep] = useState<1 | 2>(1);
   const [errors, setErrors] = useState<BookingErrors>({});
-  const [errorFocusKey, setErrorFocusKey] = useState(0);
   const [principal, setPrincipal] = useState(getClientPrincipal());
   const [sessionChecked, setSessionChecked] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -169,7 +227,12 @@ function RentalRequestPage() {
     if (!stored) return;
     try {
       const parsed = JSON.parse(stored) as Partial<BookingDraft>;
-      setDraft((current) => ({ ...current, ...parsed }));
+      setDraft((current) => ({
+        ...current,
+        ...parsed,
+        pickupDeliveryOption: "delivery",
+        sameReturnLocation: parsed.sameReturnLocation ?? true,
+      }));
     } catch {
       window.sessionStorage.removeItem(storageKey);
     }
@@ -194,10 +257,6 @@ function RentalRequestPage() {
 
     if (!selectedVehicle)
       nextErrors.vehicle = "Choose an active vehicle before continuing.";
-    if (!draft.pickupBranchId)
-      nextErrors.pickupBranchId = "Choose a pickup branch.";
-    if (!draft.returnBranchId)
-      nextErrors.returnBranchId = "Choose a return branch.";
     if (!pickup) nextErrors.pickupAt = "Enter a valid pickup date and time.";
     if (!returned) nextErrors.returnAt = "Enter a valid return date and time.";
     if (pickup && pickup.getTime() < Date.now() - 60_000)
@@ -206,16 +265,10 @@ function RentalRequestPage() {
       nextErrors.returnAt = "Return must be after pickup.";
     if (!draft.purposeOfUse.trim())
       nextErrors.purposeOfUse = "Tell us the purpose of this rental.";
-    if (
-      draft.pickupDeliveryOption === "delivery" &&
-      !draft.pickupLocation.trim()
-    )
-      nextErrors.pickupLocation = "Enter the pickup location for delivery.";
-    if (
-      draft.pickupDeliveryOption === "delivery" &&
-      !draft.dropoffLocation.trim()
-    )
-      nextErrors.dropoffLocation = "Enter the drop-off location for delivery.";
+    if (!draft.pickupLocation.trim())
+      nextErrors.pickupLocation = "Enter the delivery address.";
+    if (!draft.sameReturnLocation && !draft.dropoffLocation.trim())
+      nextErrors.dropoffLocation = "Enter the return address.";
     if (
       preferredSeats !== null &&
       (!Number.isInteger(preferredSeats) || preferredSeats <= 0)
@@ -232,7 +285,6 @@ function RentalRequestPage() {
     const nextErrors = validateDetails();
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      setErrorFocusKey((key) => key + 1);
       return;
     }
     if (typeof window !== "undefined")
@@ -257,7 +309,6 @@ function RentalRequestPage() {
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       setStep(1);
-      setErrorFocusKey((key) => key + 1);
       return;
     }
     if (!selectedVehicle || !draft.pickupBranchId || !draft.returnBranchId)
@@ -278,15 +329,13 @@ function RentalRequestPage() {
       pickupAt: draft.pickupAt,
       returnAt: draft.returnAt,
       purposeOfUse: draft.purposeOfUse.trim(),
-      pickupDeliveryOption: draft.pickupDeliveryOption,
-      pickupLocation:
-        draft.pickupDeliveryOption === "delivery"
-          ? draft.pickupLocation.trim()
-          : null,
-      dropoffLocation:
-        draft.pickupDeliveryOption === "delivery"
-          ? draft.dropoffLocation.trim()
-          : null,
+      pickupDeliveryOption: "delivery",
+      pickupLocation: draft.pickupLocation.trim(),
+      dropoffLocation: resolvedReturnLocation({
+        deliveryAddress: draft.pickupLocation,
+        alternateReturnAddress: draft.dropoffLocation,
+        sameReturnLocation: draft.sameReturnLocation,
+      }),
       destination: draft.destination.trim() || null,
       preferredSeatCount: draft.preferredSeatCount.trim()
         ? Number(draft.preferredSeatCount)
@@ -351,69 +400,6 @@ function RentalRequestPage() {
       setSubmitting(false);
     }
   }
-
-  const errorSummary = [
-    errors.vehicle
-      ? { id: "selected-vehicle", label: "Vehicle", message: errors.vehicle }
-      : null,
-    errors.pickupBranchId
-      ? {
-          id: "pickup-branch",
-          label: "Pickup branch",
-          message: errors.pickupBranchId,
-        }
-      : null,
-    errors.returnBranchId
-      ? {
-          id: "return-branch",
-          label: "Return branch",
-          message: errors.returnBranchId,
-        }
-      : null,
-    errors.pickupAt
-      ? {
-          id: "pickup-at",
-          label: "Pickup date and time",
-          message: errors.pickupAt,
-        }
-      : null,
-    errors.returnAt
-      ? {
-          id: "return-at",
-          label: "Return date and time",
-          message: errors.returnAt,
-        }
-      : null,
-    errors.purposeOfUse
-      ? { id: "purpose", label: "Purpose", message: errors.purposeOfUse }
-      : null,
-    errors.pickupLocation
-      ? {
-          id: "pickup-location",
-          label: "Pickup location",
-          message: errors.pickupLocation,
-        }
-      : null,
-    errors.dropoffLocation
-      ? {
-          id: "dropoff-location",
-          label: "Drop-off location",
-          message: errors.dropoffLocation,
-        }
-      : null,
-    errors.preferredSeatCount
-      ? {
-          id: "preferred-seats",
-          label: "Preferred seats",
-          message: errors.preferredSeatCount,
-        }
-      : null,
-    errors.destination
-      ? { id: "destination", label: "Destination", message: errors.destination }
-      : null,
-  ].filter((error): error is { id: string; label: string; message: string } =>
-    Boolean(error),
-  );
 
   return (
     <CustomerPage>
@@ -511,9 +497,6 @@ function RentalRequestPage() {
                 <DetailsForm
                   draft={draft}
                   errors={errors}
-                  errorSummary={errorSummary}
-                  errorFocusKey={errorFocusKey}
-                  masterData={masterData}
                   principal={principal}
                   sessionChecked={sessionChecked}
                   updateDraft={updateDraft}
@@ -544,9 +527,6 @@ function RentalRequestPage() {
 function DetailsForm({
   draft,
   errors,
-  errorSummary,
-  errorFocusKey,
-  masterData,
   principal,
   sessionChecked,
   updateDraft,
@@ -554,9 +534,6 @@ function DetailsForm({
 }: {
   draft: BookingDraft;
   errors: BookingErrors;
-  errorSummary: Array<{ id: string; label: string; message: string }>;
-  errorFocusKey: number;
-  masterData: BookingMasterData | null;
   principal: ReturnType<typeof getClientPrincipal>;
   sessionChecked: boolean;
   updateDraft: <K extends keyof BookingDraft>(
@@ -565,185 +542,152 @@ function DetailsForm({
   ) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
-  const branches = masterData?.branches ?? [];
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [draftRange, setDraftRange] = useState<DateRange>();
+  const [pickupTime, setPickupTime] = useState(() =>
+    timeFromDateTimeLocal(draft.pickupAt, ""),
+  );
+  const [returnTime, setReturnTime] = useState(() =>
+    timeFromDateTimeLocal(draft.returnAt, ""),
+  );
+  const firstAvailableDate = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
+
+  function openDatePicker() {
+    setDraftRange({
+      from: dateFromDateTimeLocal(draft.pickupAt),
+      to: dateFromDateTimeLocal(draft.returnAt),
+    });
+    setPickupTime(timeFromDateTimeLocal(draft.pickupAt, ""));
+    setReturnTime(timeFromDateTimeLocal(draft.returnAt, ""));
+    setDatePickerOpen(true);
+  }
+
+  function applyDates() {
+    if (!draftRange?.from || !draftRange.to) return;
+    updateDraft("pickupAt", dateTimeLocalForDate(draftRange.from, pickupTime));
+    updateDraft("returnAt", dateTimeLocalForDate(draftRange.to, returnTime));
+    setDatePickerOpen(false);
+  }
+
   return (
     <form className="request-form" onSubmit={onSubmit} noValidate>
-      <ErrorSummary errors={errorSummary} focusKey={errorFocusKey} />
       <fieldset className="customer-fieldset">
         <legend>
           <CalendarDays size={19} aria-hidden="true" /> Trip schedule
         </legend>
-        <div className="request-form-grid">
-          <div className="customer-field">
-            <label className="customer-label" htmlFor="pickup-at">
-              Pickup date and time
-            </label>
-            <input
+        <Popover
+          open={datePickerOpen}
+          onOpenChange={(open) => {
+            if (open) openDatePicker();
+            else setDatePickerOpen(false);
+          }}
+        >
+          <PopoverTrigger asChild>
+            <button
               id="pickup-at"
-              className="customer-input"
-              type="datetime-local"
-              value={draft.pickupAt}
-              aria-invalid={Boolean(errors.pickupAt)}
-              aria-describedby={errors.pickupAt ? "pickup-at-error" : undefined}
-              onChange={(event) => updateDraft("pickupAt", event.target.value)}
-              required
+              className="request-date-trigger"
+              type="button"
+              aria-invalid={Boolean(errors.pickupAt || errors.returnAt)}
+              aria-describedby={
+                errors.pickupAt || errors.returnAt
+                  ? "pickup-at-error"
+                  : undefined
+              }
+              onClick={openDatePicker}
+            >
+              <CalendarDays size={20} aria-hidden="true" />
+              <span>
+                <small>Rental period</small>
+                <strong>
+                  {formatPickerRange(draft.pickupAt, draft.returnAt)}
+                </strong>
+              </span>
+              {pickupTime && returnTime ? (
+                <span className="request-date-trigger-times">
+                  <span>Pick up {formatTime(pickupTime)}</span>
+                  <span>Return {formatTime(returnTime)}</span>
+                </span>
+              ) : null}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="home-date-picker-popover"
+            align="start"
+            sideOffset={12}
+            onOpenAutoFocus={(event) => event.preventDefault()}
+          >
+            <DateRangePicker
+              selected={draftRange}
+              onSelect={setDraftRange}
+              firstAvailableDate={firstAvailableDate}
+              pickupTime={pickupTime}
+              returnTime={returnTime}
+              onPickupTimeChange={setPickupTime}
+              onReturnTimeChange={setReturnTime}
+              timeOptions={timeOptions}
+              formatTime={formatTime}
+              pickupTimeId="booking-pickup-time"
+              returnTimeId="booking-return-time"
+              onApply={applyDates}
             />
-            <FieldError id="pickup-at" message={errors.pickupAt} />
-          </div>
-          <div className="customer-field">
-            <label className="customer-label" htmlFor="return-at">
-              Return date and time
-            </label>
-            <input
-              id="return-at"
-              className="customer-input"
-              type="datetime-local"
-              value={draft.returnAt}
-              aria-invalid={Boolean(errors.returnAt)}
-              aria-describedby={errors.returnAt ? "return-at-error" : undefined}
-              onChange={(event) => updateDraft("returnAt", event.target.value)}
-              required
-            />
-            <FieldError id="return-at" message={errors.returnAt} />
-          </div>
-        </div>
+          </PopoverContent>
+        </Popover>
+        <FieldError
+          id="pickup-at"
+          message={errors.pickupAt ?? errors.returnAt}
+        />
       </fieldset>
 
       <fieldset className="customer-fieldset">
         <legend>
-          <MapPin size={19} aria-hidden="true" /> Branches and handoff
+          <MapPin size={19} aria-hidden="true" /> Delivery &amp; return
         </legend>
-        <div className="request-form-grid">
-          <div className="customer-field">
-            <label className="customer-label" htmlFor="pickup-branch">
-              Pickup branch
-            </label>
-            <select
-              id="pickup-branch"
-              className="customer-select"
-              value={draft.pickupBranchId}
-              aria-invalid={Boolean(errors.pickupBranchId)}
-              aria-describedby={
-                errors.pickupBranchId ? "pickup-branch-error" : undefined
-              }
-              onChange={(event) =>
-                updateDraft("pickupBranchId", event.target.value)
-              }
-              required
-            >
-              <option value="">Choose a branch</option>
-              {branches.map((branch) => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
-                </option>
-              ))}
-            </select>
-            <FieldError id="pickup-branch" message={errors.pickupBranchId} />
-          </div>
-          <div className="customer-field">
-            <label className="customer-label" htmlFor="return-branch">
-              Return branch
-            </label>
-            <select
-              id="return-branch"
-              className="customer-select"
-              value={draft.returnBranchId}
-              aria-invalid={Boolean(errors.returnBranchId)}
-              aria-describedby={
-                errors.returnBranchId ? "return-branch-error" : undefined
-              }
-              onChange={(event) =>
-                updateDraft("returnBranchId", event.target.value)
-              }
-              required
-            >
-              <option value="">Choose a branch</option>
-              {branches.map((branch) => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
-                </option>
-              ))}
-            </select>
-            <FieldError id="return-branch" message={errors.returnBranchId} />
-          </div>
-        </div>
         <div className="customer-field">
-          <span className="customer-label">Pickup or delivery</span>
-          <div
-            className="request-radio-list"
-            role="radiogroup"
-            aria-label="Pickup or delivery"
-          >
-            <label className="request-radio-option">
-              <input
-                type="radio"
-                name="pickupDeliveryOption"
-                value="pickup"
-                checked={draft.pickupDeliveryOption === "pickup"}
-                onChange={() => updateDraft("pickupDeliveryOption", "pickup")}
-              />
-              <span>Pickup at branch</span>
-            </label>
-            <label className="request-radio-option">
-              <input
-                type="radio"
-                name="pickupDeliveryOption"
-                value="delivery"
-                checked={draft.pickupDeliveryOption === "delivery"}
-                onChange={() => updateDraft("pickupDeliveryOption", "delivery")}
-              />
-              <span>Delivery</span>
-            </label>
-          </div>
+          <label className="customer-label" htmlFor="pickup-location">
+            Where should we deliver the vehicle?
+          </label>
+          <AddressAutocomplete
+            id="pickup-location"
+            label="Where should we deliver the vehicle?"
+            value={draft.pickupLocation}
+            onChange={(value) => updateDraft("pickupLocation", value)}
+            error={errors.pickupLocation}
+          />
+          <FieldError id="pickup-location" message={errors.pickupLocation} />
         </div>
-        {draft.pickupDeliveryOption === "delivery" ? (
-          <div className="request-form-grid">
-            <div className="customer-field">
-              <label className="customer-label" htmlFor="pickup-location">
-                Pickup location
-              </label>
-              <input
-                id="pickup-location"
-                className="customer-input"
-                type="text"
-                value={draft.pickupLocation}
-                aria-invalid={Boolean(errors.pickupLocation)}
-                aria-describedby={
-                  errors.pickupLocation ? "pickup-location-error" : undefined
-                }
-                onChange={(event) =>
-                  updateDraft("pickupLocation", event.target.value)
-                }
-                required
-              />
-              <FieldError
-                id="pickup-location"
-                message={errors.pickupLocation}
-              />
-            </div>
-            <div className="customer-field">
-              <label className="customer-label" htmlFor="dropoff-location">
-                Drop-off location
-              </label>
-              <input
-                id="dropoff-location"
-                className="customer-input"
-                type="text"
-                value={draft.dropoffLocation}
-                aria-invalid={Boolean(errors.dropoffLocation)}
-                aria-describedby={
-                  errors.dropoffLocation ? "dropoff-location-error" : undefined
-                }
-                onChange={(event) =>
-                  updateDraft("dropoffLocation", event.target.value)
-                }
-                required
-              />
-              <FieldError
-                id="dropoff-location"
-                message={errors.dropoffLocation}
-              />
-            </div>
+        <label className="request-same-location">
+          <input
+            type="checkbox"
+            checked={draft.sameReturnLocation}
+            onChange={(event) =>
+              updateDraft("sameReturnLocation", event.target.checked)
+            }
+          />
+          <span>
+            <strong>Return the vehicle to the same address</strong>
+            <small>We’ll use your delivery address for collection.</small>
+          </span>
+        </label>
+        {!draft.sameReturnLocation ? (
+          <div className="customer-field">
+            <label className="customer-label" htmlFor="dropoff-location">
+              Where should we collect the vehicle?
+            </label>
+            <AddressAutocomplete
+              id="dropoff-location"
+              label="Where should we collect the vehicle?"
+              value={draft.dropoffLocation}
+              onChange={(value) => updateDraft("dropoffLocation", value)}
+              error={errors.dropoffLocation}
+            />
+            <FieldError
+              id="dropoff-location"
+              message={errors.dropoffLocation}
+            />
           </div>
         ) : null}
       </fieldset>
@@ -819,7 +763,7 @@ function DetailsForm({
       </fieldset>
 
       <fieldset className="customer-fieldset">
-        <legend>Your contact context</legend>
+        <legend>Your contact</legend>
         {sessionChecked && !principal ? (
           <StatusCallout tone="info" title="Sign in before you send">
             Your contact details will come from your authenticated customer
@@ -848,15 +792,17 @@ function DetailsForm({
         </div>
       </fieldset>
 
-      <StatusCallout tone="info" title="What happens next">
-        Briah&apos;s team will review this rental request. Sending it does not
-        confirm the booking.
-      </StatusCallout>
+      <aside className="request-review-note" role="status">
+        <div>
+          <strong>Review before confirmation</strong>
+          <p>
+            Briah&apos;s team will review this rental request. Sending it does
+            not confirm the booking.
+          </p>
+        </div>
+      </aside>
 
       <div className="request-actions">
-        <a className="customer-tertiary-button" href="/vehicles">
-          <ArrowLeft size={16} aria-hidden="true" /> Back to Find a Car
-        </a>
         <button className="customer-primary-button" type="submit">
           Review rental request <ArrowRight size={17} aria-hidden="true" />
         </button>
@@ -1010,29 +956,45 @@ function SelectedCarSummary({
 }) {
   return (
     <aside className="request-summary" aria-labelledby="selected-car-title">
-      <h2 id="selected-car-title">Selected car</h2>
-      <div className="request-summary-image">
-        <VehicleImage
-          src={vehicle.image_url}
-          alt={vehicle.name}
-          sizes="(max-width: 767px) 100vw, 30vw"
-        />
+      <div className="request-summary-frame">
+        <div className="request-summary-heading">
+          <h2 id="selected-car-title">Selected vehicle</h2>
+          {handoff ? <span>Finder match</span> : null}
+        </div>
+        <div className="request-summary-image">
+          <VehicleImage
+            src={vehicle.image_url}
+            alt={vehicle.name}
+            sizes="(max-width: 767px) 100vw, 30vw"
+          />
+          <p className="request-summary-category">
+            {vehicle.category?.name || "Vehicle"}
+          </p>
+        </div>
+        <div className="request-summary-identity">
+          <p className="request-summary-name">{vehicle.name}</p>
+          <Rate value={vehicle.daily_rate} />
+        </div>
+        <dl className="request-summary-specs">
+          <div>
+            <dt>Seats</dt>
+            <dd>
+              {vehicle.seat_capacity ? `${vehicle.seat_capacity} seats` : "—"}
+            </dd>
+          </div>
+          <div>
+            <dt>Transmission</dt>
+            <dd>{vehicle.transmission || "—"}</dd>
+          </div>
+          <div>
+            <dt>Fuel</dt>
+            <dd>{vehicle.fuel_type || "—"}</dd>
+          </div>
+        </dl>
       </div>
-      <div>
-        <p className="request-summary-category">
-          {vehicle.category?.name || "Category not listed"}
-        </p>
-        <p className="request-summary-name">{vehicle.name}</p>
-        <Rate value={vehicle.daily_rate} />
-      </div>
-      <VehicleFacts vehicle={vehicle} />
       {handoff ? (
-        <p className="customer-helper">
-          Selected from evaluated Finder results.
-        </p>
-      ) : null}
-      {handoff ? (
-        <p className="customer-helper">
+        <p className="request-summary-trip">
+          Your trip ·{" "}
           {formatDateRange(handoff.requestedStart, handoff.requestedEnd)}
         </p>
       ) : null}

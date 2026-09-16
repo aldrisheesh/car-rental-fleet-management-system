@@ -10,6 +10,7 @@ import {
   hasScheduledRentalConflict,
   intervalsOverlap,
   validateFinderInput,
+  validateVehicleAvailabilityInput,
   type FinderCandidate,
   type VehicleFinderInput,
 } from "./vehicle-finder.ts";
@@ -141,6 +142,42 @@ test("Manila datetime-local values resolve independently of process timezone", (
     instantToManilaDateTimeLocal(new Date("2026-09-10T02:00:00.000Z")),
     "2026-09-10T10:00",
   );
+});
+
+test("catalog availability validation retains the selected Manila times", () => {
+  const result = validateVehicleAvailabilityInput(
+    {
+      requestedStart: "2026-09-18T10:00",
+      requestedEnd: "2026-09-24T18:00",
+    },
+    new Date("2026-09-16T00:00:00.000Z"),
+  );
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.value.requestedStart, "2026-09-18T02:00:00.000Z");
+    assert.equal(result.value.requestedEnd, "2026-09-24T10:00:00.000Z");
+  }
+});
+
+test("catalog availability rejects incomplete or reversed trip windows", () => {
+  const incomplete = validateVehicleAvailabilityInput(
+    { requestedStart: "2026-09-18T10:00", requestedEnd: "" },
+    new Date("2026-09-16T00:00:00.000Z"),
+  );
+  const reversed = validateVehicleAvailabilityInput(
+    {
+      requestedStart: "2026-09-24T18:00",
+      requestedEnd: "2026-09-18T10:00",
+    },
+    new Date("2026-09-16T00:00:00.000Z"),
+  );
+  assert.equal(incomplete.ok, false);
+  assert.equal(reversed.ok, false);
+  if (!reversed.ok)
+    assert.equal(
+      reversed.errors.requestedEnd,
+      "Rental end must be after the start.",
+    );
 });
 
 test("malformed Manila local datetime and timezone-bearing input are rejected", () => {
