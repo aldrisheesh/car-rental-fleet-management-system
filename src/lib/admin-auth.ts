@@ -1,7 +1,6 @@
 import { customers, users } from "@/data/admin";
 import { getClientPrincipal, signOutWithCredentialsApi } from "./auth-client";
 
-const ADMIN_SESSION_KEY = "briahs-admin-session";
 const ADMIN_PROFILES_KEY = "briahs-admin-profiles";
 
 export const ADMIN_SESSION_CHANGED_EVENT = "briahs-admin-session-changed";
@@ -15,25 +14,6 @@ export type AdminRole =
 const ROLE_MIGRATIONS: Record<string, AdminRole> = {
   "Administrator / Staff": "Staff",
 };
-
-const ADMIN_USERS = [
-  {
-    userId: "U-01",
-    email: "owner@briahs.local",
-    password: "owner123",
-    name: "Karla Ignacio",
-    role: "Business Owner",
-  },
-  {
-    userId: "U-02",
-    email: "staff@briahs.local",
-    password: "staff123",
-    name: "Mike Rivera",
-    role: "Staff",
-  },
-] as const;
-
-type AdminUser = (typeof ADMIN_USERS)[number];
 
 export type AdminSession = {
   userId: string;
@@ -80,26 +60,20 @@ function emptyContactFields() {
 }
 
 function createSeedProfiles(): AdminProfilesById {
-  const credentialsByUserId = new Map(
-    ADMIN_USERS.map((user) => [user.userId, user]),
-  );
   const customersByEmail = new Map(
     customers.map((customer) => [customer.email, customer]),
   );
 
   return Object.fromEntries(
     users.map((user) => {
-      const credential = credentialsByUserId.get(
-        user.id as AdminUser["userId"],
-      );
       const customer = customersByEmail.get(user.email);
 
       return [
         user.id,
         {
           id: user.id,
-          name: user.name || credential?.name || "",
-          email: user.email || credential?.email || "",
+          name: user.name || "",
+          email: user.email || "",
           ...emptyContactFields(),
           phone: customer?.phone ?? "",
         },
@@ -203,16 +177,6 @@ export function setAdminProfile(profile: AdminProfile) {
   return normalizedProfile;
 }
 
-export function setAdminSession(session: AdminSession) {
-  void session;
-}
-
-export function signInAdmin(identifier: string, password: string) {
-  void identifier;
-  void password;
-  return false;
-}
-
 export function getAdminSession(): AdminSession | null {
   const principal = getClientPrincipal();
   if (
@@ -236,7 +200,6 @@ export function isAdminSignedIn() {
 
 export function signOutAdmin() {
   void signOutWithCredentialsApi();
-  if (hasBrowserStorage()) window.localStorage.removeItem(ADMIN_SESSION_KEY);
   notifyAdminSessionChanged();
 }
 

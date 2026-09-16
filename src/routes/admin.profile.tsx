@@ -8,7 +8,6 @@ import {
   getAdminSession,
   isStaffRole,
   setAdminProfile,
-  setAdminSession,
   type AdminProfile,
   type AdminSession,
 } from "@/lib/admin-auth";
@@ -106,10 +105,7 @@ function AdminProfilePage() {
     };
 
     const savedProfile = setAdminProfile(updatedProfile);
-    const updatedSession = { ...session, name: savedProfile.name };
-
-    setAdminSession(updatedSession);
-    setSession(updatedSession);
+    setSession({ ...session, name: savedProfile.name });
     setForm(savedProfile);
     setSaving(false);
     toast.success("Profile updated", {

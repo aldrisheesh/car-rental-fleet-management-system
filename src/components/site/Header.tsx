@@ -7,14 +7,7 @@ import { clearCustomerSession } from "@/lib/customer-auth";
 import type { AppPrincipal } from "@/lib/auth";
 import { isMyBookingsPath } from "@/lib/customer-navigation";
 
-const navItems = [
-  { to: "/" as const, label: "Home", exact: true },
-  { to: "/vehicles" as const, label: "Find a Car" },
-  { to: "/customer" as const, label: "My Bookings" },
-  { to: "/contact" as const, label: "Contact" },
-];
-
-export function Header() {
+export function Header({ homeMarketing = false }: { homeMarketing?: boolean }) {
   const navigate = useNavigate();
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
@@ -74,36 +67,58 @@ export function Header() {
         ? "Operations Staff"
         : "Sign in";
   const myBookingsActive = isMyBookingsPath(pathname);
+  const navigationItems = isCustomer
+    ? [{ to: "/customer" as const, label: "My Bookings" }]
+    : [];
+  const wordmarkDestination = isCustomer ? "/vehicles" : "/";
 
   return (
     <>
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>
-      <header className="customer-header">
-        <div className="customer-container customer-header-inner">
-          <Link to="/" className="customer-wordmark" translate="no">
-            Briah&apos;s Car Rental
+      <header className={`customer-header${homeMarketing ? " is-home-marketing" : ""}`}>
+        <div
+          className={`customer-container customer-header-inner${isCustomer ? " has-customer-journey" : ""}`}
+        >
+          <Link
+            to={wordmarkDestination}
+            className="customer-wordmark"
+            translate="no"
+          >
+            <span>Briah&apos;s</span>
+            <small>Car Rental</small>
           </Link>
 
-          <nav className="customer-desktop-nav" aria-label="Primary navigation">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.to}
-                activeOptions={item.exact ? { exact: true } : undefined}
-                activeProps={{ className: "customer-nav-link is-active" }}
-                className={`customer-nav-link${item.label === "My Bookings" && myBookingsActive ? " is-active" : ""}`}
-                aria-current={
-                  item.label === "My Bookings" && myBookingsActive
-                    ? "page"
-                    : undefined
-                }
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          {navigationItems.length ? (
+            <nav
+              className="customer-desktop-nav"
+              aria-label="Customer navigation"
+            >
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  activeProps={{ className: "customer-nav-link is-active" }}
+                  className={`customer-nav-link${myBookingsActive ? " is-active" : ""}`}
+                  aria-current={myBookingsActive ? "page" : undefined}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          ) : null}
+
+          {homeMarketing && !principal ? (
+            <nav className="customer-desktop-nav customer-marketing-nav" aria-label="Site navigation">
+              <a className="customer-nav-link" href="/vehicles">
+                Our cars
+              </a>
+              <a className="customer-nav-link" href="#rental-assurances">
+                How it works
+              </a>
+            </nav>
+          ) : null}
 
           <div className="customer-header-account">
             {principal ? (
@@ -162,23 +177,28 @@ export function Header() {
             className="customer-mobile-nav"
           >
             <nav className="customer-container" aria-label="Mobile navigation">
-              {navItems.map((item) => (
+              {navigationItems.map((item) => (
                 <Link
                   key={item.label}
                   to={item.to}
-                  activeOptions={item.exact ? { exact: true } : undefined}
                   activeProps={{ className: "customer-mobile-link is-active" }}
-                  className={`customer-mobile-link${item.label === "My Bookings" && myBookingsActive ? " is-active" : ""}`}
-                  aria-current={
-                    item.label === "My Bookings" && myBookingsActive
-                      ? "page"
-                      : undefined
-                  }
+                  className={`customer-mobile-link${myBookingsActive ? " is-active" : ""}`}
+                  aria-current={myBookingsActive ? "page" : undefined}
                   onClick={() => setMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
+              {homeMarketing && !principal ? (
+                <>
+                  <a className="customer-mobile-link" href="/vehicles" onClick={() => setMenuOpen(false)}>
+                    Our cars
+                  </a>
+                  <a className="customer-mobile-link" href="#rental-assurances" onClick={() => setMenuOpen(false)}>
+                    How it works
+                  </a>
+                </>
+              ) : null}
               {principal ? (
                 <>
                   {isCustomer ? (

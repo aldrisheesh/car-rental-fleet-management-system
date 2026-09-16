@@ -377,7 +377,10 @@ export function AdminShell() {
                     />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuContent
+                  align="end"
+                  className="admin-account-menu w-60"
+                >
                   <DropdownMenuLabel>
                     <span className="block text-sm font-semibold text-foreground">
                       {session.name}
