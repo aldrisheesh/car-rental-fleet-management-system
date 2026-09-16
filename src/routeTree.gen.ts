@@ -22,6 +22,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as VehiclesVehicleIdRouteImport } from './routes/vehicles.$vehicleId'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
 import { Route as BookingsBookingIdRouteImport } from './routes/bookings.$bookingId'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
 import { Route as ApiVehicleFinderRouteImport } from './routes/api.vehicle-finder'
 import { Route as ApiVehicleAnalyticsRouteImport } from './routes/api.vehicle-analytics'
@@ -69,6 +70,7 @@ import { Route as ApiAuthAccountStatusRouteImport } from './routes/api.auth.acco
 import { Route as AdminRequirementsBookingIdRouteImport } from './routes/admin.requirements.$bookingId'
 import { Route as AdminPaymentsPaymentIdRouteImport } from './routes/admin.payments.$paymentId'
 import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings.$bookingId'
+import { Route as ApiAuthOauthSessionRouteImport } from './routes/api.auth.oauth.session'
 
 const VehiclesRoute = VehiclesRouteImport.update({
   id: '/vehicles',
@@ -133,6 +135,11 @@ const CustomerProfileRoute = CustomerProfileRouteImport.update({
 const BookingsBookingIdRoute = BookingsBookingIdRouteImport.update({
   id: '/bookings/$bookingId',
   path: '/bookings/$bookingId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
@@ -372,6 +379,11 @@ const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
   path: '/$bookingId',
   getParentRoute: () => AdminBookingsRoute,
 } as any)
+const ApiAuthOauthSessionRoute = ApiAuthOauthSessionRouteImport.update({
+  id: '/api/auth/oauth/session',
+  path: '/api/auth/oauth/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -420,6 +432,7 @@ export interface FileRoutesByFullPath {
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
@@ -434,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/internal/reminders': typeof ApiInternalRemindersRoute
+  '/api/auth/oauth/session': typeof ApiAuthOauthSessionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -481,6 +495,7 @@ export interface FileRoutesByTo {
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
@@ -495,6 +510,7 @@ export interface FileRoutesByTo {
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/internal/reminders': typeof ApiInternalRemindersRoute
+  '/api/auth/oauth/session': typeof ApiAuthOauthSessionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -544,6 +560,7 @@ export interface FileRoutesById {
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer_/profile': typeof CustomerProfileRoute
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
@@ -558,6 +575,7 @@ export interface FileRoutesById {
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/internal/reminders': typeof ApiInternalRemindersRoute
+  '/api/auth/oauth/session': typeof ApiAuthOauthSessionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -608,6 +626,7 @@ export interface FileRouteTypes {
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
     | '/api/vehicles'
+    | '/auth/callback'
     | '/bookings/$bookingId'
     | '/customer/profile'
     | '/vehicles/$vehicleId'
@@ -622,6 +641,7 @@ export interface FileRouteTypes {
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
     | '/api/internal/reminders'
+    | '/api/auth/oauth/session'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -669,6 +689,7 @@ export interface FileRouteTypes {
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
     | '/api/vehicles'
+    | '/auth/callback'
     | '/bookings/$bookingId'
     | '/customer/profile'
     | '/vehicles/$vehicleId'
@@ -683,6 +704,7 @@ export interface FileRouteTypes {
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
     | '/api/internal/reminders'
+    | '/api/auth/oauth/session'
   id:
     | '__root__'
     | '/'
@@ -731,6 +753,7 @@ export interface FileRouteTypes {
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
     | '/api/vehicles'
+    | '/auth/callback'
     | '/bookings/$bookingId'
     | '/customer_/profile'
     | '/vehicles/$vehicleId'
@@ -745,6 +768,7 @@ export interface FileRouteTypes {
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
     | '/api/internal/reminders'
+    | '/api/auth/oauth/session'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -779,6 +803,7 @@ export interface RootRouteChildren {
   ApiVehicleAnalyticsRoute: typeof ApiVehicleAnalyticsRoute
   ApiVehicleFinderRoute: typeof ApiVehicleFinderRoute
   ApiVehiclesRoute: typeof ApiVehiclesRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   BookingsBookingIdRoute: typeof BookingsBookingIdRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
   ApiAuthAccountStatusRoute: typeof ApiAuthAccountStatusRoute
@@ -788,6 +813,7 @@ export interface RootRouteChildren {
   ApiAuthSignOutRoute: typeof ApiAuthSignOutRoute
   ApiAuthSignUpRoute: typeof ApiAuthSignUpRoute
   ApiInternalRemindersRoute: typeof ApiInternalRemindersRoute
+  ApiAuthOauthSessionRoute: typeof ApiAuthOauthSessionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -881,6 +907,13 @@ declare module '@tanstack/react-router' {
       path: '/bookings/$bookingId'
       fullPath: '/bookings/$bookingId'
       preLoaderRoute: typeof BookingsBookingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/vehicles': {
@@ -1212,6 +1245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
       parentRoute: typeof AdminBookingsRoute
     }
+    '/api/auth/oauth/session': {
+      id: '/api/auth/oauth/session'
+      path: '/api/auth/oauth/session'
+      fullPath: '/api/auth/oauth/session'
+      preLoaderRoute: typeof ApiAuthOauthSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1334,6 +1374,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVehicleAnalyticsRoute: ApiVehicleAnalyticsRoute,
   ApiVehicleFinderRoute: ApiVehicleFinderRoute,
   ApiVehiclesRoute: ApiVehiclesRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   BookingsBookingIdRoute: BookingsBookingIdRoute,
   CustomerProfileRoute: CustomerProfileRoute,
   ApiAuthAccountStatusRoute: ApiAuthAccountStatusRoute,
@@ -1343,6 +1384,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSignOutRoute: ApiAuthSignOutRoute,
   ApiAuthSignUpRoute: ApiAuthSignUpRoute,
   ApiInternalRemindersRoute: ApiInternalRemindersRoute,
+  ApiAuthOauthSessionRoute: ApiAuthOauthSessionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

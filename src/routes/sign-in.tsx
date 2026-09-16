@@ -28,6 +28,7 @@ import {
 } from "@/lib/customer-data";
 import {
   discoverAccountByEmail,
+  continueWithProvider,
   signInWithCredentialsApi,
   signUpWithCredentialsApi,
 } from "@/lib/auth-integration";
@@ -251,6 +252,23 @@ function AuthenticationPage() {
     window.location.assign("/");
   }
 
+  async function beginGoogleSignIn() {
+    setSubmitError("");
+    setNotice("");
+    setSubmitting(true);
+    const result = await continueWithProvider("google", googleSuccessPath());
+    if (!result.ok) {
+      setSubmitError(result.message);
+      setSubmitting(false);
+    }
+  }
+
+  function googleSuccessPath() {
+    if (search.returnTo) return search.returnTo;
+    if (search.vehicle) return `/booking${contextQuery()}`;
+    return "/customer";
+  }
+
   function contextQuery() {
     return encodeSearch({
       vehicle: search.vehicle,
@@ -419,11 +437,8 @@ function AuthenticationPage() {
                     <button
                       className="harbor-booking-google"
                       type="button"
-                      onClick={() =>
-                        setNotice(
-                          "Google sign-in will open here once the provider is connected.",
-                        )
-                      }
+                      onClick={() => void beginGoogleSignIn()}
+                      disabled={submitting}
                     >
                       <GoogleIcon /> Continue with Google
                     </button>

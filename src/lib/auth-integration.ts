@@ -1,4 +1,5 @@
 import type { AppPrincipal } from "./auth";
+import { getSupabaseBrowserClient } from "./supabase/client";
 
 export type AuthProvider = "google" | "facebook" | "apple";
 export type CredentialLoginInput = { identifier: string; password: string };
@@ -143,10 +144,33 @@ export async function signOutWithCredentialsApi() {
   }).catch(() => undefined);
 }
 
-export function getProviderStartUrl(_provider: AuthProvider) {
-  return "/sign-in";
+export function getProviderStartUrl(provider: AuthProvider, next?: string) {
+  if (provider !== "google" || typeof window === "undefined") return "/sign-in";
+
+  const callback = new URL("/auth/callback", window.location.origin);
+  if (next?.startsWith("/") && !next.startsWith("//")) {
+    callback.searchParams.set("next", next);
+  }
+  return callback.toString();
 }
 
-export function continueWithProvider(_provider: AuthProvider) {
-  // Social/OAuth authentication is intentionally out of scope for VS002.
+export async function continueWithProvider(
+  provider: AuthProvider,
+  next?: string,
+) {
+  if (provider !== "google") {
+    return { ok: false, message: "This sign-in provider is not available." };
+  }
+
+  const { error } = await getSupabaseBrowserClient().auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: getProviderStartUrl(provider, next) },
+  });
+
+  return error
+    ? {
+        ok: false,
+        message: "Unable to start Google sign-in. Please try again.",
+      }
+    : { ok: true };
 }
