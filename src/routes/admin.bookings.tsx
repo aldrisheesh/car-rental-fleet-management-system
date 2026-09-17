@@ -5,7 +5,7 @@ import {
   Outlet,
   useRouterState,
 } from "@tanstack/react-router";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Search, SlidersHorizontal } from "lucide-react";
 import {
   Card,
   DomainStatus,
@@ -149,12 +149,37 @@ function BookingsPage() {
     setStatus("");
     setBranch("");
   };
+  const attentionCount = rows.filter((booking) =>
+    [
+      booking.requirement_status,
+      booking.payment_status,
+      booking.booking_status,
+    ].some((value) =>
+      ["Pending Review", "Needs Resubmission", "Pending Verification"].includes(
+        value ?? "",
+      ),
+    ),
+  ).length;
+  const hasFilters = Boolean(query || status || branch);
 
   return (
-    <div>
+    <div className="admin-bookings-workspace">
       <PageHeader
         title="Rental requests"
         subtitle="Scan request, review, payment, and rental state."
+        eyebrow="Operations queue"
+        actions={
+          <div className="admin-bookings-overview" aria-label="Queue overview">
+            <span>
+              <strong>{state.status === "ready" ? bookings.length : "—"}</strong>
+              total requests
+            </span>
+            <span className={attentionCount ? "is-attention" : ""}>
+              <strong>{state.status === "ready" ? attentionCount : "—"}</strong>
+              need review
+            </span>
+          </div>
+        }
       />
 
       <Toolbar>
@@ -211,6 +236,15 @@ function BookingsPage() {
             ? `Showing ${rows.length} of ${bookings.length}`
             : "Loading requests…"}
         </span>
+        {hasFilters ? (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="touch-target admin-bookings-clear"
+          >
+            Clear filters
+          </button>
+        ) : null}
       </Toolbar>
 
       {state.status === "loading" ? (
@@ -258,14 +292,14 @@ function BookingsTable({ rows }: { rows: AdminBooking[] }) {
   return (
     <>
       <div className="hidden xl:block">
-        <Card>
+        <Card className="admin-bookings-table-card">
           <div
             className="overflow-x-auto"
             role="region"
             aria-label="Rental requests table"
             tabIndex={0}
           >
-            <table className="w-full min-w-[1120px] text-left text-sm">
+            <table className="admin-bookings-table w-full min-w-[1120px] text-left text-sm">
               <caption className="sr-only">
                 Rental requests and their current operational state
               </caption>
@@ -323,7 +357,7 @@ function BookingsTable({ rows }: { rows: AdminBooking[] }) {
 
 function BookingTableRow({ booking }: { booking: AdminBooking }) {
   return (
-    <tr className="align-top hover:bg-secondary/35">
+    <tr className="admin-bookings-row align-top">
       <td className="px-4 py-4">
         <div className="font-semibold">
           {booking.customer?.full_name ?? "Customer unavailable"}
@@ -331,8 +365,8 @@ function BookingTableRow({ booking }: { booking: AdminBooking }) {
         <div className="mt-1 text-xs text-muted-foreground">
           {booking.customer?.email ?? "Email unavailable"}
         </div>
-        <div className="mt-1 font-mono text-xs text-muted-foreground">
-          {booking.id}
+        <div className="admin-bookings-reference" title={booking.id}>
+          Ref. {shortBookingReference(booking.id)}
         </div>
       </td>
       <td className="px-4 py-4">
@@ -388,9 +422,10 @@ function BookingTableRow({ booking }: { booking: AdminBooking }) {
       <td className="px-4 py-4">
         <Link
           to={`/admin/bookings/${encodeURIComponent(booking.id)}` as never}
-          className="touch-target inline-flex items-center font-semibold text-primary underline underline-offset-4 hover:text-[#0d322e]"
+          className="admin-bookings-detail-link touch-target"
         >
-          Open detail
+          Review request
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </td>
     </tr>
@@ -399,7 +434,7 @@ function BookingTableRow({ booking }: { booking: AdminBooking }) {
 
 function BookingDisclosure({ booking }: { booking: AdminBooking }) {
   return (
-    <details className="rounded-lg border border-border bg-card">
+    <details className="admin-bookings-disclosure">
       <summary className="cursor-pointer list-none px-4 py-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -414,8 +449,8 @@ function BookingDisclosure({ booking }: { booking: AdminBooking }) {
               {booking.id}
             </p>
           </div>
-          <span className="shrink-0 text-sm font-semibold text-primary">
-            Details
+          <span className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
+            Review <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </span>
         </div>
       </summary>
@@ -442,13 +477,18 @@ function BookingDisclosure({ booking }: { booking: AdminBooking }) {
         </dl>
         <Link
           to={`/admin/bookings/${encodeURIComponent(booking.id)}` as never}
-          className="touch-target mt-4 inline-flex items-center font-semibold text-primary underline underline-offset-4"
+          className="admin-bookings-detail-link touch-target mt-4"
         >
-          Open detail
+          Review request
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>
     </details>
   );
+}
+
+function shortBookingReference(id: string) {
+  return id.slice(-8).toUpperCase();
 }
 
 function DisclosureField({ label, value }: { label: string; value: string }) {

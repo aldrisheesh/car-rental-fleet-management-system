@@ -8,8 +8,8 @@ import {
   CheckCircle2,
   CreditCard,
   Clock3,
+  Eye,
   FileCheck2,
-  ExternalLink,
   MapPin,
   RefreshCw,
   Upload,
@@ -28,6 +28,13 @@ import {
   VehicleFacts,
   VehicleImage,
 } from "@/components/customer/CustomerPrimitives";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   ApiRequestError,
   encodeSearch,
@@ -621,9 +628,6 @@ function RequirementsPanel({
   onRefresh: () => Promise<void>;
 }) {
   const [uploadingType, setUploadingType] = useState("");
-  const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(
-    null,
-  );
   const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -702,43 +706,6 @@ function RequirementsPanel({
     }
   }
 
-  async function openDocument(document: RequirementDocument) {
-    const preview = window.open("about:blank", "_blank");
-    if (!preview) {
-      setSubmitError("Allow pop-ups to open this secure document preview.");
-      return;
-    }
-    preview.opener = null;
-    setOpeningDocumentId(document.id);
-    setSubmitError("");
-    try {
-      const response = await fetch(
-        `/api/requirements?documentId=${encodeURIComponent(document.id)}`,
-        { credentials: "same-origin" },
-      );
-      const body = (await response.json().catch(() => null)) as {
-        url?: string;
-        message?: string;
-      } | null;
-      if (!response.ok || !body?.url) {
-        throw new Error(
-          body?.message ?? "This document is not available for secure preview.",
-        );
-      }
-      preview.location.replace(body.url);
-    } catch (requestError) {
-      preview.close();
-      setSubmitError(
-        errorFromResult(
-          requestError,
-          "This document is not available for secure preview.",
-        ),
-      );
-    } finally {
-      setOpeningDocumentId(null);
-    }
-  }
-
   return (
     <section
       className="booking-detail-section booking-requirements"
@@ -805,17 +772,7 @@ function RequirementsPanel({
                 </div>
                 <div className="booking-requirement-action">
                   {document ? (
-                    <button
-                      className="customer-secondary-button booking-document-preview-button"
-                      type="button"
-                      disabled={openingDocumentId === document.id}
-                      onClick={() => void openDocument(document)}
-                    >
-                      {openingDocumentId === document.id
-                        ? "Opening preview…"
-                        : "Preview document"}
-                      <ExternalLink size={16} aria-hidden="true" />
-                    </button>
+                    <RequirementDocumentPreview document={document} />
                   ) : null}
                   {editable ? (
                     <FileTarget
@@ -882,7 +839,198 @@ function RequirementsPanel({
           </button>
         )}
       </div>
+
     </section>
+  );
+}
+
+function RequirementDocumentPreview({
+  document,
+}: {
+  document: RequirementDocument;
+}) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewError, setPreviewError] = useState("");
+
+  async function openPreview() {
+    setOpen(true);
+    setLoading(true);
+    setPreviewUrl("");
+    setPreviewError("");
+    try {
+      const response = await fetch(
+        `/api/requirements?documentId=${encodeURIComponent(document.id)}`,
+        { credentials: "same-origin" },
+      );
+      const body = (await response.json().catch(() => null)) as {
+        url?: string;
+        message?: string;
+      } | null;
+      if (!response.ok || !body?.url) {
+        throw new Error(
+          body?.message ?? "This document is not available for secure preview.",
+        );
+      }
+      setPreviewUrl(body.url);
+    } catch (requestError) {
+      setPreviewError(
+        errorFromResult(
+          requestError,
+          "This document is not available for secure preview.",
+        ),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <>
+      <button
+        className="customer-secondary-button booking-document-preview-button"
+        type="button"
+        disabled={loading}
+        onClick={() => void openPreview()}
+      >
+        {loading ? "Loading preview…" : "Preview document"}
+        <Eye size={17} aria-hidden="true" />
+      </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[92vh] max-w-5xl overflow-hidden p-0">
+          <DialogHeader className="border-b border-[#d8d5cc] px-6 py-5 pr-14">
+            <DialogTitle>Document preview</DialogTitle>
+            <DialogDescription>
+              {document.original_filename} · {fileSizeLabel(document.size_bytes)}
+            </DialogDescription>
+          </DialogHeader>
+          <div
+            className="booking-document-preview-frame"
+            aria-busy={loading}
+          >
+            {previewError ? (
+              <StatusCallout tone="error" title="Preview unavailable">
+                {previewError}
+              </StatusCallout>
+            ) : previewUrl ? (
+              document.mime_type === "application/pdf" ? (
+                <PdfDocumentPreview
+                  source={previewUrl}
+                  filename={document.original_filename}
+                />
+              ) : (
+                <img
+                  className="booking-document-preview-image"
+                  src={previewUrl}
+                  alt={`Preview of ${document.original_filename}`}
+                />
+              )
+            ) : (
+              <p className="customer-helper">Loading secure document preview…</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function PdfDocumentPreview({
+  source,
+  filename,
+}: {
+  source: string;
+  filename: string;
+}) {
+  const [pages, setPages] = useState<string[]>([]);
+  const [renderError, setRenderError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    let loadingTask: { destroy: () => Promise<void> } | null = null;
+
+    async function renderPdf() {
+      setPages([]);
+      setRenderError("");
+      try {
+        const [{ GlobalWorkerOptions, getDocument }, response] =
+          await Promise.all([
+            import("pdfjs-dist"),
+            fetch(source, { credentials: "omit" }),
+          ]);
+        if (!response.ok) {
+          throw new Error("The secure PDF could not be loaded.");
+        }
+        GlobalWorkerOptions.workerSrc = new URL(
+          "pdfjs-dist/build/pdf.worker.min.mjs",
+          import.meta.url,
+        ).toString();
+        loadingTask = getDocument({
+          data: new Uint8Array(await response.arrayBuffer()),
+        });
+        const pdf = await loadingTask.promise;
+        const renderedPages: string[] = [];
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+          const page = await pdf.getPage(pageNumber);
+          const initialViewport = page.getViewport({ scale: 1 });
+          const scale = Math.min(1.5, 980 / initialViewport.width);
+          const viewport = page.getViewport({ scale });
+          const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.ceil(viewport.width * pixelRatio);
+          canvas.height = Math.ceil(viewport.height * pixelRatio);
+          const context = canvas.getContext("2d");
+          if (!context) throw new Error("The PDF preview canvas is unavailable.");
+          await page.render({
+            canvasContext: context,
+            transform: [pixelRatio, 0, 0, pixelRatio, 0, 0],
+            viewport,
+          }).promise;
+          renderedPages.push(canvas.toDataURL("image/png"));
+        }
+        if (!cancelled) setPages(renderedPages);
+        await pdf.destroy();
+      } catch (error) {
+        if (!cancelled) {
+          setRenderError(
+            errorFromResult(
+              error,
+              "This PDF could not be rendered for preview.",
+            ),
+          );
+        }
+      }
+    }
+
+    void renderPdf();
+    return () => {
+      cancelled = true;
+      void loadingTask?.destroy();
+    };
+  }, [source]);
+
+  if (renderError) {
+    return (
+      <StatusCallout tone="error" title="Preview unavailable">
+        {renderError}
+      </StatusCallout>
+    );
+  }
+  if (pages.length === 0) {
+    return <p className="customer-helper">Rendering secure PDF preview…</p>;
+  }
+  return (
+    <div className="booking-document-preview-pages">
+      {pages.map((page, index) => (
+        <img
+          alt={`${filename}, page ${index + 1}`}
+          className="booking-document-preview-image"
+          key={page}
+          src={page}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -935,7 +1083,12 @@ function RequirementDocumentList({
                 </p>
               </div>
             </div>
-            <span className="customer-helper">Current file is locked</span>
+            <div className="booking-requirement-action">
+              {document ? (
+                <RequirementDocumentPreview document={document} />
+              ) : null}
+              <span className="customer-helper">Current file is locked</span>
+            </div>
           </div>
         );
       })}

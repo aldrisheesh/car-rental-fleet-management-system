@@ -456,6 +456,154 @@
     box-shadow: 0 0 0 3px rgb(11 97 88 / 0.15);
   }
 
+  .admin-bookings-workspace .admin-bookings-overview {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: stretch;
+    border-left: 1px solid #d8d5cc;
+  }
+
+  .admin-bookings-overview span {
+    display: grid;
+    align-content: center;
+    gap: 0.125rem;
+    min-width: 7.25rem;
+    padding: 0 1rem;
+    color: #52635f;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+
+  .admin-bookings-overview span + span {
+    border-left: 1px solid #d8d5cc;
+  }
+
+  .admin-bookings-overview strong {
+    color: #182321;
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+  }
+
+  .admin-bookings-overview .is-attention strong {
+    color: #a45b13;
+  }
+
+  .admin-bookings-workspace > [class*="mb-5"] {
+    position: relative;
+    border-color: #d8d5cc;
+    box-shadow: 0 0.75rem 1.8rem -1.6rem rgb(18 63 58 / 0.35);
+  }
+
+  .admin-bookings-clear {
+    color: #123f3a;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: rgb(18 63 58 / 0.35);
+    text-underline-offset: 0.25rem;
+  }
+
+  .admin-bookings-clear:hover {
+    color: #0b6158;
+    text-decoration-color: currentcolor;
+  }
+
+  .admin-bookings-table-card {
+    overflow: hidden;
+    border-color: #d0cec5;
+    box-shadow: 0 1rem 2.25rem -2rem rgb(18 63 58 / 0.4);
+  }
+
+  .admin-bookings-table thead {
+    background: #f2f0e9;
+  }
+
+  .admin-bookings-table th {
+    letter-spacing: 0.015em;
+  }
+
+  .admin-bookings-row {
+    transition: background-color 160ms ease, box-shadow 160ms ease;
+  }
+
+  .admin-bookings-row:hover,
+  .admin-bookings-row:focus-within {
+    background: #f7faf7;
+    box-shadow: inset 3px 0 0 #0b6158;
+  }
+
+  .admin-bookings-reference {
+    width: fit-content;
+    margin-top: 0.45rem;
+    border: 1px solid #dedbd2;
+    border-radius: 0.25rem;
+    background: #fbfaf6;
+    padding: 0.18rem 0.38rem;
+    color: #66736e;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.035em;
+  }
+
+  .admin-bookings-detail-link {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid #b8cac3;
+    border-radius: 0.375rem;
+    background: #ffffff;
+    padding: 0.45rem 0.65rem;
+    color: #123f3a;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+  }
+
+  .admin-bookings-detail-link:hover {
+    border-color: #0b6158;
+    background: #eaf3ed;
+    color: #0b6158;
+    transform: translateY(-1px);
+  }
+
+  .admin-bookings-detail-link:active {
+    transform: translateY(0);
+  }
+
+  .admin-bookings-disclosure {
+    overflow: hidden;
+    border: 1px solid #d8d5cc;
+    border-radius: 0.625rem;
+    background: #ffffff;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+  }
+
+  .admin-bookings-disclosure:hover,
+  .admin-bookings-disclosure[open] {
+    border-color: #b8cac3;
+    box-shadow: 0 0.75rem 1.8rem -1.6rem rgb(18 63 58 / 0.35);
+  }
+
+  @media (max-width: 640px) {
+    .admin-bookings-workspace .admin-bookings-overview {
+      width: 100%;
+      border-top: 1px solid #d8d5cc;
+      border-left: 0;
+    }
+
+    .admin-bookings-overview span {
+      flex: 1 1 0;
+    }
+  }
+
   .admin-account-menu {
     --background: #f6f3ec;
     --popover: #ffffff;
@@ -7695,6 +7843,37 @@
   .booking-document-preview-button {
     width: 100%;
     justify-content: center;
+  }
+
+  .booking-document-preview-frame {
+    display: grid;
+    min-height: min(68vh, 48rem);
+    place-items: center;
+    background: #f7f6f1;
+  }
+
+  .booking-document-preview-frame > .booking-status-callout {
+    width: calc(100% - 3rem);
+    max-width: 42rem;
+  }
+
+  .booking-document-preview-pages {
+    display: grid;
+    width: 100%;
+    max-height: min(68vh, 48rem);
+    gap: 1rem;
+    overflow: auto;
+    padding: 1rem;
+  }
+
+  .booking-document-preview-image {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: min(68vh, 48rem);
+    margin: auto;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgb(24 35 33 / 0.18);
   }
 
   .booking-requirement-list-readonly .booking-requirement-row {
