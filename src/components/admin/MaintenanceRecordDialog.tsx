@@ -63,7 +63,7 @@ export function MaintenanceRecordDialog({
       open={open}
       onOpenChange={(nextOpen) => !saving && onOpenChange(nextOpen)}
     >
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="maintenance-record-dialog max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add maintenance record</DialogTitle>
         </DialogHeader>

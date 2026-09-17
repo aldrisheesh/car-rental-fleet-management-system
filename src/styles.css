@@ -456,6 +456,56 @@
     box-shadow: 0 0 0 3px rgb(11 97 88 / 0.15);
   }
 
+  /* Radix dialogs render in a portal outside .admin-app, so they need the
+     same light operational tokens explicitly applied at the dialog boundary. */
+  .maintenance-record-dialog {
+    --background: #f6f3ec;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --card-foreground: #182321;
+    --popover: #ffffff;
+    --popover-foreground: #182321;
+    --foreground: #182321;
+    --charcoal: #182321;
+    --primary: #123f3a;
+    --primary-foreground: #ffffff;
+    --secondary: #efede6;
+    --secondary-foreground: #182321;
+    --muted: #efede6;
+    --muted-foreground: #52635f;
+    --accent: #e77a3d;
+    --accent-foreground: #182321;
+    --destructive: #b43b3b;
+    --destructive-foreground: #ffffff;
+    --border: #d8d5cc;
+    --input: #d8d5cc;
+    --ring: #0b6158;
+    color: #182321;
+    color-scheme: light;
+  }
+
+  .maintenance-record-dialog .input-control {
+    border-color: #d8d5cc;
+    background: #ffffff;
+    color: #182321;
+    caret-color: #123f3a;
+  }
+
+  .maintenance-record-dialog .input-control::placeholder {
+    color: #52635f;
+    opacity: 1;
+  }
+
+  .maintenance-record-dialog .input-control:hover:not(:disabled) {
+    border-color: #88a298;
+  }
+
+  .maintenance-record-dialog .input-control:focus,
+  .maintenance-record-dialog .input-control:focus-visible {
+    border-color: #0b6158;
+    box-shadow: 0 0 0 3px rgb(11 97 88 / 0.15);
+  }
+
   .admin-bookings-workspace .admin-bookings-overview {
     display: flex;
     min-height: 2.75rem;
