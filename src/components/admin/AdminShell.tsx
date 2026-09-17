@@ -55,12 +55,12 @@ type NavItem = {
 
 const ownerNav: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin/decisions", label: "Decision Support", icon: Brain },
   { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
   { to: "/admin/fleet", label: "Fleet", icon: Car },
   { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/admin/maintenance", label: "Maintenance", icon: Wrench },
   { to: "/admin/payments", label: "Payments", icon: CreditCard },
-  { to: "/admin/decisions", label: "Decision Support", icon: Brain },
   { to: "/admin/reports", label: "Reports", icon: BarChart3 },
   { to: "/admin/users", label: "Users & Roles", icon: ShieldCheck },
   { to: "/admin/branches", label: "Branches", icon: Building2 },
@@ -102,6 +102,7 @@ function SidebarLinks({
     <ul className="space-y-1">
       {items.map((item) => {
         const active = isActive(pathname, item);
+        const featured = item.to === "/admin/decisions";
         const Icon = item.icon;
         return (
           <li key={item.to}>
@@ -110,7 +111,7 @@ function SidebarLinks({
               activeOptions={item.exact ? { exact: true } : undefined}
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
-              className={`group flex min-h-11 items-center gap-3 rounded-md border border-transparent px-3 text-sm font-medium transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
+              className={`group flex min-h-11 items-center gap-3 rounded-md border border-transparent px-3 text-sm font-medium transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "border-primary/10 bg-[#e7efec] text-primary" : featured ? "bg-[#f2f8fc] text-primary hover:bg-[#e7f1f7]" : "text-muted-foreground"}`}
             >
               <Icon
                 aria-hidden="true"
@@ -118,6 +119,11 @@ function SidebarLinks({
                 strokeWidth={1.9}
               />
               <span className="min-w-0 truncate">{item.label}</span>
+              {featured && !active ? (
+                <span className="ml-auto rounded-full bg-[#d6eaf4] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#2e647b]">
+                  Insights
+                </span>
+              ) : null}
             </Link>
           </li>
         );
@@ -250,12 +256,12 @@ export function AdminShell() {
   if (!session) return null;
 
   return (
-    <div className="admin-app flex min-h-screen overflow-x-hidden">
+    <div className="admin-app min-h-screen overflow-x-hidden">
       <a className="skip-link" href="#admin-main">
         Skip to main content
       </a>
 
-      <aside className="sticky top-0 hidden h-screen w-[236px] shrink-0 flex-col border-r border-border bg-white lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-border bg-white lg:flex">
         <Link to="/admin" className="border-b border-border px-7 py-6">
           <div className="text-[1.65rem] font-semibold leading-7 tracking-[-0.045em] text-primary">
             Briah&apos;s Car Rental
@@ -289,7 +295,7 @@ export function AdminShell() {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col lg:pl-[236px]">
         <header className="sticky top-0 z-30 border-b border-border bg-white">
           <div className="flex min-h-[76px] items-center gap-4 px-5 md:px-8 xl:px-10">
             <button

@@ -4,6 +4,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlertCircle,
   Bell,
+  Brain,
   CalendarDays,
   Car,
   CircleAlert,
@@ -301,6 +302,14 @@ function DashboardContent({
         </div>
       ) : null}
 
+      {!staffView ? (
+        <DecisionSupportHighlight
+          submittedBookings={data.base.operational.submittedBookings}
+          readinessAttention={data.base.operational.readinessAttention}
+          availableVehicles={data.base.operational.availableVehicles}
+        />
+      ) : null}
+
       <Card>
         <CardHeader
           title="Needs attention"
@@ -421,6 +430,92 @@ function DashboardContent({
         />
       )}
     </div>
+  );
+}
+
+function DecisionSupportHighlight({
+  submittedBookings,
+  readinessAttention,
+  availableVehicles,
+}: {
+  submittedBookings: number;
+  readinessAttention: number;
+  availableVehicles: number;
+}) {
+  const recommendations = [
+    {
+      label: "Review incoming demand",
+      detail:
+        submittedBookings > 0
+          ? `${submittedBookings} submitted request${submittedBookings === 1 ? "" : "s"} can inform the next allocation decision.`
+          : "No submitted requests are awaiting operational review.",
+      value: submittedBookings,
+    },
+    {
+      label: "Validate fleet readiness",
+      detail:
+        readinessAttention > 0
+          ? `${readinessAttention} vehicle${readinessAttention === 1 ? " requires" : "s require"} readiness attention before supply decisions.`
+          : "The current fleet has no readiness attention recorded.",
+      value: readinessAttention,
+    },
+    {
+      label: "Assess available supply",
+      detail: `${availableVehicles} vehicle${availableVehicles === 1 ? " is" : "s are"} currently available for operational planning.`,
+      value: availableVehicles,
+    },
+  ];
+
+  return (
+    <section
+      aria-labelledby="decision-support-highlight"
+      className="mb-5 overflow-hidden rounded-lg border border-[#b9d6e5] bg-[#f2f8fc]"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#cfe1eb] px-5 py-5">
+        <div className="flex min-w-0 gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-primary text-white">
+            <Brain aria-hidden="true" className="h-6 w-6" />
+          </span>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#2e647b]">
+              Decision support
+            </p>
+            <h2
+              id="decision-support-highlight"
+              className="mt-1 text-xl font-semibold tracking-[-0.02em] text-foreground"
+            >
+              Make the next operational move with confidence.
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm leading-5 text-muted-foreground">
+              Use canonical demand, supply, and fleet-readiness signals to focus
+              decisions where they matter most.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/admin/decisions"
+          className="touch-target inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-[#0d322e]"
+        >
+          Open decision support
+          <span aria-hidden="true" className="ml-2 text-lg">
+            →
+          </span>
+        </Link>
+      </div>
+      <div className="grid divide-y divide-[#cfe1eb] md:grid-cols-3 md:divide-x md:divide-y-0">
+        {recommendations.map((recommendation) => (
+          <div key={recommendation.label} className="px-5 py-4">
+            <p className="text-2xl font-semibold tabular-nums tracking-[-0.03em] text-primary">
+              {recommendation.value}
+            </p>
+            <p className="mt-1 font-semibold">{recommendation.label}</p>
+            <p className="mt-1 text-sm leading-5 text-muted-foreground">
+              {recommendation.detail}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

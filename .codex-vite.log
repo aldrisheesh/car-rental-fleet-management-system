@@ -1,0 +1,50 @@
+
+> dev
+> vite dev --host 127.0.0.1 --port 5173
+
+7:18:34 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+
+  VITE v7.3.3  ready in 6903 ms
+
+  ➜  Local:   http://127.0.0.1:5173/
+  ➜  press h + enter to show help
+7:19:08 PM [vite] (client) ✨ new dependencies optimized: @tanstack/react-query, sonner, @radix-ui/react-popover, react-day-picker, clsx, tailwind-merge, @radix-ui/react-slot, class-variance-authority, @supabase/supabase-js
+7:19:08 PM [vite] (client) ✨ optimized dependencies changed. reloading
+7:19:21 PM [vite] (client) ✨ new dependencies optimized: lucide-react
+7:19:21 PM [vite] (client) ✨ optimized dependencies changed. reloading
+7:24:12 PM [vite] .env.local changed, restarting server...
+7:24:13 PM [vite] server restarted.
+7:25:22 PM [vite] .env.local changed, restarting server...
+7:25:23 PM [vite] .env.local changed, restarting server...
+7:25:23 PM [vite] server restarted.
+7:25:23 PM [vite] .env.local changed, restarting server...
+7:25:23 PM [vite] .env.local changed, restarting server...
+7:25:24 PM [vite] .env.local changed, restarting server...
+7:25:24 PM [vite] .env.local changed, restarting server...
+7:25:24 PM [vite] .env.local changed, restarting server...
+7:25:24 PM [vite] .env.local changed, restarting server...
+7:25:25 PM [vite] .env.local changed, restarting server...
+7:25:25 PM [vite] server restarted.
+7:28:04 PM [vite] .env.local changed, restarting server...
+7:28:04 PM [vite] .env.local changed, restarting server...
+7:28:04 PM [vite] server restarted.
+7:28:04 PM [vite] .env.local changed, restarting server...
+7:28:06 PM [vite] server restarted.
+7:28:14 PM [vite] .env.local changed, restarting server...
+7:28:15 PM [vite] server restarted.
+7:28:19 PM [vite] .env.local changed, restarting server...
+7:28:19 PM [vite] server restarted.
+7:32:36 PM [vite] (client) ✨ new dependencies optimized: @radix-ui/react-dialog
+7:32:36 PM [vite] (client) ✨ optimized dependencies changed. reloading
+7:39:15 PM [vite] (client) ✨ new dependencies optimized: @radix-ui/react-dropdown-menu
+7:39:15 PM [vite] (client) ✨ optimized dependencies changed. reloading
+7:51:02 PM [vite] (client) hmr update /src/styles.css?direct, /src/components/admin/AdminShell.tsx
+7:51:02 PM [vite] (ssr) page reload src/components/admin/AdminShell.tsx
+7:51:03 PM [vite] (client) hmr update /src/styles.css?direct, /src/routes/admin.index.tsx, /src/routes/admin.index.tsx?tsr-split=component
+7:51:03 PM [vite] (ssr) page reload src/routes/admin.index.tsx
+7:53:30 PM [vite] (client) ✨ new dependencies optimized: recharts
+7:53:30 PM [vite] (client) ✨ optimized dependencies changed. reloading
+7:58:14 PM [vite] (client) hmr update /src/styles.css?direct, /src/components/admin/AdminShell.tsx
+7:58:14 PM [vite] (ssr) page reload src/components/admin/AdminShell.tsx
+8:05:30 PM [vite] (client) ✨ new dependencies optimized: @radix-ui/react-alert-dialog
+8:05:30 PM [vite] (client) ✨ optimized dependencies changed. reloading
