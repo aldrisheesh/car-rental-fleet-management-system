@@ -24,10 +24,13 @@ function OAuthCallbackPage() {
     let cancelled = false;
 
     async function completeSignIn() {
+      if (!code) {
+        setMessage("Google sign-in did not return an authorization code.");
+        return;
+      }
+
       const client = getSupabaseBrowserClient();
-      const result = code
-        ? await client.auth.exchangeCodeForSession(code)
-        : await client.auth.getSession();
+      const result = await client.auth.exchangeCodeForSession(code);
       const session = result.data.session;
       if (result.error || !session) {
         setMessage("Unable to complete Google sign-in. Please try again.");

@@ -13,7 +13,9 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true,
+        // The callback route explicitly exchanges the one-time PKCE code and
+        // hands the resulting session to the existing httpOnly-cookie layer.
+        detectSessionInUrl: false,
         flowType: "pkce",
       },
     });
