@@ -24,14 +24,12 @@ function OAuthCallbackPage() {
     let cancelled = false;
 
     async function completeSignIn() {
-      if (!code) {
-        setMessage("Google sign-in did not return an authorization code.");
-        return;
-      }
-
       const client = getSupabaseBrowserClient();
-      const { data, error } = await client.auth.exchangeCodeForSession(code);
-      if (error || !data.session) {
+      const result = code
+        ? await client.auth.exchangeCodeForSession(code)
+        : await client.auth.getSession();
+      const session = result.data.session;
+      if (result.error || !session) {
         setMessage("Unable to complete Google sign-in. Please try again.");
         return;
       }
@@ -41,8 +39,8 @@ function OAuthCallbackPage() {
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          accessToken: data.session.access_token,
-          refreshToken: data.session.refresh_token,
+          accessToken: session.access_token,
+          refreshToken: session.refresh_token,
           next,
         }),
       });
