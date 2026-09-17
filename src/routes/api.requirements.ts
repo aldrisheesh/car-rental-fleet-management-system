@@ -92,10 +92,21 @@ async function mutate({ request }: { request: Request }) {
     }
     if (set.data.status !== "Not Submitted" && set.data.status !== "Needs Resubmission") return error("Requirements are already pending review and cannot be changed.", 409);
     if (action === "submit") {
-      const current = await client.from("renter_requirement_documents").select("requirement_type").eq("requirement_set_id", set.data.id).eq("is_current", true);
-      if (current.error || !TYPES.every((t) => current.data?.some((d) => d.requirement_type === t))) return error("Upload both required documents before submitting.");
-      const updated = await client.from("renter_requirement_sets").update({ status: "Pending Review", submitted_at: new Date().toISOString() }).eq("id", set.data.id).eq("status", "Not Submitted").select("*").single();
-      if (updated.error) return error("Unable to submit requirements.", 503); return Response.json({ requirementSet: updated.data });
+      const submitted = await client.rpc("submit_renter_requirements", {
+        p_requirement_set_id: set.data.id,
+        p_customer_id: principal.userId,
+      });
+      if (submitted.error)
+        return error(
+          submitted.error.message === "documents_incomplete"
+            ? "Upload both required documents before submitting."
+            : submitted.error.message === "not_submittable" ||
+                submitted.error.message === "booking_not_submittable"
+              ? "Requirements can no longer be submitted for this rental request. Refresh and try again."
+              : "Unable to submit requirements.",
+          submitted.error.message === "documents_incomplete" ? 409 : 503,
+        );
+      return Response.json({ status: "Pending Review" });
     }
     const type = String(form.get("requirementType") || ""); if (!(TYPES as readonly string[]).includes(type)) return error("Unsupported requirement type.");
     if (set.data.status === "Needs Resubmission") {

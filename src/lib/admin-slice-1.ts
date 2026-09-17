@@ -39,7 +39,9 @@ export function bookingActionAvailability(facts: BookingActionFacts) {
     assign:
       facts.bookingStatus === "Submitted" &&
       facts.selectedVehicle &&
-      !facts.selectedVehicleConflict,
+      !facts.selectedVehicleConflict &&
+      facts.requirementsStatus === "Verified" &&
+      facts.paymentStatus === "Verified",
     confirm:
       facts.bookingStatus === "Submitted" &&
       facts.assignedVehicle &&

@@ -3,7 +3,10 @@ import { createHash } from "node:crypto";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { projectCustomerRental } from "@/lib/rental-projection";
-import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
+import {
+  isAtLeastNextManilaCalendarDay,
+  manilaDateTimeLocalToInstant,
+} from "@/lib/business-time";
 import { FINDER_BASELINE, revalidateFinderBookingBasis } from "@/lib/finder-booking";
 import { evaluateCanonicalVehicleFinder } from "@/lib/vehicle-finder.server";
 import { BOOKING_READ_SELECT } from "@/lib/booking-reads";
@@ -17,12 +20,14 @@ export const Route = createFileRoute("/api/bookings")({
   server: { handlers: { GET: readBookings, POST: async ({ request }) => { const body = await request.clone().json().catch(() => null) as Record<string, unknown> | null; return body?.action === "assign" || body?.action === "confirm" || body?.action === "release" || body?.action === "return" ? mutateBooking({ request }) : createBooking({ request }); } } },
 });
 
-async function readBookings() {
+async function readBookings({ request }: { request: Request }) {
   try {
     const principal = await requirePrincipal();
     const client = getSupabaseServerClient();
     let query = (client as any).from("booking_requests").select(BOOKING_READ_SELECT).order("created_at", { ascending: false });
     if (principal.role === "Customer/Renter") query = query.eq("customer_id", principal.userId);
+    else if (new URL(request.url).searchParams.get("includeDraft") !== "1")
+      query = query.neq("booking_status", "Draft");
     const result = await query;
     if (result.error) return errorResponse("Unable to load booking requests.", 503);
     const rows = result.data ?? [];
@@ -81,7 +86,7 @@ async function mutateBooking({ request }: { request: Request }) {
     const client = getSupabaseServerClient() as any;
     const rpc = action === "assign" ? await client.rpc("assign_booking_vehicle", { p_booking_id: bookingId, p_vehicle_id: text(body?.vehicleId), p_actor_id: principal.userId, p_assignment_note: optionalText(body?.assignmentNote), p_substitution_acknowledged: body?.substitutionAcknowledged === true, p_cross_branch_acknowledged: body?.crossBranchAcknowledged === true }) : action === "confirm" ? await client.rpc("confirm_booking_atomic", { p_booking_id: bookingId, p_actor_id: principal.userId, p_expected_vehicle_id: expectedVehicleId, p_expected_assigned_at: expectedAssignedAt }) : action === "release" ? await client.rpc("release_vehicle_start_rental", { p_booking_id: bookingId, p_actor_id: principal.userId, p_expected_vehicle_id: expectedVehicleId, p_expected_confirmed_at: text(body?.expectedConfirmedAt), p_release_odometer: body?.releaseOdometer == null || body.releaseOdometer === "" ? null : Number(body.releaseOdometer), p_release_fuel_level: text(body?.releaseFuelLevel) || "Other/Unknown", p_release_condition_summary: text(body?.releaseConditionSummary), p_existing_damage_notes: optionalText(body?.existingDamageNotes), p_agreement_acknowledged: body?.agreementAcknowledged === true, p_condition_acknowledged: body?.conditionAcknowledged === true, p_return_schedule_acknowledged: body?.returnScheduleAcknowledged === true }) : await client.rpc("return_vehicle_close_rental", { p_rental_id: text(body?.rentalId), p_actor_id: principal.userId, p_expected_booking_id: text(body?.expectedBookingId), p_expected_vehicle_id: text(body?.expectedVehicleId), p_expected_started_at: text(body?.expectedStartedAt), p_return_odometer: returnOdometer, p_return_fuel_level: text(body?.returnFuelLevel) || "Other/Unknown", p_return_condition_summary: text(body?.returnConditionSummary), p_observed_damage_notes: optionalText(body?.observedDamageNotes), p_return_remarks: optionalText(body?.returnRemarks) });
     if (rpc.error) {
-      const map: Record<string,string> = { forbidden:"Forbidden.", booking_not_found:"Booking not found.", booking_not_submitted:"Booking is no longer submitted.", booking_not_confirmed:"Booking must be Confirmed before release or return.", vehicle_unavailable:"Assigned vehicle is unavailable.", vehicle_conflict:"Vehicle conflicts with another confirmed booking.", vehicle_already_rented:"Assigned vehicle already has an active rental.", booking_already_released:"This booking has already been released.", stale_release:"Assignment or confirmation changed; reload before release.", release_expectation_required:"Reload the confirmed booking before release.", invalid_odometer:"Odometer must be a non-negative number.", invalid_fuel_level:"Invalid fuel level.", condition_required:"Condition summary is required.", substitution_ack_required:"Substitution acknowledgement and note are required.", cross_branch_ack_required:"Cross-branch acknowledgement and note are required.", requirements_not_verified:"Requirements must be Verified before confirmation.", payment_not_verified:"Payment must be Verified before confirmation.", assignment_required:"Assign an active vehicle before confirmation.", assignment_expectation_required:"Reload the current assignment before confirming.", stale_assignment:"Assignment changed; reload before confirming.", rental_not_found:"Rental not found.", rental_not_active:"Rental is already returned or not active.", stale_rental:"Rental changed; reload before returning.", odometer_below_release:"Return odometer cannot be below the release reading.", vehicle_not_found:"Vehicle not found." };
+      const map: Record<string,string> = { forbidden:"Forbidden.", booking_not_found:"Booking not found.", booking_not_submitted:"Booking is no longer submitted.", booking_not_confirmed:"Booking must be Confirmed before release or return.", vehicle_unavailable:"Assigned vehicle is unavailable.", vehicle_maintenance_unready:"Assigned vehicle is blocked by maintenance or a due service requirement.", vehicle_conflict:"Vehicle conflicts with another confirmed booking.", vehicle_already_rented:"Assigned vehicle already has an active rental.", booking_already_released:"This booking has already been released.", stale_release:"Assignment or confirmation changed; reload before release.", release_expectation_required:"Reload the confirmed booking before release.", invalid_odometer:"Odometer must be a non-negative number.", invalid_fuel_level:"Invalid fuel level.", condition_required:"Condition summary is required.", substitution_ack_required:"Substitution acknowledgement and note are required.", cross_branch_ack_required:"Cross-branch acknowledgement and note are required.", requirements_not_verified:"Requirements must be Verified before confirmation.", payment_not_verified:"Payment must be Verified before confirmation.", assignment_required:"Assign an active vehicle before confirmation.", assignment_expectation_required:"Reload the current assignment before confirming.", stale_assignment:"Assignment changed; reload before confirming.", rental_not_found:"Rental not found.", rental_not_active:"Rental is already returned or not active.", stale_rental:"Rental changed; reload before returning.", odometer_below_release:"Return odometer cannot be below the release reading.", vehicle_not_found:"Vehicle not found." };
       const message = rpc.error.code === "23505" ? "Assigned vehicle already has an active rental." : (map[rpc.error.message] || "Unable to update booking.");
       return errorResponse(message, 409);
     }
@@ -108,6 +113,7 @@ async function createBooking({ request }: { request: Request }) {
     if (!requestedVehicleId || !pickupBranchId || !returnBranchId || !pickupAt || !returnAt || !purpose || !option || !isUuid(idempotencyKey)) return errorResponse("Required booking fields are missing.");
     const pickupDate = parseBookingInstant(pickupAt), returnDate = parseBookingInstant(returnAt);
     if (!pickupDate || !returnDate || returnDate <= pickupDate) return errorResponse("Return must be after pickup.");
+    if (!isAtLeastNextManilaCalendarDay(pickupDate)) return errorResponse("Bookings must be made at least one calendar day ahead. Same-day booking is not available.");
     if (option !== "pickup" && option !== "delivery") return errorResponse("Invalid pickup or delivery option.");
     if (option === "delivery" && (!pickupLocation || !dropoffLocation)) return errorResponse("Pickup and drop-off locations are required for delivery.");
     if (seats !== null && (!Number.isInteger(seats) || seats <= 0)) return errorResponse("Preferred seat count must be positive.");
@@ -177,6 +183,7 @@ async function createBooking({ request }: { request: Request }) {
     });
     if (result.error) {
       if (result.error.message?.includes("idempotency_request_mismatch")) return errorResponse("This submission key was already used for different booking details. Please submit again.", 409);
+      if (result.error.message?.includes("booking_lead_time_required")) return errorResponse("Bookings must be made at least one calendar day ahead. Same-day booking is not available.");
       return errorResponse("Unable to create booking request.", 400);
     }
     return Response.json(result.data, { status: 201 });

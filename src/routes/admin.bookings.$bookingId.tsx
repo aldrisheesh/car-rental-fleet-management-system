@@ -8,6 +8,7 @@ import {
   CarFront,
   CheckCircle2,
   Clock3,
+  ExternalLink,
   FileCheck2,
   Gauge,
   MapPin,
@@ -34,9 +35,12 @@ import {
   formatAdminDateTime,
   formatAdminDateRange,
   formatAdminMoney,
+  requirementReviewGate,
   rentalState,
   statusTone,
   type AdminBooking,
+  type AdminRequirementDocument,
+  type AdminRequirementReview,
   type AdminPayment,
   type AdminRequirementsResponse,
   type AdminVehicle,
@@ -95,7 +99,7 @@ function BookingDetailPage() {
     setState({ status: "loading" });
     setFeedback(null);
     try {
-      const response = await fetch("/api/bookings", {
+      const response = await fetch("/api/bookings?includeDraft=1", {
         credentials: "same-origin",
       });
       const parsed = await parseAdminBookingResponse(response, {
@@ -429,6 +433,14 @@ function BookingDetailPage() {
         canReturn={canReturn}
       />
 
+      {ownerView && requirements ? (
+        <BookingRequirementsReview
+          bookingId={bookingId}
+          requirements={requirements}
+          onRefresh={load}
+        />
+      ) : null}
+
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.9fr)_minmax(260px,0.72fr)]">
         <div className="space-y-5">
           <BookingRequestCard booking={booking} />
@@ -497,6 +509,163 @@ function BookingDetailPage() {
       </div>
     </div>
   );
+}
+
+type RequirementReviewStatus = "Pending Review" | "Needs Resubmission" | "Verified";
+
+function BookingRequirementsReview({
+  bookingId,
+  requirements,
+  onRefresh,
+}: {
+  bookingId: string;
+  requirements: AdminRequirementsResponse;
+  onRefresh: () => Promise<void>;
+}) {
+  const requirementSet = requirements.requirementSet;
+  const documents = requirements.requiredTypes
+    .map((type) =>
+      requirements.documents.find(
+        (document) =>
+          document.requirement_type === type && document.is_current !== false,
+      ),
+    )
+    .filter((document): document is AdminRequirementDocument => Boolean(document));
+  const review = requirements.reviews?.[0] ?? null;
+  const hasBothDocuments = requirements.requiredTypes.every((type) =>
+    documents.some((document) => document.requirement_type === type),
+  );
+  const canReview = requirementSet?.status === "Pending Review" && hasBothDocuments;
+  const [governmentIdOutcome, setGovernmentIdOutcome] = useState("");
+  const [governmentIdReason, setGovernmentIdReason] = useState("");
+  const [driversLicenseOutcome, setDriversLicenseOutcome] = useState("");
+  const [driversLicenseReason, setDriversLicenseReason] = useState("");
+  const [identityConsistency, setIdentityConsistency] = useState("");
+  const [ltoOutcome, setLtoOutcome] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ tone: "error" | "success"; text: string } | null>(null);
+
+  useEffect(() => {
+    setGovernmentIdOutcome(review?.government_id_outcome ?? "");
+    setGovernmentIdReason(review?.government_id_reason ?? "");
+    setDriversLicenseOutcome(review?.drivers_license_outcome ?? "");
+    setDriversLicenseReason(review?.drivers_license_reason ?? "");
+    setIdentityConsistency(review?.identity_consistency ?? "");
+    setLtoOutcome(review?.lto_outcome ?? "");
+    setMessage(null);
+  }, [review]);
+
+  const gate = requirementReviewGate({
+    governmentIdOutcome,
+    driversLicenseOutcome,
+    identityConsistency,
+    ltoOutcome,
+  });
+
+  async function openDocument(document: AdminRequirementDocument) {
+    const preview = window.open("about:blank", "_blank");
+    if (!preview) {
+      setMessage({ tone: "error", text: "Allow pop-ups to open this secure document preview." });
+      return;
+    }
+    preview.opener = null;
+    setOpeningDocumentId(document.id);
+    try {
+      const response = await fetch(`/api/requirements?documentId=${encodeURIComponent(document.id)}`, { credentials: "same-origin" });
+      const body = (await response.json().catch(() => null)) as { url?: string; message?: string } | null;
+      if (!response.ok || !body?.url) throw new Error(body?.message ?? "This document is not available for secure preview.");
+      preview.location.replace(body.url);
+    } catch (error) {
+      preview.close();
+      setMessage({ tone: "error", text: error instanceof Error ? error.message : "This document is not available for secure preview." });
+    } finally {
+      setOpeningDocumentId(null);
+    }
+  }
+
+  async function saveReview(resultingStatus: RequirementReviewStatus) {
+    if (!requirementSet || !canReview) return;
+    if (!governmentIdOutcome || !driversLicenseOutcome || !identityConsistency || !ltoOutcome) {
+      setMessage({ tone: "error", text: "Complete every review outcome before saving." });
+      return;
+    }
+    if (resultingStatus === "Verified" && !gate.canVerify) {
+      setMessage({ tone: "error", text: "Verification requires accepted documents, consistent identity, and an LTO Clear result." });
+      return;
+    }
+    if (resultingStatus === "Needs Resubmission" && (!gate.canResubmit || (!governmentIdReason.trim() && !driversLicenseReason.trim()))) {
+      setMessage({ tone: "error", text: "A replacement decision needs a flagged document and customer-facing reason." });
+      return;
+    }
+    const governmentId = documents.find((document) => document.requirement_type === "Valid Government ID");
+    const driversLicense = documents.find((document) => document.requirement_type === "Driver's License");
+    if (!governmentId || !driversLicense) return;
+    setSaving(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/requirements", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "review", requirementSetId: requirementSet.id,
+          governmentIdDocumentId: governmentId.id, governmentIdVersion: governmentId.version,
+          governmentIdOutcome, governmentIdReason: governmentIdReason.trim(),
+          driversLicenseDocumentId: driversLicense.id, driversLicenseVersion: driversLicense.version,
+          driversLicenseOutcome, driversLicenseReason: driversLicenseReason.trim(),
+          identityConsistency, ltoOutcome, resultingStatus,
+        }),
+      });
+      const body = (await response.json().catch(() => null)) as { message?: string } | null;
+      if (!response.ok) throw new Error(body?.message ?? "Unable to save the requirements review.");
+      await onRefresh();
+      setMessage({ tone: "success", text: resultingStatus === "Verified" ? "Requirements verified. Payment is now available to the customer." : "Requirements returned for correction. The customer must replace the flagged document before this request returns to review." });
+    } catch (error) {
+      setMessage({ tone: "error", text: error instanceof Error ? error.message : "Unable to save the requirements review." });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Card className="mb-5">
+      <CardHeader
+        title="Requirements gate"
+        hint="Review the documents in this rental request. Payment stays locked until this gate is verified."
+        right={<DomainStatus label={requirementSet?.status ?? "Not Submitted"} tone={statusTone(requirementSet?.status ?? "Not Submitted")} />}
+      />
+      {message ? <p role={message.tone === "error" ? "alert" : "status"} className={`mx-5 mt-5 rounded-md border px-3 py-2 text-sm ${message.tone === "error" ? "border-[#edc9c5] bg-[#fff5f3] text-[#8d302f]" : "border-[#b9d9c8] bg-[#f1faf4] text-[#267a55]"}`}>{message.text}</p> : null}
+      {!requirementSet ? (
+        <EmptyState title="Requirements not submitted" description="The customer has saved trip details but has not submitted documents, so this request is not in the admin approval queue." />
+      ) : (
+        <div className="grid gap-5 px-5 py-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
+          <div className="space-y-3">
+            {requirements.requiredTypes.map((type) => {
+              const document = documents.find((item) => item.requirement_type === type);
+              return <div key={type} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border px-4 py-3 text-sm"><div><p className="font-semibold">{type}</p><p className="mt-1 text-xs text-muted-foreground">{document ? `${document.original_filename} · v${document.version}` : "No current document"}</p></div>{document ? <button type="button" disabled={openingDocumentId === document.id} onClick={() => void openDocument(document)} className="touch-target inline-flex items-center gap-2 font-semibold text-primary underline underline-offset-4 disabled:opacity-55"><ExternalLink className="h-4 w-4" aria-hidden="true" />{openingDocumentId === document.id ? "Opening…" : "Preview"}</button> : <DomainStatus label="Missing" tone="locked" compact />}</div>;
+            })}
+          </div>
+          <div className="space-y-4 border-t border-border pt-5 xl:border-l xl:border-t-0 xl:pl-5 xl:pt-0">
+            {!canReview ? <p className="rounded-md border border-border bg-secondary/45 px-3 py-2 text-sm text-muted-foreground">{requirementSet.status === "Needs Resubmission" ? "The request is back with the customer for correction. It returns here only after replacement documents are submitted." : "This gate becomes reviewable after both documents are submitted."}</p> : null}
+            <fieldset disabled={!canReview || saving} className="grid gap-3">
+              <RequirementOutcomeSelect id="booking-government-id-outcome" label="Government ID" value={governmentIdOutcome} onChange={setGovernmentIdOutcome} options={["Accepted", "Needs Replacement"]} />
+              <label className="text-sm font-medium">Government ID reason<TInput value={governmentIdReason} onChange={(event) => setGovernmentIdReason(event.target.value)} className="mt-2" placeholder="Required when replacement is needed" /></label>
+              <RequirementOutcomeSelect id="booking-license-outcome" label="Driver's License" value={driversLicenseOutcome} onChange={setDriversLicenseOutcome} options={["Accepted", "Needs Replacement"]} />
+              <label className="text-sm font-medium">Driver's License reason<TInput value={driversLicenseReason} onChange={(event) => setDriversLicenseReason(event.target.value)} className="mt-2" placeholder="Required when replacement is needed" /></label>
+              <RequirementOutcomeSelect id="booking-identity-outcome" label="Identity consistency" value={identityConsistency} onChange={setIdentityConsistency} options={["Consistent", "Concern"]} />
+              <RequirementOutcomeSelect id="booking-lto-outcome" label="LTO outcome" value={ltoOutcome} onChange={setLtoOutcome} options={["Not Checked", "Clear", "Concern", "Unavailable"]} />
+            </fieldset>
+            <div className="flex flex-wrap gap-2"><Btn variant="primary" disabled={!canReview || saving || !gate.canVerify} onClick={() => void saveReview("Verified")}>{saving ? "Saving…" : "Verify requirements"}</Btn><Btn variant="danger" disabled={!canReview || saving || !gate.canResubmit} onClick={() => void saveReview("Needs Resubmission")}>Request replacement</Btn></div>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function RequirementOutcomeSelect({ id, label, value, onChange, options }: { id: string; label: string; value: string; onChange: (value: string) => void; options: string[] }) {
+  return <label className="text-sm font-medium" htmlFor={id}><span>{label}</span><TSelect id={id} value={value} onChange={(event) => onChange(event.target.value)} className="mt-2"><option value="">Select an outcome…</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</TSelect></label>;
 }
 
 function ActionPriority({
@@ -603,8 +772,8 @@ function BookingRequestCard({ booking }: { booking: AdminBooking }) {
         />
         <DetailField
           icon={<MapPin />}
-          label="Pickup / return"
-          value={`${booking.pickup_branch?.name ?? "Branch unavailable"} → ${booking.return_branch?.name ?? "Branch unavailable"}`}
+          label="Allocation / return location"
+          value={`${booking.pickup_branch?.name ?? "Location unavailable"} → ${booking.return_branch?.name ?? "Location unavailable"}`}
         />
         <DetailField
           icon={<CarFront />}
@@ -621,7 +790,7 @@ function BookingRequestCard({ booking }: { booking: AdminBooking }) {
           value={
             booking.pickup_delivery_option === "delivery"
               ? `Delivery${booking.pickup_location ? ` · ${booking.pickup_location}` : ""}${booking.dropoff_location && booking.dropoff_location !== booking.pickup_location ? ` · Return: ${booking.dropoff_location}` : ""}`
-              : "Pickup at branch"
+              : "Delivery / collection service"
           }
         />
         <DetailField
@@ -631,14 +800,6 @@ function BookingRequestCard({ booking }: { booking: AdminBooking }) {
         <DetailField
           label="Destination"
           value={booking.destination ?? "Not recorded"}
-        />
-        <DetailField
-          label="Preferred seats"
-          value={
-            booking.preferred_seat_count == null
-              ? "Not recorded"
-              : String(booking.preferred_seat_count)
-          }
         />
       </div>
       {booking.finder_context ? (
@@ -779,7 +940,7 @@ function ActivityCard({ booking }: { booking: AdminBooking }) {
   const entries = [
     { label: "Request created", value: booking.created_at },
     { label: "Booking record updated", value: booking.updated_at },
-    { label: "Pickup scheduled", value: booking.pickup_at },
+    { label: "Delivery scheduled", value: booking.pickup_at },
     { label: "Return scheduled", value: booking.return_at },
     ...(booking.rental?.started_at
       ? [{ label: "Rental started", value: booking.rental.started_at }]
@@ -951,7 +1112,7 @@ function OwnerActionArea({
               <div className="rounded-md border border-border bg-secondary/45 px-3 py-3 text-sm">
                 <p className="font-semibold">{selectedVehicle.name}</p>
                 <p className="mt-1 text-muted-foreground">
-                  {selectedVehicle.branch?.name ?? "Branch unavailable"}
+                  {selectedVehicle.branch?.name ?? "Location unavailable"}
                   {selectedVehicle.license_plate
                     ? ` · ${selectedVehicle.license_plate}`
                     : ""}
@@ -974,7 +1135,7 @@ function OwnerActionArea({
                 name="assignment-note"
                 value={assignmentNote}
                 onChange={(event) => setAssignmentNote(event.target.value)}
-                placeholder="Required for substitution or cross-branch assignment"
+                placeholder="Required for substitution or cross-location assignment"
                 className="mt-2"
               />
             </label>
@@ -1004,7 +1165,7 @@ function OwnerActionArea({
                   className="mt-1 h-4 w-4"
                 />
                 <span>
-                  Record that this assignment crosses the pickup branch.
+                  Record that this assignment crosses the allocation location.
                 </span>
               </label>
             ) : null}
@@ -1381,14 +1542,6 @@ function CustomerCard({
               booking.customer?.phone_number ??
               booking.customer_contact_number ??
               "Not recorded"
-            }
-          />
-          <DetailField
-            label="Seat preference"
-            value={
-              booking.preferred_seat_count == null
-                ? "Not recorded"
-                : `${booking.preferred_seat_count} seats`
             }
           />
         </dl>

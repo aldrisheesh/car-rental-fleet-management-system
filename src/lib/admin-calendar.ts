@@ -134,7 +134,7 @@ export function buildAdminCalendar(
         eventFromInstant(
           `booking:${booking.id}:reservation`,
           booking.pickup_at,
-          `${name} reservation`,
+          `${name} reserved`,
           "reservation",
         ),
       );
@@ -145,13 +145,13 @@ export function buildAdminCalendar(
         eventFromInstant(
           `booking:${booking.id}:pickup`,
           booking.pickup_at,
-          `${name} pickup`,
+          `${name} deliver`,
           "pickup",
         ),
         eventFromInstant(
           `booking:${booking.id}:return`,
           booking.return_at,
-          `${name} return`,
+          `${name} returned`,
           "return",
         ),
       );
@@ -164,13 +164,13 @@ export function buildAdminCalendar(
       eventFromInstant(
         `rental:${rental.id}:pickup`,
         rental.scheduled_pickup_at,
-        `${name} pickup`,
+        `${name} deliver`,
         "pickup",
       ),
       eventFromInstant(
         `rental:${rental.id}:return`,
         rental.scheduled_return_at,
-        `${name} return`,
+        `${name} returned`,
         "return",
       ),
     );

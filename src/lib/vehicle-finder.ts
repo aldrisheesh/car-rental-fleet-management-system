@@ -1,5 +1,8 @@
 import { calculateRentalDays } from "./rental-duration.ts";
-import { manilaDateTimeLocalToInstant } from "./business-time.ts";
+import {
+  isAtLeastNextManilaCalendarDay,
+  manilaDateTimeLocalToInstant,
+} from "./business-time.ts";
 
 export const MAX_FINDER_PASSENGERS = 100;
 export const FINDER_START_PRECISION_TOLERANCE_MS = 60_000;
@@ -91,6 +94,9 @@ export function validateVehicleAvailabilityInput(
     start.getTime() < now.getTime() - FINDER_START_PRECISION_TOLERANCE_MS
   )
     errors.requestedStart = "Rental start cannot be in the past.";
+  else if (start && !isAtLeastNextManilaCalendarDay(start, now))
+    errors.requestedStart =
+      "Choose a rental start date at least one calendar day ahead. Same-day booking is not available.";
   if (start && end && start >= end)
     errors.requestedEnd = "Rental end must be after the start.";
 
@@ -123,6 +129,9 @@ export function validateFinderInput(
     start.getTime() < now.getTime() - FINDER_START_PRECISION_TOLERANCE_MS
   )
     errors.requestedStart = "Rental start cannot be in the past.";
+  else if (start && !isAtLeastNextManilaCalendarDay(start, now))
+    errors.requestedStart =
+      "Choose a rental start date at least one calendar day ahead. Same-day booking is not available.";
   if (start && end && start >= end)
     errors.requestedEnd = "Rental end must be after the start.";
 

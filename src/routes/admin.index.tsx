@@ -326,11 +326,11 @@ function DashboardContent({
               />
               <AttentionRow
                 icon={<CalendarDays />}
-                label="Pickups & returns today"
+                label="Deliveries & returns today"
                 detail={
                   data.calendar == null
                     ? "Today’s schedule is unavailable."
-                    : "Today’s pickup and return schedule."
+                    : "Today’s delivery and return schedule."
                 }
                 count={data.calendar == null ? "—" : events.length}
                 href="/admin/calendar"
@@ -515,7 +515,7 @@ function OwnerDashboardLower({
         ) : (
           <div className="grid gap-7 px-5 py-5 md:grid-cols-2">
             <ScheduleGroup
-              title="Pickups"
+              title="Deliveries"
               events={pickups}
               bookingsById={bookingsById}
             />
@@ -571,7 +571,7 @@ function StaffDashboardLower({
         {events.length === 0 ? (
           <EmptyState
             title="No schedule recorded today"
-            description="Calendar events are shown here when the authorized schedule contains pickups, returns, reservations, or maintenance attention."
+            description="Calendar events are shown here when the authorized schedule contains deliveries, returns, reservations, or maintenance attention."
           />
         ) : (
           <div className="divide-y divide-border">

@@ -40,6 +40,12 @@ export type NotificationsResponse = {
   notifications: CanonicalNotification[];
   unreadCount: number;
   emailNotificationsEnabled: boolean;
+  adminBindings?: AdminNotificationBinding[];
+};
+
+export type AdminNotificationBinding = {
+  notificationId: string;
+  bookingId?: string | null;
 };
 
 export type CustomerNotificationBinding = {
@@ -85,6 +91,7 @@ export function notificationRoute(
   notification: CanonicalNotification,
   audience: "admin" | "customer",
   customerBindings: readonly CustomerNotificationBinding[] = [],
+  adminBindings: readonly AdminNotificationBinding[] = [],
 ) {
   if (audience === "customer") {
     const bookingId = customerBookingId(notification, customerBindings);
@@ -95,8 +102,15 @@ export function notificationRoute(
   if (notification.notificationType === "low_availability") return "/admin";
   if (notification.notificationType === "backup_attention")
     return "/admin/notifications";
-  return notification.relatedEntityType === "payment"
-    ? "/admin/payments"
+  if (notification.relatedEntityType === "payment")
+    return `/admin/payments/${encodeURIComponent(notification.relatedEntityId)}`;
+  const binding = adminBindings.find(
+    (candidate) => candidate.notificationId === notification.id,
+  );
+  if (notification.relatedEntityType === "booking")
+    return `/admin/bookings/${encodeURIComponent(notification.relatedEntityId)}`;
+  return binding?.bookingId
+    ? `/admin/bookings/${encodeURIComponent(binding.bookingId)}`
     : "/admin/bookings";
 }
 

@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useRouterState,
+} from "@tanstack/react-router";
 import { Search, SlidersHorizontal } from "lucide-react";
 import {
   Card,
@@ -22,7 +27,7 @@ import {
 import { parseAdminBookingResponse } from "@/lib/booking-retrieval";
 
 export const Route = createFileRoute("/admin/bookings")({
-  component: BookingsPage,
+  component: BookingsRouteComponent,
 });
 
 type LoadState =
@@ -33,6 +38,17 @@ type LoadState =
 function initialSearchParam(key: string) {
   if (typeof window === "undefined") return "";
   return new URLSearchParams(window.location.search).get(key) ?? "";
+}
+
+function BookingsRouteComponent() {
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  return pathname === "/admin/bookings" || pathname === "/admin/bookings/" ? (
+    <BookingsPage />
+  ) : (
+    <Outlet />
+  );
 }
 
 function BookingsPage() {
@@ -166,7 +182,7 @@ function BookingsPage() {
             value={status}
             onChange={(event) => setStatus(event.target.value)}
           >
-            <option value="">All request states</option>
+            <option value="">All Status</option>
             {statusOptions.map((value) => (
               <option key={value} value={value}>
                 {value}
@@ -175,13 +191,13 @@ function BookingsPage() {
           </TSelect>
         </label>
         <label className="min-w-[150px]">
-          <span className="sr-only">Filter by pickup branch</span>
+          <span className="sr-only">Filter by allocation location</span>
           <TSelect
             name="booking-branch"
             value={branch}
             onChange={(event) => setBranch(event.target.value)}
           >
-            <option value="">All branches</option>
+            <option value="">All locations</option>
             {branchOptions.map((value) => (
               <option key={value} value={value}>
                 {value}
@@ -265,7 +281,7 @@ function BookingsTable({ rows }: { rows: AdminBooking[] }) {
                     Requested schedule
                   </th>
                   <th scope="col" className="px-4 py-4">
-                    Branch / service
+                    Allocation / service
                   </th>
                   <th scope="col" className="px-4 py-4">
                     Request
@@ -339,7 +355,7 @@ function BookingTableRow({ booking }: { booking: AdminBooking }) {
       </td>
       <td className="px-4 py-4">
         <div className="font-medium">
-          {booking.pickup_branch?.name ?? "Branch unavailable"}
+          {booking.pickup_branch?.name ?? "Location unavailable"}
         </div>
         <div className="mt-1 text-xs text-muted-foreground">
           {serviceLabel(booking)}
@@ -406,8 +422,8 @@ function BookingDisclosure({ booking }: { booking: AdminBooking }) {
       <div className="border-t border-border px-4 pb-4 pt-3">
         <dl className="grid gap-3 sm:grid-cols-2">
           <DisclosureField
-            label="Branch / service"
-            value={`${booking.pickup_branch?.name ?? "Branch unavailable"} · ${serviceLabel(booking)}`}
+            label="Allocation / service"
+            value={`${booking.pickup_branch?.name ?? "Location unavailable"} · ${serviceLabel(booking)}`}
           />
           <DisclosureField
             label="Schedule"
@@ -458,5 +474,5 @@ function DisclosureStatus({ label, value }: { label: string; value: string }) {
 function serviceLabel(booking: AdminBooking) {
   return booking.pickup_delivery_option === "delivery"
     ? "Delivery"
-    : "Pickup at branch";
+    : "Delivery / collection service";
 }

@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  redirect,
+  useRouterState,
+} from "@tanstack/react-router";
 import { CreditCard, Search } from "lucide-react";
 import {
   Card,
@@ -27,13 +33,24 @@ export const Route = createFileRoute("/admin/payments")({
     if (!session) throw redirect({ to: "/sign-in" });
     if (isStaffRole(session.role)) throw redirect({ to: "/admin" });
   },
-  component: PaymentsQueuePage,
+  component: PaymentsRouteComponent,
 });
 
 type LoadState =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "ready"; payments: AdminPayment[] };
+
+function PaymentsRouteComponent() {
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  return pathname === "/admin/payments" || pathname === "/admin/payments/" ? (
+    <PaymentsQueuePage />
+  ) : (
+    <Outlet />
+  );
+}
 
 function PaymentsQueuePage() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
@@ -135,7 +152,7 @@ function PaymentsQueuePage() {
             value={status}
             onChange={(event) => setStatus(event.target.value)}
           >
-            <option value="">All payment states</option>
+            <option value="">All Status</option>
             {statusOptions.map((value) => (
               <option key={value} value={value}>
                 {value}

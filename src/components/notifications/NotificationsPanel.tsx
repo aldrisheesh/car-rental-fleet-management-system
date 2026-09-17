@@ -285,6 +285,7 @@ export function NotificationsPanel({
               notification={notification}
               audience={audience}
               customerBindings={customerBindings}
+              adminBindings={data.adminBindings ?? []}
               marking={markingId === notification.id}
               onMarkRead={markRead}
             />
@@ -299,12 +300,14 @@ function NotificationRow({
   notification,
   audience,
   customerBindings,
+  adminBindings,
   marking,
   onMarkRead,
 }: {
   notification: CanonicalNotification;
   audience: "admin" | "customer";
   customerBindings: readonly CustomerNotificationBinding[];
+  adminBindings: NonNullable<NotificationsResponse["adminBindings"]>;
   marking: boolean;
   onMarkRead: (notification: CanonicalNotification) => Promise<void>;
 }) {
@@ -329,6 +332,7 @@ function NotificationRow({
     notification,
     audience,
     customerBindings,
+    adminBindings,
   );
 
   return (

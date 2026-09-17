@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
+  isAtLeastNextManilaCalendarDay,
   instantToManilaDateTimeLocal,
   manilaDateTimeLocalToInstant,
 } from "./business-time.ts";
@@ -205,10 +206,25 @@ test("requested interval ordering uses resolved Manila instants", () => {
     );
 });
 
-test("future starts are accepted and past starts are rejected by trusted time", () => {
+test("the one-day policy uses Manila calendar dates", () => {
+  const now = new Date("2026-09-10T01:00:00.000Z"); // 9:00 AM in Manila
+  assert.equal(
+    isAtLeastNextManilaCalendarDay(new Date("2026-09-10T10:00:00.000Z"), now),
+    false,
+  );
+  assert.equal(
+    isAtLeastNextManilaCalendarDay(
+      new Date("2026-09-10T16:00:00.000Z"), // midnight, Sep. 11 Manila
+      now,
+    ),
+    true,
+  );
+});
+
+test("same-day starts are rejected and next-day starts are accepted by trusted time", () => {
   const input = {
-    requestedStart: "2026-09-10T10:00",
-    requestedEnd: "2026-09-10T12:00",
+    requestedStart: "2026-09-11T10:00",
+    requestedEnd: "2026-09-11T12:00",
     passengerCount: 5,
     maximumBudget: 5000,
   };
@@ -217,17 +233,17 @@ test("future starts are accepted and past starts are rejected by trusted time", 
     categories,
     new Date("2026-09-10T01:00:00.000Z"),
   );
-  const past = validateFinderInput(
-    input,
+  const sameDay = validateFinderInput(
+    { ...input, requestedStart: "2026-09-10T10:00" },
     categories,
-    new Date("2026-09-10T03:01:00.000Z"),
+    new Date("2026-09-10T01:00:00.000Z"),
   );
   assert.equal(future.ok, true);
-  assert.equal(past.ok, false);
-  if (!past.ok)
+  assert.equal(sameDay.ok, false);
+  if (!sameDay.ok)
     assert.equal(
-      past.errors.requestedStart,
-      "Rental start cannot be in the past.",
+      sameDay.errors.requestedStart,
+      "Choose a rental start date at least one calendar day ahead. Same-day booking is not available.",
     );
 });
 

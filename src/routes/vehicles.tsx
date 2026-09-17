@@ -51,7 +51,10 @@ import {
   type CustomerVehicle,
   type FinderResponse,
 } from "@/lib/customer-data";
-import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
+import {
+  isAtLeastNextManilaCalendarDay,
+  manilaDateTimeLocalToInstant,
+} from "@/lib/business-time";
 import {
   validateFinderBookingSearch,
   type FinderBookingSearch,
@@ -261,6 +264,9 @@ function FindCarPage() {
       if (!end) nextErrors.requestedEnd = "Enter a valid rental end.";
       if (start && start.getTime() < Date.now() - 60_000) {
         nextErrors.requestedStart = "Rental start cannot be in the past.";
+      } else if (start && !isAtLeastNextManilaCalendarDay(start)) {
+        nextErrors.requestedStart =
+          "Choose a rental start date at least one calendar day ahead. Same-day booking is not available.";
       }
       if (start && end && start >= end) {
         nextErrors.requestedEnd = "Rental end must be after the start.";

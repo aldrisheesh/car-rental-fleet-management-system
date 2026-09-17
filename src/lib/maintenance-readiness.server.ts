@@ -34,7 +34,11 @@ export async function calculateMaintenanceReadiness(
   ]);
   if (vehicleError) throw vehicleError;
   if (recordsError) throw recordsError;
-  return evaluateMaintenanceReadiness(vehicle, records ?? []);
+  return evaluateMaintenanceReadiness(
+    vehicle,
+    records ?? [],
+    instantToManilaCalendarDate(new Date()),
+  );
 }
 
 export async function getVehicleMaintenanceReadiness(vehicleId: string) {

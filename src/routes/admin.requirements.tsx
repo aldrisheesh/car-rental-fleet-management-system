@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  redirect,
+  useRouterState,
+} from "@tanstack/react-router";
 import { FileCheck2, Search } from "lucide-react";
 import {
   Card,
@@ -21,13 +27,25 @@ export const Route = createFileRoute("/admin/requirements")({
     if (!session) throw redirect({ to: "/sign-in" });
     if (isStaffRole(session.role)) throw redirect({ to: "/admin" });
   },
-  component: RequirementsQueuePage,
+  component: RequirementsRouteComponent,
 });
 
 type LoadState =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "ready"; sets: AdminRequirementSet[] };
+
+function RequirementsRouteComponent() {
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  return pathname === "/admin/requirements" ||
+    pathname === "/admin/requirements/" ? (
+    <RequirementsQueuePage />
+  ) : (
+    <Outlet />
+  );
+}
 
 function RequirementsQueuePage() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
@@ -158,7 +176,7 @@ function RequirementsQueuePage() {
               <Link
                 key={set.id}
                 to={
-                  `/admin/requirements/${encodeURIComponent(set.booking_id)}` as never
+                  `/admin/bookings/${encodeURIComponent(set.booking_id)}` as never
                 }
                 className="group grid gap-3 px-5 py-4 transition-colors hover:bg-secondary/35 md:grid-cols-[minmax(0,1fr)_minmax(160px,0.65fr)_auto] md:items-center"
               >
@@ -188,7 +206,7 @@ function RequirementsQueuePage() {
                   />
                   <span className="touch-target inline-flex items-center gap-2 font-semibold text-primary underline underline-offset-4 group-hover:text-[#0d322e]">
                     <FileCheck2 className="h-4 w-4" aria-hidden="true" />
-                    Review
+                    Open rental request
                   </span>
                 </div>
               </Link>

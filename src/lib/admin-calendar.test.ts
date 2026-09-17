@@ -102,27 +102,27 @@ test("canonical bookings, rentals, and maintenance map to supported dates", () =
       {
         date: "2026-09-03",
         kind: "reservation",
-        label: "Requested Vios reservation",
+        label: "Requested Vios reserved",
       },
       {
         date: "2026-09-07",
         kind: "pickup",
-        label: "Assigned Hiace pickup",
+        label: "Assigned Hiace deliver",
       },
       {
         date: "2026-09-08",
         kind: "return",
-        label: "Assigned Hiace return",
+        label: "Assigned Hiace returned",
       },
       {
         date: "2026-09-10",
         kind: "pickup",
-        label: "Rental Innova pickup",
+        label: "Rental Innova deliver",
       },
       {
         date: "2026-09-12",
         kind: "return",
-        label: "Rental Innova return",
+        label: "Rental Innova returned",
       },
       {
         date: "2026-09-15",
@@ -193,9 +193,12 @@ test("calendar page has real loading, error, empty, and month-navigation states"
   assert.match(page, /latestRequest\.current === request/);
   assert.match(page, /Loading calendar schedule/);
   assert.match(page, /Unable to load the calendar schedule/);
+  assert.match(page, /pickup: "Deliver"/);
+  assert.match(page, /return: "Returned"/);
+  assert.match(page, /reservation: "Reserved"/);
   assert.match(
     page,
-    /No reservations, pickups, returns, or maintenance are scheduled/,
+    /No reservations, deliveries, returns, or maintenance are scheduled/,
   );
   assert.match(page, /aria-label="Previous month"/);
   assert.match(page, /aria-label="Next month"/);

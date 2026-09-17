@@ -9,6 +9,7 @@ import {
   CreditCard,
   Clock3,
   FileCheck2,
+  ExternalLink,
   MapPin,
   RefreshCw,
   Upload,
@@ -75,9 +76,7 @@ const ACCEPTED_FILE_TYPES = new Set([
   "application/pdf",
 ]);
 const REQUIREMENTS_TASKS = [
-  "Before you start",
-  "Upload documents",
-  "Review",
+  "Upload and preview documents",
   "Send for verification",
 ] as const;
 
@@ -621,8 +620,10 @@ function RequirementsPanel({
   state: "requirements-needed" | "requirements-resubmission";
   onRefresh: () => Promise<void>;
 }) {
-  const [reviewMode, setReviewMode] = useState(false);
   const [uploadingType, setUploadingType] = useState("");
+  const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(
+    null,
+  );
   const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -642,11 +643,7 @@ function RequirementsPanel({
   const resubmissionReady =
     flaggedTypes.length > 0 &&
     flaggedTypes.every((type) => replacedTypes[type]);
-  const taskStep = reviewMode
-    ? 3
-    : state === "requirements-resubmission"
-      ? 2
-      : 2;
+  const taskStep = allDocumentsPresent ? 2 : 1;
 
   async function uploadDocument(
     type: string,
@@ -669,7 +666,6 @@ function RequirementsPanel({
     try {
       await fetchJson("/api/requirements", { method: "POST", body: form });
       setReplacedTypes((current) => ({ ...current, [type]: true }));
-      setReviewMode(false);
       await onRefresh();
     } catch (requestError) {
       setUploadErrors((current) => ({
@@ -692,7 +688,6 @@ function RequirementsPanel({
     form.append("action", action);
     try {
       await fetchJson("/api/requirements", { method: "POST", body: form });
-      setReviewMode(false);
       setReplacedTypes({});
       await onRefresh();
     } catch (requestError) {
@@ -704,6 +699,43 @@ function RequirementsPanel({
       );
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function openDocument(document: RequirementDocument) {
+    const preview = window.open("about:blank", "_blank");
+    if (!preview) {
+      setSubmitError("Allow pop-ups to open this secure document preview.");
+      return;
+    }
+    preview.opener = null;
+    setOpeningDocumentId(document.id);
+    setSubmitError("");
+    try {
+      const response = await fetch(
+        `/api/requirements?documentId=${encodeURIComponent(document.id)}`,
+        { credentials: "same-origin" },
+      );
+      const body = (await response.json().catch(() => null)) as {
+        url?: string;
+        message?: string;
+      } | null;
+      if (!response.ok || !body?.url) {
+        throw new Error(
+          body?.message ?? "This document is not available for secure preview.",
+        );
+      }
+      preview.location.replace(body.url);
+    } catch (requestError) {
+      preview.close();
+      setSubmitError(
+        errorFromResult(
+          requestError,
+          "This document is not available for secure preview.",
+        ),
+      );
+    } finally {
+      setOpeningDocumentId(null);
     }
   }
 
@@ -720,7 +752,7 @@ function RequirementsPanel({
             verification until Briah reviews them.
           </p>
         </div>
-        <span className="booking-step-label">Step 2 of 4</span>
+        <span className="booking-step-label">Step {taskStep} of 2</span>
       </div>
       <RequirementsTaskList taskStep={taskStep} />
 
@@ -731,8 +763,9 @@ function RequirementsPanel({
         </StatusCallout>
       ) : (
         <StatusCallout tone="info" title="Before you start">
-          Upload one current file for each document type. You will review both
-          files before sending them for verification.
+          Upload one current file for each document type, then preview each
+          file here to confirm it is readable before sending it for
+          verification.
         </StatusCallout>
       )}
 
@@ -771,6 +804,19 @@ function RequirementsPanel({
                   </div>
                 </div>
                 <div className="booking-requirement-action">
+                  {document ? (
+                    <button
+                      className="customer-secondary-button booking-document-preview-button"
+                      type="button"
+                      disabled={openingDocumentId === document.id}
+                      onClick={() => void openDocument(document)}
+                    >
+                      {openingDocumentId === document.id
+                        ? "Opening preview…"
+                        : "Preview document"}
+                      <ExternalLink size={16} aria-hidden="true" />
+                    </button>
+                  ) : null}
                   {editable ? (
                     <FileTarget
                       id={`booking-file-${type.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}`}
@@ -803,69 +849,35 @@ function RequirementsPanel({
         </div>
       )}
 
-      {reviewMode ? (
-        <div className="booking-document-review">
-          <h3>Review your documents</h3>
-          {requiredTypes.map((type) => {
-            const document = currentDocument(documents, type);
-            return (
-              <div className="booking-fact-row" key={type}>
-                <span>{humanizeRequirementType(type)}</span>
-                <strong>
-                  {document
-                    ? `${document.original_filename} · ${fileSizeLabel(document.size_bytes)}`
-                    : "Missing"}
-                </strong>
-              </div>
-            );
-          })}
-        </div>
-      ) : null}
-
       {submitError ? (
-        <StatusCallout tone="error" title="Requirements not sent">
+        <StatusCallout tone="error" title="Requirements action unavailable">
           {submitError}
         </StatusCallout>
       ) : null}
 
       <div className="booking-detail-actions">
-        {reviewMode ? (
-          <>
-            <button
-              className="customer-tertiary-button"
-              type="button"
-              onClick={() => setReviewMode(false)}
-            >
-              Back to upload
-            </button>
-            <button
-              className="customer-primary-button"
-              type="button"
-              disabled={!allDocumentsPresent || submitting}
-              onClick={() => void submitRequirements("submit")}
-            >
-              {submitting ? "Sending…" : "Send for verification"}
-              <ArrowRight size={19} aria-hidden="true" />
-            </button>
-          </>
-        ) : state === "requirements-resubmission" ? (
+        {state === "requirements-resubmission" ? (
           <button
             className="customer-primary-button"
             type="button"
             disabled={!resubmissionReady || submitting}
             onClick={() => void submitRequirements("resubmit")}
           >
-            {submitting ? "Resubmitting…" : "Resubmit for verification"}
+            {submitting
+              ? "Resubmitting…"
+              : "Resubmit requirements for verification"}
             <ArrowRight size={19} aria-hidden="true" />
           </button>
         ) : (
           <button
             className="customer-primary-button"
             type="button"
-            disabled={!allDocumentsPresent || Boolean(uploadingType)}
-            onClick={() => setReviewMode(true)}
+            disabled={
+              !allDocumentsPresent || Boolean(uploadingType) || submitting
+            }
+            onClick={() => void submitRequirements("submit")}
           >
-            Review documents
+            {submitting ? "Sending…" : "Submit requirements for verification"}
             <ArrowRight size={19} aria-hidden="true" />
           </button>
         )}
@@ -1410,13 +1422,6 @@ function ConfirmedBooking({
             booking.return_branch?.name ?? "Not recorded",
           ],
           [MapPin, "Destination", booking.destination ?? "Not recorded"],
-          [
-            CarFront,
-            "Passengers",
-            booking.preferred_seat_count
-              ? String(booking.preferred_seat_count)
-              : "Not recorded",
-          ],
         ]}
       />
       {vehicle?.name ? null : (

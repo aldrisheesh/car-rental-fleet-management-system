@@ -46,8 +46,12 @@ import {
   parseFinderDateSelection,
   validateFinderBookingSearch,
 } from "@/lib/finder-booking";
-import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
+import {
+  isAtLeastNextManilaCalendarDay,
+  manilaDateTimeLocalToInstant,
+} from "@/lib/business-time";
 import { resolvedReturnLocation } from "@/lib/customer-handoff";
+import { calculateRentalDays } from "@/lib/rental-duration";
 
 export const Route = createFileRoute("/booking")({
   validateSearch: (search) => validateFinderBookingSearch(search),
@@ -56,7 +60,7 @@ export const Route = createFileRoute("/booking")({
       { title: "Rental request | Briah's Car Rental" },
       {
         name: "description",
-        content: "Share trip details and send a rental request for review.",
+        content: "Save trip details, complete requirements, then submit one rental request for review.",
       },
     ],
   }),
@@ -134,7 +138,7 @@ function initialDraft(
     dropoffLocation: "",
     sameReturnLocation: true,
     destination: handoff?.destination ?? "",
-    preferredSeatCount: handoff ? String(handoff.passengerCount) : "",
+    preferredSeatCount: "",
   };
 }
 
@@ -250,9 +254,6 @@ function RentalRequestPage() {
     const nextErrors: BookingErrors = {};
     const pickup = manilaDateTimeLocalToInstant(draft.pickupAt);
     const returned = manilaDateTimeLocalToInstant(draft.returnAt);
-    const preferredSeats = draft.preferredSeatCount.trim()
-      ? Number(draft.preferredSeatCount)
-      : null;
 
     if (!selectedVehicle)
       nextErrors.vehicle = "Choose an active vehicle before continuing.";
@@ -260,6 +261,9 @@ function RentalRequestPage() {
     if (!returned) nextErrors.returnAt = "Enter a valid return date and time.";
     if (pickup && pickup.getTime() < Date.now() - 60_000)
       nextErrors.pickupAt = "Pickup cannot be in the past.";
+    else if (pickup && !isAtLeastNextManilaCalendarDay(pickup))
+      nextErrors.pickupAt =
+        "Choose a pickup date at least one calendar day ahead. Same-day booking is not available.";
     if (pickup && returned && returned <= pickup)
       nextErrors.returnAt = "Return must be after pickup.";
     if (!draft.purposeOfUse.trim())
@@ -268,12 +272,6 @@ function RentalRequestPage() {
       nextErrors.pickupLocation = "Enter the delivery address.";
     if (!draft.sameReturnLocation && !draft.dropoffLocation.trim())
       nextErrors.dropoffLocation = "Enter the return address.";
-    if (
-      preferredSeats !== null &&
-      (!Number.isInteger(preferredSeats) || preferredSeats <= 0)
-    )
-      nextErrors.preferredSeatCount =
-        "Preferred seats must be a positive whole number.";
     if (draft.destination.length > 200)
       nextErrors.destination = "Destination must be 200 characters or fewer.";
     return nextErrors;
@@ -336,9 +334,9 @@ function RentalRequestPage() {
         sameReturnLocation: draft.sameReturnLocation,
       }),
       destination: draft.destination.trim() || null,
-      preferredSeatCount: draft.preferredSeatCount.trim()
-        ? Number(draft.preferredSeatCount)
-        : null,
+      // Kept null for compatibility with existing booking records; the
+      // customer form no longer asks for a seat preference.
+      preferredSeatCount: null,
       finderContext:
         finderContextIsStillValid() && handoff
           ? finderContextForSubmission(handoff)
@@ -505,6 +503,7 @@ function RentalRequestPage() {
                 <ReviewPanel
                   draft={draft}
                   branches={masterData?.branches ?? []}
+                  vehicle={selectedVehicle}
                   handoff={handoff}
                   principal={principal}
                   submitError={submitError}
@@ -740,31 +739,6 @@ function DetailsForm({
             />
             <FieldError id="destination" message={errors.destination} />
           </div>
-          <div className="customer-field">
-            <label className="customer-label" htmlFor="preferred-seats">
-              Preferred seats{" "}
-              <span className="customer-helper">(optional)</span>
-            </label>
-            <input
-              id="preferred-seats"
-              className="customer-input"
-              type="number"
-              min="1"
-              step="1"
-              value={draft.preferredSeatCount}
-              aria-invalid={Boolean(errors.preferredSeatCount)}
-              aria-describedby={
-                errors.preferredSeatCount ? "preferred-seats-error" : undefined
-              }
-              onChange={(event) =>
-                updateDraft("preferredSeatCount", event.target.value)
-              }
-            />
-            <FieldError
-              id="preferred-seats"
-              message={errors.preferredSeatCount}
-            />
-          </div>
         </div>
       </fieldset>
 
@@ -820,6 +794,7 @@ function DetailsForm({
 function ReviewPanel({
   draft,
   branches,
+  vehicle,
   handoff,
   principal,
   submitError,
@@ -829,6 +804,7 @@ function ReviewPanel({
 }: {
   draft: BookingDraft;
   branches: BookingMasterData["branches"];
+  vehicle: CustomerVehicle;
   handoff: ReturnType<typeof parseFinderBookingHandoff>;
   principal: ReturnType<typeof getClientPrincipal>;
   submitError: string;
@@ -858,6 +834,24 @@ function ReviewPanel({
       : []),
     ...(draft.destination ? [`Destination · ${draft.destination}`] : []),
   ].join("\n");
+  const pickup = manilaDateTimeLocalToInstant(draft.pickupAt);
+  const returned = manilaDateTimeLocalToInstant(draft.returnAt);
+  const rentalDays =
+    pickup && returned ? calculateRentalDays(pickup, returned) : null;
+  const dailyRate =
+    typeof vehicle.daily_rate === "number" && vehicle.daily_rate >= 0
+      ? vehicle.daily_rate
+      : null;
+  const baseRentalTotal =
+    rentalDays !== null && dailyRate !== null ? rentalDays * dailyRate : null;
+  const formatCurrency = (amount: number | null) =>
+    amount === null
+      ? "Rate pending"
+      : new Intl.NumberFormat("en-PH", {
+          style: "currency",
+          currency: "PHP",
+          maximumFractionDigits: 2,
+        }).format(amount);
 
   return (
     <section className="request-form" aria-labelledby="review-title">
@@ -888,16 +882,32 @@ function ReviewPanel({
         </div>
         <div className="review-group">
           <div className="review-group-heading">
-            <h2>Purpose and seats</h2>
+            <h2>Purpose</h2>
             <button className="review-edit-link" type="button" onClick={onEdit}>
               Edit
             </button>
           </div>
+          <p>{draft.purposeOfUse}</p>
+        </div>
+        <div className="review-group">
+          <h2>Rental estimate</h2>
           <p>
-            {draft.purposeOfUse}
-            {draft.preferredSeatCount
-              ? `\nPreferred seats · ${draft.preferredSeatCount}`
-              : ""}
+            Vehicle · {vehicle.name}
+            {`\nDaily rate · ${formatCurrency(dailyRate)}`}
+            {`\nRental duration · ${rentalDays ?? "Pending"} ${rentalDays === 1 ? "day" : "days"}`}
+            {`\nBase rental total · ${formatCurrency(baseRentalTotal)}`}
+          </p>
+          <p className="customer-helper">
+            This is the base rental estimate. No additional charges are added
+            at request stage; payment is reviewed before confirmation.
+          </p>
+        </div>
+        <div className="review-group">
+          <h2>Rental do's and don'ts</h2>
+          <p>
+            Do present your verified requirements and keep the vehicle in safe
+            operating condition. Don't use the vehicle outside the agreed
+            rental period or for an unapproved purpose.
           </p>
         </div>
         <div className="review-group">
@@ -922,12 +932,12 @@ function ReviewPanel({
         </p>
       ) : null}
       {submitError ? (
-        <StatusCallout tone="error" title="Rental request not sent">
+        <StatusCallout tone="error" title="Rental request not saved">
           {submitError}
         </StatusCallout>
       ) : null}
-      <StatusCallout tone="info" title="Send a rental request">
-        Submitting creates a rental request. It does not confirm the booking.
+      <StatusCallout tone="info" title="Continue to requirements">
+        This saves your trip details as a draft. Your rental request reaches Briah only after you submit all required documents.
       </StatusCallout>
       <div className="request-actions">
         <button
@@ -946,7 +956,7 @@ function ReviewPanel({
           {submitting ? (
             <RefreshCw className="animate-spin" size={17} aria-hidden="true" />
           ) : null}
-          {submitting ? "Sending request…" : "Send rental request"}
+          {submitting ? "Saving request…" : "Save and continue to requirements"}
         </button>
       </div>
     </section>

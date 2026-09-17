@@ -170,8 +170,20 @@ test("operational types project and route without changing existing destinations
     related_entity_type: "booking",
     related_entity_id: "booking-1",
   });
-  assert.equal(notificationRoute(payment, "admin"), "/admin/payments");
-  assert.equal(notificationRoute(booking, "admin"), "/admin/bookings");
+  assert.equal(
+    notificationRoute(payment, "admin"),
+    "/admin/payments/payment-1",
+  );
+  assert.equal(
+    notificationRoute(booking, "admin"),
+    "/admin/bookings/booking-1",
+  );
+  assert.equal(
+    notificationRoute(requirements, "admin", [], [
+      { notificationId: requirements.id, bookingId: "booking-1" },
+    ]),
+    "/admin/bookings/booking-1",
+  );
   assert.equal(
     notificationRoute(payment, "customer", [
       { bookingId: "booking-1", paymentId: "payment-1" },

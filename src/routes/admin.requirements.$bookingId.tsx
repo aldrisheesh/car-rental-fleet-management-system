@@ -207,6 +207,15 @@ function RequirementsReviewPage() {
     requirementSet?.status === "Pending Review" && hasBothDocuments;
 
   async function openDocument(document: AdminRequirementDocument) {
+    const preview = window.open("about:blank", "_blank");
+    if (!preview) {
+      setMutation({
+        tone: "error",
+        message: "Allow pop-ups to open this secure document preview.",
+      });
+      return;
+    }
+    preview.opener = null;
     setOpeningDocumentId(document.id);
     setMutation(null);
     try {
@@ -223,8 +232,9 @@ function RequirementsReviewPage() {
           body?.message ?? "This document is not available for secure preview.",
         );
       }
-      window.open(body.url, "_blank", "noopener,noreferrer");
+      preview.location.replace(body.url);
     } catch (error) {
+      preview.close();
       setMutation({
         tone: "error",
         message:

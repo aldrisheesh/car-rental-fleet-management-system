@@ -235,11 +235,11 @@ function BranchesPage() {
   return (
     <div>
       <PageHeader
-        title="Branches"
-        subtitle="Manage supported branch identity and active state from the canonical master data."
+        title="Operational locations"
+        subtitle="Manage internal allocation locations and their active state. These locations support operations; they are not customer delivery addresses."
         actions={
           <Btn variant="primary" onClick={() => openBranchDialog()}>
-            <Plus className="h-4 w-4" /> New branch
+            <Plus className="h-4 w-4" /> New location
           </Btn>
         }
       />
@@ -263,20 +263,20 @@ function BranchesPage() {
 
       <Toolbar>
         <label className="min-w-60 flex-1">
-          <span className="sr-only">Search branches</span>
+          <span className="sr-only">Search operational locations</span>
           <TInput
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search branch or address…"
-            aria-label="Search branches"
+            placeholder="Search location or address…"
+            aria-label="Search operational locations"
           />
         </label>
         <label>
-          <span className="sr-only">Filter branch status</span>
+          <span className="sr-only">Filter location status</span>
           <TSelect
             value={status}
             onChange={(event) => setStatus(event.target.value)}
-            aria-label="Filter branch status"
+            aria-label="Filter location status"
           >
             <option>All</option>
             <option>Active</option>
@@ -285,15 +285,15 @@ function BranchesPage() {
         </label>
         <span className="text-xs text-muted-foreground sm:ml-auto">
           {branchLoading
-            ? "Loading branches…"
-            : `${displayedBranches.length} canonical branches`}
+            ? "Loading operational locations…"
+            : `${displayedBranches.length} canonical locations`}
         </span>
       </Toolbar>
 
       {branchLoading ? (
         <div role="status">
           <Card className="p-8 text-center text-sm text-muted-foreground">
-            Loading canonical branch data…
+            Loading canonical operational locations…
           </Card>
         </div>
       ) : branchLoadError ? (
@@ -302,20 +302,20 @@ function BranchesPage() {
             {branchLoadError}
           </p>
           <Btn className="mt-4" onClick={() => void loadBranches()}>
-            <RefreshCw className="h-4 w-4" /> Retry branches
+            <RefreshCw className="h-4 w-4" /> Retry locations
           </Btn>
         </Card>
       ) : !displayedBranches.length ? (
         <Card className="p-8 text-center text-sm text-muted-foreground">
           {branches.length
-            ? "No branches match these filters."
-            : "No canonical branches are available."}
+            ? "No locations match these filters."
+            : "No canonical operational locations are available."}
         </Card>
       ) : (
         <Card className="overflow-hidden">
           <CardHeader
-            title="Branch register"
-            hint="Assigned vehicles are counted from canonical vehicle branch_id relationships."
+            title="Operational location register"
+            hint="Vehicle totals reflect each vehicle's current operational allocation location."
           />
           {vehicleLoadError ? (
             <p
@@ -332,7 +332,7 @@ function BranchesPage() {
               </caption>
               <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
                 <tr className="border-b border-border">
-                  <th className="px-5 py-3 text-left font-semibold">Branch</th>
+                  <th className="px-5 py-3 text-left font-semibold">Location</th>
                   <th className="px-5 py-3 text-left font-semibold">Address</th>
                   <th className="px-5 py-3 text-left font-semibold">
                     Assigned vehicles
@@ -383,7 +383,7 @@ function BranchesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingBranch ? "Edit branch" : "New branch"}
+              {editingBranch ? "Edit operational location" : "New operational location"}
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-2">
@@ -393,7 +393,7 @@ function BranchesPage() {
                 onChange={(event) => setBranchName(event.target.value)}
               />
             </Field>
-            <Field label="Address">
+            <Field label="Operations address (optional)">
               <TInput
                 value={branchAddress}
                 onChange={(event) => setBranchAddress(event.target.value)}
@@ -414,7 +414,7 @@ function BranchesPage() {
               disabled={saving}
               onClick={() => void saveBranch()}
             >
-              {saving ? "Saving…" : "Save branch"}
+              {saving ? "Saving…" : "Save location"}
             </Btn>
           </DialogFooter>
         </DialogContent>

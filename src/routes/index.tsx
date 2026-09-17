@@ -143,7 +143,9 @@ function HomePage() {
     const selectedEnd = manilaDateTimeLocalToInstant(rentalEnd);
     const hasSelectedRange =
       selectedStart && selectedEnd && selectedStart < selectedEnd;
-    const defaultStart = new Date(Date.now() + 5 * 60_000);
+    const defaultStart = manilaDateTimeLocalToInstant(
+      dateTimeLocalForDate(firstAvailableDate, "08:00"),
+    )!;
     const defaultEnd = new Date(defaultStart.getTime() + 24 * 60 * 60_000);
 
     return encodeSearch({
@@ -154,7 +156,7 @@ function HomePage() {
         ? rentalEnd
         : instantToManilaDateTimeLocal(defaultEnd),
     });
-  }, [rentalEnd, rentalStart]);
+  }, [firstAvailableDate, rentalEnd, rentalStart]);
 
   const visibleFeaturedVehicles = useMemo(() => {
     if (!featuredVehicles.length) return [];

@@ -25,10 +25,10 @@ const kindStyles: Record<CalendarEventKind, string> = {
 };
 
 const kindLabel: Record<CalendarEventKind, string> = {
-  pickup: "Pickup",
-  return: "Return",
+  pickup: "Deliver",
+  return: "Returned",
   maintenance: "Maintenance",
-  reservation: "Reservation",
+  reservation: "Reserved",
 };
 
 type LoadState =
@@ -138,7 +138,7 @@ function CalendarPage() {
     <div>
       <PageHeader
         title="Calendar"
-        subtitle="Canonical view of reservations, pickups, returns, and maintenance."
+        subtitle="Canonical view of reserved vehicles, deliveries, returns, and maintenance."
       />
 
       <Card>
@@ -192,7 +192,7 @@ function CalendarPage() {
           <>
             {events.length === 0 ? (
               <p className="border-b border-border px-5 py-4 text-center text-sm text-muted-foreground">
-                No reservations, pickups, returns, or maintenance are scheduled
+                No reservations, deliveries, returns, or maintenance are scheduled
                 for {formatMonth(period)}.
               </p>
             ) : null}
@@ -258,14 +258,14 @@ function CalendarPage() {
       {state.status === "ready" && events.length > 0 ? (
         <div className="mt-4 grid gap-4 xl:grid-cols-2">
           <EventList
-            title="Reservations & pickups"
+            title="Reserved & deliveries"
             events={events.filter(
               (event) =>
                 event.kind === "reservation" || event.kind === "pickup",
             )}
           />
           <EventList
-            title="Returns & maintenance"
+            title="Returned & maintenance"
             events={events.filter(
               (event) =>
                 event.kind === "return" || event.kind === "maintenance",

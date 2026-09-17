@@ -15,7 +15,6 @@ import {
   Car,
   ChevronDown,
   CreditCard,
-  FileText,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -57,7 +56,6 @@ type NavItem = {
 const ownerNav: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
-  { to: "/admin/requirements", label: "Requirements", icon: FileText },
   { to: "/admin/fleet", label: "Fleet", icon: Car },
   { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/admin/maintenance", label: "Maintenance", icon: Wrench },
@@ -433,7 +431,7 @@ export function AdminShell() {
 
 function currentLabel(pathname: string) {
   if (pathname.startsWith("/admin/bookings/")) return "Booking detail";
-  if (pathname.startsWith("/admin/requirements")) return "Requirements review";
+  if (pathname.startsWith("/admin/requirements")) return "Booking requirements";
   if (pathname.startsWith("/admin/payments")) return "Payment review";
   if (pathname.startsWith("/admin/notifications")) return "Notifications";
   return (

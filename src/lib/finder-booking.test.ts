@@ -198,8 +198,10 @@ test("Finder selection uses canonical fleet/Finder APIs and preserves booking co
   );
   assert.match(
     vehiclesSource,
-    /fetchJson<CustomerVehicle\[\]>\("\/api\/vehicles"\)/,
+    /fetchJson<CustomerVehicle\[\]>\(\s*`\/api\/vehicles\$\{availabilitySearch\}`/,
   );
+  assert.match(vehiclesSource, /finderStart: search\.finderStart/);
+  assert.match(vehiclesSource, /finderEnd: search\.finderEnd/);
   assert.match(
     vehiclesSource,
     /fetchJson<FinderResponse>\("\/api\/vehicle-finder"/,
@@ -209,6 +211,26 @@ test("Finder selection uses canonical fleet/Finder APIs and preserves booking co
   assert.match(vehiclesSource, /from "@\/lib\/finder-booking"/);
   assert.match(bookingApiSource, /evaluateCanonicalVehicleFinder/);
   assert.match(finderApiSource, /evaluateCanonicalVehicleFinder/);
+});
+
+test("booking creation enforces the one-day policy at its server boundary and in the database", async () => {
+  const [bookingApiSource, migrationSource] = await Promise.all([
+    readFile(new URL("../routes/api.bookings.ts", import.meta.url), "utf8"),
+    readFile(
+      new URL(
+        "../../supabase/migrations/20260917063758_booking_one_day_lead_time_policy.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ]);
+  assert.match(
+    bookingApiSource,
+    /isAtLeastNextManilaCalendarDay\(pickupDate\)/,
+  );
+  assert.match(bookingApiSource, /booking_lead_time_required/);
+  assert.match(migrationSource, /before insert or update of pickup_at/i);
+  assert.match(migrationSource, /Asia\/Manila/);
 });
 
 test("migration creates booking and immutable 1:1 Finder context in one RPC", async () => {
@@ -368,4 +390,16 @@ test("a new customer-scoped key may create a later intentional booking", async (
   );
   assert.match(migration, /primary key \(customer_id, idempotency_key\)/);
   assert.doesNotMatch(migration, /unique \(customer_id, request_fingerprint\)/);
+});
+
+test("booking review presents an honest editable base-rental estimate", async () => {
+  const source = await readFile(
+    new URL("../routes/booking.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /<h2>Rental estimate<\/h2>/);
+  assert.match(source, /calculateRentalDays\(pickup, returned\)/);
+  assert.match(source, /Base rental total/);
+  assert.match(source, /No additional charges are added/);
 });

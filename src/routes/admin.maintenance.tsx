@@ -650,7 +650,7 @@ function MaintenanceDisclosure({
       className={`group px-5 py-4 ${selected ? "bg-secondary/50" : ""}`}
       onToggle={() => onSelect?.(record.id)}
     >
-      <summary className="flex cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-11 cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
         <div className="min-w-0">
           <div className="font-medium">
             {record.vehicle?.name ?? "Unknown vehicle"}

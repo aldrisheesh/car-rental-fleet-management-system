@@ -7692,6 +7692,11 @@
     min-width: 0;
   }
 
+  .booking-document-preview-button {
+    width: 100%;
+    justify-content: center;
+  }
+
   .booking-requirement-list-readonly .booking-requirement-row {
     grid-template-columns: minmax(0, 1fr) auto;
   }

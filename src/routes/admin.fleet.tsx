@@ -264,13 +264,13 @@ function FleetPage() {
         id: vehicle.id,
         input: buildVehicleBranchUpdateInput(canonicalVehicle, branchId),
       });
-      setMutationFeedback(`${vehicle.name} branch assignment updated.`);
+      setMutationFeedback(`${vehicle.name} allocation location updated.`);
       await loadFleet();
     } catch (error) {
       setMutationError(
         error instanceof Error
           ? error.message
-          : "Unable to update the branch assignment.",
+            : "Unable to update the allocation location.",
       );
     } finally {
       setBranchSavingId(null);
@@ -381,7 +381,7 @@ function FleetPage() {
     <div>
       <PageHeader
         title="Fleet"
-        subtitle="Scan canonical vehicle identity, current operational state, branch assignment, and derived readiness."
+        subtitle="Scan canonical vehicle identity, current operational state, allocation location, and derived readiness. Allocation locations are internal operations bases, not customer delivery addresses."
         actions={
           <Btn
             variant="primary"
@@ -435,19 +435,19 @@ function FleetPage() {
           >
             {statuses.map((item) => (
               <option key={item} value={item}>
-                {item === "All" ? "All states" : item}
+                {item === "All" ? "All Status" : item}
               </option>
             ))}
           </TSelect>
         </label>
         <label>
-          <span className="sr-only">Filter by branch</span>
+          <span className="sr-only">Filter by allocation location</span>
           <TSelect
             value={branch}
             onChange={(event) => setBranch(event.target.value)}
-            aria-label="Filter fleet by branch"
+            aria-label="Filter fleet by allocation location"
           >
-            <option value="All">All branches</option>
+            <option value="All">All locations</option>
             {branches.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
@@ -516,7 +516,7 @@ function FleetPage() {
                       Category
                     </th>
                     <th className="px-5 py-3 text-left font-semibold">
-                      Branch
+                      Allocation location
                     </th>
                     <th className="px-5 py-3 text-left font-semibold">State</th>
                     <th className="px-5 py-3 text-left font-semibold">
@@ -655,10 +655,10 @@ function FleetRow({
           value={vehicle.branchId ?? ""}
           disabled={branchSaving || !vehicle.categoryId}
           onChange={(event) => onBranchChange(event.target.value)}
-          aria-label={`Branch for ${vehicle.name}`}
+          aria-label={`Allocation location for ${vehicle.name}`}
           className="min-w-36 text-xs"
         >
-          <option value="">Unassigned</option>
+          <option value="">Unassigned location</option>
           {branches.map((item) => (
             <option key={item.id} value={item.id}>
               {item.name}
@@ -694,17 +694,16 @@ function FleetDisclosure({
 }: Omit<Parameters<typeof FleetRow>[0], "selected">) {
   return (
     <details className="group px-5 py-4">
-      <summary className="flex cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
-        <button
-          className="min-h-11 min-w-0 flex-1 text-left"
-          onClick={onSelect}
-          aria-label={`Select ${vehicle.name}`}
-        >
+      <summary
+        className="flex min-h-11 cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden"
+        onClick={onSelect}
+      >
+        <span className="min-w-0 flex-1 text-left">
           <span className="block font-medium">{vehicle.name}</span>
           <span className="mt-1 block font-mono text-xs text-muted-foreground">
             {displayValue(vehicle.plate)}
           </span>
-        </button>
+        </span>
         <span className="shrink-0">
           <Badge>{vehicle.status}</Badge>
         </span>
@@ -720,14 +719,14 @@ function FleetDisclosure({
           </strong>
         </div>
         <div className="grid gap-1">
-          <span className="text-muted-foreground">Branch</span>
+          <span className="text-muted-foreground">Allocation location</span>
           <TSelect
             value={vehicle.branchId ?? ""}
             disabled={branchSaving || !vehicle.categoryId}
             onChange={(event) => onBranchChange(event.target.value)}
-            aria-label={`Branch for ${vehicle.name}`}
+            aria-label={`Allocation location for ${vehicle.name}`}
           >
-            <option value="">Unassigned</option>
+            <option value="">Unassigned location</option>
             {branches.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
@@ -800,7 +799,9 @@ function FleetDetail({
               {currentUse(vehicle.status)}
             </Detail>
             <Detail label="Category">{displayValue(vehicle.category)}</Detail>
-            <Detail label="Branch">{displayValue(vehicle.branch)}</Detail>
+            <Detail label="Allocation location">
+              {displayValue(vehicle.branch)}
+            </Detail>
             <Detail label="Daily rate">
               {formatPeso(vehicle.pricePerDay)}
             </Detail>
@@ -932,7 +933,7 @@ function AddVehicleDialog({
               ))}
             </TSelect>
           </Field>
-          <Field label="Branch *">
+          <Field label="Allocation location *">
             <TSelect
               value={draft.branchId}
               onChange={(event) =>
