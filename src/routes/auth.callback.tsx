@@ -52,14 +52,27 @@ function OAuthCallbackPage() {
         message?: string;
       } | null;
 
-      await client.auth.signOut({ scope: "local" });
       if (cancelled) return;
       if (!response.ok || !payload?.destination) {
+        await client.auth.signOut({ scope: "local" });
         setMessage(
           payload?.message ?? "Unable to establish your account session.",
         );
         return;
       }
+
+      const sessionResponse = await fetch("/api/auth/session", {
+        credentials: "same-origin",
+      });
+      if (!sessionResponse.ok) {
+        await client.auth.signOut({ scope: "local" });
+        setMessage(
+          "Your Google sign-in completed, but the app session was not saved.",
+        );
+        return;
+      }
+
+      await client.auth.signOut({ scope: "local" });
 
       window.location.replace(payload.destination);
     }

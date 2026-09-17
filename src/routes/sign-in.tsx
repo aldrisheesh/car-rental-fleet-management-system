@@ -266,7 +266,7 @@ function AuthenticationPage() {
   function googleSuccessPath() {
     if (search.returnTo) return search.returnTo;
     if (search.vehicle) return `/booking${contextQuery()}`;
-    return "/customer";
+    return "/";
   }
 
   function contextQuery() {

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight, CircleAlert, Eye, EyeOff, Mail, X } from "lucide-react";
 
 import { GoogleIcon } from "@/components/site/GoogleIcon";
@@ -37,7 +36,6 @@ export function SignInDialog({
   customerSuccessSearch?: Record<string, unknown>;
   adminSuccessTo?: string;
 }) {
-  const navigate = useNavigate();
   const emailRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState<AuthStage>("email");
@@ -161,14 +159,15 @@ export function SignInDialog({
     const destination =
       result.principal?.role === "Owner/Admin"
         ? (adminSuccessTo ?? "/admin")
-        : (customerSuccessTo ?? "/customer-landing");
-    void navigate({
-      to: destination as never,
-      replace: true,
-      ...(result.principal?.role === "Customer/Renter" && customerSuccessSearch
-        ? { search: customerSuccessSearch as never }
-        : {}),
-    });
+        : customerDestination();
+    if (result.principal?.role === "Customer/Renter" && customerSuccessSearch) {
+      const search = new URLSearchParams(
+        customerSuccessSearch as Record<string, string>,
+      );
+      window.location.assign(`${destination}?${search.toString()}`);
+      return;
+    }
+    window.location.assign(destination);
   }
 
   async function createAccount(event: FormEvent<HTMLFormElement>) {
@@ -213,24 +212,23 @@ export function SignInDialog({
       return;
     }
     onOpenChange(false);
-    void navigate({
-      to: (customerSuccessTo ?? "/customer-landing") as never,
-      replace: true,
-    });
+    window.location.assign(customerDestination());
   }
 
   async function googleReady() {
     setError("");
     setNotice("");
     setSubmitting(true);
-    const result = await continueWithProvider(
-      "google",
-      customerSuccessTo ?? "/customer",
-    );
+    const result = await continueWithProvider("google", customerDestination());
     if (!result.ok) {
       setError(result.message);
       setSubmitting(false);
     }
+  }
+
+  function customerDestination() {
+    if (customerSuccessTo) return customerSuccessTo;
+    return `${window.location.pathname}${window.location.search}`;
   }
 
   const title =
