@@ -9,13 +9,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { DateRange } from "react-day-picker";
 import {
   ArrowRight,
-  CalendarDays,
   CarFront,
   ChevronLeft,
   ChevronRight,
   FileCheck2,
   Headphones,
-  MapPin,
   ShieldCheck,
   Tag,
 } from "lucide-react";
@@ -27,6 +25,7 @@ import toyotaViosImage from "@/assets/home-vehicle-vios.png";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { DateRangePicker } from "@/components/site/DateRangePicker";
+import { RentalDateTrigger } from "@/components/site/RentalDateTrigger";
 import {
   Popover,
   PopoverContent,
@@ -96,15 +95,18 @@ function dateTimeLocalForDate(date: Date, time: string) {
   return `${year}-${month}-${day}T${time}`;
 }
 
-function formatDateRange(start: string, end: string) {
-  const from = dateFromDateTimeLocal(start);
-  const to = dateFromDateTimeLocal(end);
-  if (!from || !to) return "Select your dates";
-  const formatter = new Intl.DateTimeFormat("en-PH", {
+function formatRentalDateTime(value: string) {
+  const date = dateFromDateTimeLocal(value);
+  if (!date) return "Select a date";
+
+  const dateLabel = new Intl.DateTimeFormat("en-PH", {
     month: "short",
     day: "numeric",
-  });
-  return `${formatter.format(from)} – ${formatter.format(to)}`;
+    year: "numeric",
+  }).format(date);
+  const time = timeFromDateTimeLocal(value, "");
+
+  return time ? `${dateLabel} at ${formatTime(time)}` : dateLabel;
 }
 
 function formatTime(value: string) {
@@ -120,8 +122,8 @@ function HomePage() {
   const [rentalEnd, setRentalEnd] = useState("");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [draftRange, setDraftRange] = useState<DateRange>();
-  const [pickupTime, setPickupTime] = useState("10:00");
-  const [returnTime, setReturnTime] = useState("18:00");
+  const [pickupTime, setPickupTime] = useState("");
+  const [returnTime, setReturnTime] = useState("");
   const [featuredVehicles, setFeaturedVehicles] = useState<CustomerVehicle[]>(
     [],
   );
@@ -132,6 +134,7 @@ function HomePage() {
   const firstAvailableDate = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() + 1);
     return date;
   }, []);
 
@@ -227,12 +230,21 @@ function HomePage() {
   }
 
   function openDatePicker() {
-    setDraftRange({
-      from: dateFromDateTimeLocal(rentalStart),
-      to: dateFromDateTimeLocal(rentalEnd),
-    });
-    setPickupTime(timeFromDateTimeLocal(rentalStart, "10:00"));
-    setReturnTime(timeFromDateTimeLocal(rentalEnd, "18:00"));
+    const pickupDate = dateFromDateTimeLocal(rentalStart);
+    const returnDate = dateFromDateTimeLocal(rentalEnd);
+    const hasBookableRange =
+      pickupDate &&
+      returnDate &&
+      pickupDate >= firstAvailableDate &&
+      returnDate >= firstAvailableDate;
+
+    setDraftRange(
+      hasBookableRange ? { from: pickupDate, to: returnDate } : undefined,
+    );
+    setPickupTime(
+      hasBookableRange ? timeFromDateTimeLocal(rentalStart, "") : "",
+    );
+    setReturnTime(hasBookableRange ? timeFromDateTimeLocal(rentalEnd, "") : "");
     setDatePickerOpen(true);
   }
 
@@ -297,14 +309,7 @@ function HomePage() {
                   onSubmit={submitFinder}
                   noValidate
                 >
-                  <div className="home-service-area">
-                    <MapPin size={22} aria-hidden="true" />
-                    <span>
-                      <small>Pick-up location</small>
-                      <strong>Manila, Rizal or nearby</strong>
-                    </span>
-                  </div>
-                  <div className="home-date-field">
+                  <div className="home-date-field home-date-field--rental">
                     <Popover
                       open={datePickerOpen}
                       onOpenChange={(open) => {
@@ -313,20 +318,12 @@ function HomePage() {
                       }}
                     >
                       <PopoverTrigger asChild>
-                        <button
+                        <RentalDateTrigger
                           id="rental-dates"
-                          className="home-date-trigger"
-                          type="button"
+                          pickupValue={formatRentalDateTime(rentalStart)}
+                          returnValue={formatRentalDateTime(rentalEnd)}
                           onClick={openDatePicker}
-                        >
-                          <CalendarDays size={20} aria-hidden="true" />
-                          <span>
-                            <small>Rental dates</small>
-                            <strong>
-                              {formatDateRange(rentalStart, rentalEnd)}
-                            </strong>
-                          </span>
-                        </button>
+                        />
                       </PopoverTrigger>
                       <PopoverContent
                         className="home-date-picker-popover"

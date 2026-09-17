@@ -13,6 +13,7 @@ import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { AddressAutocomplete } from "@/components/customer/AddressAutocomplete";
 import { DateRangePicker } from "@/components/site/DateRangePicker";
+import { RentalDateTrigger } from "@/components/site/RentalDateTrigger";
 import {
   Popover,
   PopoverContent,
@@ -42,6 +43,7 @@ import {
   finderContextForSubmission,
   finderProvenanceMatchesBooking,
   parseFinderBookingHandoff,
+  parseFinderDateSelection,
   validateFinderBookingSearch,
 } from "@/lib/finder-booking";
 import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
@@ -108,17 +110,6 @@ function dateTimeLocalForDate(date: Date, time: string) {
   return `${year}-${month}-${day}T${time}`;
 }
 
-function formatPickerRange(start: string, end: string) {
-  const from = dateFromDateTimeLocal(start);
-  const to = dateFromDateTimeLocal(end);
-  if (!from || !to) return "Choose your dates";
-  const formatter = new Intl.DateTimeFormat("en-PH", {
-    month: "short",
-    day: "numeric",
-  });
-  return `${formatter.format(from)} – ${formatter.format(to)}`;
-}
-
 function formatTime(value: string) {
   const [hour, minute] = value.split(":").map(Number);
   return new Intl.DateTimeFormat("en-PH", {
@@ -129,12 +120,14 @@ function formatTime(value: string) {
 
 function initialDraft(
   handoff: ReturnType<typeof parseFinderBookingHandoff>,
+  selectedDates: ReturnType<typeof parseFinderDateSelection>,
 ): BookingDraft {
+  const tripDates = handoff ?? selectedDates;
   return {
     pickupBranchId: "",
     returnBranchId: "",
-    pickupAt: handoff ? dateTimeInputFromIso(handoff.requestedStart) : "",
-    returnAt: handoff ? dateTimeInputFromIso(handoff.requestedEnd) : "",
+    pickupAt: tripDates ? dateTimeInputFromIso(tripDates.requestedStart) : "",
+    returnAt: tripDates ? dateTimeInputFromIso(tripDates.requestedEnd) : "",
     purposeOfUse: "",
     pickupDeliveryOption: "delivery",
     pickupLocation: "",
@@ -148,11 +141,17 @@ function initialDraft(
 function RentalRequestPage() {
   const search = Route.useSearch();
   const handoff = useMemo(() => parseFinderBookingHandoff(search), [search]);
+  const selectedDates = useMemo(
+    () => parseFinderDateSelection(search),
+    [search],
+  );
   const [masterData, setMasterData] = useState<BookingMasterData | null>(null);
   const [vehicles, setVehicles] = useState<CustomerVehicle[]>([]);
   const [masterLoading, setMasterLoading] = useState(true);
   const [masterError, setMasterError] = useState("");
-  const [draft, setDraft] = useState<BookingDraft>(() => initialDraft(handoff));
+  const [draft, setDraft] = useState<BookingDraft>(() =>
+    initialDraft(handoff, selectedDates),
+  );
   const [step, setStep] = useState<1 | 2>(1);
   const [errors, setErrors] = useState<BookingErrors>({});
   const [principal, setPrincipal] = useState(getClientPrincipal());
@@ -165,7 +164,7 @@ function RentalRequestPage() {
   const vehicleId = search.vehicle ?? "";
   const selectedVehicle =
     vehicles.find((vehicle) => vehicle.id === vehicleId) ?? null;
-  const storageKey = `briahs-rental-request-draft:${vehicleId}:${search.finderStart ?? ""}`;
+  const storageKey = `briahs-rental-request-draft:${vehicleId}:${search.finderStart ?? ""}:${search.finderEnd ?? ""}`;
 
   async function loadBookingOptions() {
     setMasterLoading(true);
@@ -553,16 +552,28 @@ function DetailsForm({
   const firstAvailableDate = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() + 1);
     return date;
   }, []);
 
   function openDatePicker() {
-    setDraftRange({
-      from: dateFromDateTimeLocal(draft.pickupAt),
-      to: dateFromDateTimeLocal(draft.returnAt),
-    });
-    setPickupTime(timeFromDateTimeLocal(draft.pickupAt, ""));
-    setReturnTime(timeFromDateTimeLocal(draft.returnAt, ""));
+    const pickupDate = dateFromDateTimeLocal(draft.pickupAt);
+    const returnDate = dateFromDateTimeLocal(draft.returnAt);
+    const hasBookableRange =
+      pickupDate &&
+      returnDate &&
+      pickupDate >= firstAvailableDate &&
+      returnDate >= firstAvailableDate;
+
+    setDraftRange(
+      hasBookableRange ? { from: pickupDate, to: returnDate } : undefined,
+    );
+    setPickupTime(
+      hasBookableRange ? timeFromDateTimeLocal(draft.pickupAt, "") : "",
+    );
+    setReturnTime(
+      hasBookableRange ? timeFromDateTimeLocal(draft.returnAt, "") : "",
+    );
     setDatePickerOpen(true);
   }
 
@@ -587,32 +598,27 @@ function DetailsForm({
           }}
         >
           <PopoverTrigger asChild>
-            <button
+            <RentalDateTrigger
               id="pickup-at"
-              className="request-date-trigger"
-              type="button"
-              aria-invalid={Boolean(errors.pickupAt || errors.returnAt)}
-              aria-describedby={
+              className="request-rental-date-trigger"
+              pickupValue={
+                draft.pickupAt
+                  ? formatInputDateTime(draft.pickupAt)
+                  : "Select a date"
+              }
+              returnValue={
+                draft.returnAt
+                  ? formatInputDateTime(draft.returnAt)
+                  : "Select a date"
+              }
+              invalid={Boolean(errors.pickupAt || errors.returnAt)}
+              describedBy={
                 errors.pickupAt || errors.returnAt
                   ? "pickup-at-error"
                   : undefined
               }
               onClick={openDatePicker}
-            >
-              <CalendarDays size={20} aria-hidden="true" />
-              <span>
-                <small>Rental period</small>
-                <span className="request-date-trigger-value">
-                  {formatPickerRange(draft.pickupAt, draft.returnAt)}
-                </span>
-              </span>
-              {pickupTime && returnTime ? (
-                <span className="request-date-trigger-times">
-                  <span>Pick up {formatTime(pickupTime)}</span>
-                  <span>Return {formatTime(returnTime)}</span>
-                </span>
-              ) : null}
-            </button>
+            />
           </PopoverTrigger>
           <PopoverContent
             className="home-date-picker-popover"

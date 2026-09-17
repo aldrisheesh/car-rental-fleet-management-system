@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import {
   buildGeoapifyAutocompleteUrl,
   geoapifyAddressSuggestions,
+  shouldRequestGeoapifySuggestions,
   type AddressSuggestion,
   type GeoapifyAutocompleteResponse,
 } from "@/lib/geoapify-address";
@@ -33,15 +34,22 @@ export function AddressAutocomplete({
   const [status, setStatus] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
   const requestId = useRef(0);
+  const selectedAddress = useRef<string | null>(null);
 
   useEffect(() => {
     const query = value.trim();
     const apiKey = configuredKey();
-    if (!query || query.length < 3) {
+    if (
+      !shouldRequestGeoapifySuggestions({
+        value: query,
+        selectedAddress: selectedAddress.current,
+      })
+    ) {
       setSuggestions([]);
       setActiveIndex(-1);
       return;
     }
+    selectedAddress.current = null;
     if (!apiKey) {
       setSuggestions([]);
       setActiveIndex(-1);
@@ -84,6 +92,8 @@ export function AddressAutocomplete({
   }, [value]);
 
   function selectSuggestion(suggestion: AddressSuggestion) {
+    selectedAddress.current = suggestion.formatted;
+    requestId.current += 1;
     onChange(suggestion.formatted);
     setSuggestions([]);
     setActiveIndex(-1);
@@ -114,7 +124,10 @@ export function AddressAutocomplete({
         className="customer-input"
         type="text"
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => {
+          selectedAddress.current = null;
+          onChange(event.target.value);
+        }}
         onFocus={() => {
           if (!configuredKey()) setStatus(FALLBACK_MESSAGE);
         }}

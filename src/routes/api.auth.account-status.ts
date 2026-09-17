@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { getAccountNextStep } from "@/lib/auth-account-discovery";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-
-type AccountNextStep = "sign-in" | "sign-up" | "unavailable";
 
 export const Route = createFileRoute("/api/auth/account-status")({
   server: {
@@ -38,15 +37,9 @@ export const Route = createFileRoute("/api/auth/account-status")({
           );
         }
 
-        let next: AccountNextStep = "sign-up";
-        if (
-          profile?.account_status === "Active" &&
-          profile.user_type === "Customer/Renter"
-        ) {
-          next = "sign-in";
-        } else if (profile) {
-          next = "unavailable";
-        }
+        const next = getAccountNextStep(
+          profile ? { accountStatus: profile.account_status } : null,
+        );
 
         return Response.json({ next });
       },

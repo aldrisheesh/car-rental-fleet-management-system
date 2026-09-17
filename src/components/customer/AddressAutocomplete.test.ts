@@ -15,10 +15,7 @@ test("address autocomplete preserves manual-entry fallback without a configured 
     component,
     /Address suggestions are unavailable\. You can enter the full address\./,
   );
-  assert.match(
-    component,
-    /onChange=\{\(event\) => onChange\(event\.target\.value\)\}/,
-  );
+  assert.match(component, /onChange\(event\.target\.value\)/);
   assert.match(component, /VITE_GEOAPIFY_API_KEY/);
 });
 
@@ -26,6 +23,8 @@ test("a Geoapify selection resolves the formatted address into the existing stri
   const component = await source(componentPath);
   assert.match(component, /buildGeoapifyAutocompleteUrl/);
   assert.match(component, /onChange\(suggestion\.formatted\)/);
+  assert.match(component, /selectedAddress\.current = suggestion\.formatted/);
+  assert.match(component, /requestId\.current \+= 1/);
   assert.match(component, /AbortController/);
 });
 

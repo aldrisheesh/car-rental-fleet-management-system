@@ -435,7 +435,11 @@ export function ErrorSummary({
 export function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={`${id}-error`} className="customer-field-error" role="alert">
+    <p
+      id={`${id}-error`}
+      className={`customer-field-error${id === "finder-dates" ? " finder-dates-error" : ""}`}
+      role="alert"
+    >
       <AlertCircle size={16} strokeWidth={1.9} aria-hidden="true" />
       <span>{message}</span>
     </p>

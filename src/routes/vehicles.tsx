@@ -31,6 +31,7 @@ import { Header } from "@/components/site/Header";
 import { VehicleCard } from "@/components/site/VehicleCard";
 import finderHero from "@/assets/destinations/elyu.jpg";
 import { DateRangePicker } from "@/components/site/DateRangePicker";
+import { RentalDateTrigger } from "@/components/site/RentalDateTrigger";
 import {
   Popover,
   PopoverContent,
@@ -130,8 +131,9 @@ function finderDateFromDateTimeLocal(value: string) {
   return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
 }
 
-function finderTimeFromDateTimeLocal(value: string, fallback: string) {
-  return /^\d{4}-\d{2}-\d{2}T(\d{2}:\d{2})/.exec(value)?.[1] ?? fallback;
+function finderTimeFromDateTimeLocal(value: string) {
+  const match = /^\d{4}-\d{2}-\d{2}T(\d{2}:\d{2})/.exec(value);
+  return match?.[1] ?? "";
 }
 
 function finderDateTimeLocalForDate(date: Date, time: string) {
@@ -176,8 +178,8 @@ function FindCarPage() {
   const [browseCategory, setBrowseCategory] = useState("");
   const [finderDatePickerOpen, setFinderDatePickerOpen] = useState(false);
   const [finderDraftRange, setFinderDraftRange] = useState<DateRange>();
-  const [finderPickupTime, setFinderPickupTime] = useState("10:00");
-  const [finderReturnTime, setFinderReturnTime] = useState("18:00");
+  const [finderPickupTime, setFinderPickupTime] = useState("");
+  const [finderReturnTime, setFinderReturnTime] = useState("");
   const [finderPreferencesOpen, setFinderPreferencesOpen] = useState(false);
   const finderValuesRef = useRef<FinderFormState | null>(null);
   const evaluatedKey = useRef("");
@@ -185,6 +187,7 @@ function FindCarPage() {
   const finderFirstAvailableDate = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() + 1);
     return date;
   }, []);
 
@@ -355,6 +358,21 @@ function FindCarPage() {
       preferredCategory: String(form.get("preferredCategory") ?? ""),
       destination: String(form.get("destination") ?? ""),
     };
+
+    // The date picker is the only supported way to set a rental period here.
+    // Treat an incomplete period as a request to choose dates, rather than an
+    // inline form error that leaves the customer at a dead end.
+    if (!values.requestedStart || !values.requestedEnd) {
+      setFinderErrors((current) => ({
+        ...current,
+        requestedStart: undefined,
+        requestedEnd: undefined,
+      }));
+      setFinderError("");
+      openFinderDatePicker();
+      return;
+    }
+
     // Dates are sufficient for browsing. The optional smart finder criteria
     // are only required when ranking recommendations through the API.
     if (
@@ -380,16 +398,23 @@ function FindCarPage() {
   }
 
   function openFinderDatePicker() {
-    setFinderDraftRange({
-      from: finderDateFromDateTimeLocal(activeFinderForm.requestedStart),
-      to: finderDateFromDateTimeLocal(activeFinderForm.requestedEnd),
-    });
-    setFinderPickupTime(
-      finderTimeFromDateTimeLocal(activeFinderForm.requestedStart, "10:00"),
+    const pickupDate = finderDateFromDateTimeLocal(
+      activeFinderForm.requestedStart,
     );
-    setFinderReturnTime(
-      finderTimeFromDateTimeLocal(activeFinderForm.requestedEnd, "18:00"),
+    const returnDate = finderDateFromDateTimeLocal(
+      activeFinderForm.requestedEnd,
     );
+    const hasBookableRange =
+      pickupDate &&
+      returnDate &&
+      pickupDate >= finderFirstAvailableDate &&
+      returnDate >= finderFirstAvailableDate;
+
+    setFinderDraftRange(
+      hasBookableRange ? { from: pickupDate, to: returnDate } : undefined,
+    );
+    setFinderPickupTime("");
+    setFinderReturnTime("");
     setFinderDatePickerOpen(true);
   }
 
@@ -597,44 +622,45 @@ function FindCarPage() {
                   }}
                 >
                   <PopoverTrigger asChild>
-                    <button
+                    <RentalDateTrigger
                       id="finder-dates"
-                      className="finder-date-trigger"
-                      type="button"
-                      aria-invalid={Boolean(
+                      pickupValue={`${formatFinderSingleDate(
+                        activeFinderForm.requestedStart,
+                      )}${
+                        finderTimeFromDateTimeLocal(
+                          activeFinderForm.requestedStart,
+                        )
+                          ? ` at ${formatFinderTime(
+                              finderTimeFromDateTimeLocal(
+                                activeFinderForm.requestedStart,
+                              ),
+                            )}`
+                          : ""
+                      }`}
+                      returnValue={`${formatFinderSingleDate(
+                        activeFinderForm.requestedEnd,
+                      )}${
+                        finderTimeFromDateTimeLocal(
+                          activeFinderForm.requestedEnd,
+                        )
+                          ? ` at ${formatFinderTime(
+                              finderTimeFromDateTimeLocal(
+                                activeFinderForm.requestedEnd,
+                              ),
+                            )}`
+                          : ""
+                      }`}
+                      invalid={Boolean(
                         finderErrors.requestedStart ||
                         finderErrors.requestedEnd,
                       )}
-                      aria-describedby={
+                      describedBy={
                         finderErrors.requestedStart || finderErrors.requestedEnd
                           ? "finder-dates-error"
                           : undefined
                       }
                       onClick={openFinderDatePicker}
-                    >
-                      <span className="finder-date-part">
-                        <CalendarDays size={20} aria-hidden="true" />
-                        <span>
-                          <small>Pick-up date</small>
-                          <strong>
-                            {formatFinderSingleDate(
-                              activeFinderForm.requestedStart,
-                            )}
-                          </strong>
-                        </span>
-                      </span>
-                      <span className="finder-date-part finder-date-part--return">
-                        <CalendarDays size={20} aria-hidden="true" />
-                        <span>
-                          <small>Drop-off date</small>
-                          <strong>
-                            {formatFinderSingleDate(
-                              activeFinderForm.requestedEnd,
-                            )}
-                          </strong>
-                        </span>
-                      </span>
-                    </button>
+                    />
                   </PopoverTrigger>
                   <PopoverContent
                     className="home-date-picker-popover"
@@ -667,12 +693,6 @@ function FindCarPage() {
                   name="requestedEnd"
                   type="hidden"
                   value={activeFinderForm.requestedEnd}
-                />
-                <FieldError
-                  id="finder-dates"
-                  message={
-                    finderErrors.requestedStart ?? finderErrors.requestedEnd
-                  }
                 />
               </div>
               <div

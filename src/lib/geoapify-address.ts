@@ -10,6 +10,17 @@ export type AddressSuggestion = {
   formatted: string;
 };
 
+export function shouldRequestGeoapifySuggestions({
+  value,
+  selectedAddress,
+}: {
+  value: string;
+  selectedAddress: string | null;
+}) {
+  const query = value.trim();
+  return query.length >= 3 && query !== selectedAddress;
+}
+
 export function buildGeoapifyAutocompleteUrl({
   text,
   apiKey,

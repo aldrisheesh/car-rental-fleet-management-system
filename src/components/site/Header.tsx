@@ -1,11 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LogOut, Menu, UserRound, X } from "lucide-react";
+import {
+  Bell,
+  CalendarDays,
+  ChevronDown,
+  LogOut,
+  Menu,
+  UserRound,
+  X,
+} from "lucide-react";
 
 import { getClientPrincipal } from "@/lib/auth-client";
 import { clearCustomerSession } from "@/lib/customer-auth";
 import type { AppPrincipal } from "@/lib/auth";
 import { isMyBookingsPath } from "@/lib/customer-navigation";
+import {
+  NOTIFICATIONS_CHANGED_EVENT,
+  type NotificationsResponse,
+} from "@/lib/notifications";
 import { SignInDialog } from "@/components/site/SignInDialog";
 
 export function Header({
@@ -21,8 +33,12 @@ export function Header({
   });
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuPanelRef = useRef<HTMLDivElement>(null);
+  const accountButtonRef = useRef<HTMLButtonElement>(null);
+  const accountPanelRef = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [principal, setPrincipal] = useState<AppPrincipal | null>(null);
+  const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
   const [signingOut, setSigningOut] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const wasOpen = useRef(false);
@@ -54,9 +70,36 @@ export function Header({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [menuOpen]);
 
+  useEffect(() => {
+    if (!accountOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setAccountOpen(false);
+      requestAnimationFrame(() => accountButtonRef.current?.focus());
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (
+        !accountPanelRef.current?.contains(target) &&
+        !accountButtonRef.current?.contains(target)
+      ) {
+        setAccountOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [accountOpen]);
+
   async function signOut() {
     setSigningOut(true);
     setMenuOpen(false);
+    setAccountOpen(false);
     await clearCustomerSession();
     setPrincipal(null);
     setSigningOut(false);
@@ -76,17 +119,56 @@ export function Header({
         : "Sign in";
   const myBookingsActive = isMyBookingsPath(pathname);
   const isAuthenticationPage = pathname === "/sign-in";
-  const navigationItems = isCustomer
-    ? [{ to: "/customer" as const, label: "My Bookings" }]
-    : [];
   const wordmarkDestination = isCustomer ? "/vehicles" : "/";
+
+  useEffect(() => {
+    if (!isCustomer) {
+      setNotificationUnreadCount(0);
+      return;
+    }
+
+    let active = true;
+    const loadUnreadCount = async () => {
+      try {
+        const response = await fetch("/api/notifications", {
+          credentials: "same-origin",
+        });
+        const body = (await response
+          .json()
+          .catch(() => null)) as NotificationsResponse | null;
+        if (active && response.ok && body)
+          setNotificationUnreadCount(body.unreadCount);
+      } catch {
+        if (active) setNotificationUnreadCount(0);
+      }
+    };
+
+    void loadUnreadCount();
+    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, loadUnreadCount);
+    return () => {
+      active = false;
+      window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, loadUnreadCount);
+    };
+  }, [isCustomer]);
+
+  const customerInitials = isCustomer
+    ? principal.fullName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join("")
+        .toUpperCase()
+    : "";
 
   return (
     <>
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>
-      <header className={`customer-header${homeMarketing ? " is-home-marketing" : ""}`}>
+      <header
+        className={`customer-header${homeMarketing ? " is-home-marketing" : ""}`}
+      >
         <div
           className={`customer-container customer-header-inner${isCustomer ? " has-customer-journey" : ""}`}
         >
@@ -101,27 +183,11 @@ export function Header({
             </Link>
           ) : null}
 
-          {navigationItems.length ? (
-            <nav
-              className="customer-desktop-nav"
-              aria-label="Customer navigation"
-            >
-              {navigationItems.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.to}
-                  activeProps={{ className: "customer-nav-link is-active" }}
-                  className={`customer-nav-link${myBookingsActive ? " is-active" : ""}`}
-                  aria-current={myBookingsActive ? "page" : undefined}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          ) : null}
-
           {homeMarketing && !principal ? (
-            <nav className="customer-desktop-nav customer-marketing-nav" aria-label="Site navigation">
+            <nav
+              className="customer-desktop-nav customer-marketing-nav"
+              aria-label="Site navigation"
+            >
               <a className="customer-nav-link" href="/vehicles">
                 Our cars
               </a>
@@ -131,39 +197,134 @@ export function Header({
             </nav>
           ) : null}
 
-          {!isAuthenticationPage ? <div className="customer-header-account">
-            {principal ? (
-              <>
-                <Link
-                  to={isAdminWorkspace ? "/admin" : "/customer"}
+          {!isAuthenticationPage ? (
+            <div className="customer-header-account">
+              {principal ? (
+                isCustomer ? (
+                  <div className="customer-account-menu">
+                    <button
+                      ref={accountButtonRef}
+                      type="button"
+                      className="customer-account-trigger"
+                      aria-expanded={accountOpen}
+                      aria-controls="customer-account-menu"
+                      onClick={() => setAccountOpen((open) => !open)}
+                    >
+                      <UserRound
+                        size={22}
+                        strokeWidth={1.7}
+                        aria-hidden="true"
+                      />
+                      <span>{accountLabel}</span>
+                      <ChevronDown
+                        className={accountOpen ? "is-open" : undefined}
+                        size={17}
+                        strokeWidth={1.8}
+                        aria-hidden="true"
+                      />
+                    </button>
+                    {accountOpen ? (
+                      <div
+                        ref={accountPanelRef}
+                        id="customer-account-menu"
+                        className="customer-account-panel"
+                      >
+                        <div className="customer-account-summary">
+                          <span
+                            className="customer-account-initials"
+                            aria-hidden="true"
+                          >
+                            {customerInitials}
+                          </span>
+                          <span>
+                            <strong>{accountLabel}</strong>
+                            <small>{principal.email}</small>
+                          </span>
+                        </div>
+                        <nav aria-label="Account">
+                          <Link
+                            to="/customer/profile"
+                            className="customer-account-menu-link"
+                            onClick={() => setAccountOpen(false)}
+                          >
+                            <UserRound
+                              size={18}
+                              strokeWidth={1.7}
+                              aria-hidden="true"
+                            />
+                            <span>Profile &amp; account</span>
+                          </Link>
+                          <Link
+                            to="/customer"
+                            className="customer-account-menu-link"
+                            onClick={() => setAccountOpen(false)}
+                          >
+                            <CalendarDays
+                              size={18}
+                              strokeWidth={1.7}
+                              aria-hidden="true"
+                            />
+                            <span>My bookings</span>
+                          </Link>
+                          <Link
+                            to="/customer/notifications"
+                            className="customer-account-menu-link"
+                            onClick={() => setAccountOpen(false)}
+                          >
+                            <Bell
+                              size={18}
+                              strokeWidth={1.7}
+                              aria-hidden="true"
+                            />
+                            <span>Notifications</span>
+                            {notificationUnreadCount > 0 ? (
+                              <span className="customer-notification-count">
+                                {notificationUnreadCount}
+                              </span>
+                            ) : null}
+                          </Link>
+                        </nav>
+                        <div className="customer-account-menu-footer">
+                          <button
+                            type="button"
+                            className="customer-account-menu-link customer-account-sign-out"
+                            onClick={() => void signOut()}
+                            disabled={signingOut}
+                          >
+                            <LogOut
+                              size={18}
+                              strokeWidth={1.7}
+                              aria-hidden="true"
+                            />
+                            <span>
+                              {signingOut ? "Signing out…" : "Sign out"}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <Link
+                    to={isAdminWorkspace ? "/admin" : "/customer"}
+                    className="customer-account-link"
+                  >
+                    <UserRound size={24} strokeWidth={1.7} aria-hidden="true" />
+                    <span>{accountLabel}</span>
+                  </Link>
+                )
+              ) : (
+                <button
+                  type="button"
                   className="customer-account-link"
+                  onClick={() => setSignInOpen(true)}
                 >
                   <UserRound size={24} strokeWidth={1.7} aria-hidden="true" />
-                  <span>{accountLabel}</span>
-                </Link>
-                {isCustomer ? (
-                  <button
-                    type="button"
-                    className="customer-sign-out"
-                    onClick={() => void signOut()}
-                    disabled={signingOut}
-                  >
-                    <LogOut size={18} strokeWidth={1.8} aria-hidden="true" />
-                    <span>{signingOut ? "Signing out…" : "Sign out"}</span>
-                  </button>
-                ) : null}
-              </>
-            ) : (
-              <button
-                type="button"
-                className="customer-account-link"
-                onClick={() => setSignInOpen(true)}
-              >
-                <UserRound size={24} strokeWidth={1.7} aria-hidden="true" />
-                <span>Sign in</span>
-              </button>
-            )}
-          </div> : null}
+                  <span>Sign in</span>
+                </button>
+              )}
+            </div>
+          ) : null}
 
           <button
             ref={menuButtonRef}
@@ -192,24 +353,20 @@ export function Header({
             className="customer-mobile-nav"
           >
             <nav className="customer-container" aria-label="Mobile navigation">
-              {navigationItems.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.to}
-                  activeProps={{ className: "customer-mobile-link is-active" }}
-                  className={`customer-mobile-link${myBookingsActive ? " is-active" : ""}`}
-                  aria-current={myBookingsActive ? "page" : undefined}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
               {homeMarketing && !principal ? (
                 <>
-                  <a className="customer-mobile-link" href="/vehicles" onClick={() => setMenuOpen(false)}>
+                  <a
+                    className="customer-mobile-link"
+                    href="/vehicles"
+                    onClick={() => setMenuOpen(false)}
+                  >
                     Our cars
                   </a>
-                  <a className="customer-mobile-link" href="#rental-assurances" onClick={() => setMenuOpen(false)}>
+                  <a
+                    className="customer-mobile-link"
+                    href="#rental-assurances"
+                    onClick={() => setMenuOpen(false)}
+                  >
                     How it works
                   </a>
                 </>
@@ -217,13 +374,34 @@ export function Header({
               {principal ? (
                 <>
                   {isCustomer ? (
-                    <Link
-                      to="/customer/profile"
-                      className="customer-mobile-link"
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      Edit profile
-                    </Link>
+                    <div className="customer-mobile-account-links">
+                      <p>Account</p>
+                      <Link
+                        to="/customer/profile"
+                        className="customer-mobile-link"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Profile &amp; account
+                      </Link>
+                      <Link
+                        to="/customer"
+                        className={`customer-mobile-link${myBookingsActive ? " is-active" : ""}`}
+                        aria-current={myBookingsActive ? "page" : undefined}
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        My bookings
+                      </Link>
+                      <Link
+                        to="/customer/notifications"
+                        className="customer-mobile-link"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Notifications
+                        {notificationUnreadCount > 0
+                          ? ` (${notificationUnreadCount})`
+                          : ""}
+                      </Link>
+                    </div>
                   ) : null}
                   {isAdminWorkspace ? (
                     <Link

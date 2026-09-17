@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   buildGeoapifyAutocompleteUrl,
   geoapifyAddressSuggestions,
+  shouldRequestGeoapifySuggestions,
 } from "./geoapify-address.ts";
 
 test("Geoapify autocomplete uses the Philippine country filter", () => {
@@ -38,5 +39,24 @@ test("Geoapify suggestions retain only formatted address strings", () => {
       ],
     }),
     [{ formatted: "Taft Avenue, Malate, Manila, Philippines" }],
+  );
+});
+
+test("a selected formatted address does not trigger a duplicate autocomplete request", () => {
+  const selected = "553 Padre Herrera Street, Manila, Philippines";
+
+  assert.equal(
+    shouldRequestGeoapifySuggestions({
+      value: selected,
+      selectedAddress: selected,
+    }),
+    false,
+  );
+  assert.equal(
+    shouldRequestGeoapifySuggestions({
+      value: `${selected} 1012`,
+      selectedAddress: selected,
+    }),
+    true,
   );
 });

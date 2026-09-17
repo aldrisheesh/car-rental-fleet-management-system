@@ -21,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as VehiclesVehicleIdRouteImport } from './routes/vehicles.$vehicleId'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
+import { Route as CustomerNotificationsRouteImport } from './routes/customer_.notifications'
 import { Route as BookingsBookingIdRouteImport } from './routes/bookings.$bookingId'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
@@ -130,6 +131,11 @@ const VehiclesVehicleIdRoute = VehiclesVehicleIdRouteImport.update({
 const CustomerProfileRoute = CustomerProfileRouteImport.update({
   id: '/customer_/profile',
   path: '/customer/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomerNotificationsRoute = CustomerNotificationsRouteImport.update({
+  id: '/customer_/notifications',
+  path: '/customer/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookingsBookingIdRoute = BookingsBookingIdRouteImport.update({
@@ -434,6 +440,7 @@ export interface FileRoutesByFullPath {
   '/api/vehicles': typeof ApiVehiclesRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
+  '/customer/notifications': typeof CustomerNotificationsRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -497,6 +504,7 @@ export interface FileRoutesByTo {
   '/api/vehicles': typeof ApiVehiclesRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
+  '/customer/notifications': typeof CustomerNotificationsRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin': typeof AdminIndexRoute
@@ -562,6 +570,7 @@ export interface FileRoutesById {
   '/api/vehicles': typeof ApiVehiclesRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
+  '/customer_/notifications': typeof CustomerNotificationsRoute
   '/customer_/profile': typeof CustomerProfileRoute
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -628,6 +637,7 @@ export interface FileRouteTypes {
     | '/api/vehicles'
     | '/auth/callback'
     | '/bookings/$bookingId'
+    | '/customer/notifications'
     | '/customer/profile'
     | '/vehicles/$vehicleId'
     | '/admin/'
@@ -691,6 +701,7 @@ export interface FileRouteTypes {
     | '/api/vehicles'
     | '/auth/callback'
     | '/bookings/$bookingId'
+    | '/customer/notifications'
     | '/customer/profile'
     | '/vehicles/$vehicleId'
     | '/admin'
@@ -755,6 +766,7 @@ export interface FileRouteTypes {
     | '/api/vehicles'
     | '/auth/callback'
     | '/bookings/$bookingId'
+    | '/customer_/notifications'
     | '/customer_/profile'
     | '/vehicles/$vehicleId'
     | '/admin/'
@@ -805,6 +817,7 @@ export interface RootRouteChildren {
   ApiVehiclesRoute: typeof ApiVehiclesRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   BookingsBookingIdRoute: typeof BookingsBookingIdRoute
+  CustomerNotificationsRoute: typeof CustomerNotificationsRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
   ApiAuthAccountStatusRoute: typeof ApiAuthAccountStatusRoute
   ApiAuthProfileRoute: typeof ApiAuthProfileRoute
@@ -900,6 +913,13 @@ declare module '@tanstack/react-router' {
       path: '/customer/profile'
       fullPath: '/customer/profile'
       preLoaderRoute: typeof CustomerProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customer_/notifications': {
+      id: '/customer_/notifications'
+      path: '/customer/notifications'
+      fullPath: '/customer/notifications'
+      preLoaderRoute: typeof CustomerNotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bookings/$bookingId': {
@@ -1376,6 +1396,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVehiclesRoute: ApiVehiclesRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   BookingsBookingIdRoute: BookingsBookingIdRoute,
+  CustomerNotificationsRoute: CustomerNotificationsRoute,
   CustomerProfileRoute: CustomerProfileRoute,
   ApiAuthAccountStatusRoute: ApiAuthAccountStatusRoute,
   ApiAuthProfileRoute: ApiAuthProfileRoute,
