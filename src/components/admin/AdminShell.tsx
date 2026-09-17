@@ -53,30 +53,75 @@ type NavItem = {
   exact?: boolean;
 };
 
-const ownerNav: NavItem[] = [
+type NavGroup = {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  items: NavItem[];
+};
+
+type NavEntry = NavItem | NavGroup;
+
+const ownerNav: NavEntry[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/decisions", label: "Decision Support", icon: Brain },
-  { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
-  { to: "/admin/fleet", label: "Fleet", icon: Car },
-  { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
-  { to: "/admin/maintenance", label: "Maintenance", icon: Wrench },
-  { to: "/admin/payments", label: "Payments", icon: CreditCard },
-  { to: "/admin/reports", label: "Reports", icon: BarChart3 },
-  { to: "/admin/users", label: "Users & Roles", icon: ShieldCheck },
-  { to: "/admin/branches", label: "Branches", icon: Building2 },
-  { to: "/admin/activity", label: "Audit Trail", icon: ScrollText },
+  {
+    id: "operations",
+    label: "Operations",
+    icon: CalendarRange,
+    items: [
+      { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
+      { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+      { to: "/admin/payments", label: "Payments", icon: CreditCard },
+    ],
+  },
+  {
+    id: "vehicle-management",
+    label: "Vehicle Management",
+    icon: Car,
+    items: [
+      { to: "/admin/fleet", label: "Fleet", icon: Car },
+      { to: "/admin/maintenance", label: "Maintenance", icon: Wrench },
+      { to: "/admin/branches", label: "Locations", icon: Building2 },
+    ],
+  },
+  {
+    id: "administration",
+    label: "Administration",
+    icon: ShieldCheck,
+    items: [
+      { to: "/admin/reports", label: "Reports", icon: BarChart3 },
+      { to: "/admin/users", label: "Users & Roles", icon: ShieldCheck },
+      { to: "/admin/activity", label: "Audit Trail", icon: ScrollText },
+    ],
+  },
 ];
 
-const staffNav: NavItem[] = [
+const staffNav: NavEntry[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
-  { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
-  { to: "/admin/notifications", label: "Notifications", icon: Bell },
+  {
+    id: "operations",
+    label: "Operations",
+    icon: CalendarRange,
+    items: [
+      { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
+      { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+      { to: "/admin/notifications", label: "Notifications", icon: Bell },
+    ],
+  },
   { to: "/admin/reports", label: "Reports", icon: BarChart3 },
 ];
 
 function isActive(pathname: string, item: NavItem) {
   return item.exact ? pathname === item.to : pathname.startsWith(item.to);
+}
+
+function isNavGroup(entry: NavEntry): entry is NavGroup {
+  return "items" in entry;
+}
+
+function flatNavItems(entries: NavEntry[]) {
+  return entries.flatMap((entry) => (isNavGroup(entry) ? entry.items : entry));
 }
 
 function getInitials(name: string) {
@@ -94,13 +139,105 @@ function SidebarLinks({
   pathname,
   onNavigate,
 }: {
-  items: NavItem[];
+  items: NavEntry[];
   pathname: string;
   onNavigate?: () => void;
 }) {
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    () =>
+      Object.fromEntries(
+        items
+          .filter(isNavGroup)
+          .map((group) => [
+            group.id,
+            group.items.some((item) => isActive(pathname, item)),
+          ]),
+      ),
+  );
+
+  useEffect(() => {
+    const activeGroup = items
+      .filter(isNavGroup)
+      .find((group) => group.items.some((item) => isActive(pathname, item)));
+    if (!activeGroup) return;
+    setExpandedGroups((current) =>
+      current[activeGroup.id]
+        ? current
+        : { ...current, [activeGroup.id]: true },
+    );
+  }, [items, pathname]);
+
   return (
-    <ul className="space-y-1">
-      {items.map((item) => {
+    <ul className="space-y-1.5">
+      {items.map((entry) => {
+        if (isNavGroup(entry)) {
+          const groupActive = entry.items.some((item) => isActive(pathname, item));
+          const expanded = expandedGroups[entry.id] || groupActive;
+          const Icon = entry.icon;
+          const regionId = `admin-nav-${entry.id}`;
+          return (
+            <li key={entry.id}>
+              <button
+                type="button"
+                onClick={() =>
+                  setExpandedGroups((current) => ({
+                    ...current,
+                    [entry.id]: !expanded,
+                  }))
+                }
+                aria-expanded={expanded}
+                aria-controls={regionId}
+                className={`group flex min-h-11 w-full items-center gap-2.5 rounded-md border border-transparent px-2.5 text-left text-[13px] font-semibold transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${groupActive ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
+              >
+                <Icon
+                  aria-hidden="true"
+                  className={`h-5 w-5 shrink-0 ${groupActive ? "text-primary" : "text-[#19385e]"}`}
+                  strokeWidth={1.9}
+                />
+                <span className="min-w-0 flex-1 truncate">{entry.label}</span>
+                <ChevronDown
+                  aria-hidden="true"
+                  className={`h-4 w-4 shrink-0 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+                />
+              </button>
+              <div
+                id={regionId}
+                aria-hidden={!expanded}
+                className={`grid overflow-hidden transition-[grid-template-rows] duration-200 ${expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+              >
+                <ul
+                  className={`ml-5 min-h-0 overflow-hidden pl-2 ${expanded ? "border-l border-[#c9d8d2] py-1.5" : "py-0"}`}
+                >
+                  {entry.items.map((item) => {
+                    const active = isActive(pathname, item);
+                    const ItemIcon = item.icon;
+                    return (
+                      <li key={item.to}>
+                        <Link
+                          to={item.to as never}
+                          activeOptions={item.exact ? { exact: true } : undefined}
+                          onClick={onNavigate}
+                          aria-current={active ? "page" : undefined}
+                          tabIndex={expanded ? undefined : -1}
+                          className={`group flex min-h-10 items-center gap-2.5 rounded-md px-2.5 text-sm transition-[background-color,color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "bg-[#e2ece6] font-semibold text-primary" : "text-muted-foreground"}`}
+                        >
+                          <ItemIcon
+                            aria-hidden="true"
+                            className={`h-4 w-4 shrink-0 ${active ? "text-primary" : "text-[#526c7b]"}`}
+                            strokeWidth={1.9}
+                          />
+                          <span className="min-w-0 truncate">{item.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </li>
+          );
+        }
+
+        const item = entry;
         const active = isActive(pathname, item);
         const featured = item.to === "/admin/decisions";
         const Icon = item.icon;
@@ -118,11 +255,16 @@ function SidebarLinks({
                 className={`h-5 w-5 shrink-0 ${active ? "text-primary" : "text-[#19385e]"}`}
                 strokeWidth={1.9}
               />
-              <span className="min-w-0 truncate">{item.label}</span>
-              {featured && !active ? (
-                <span className="ml-auto rounded-full bg-[#d6eaf4] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#2e647b]">
-                  Insights
+              {featured ? (
+                <span className="min-w-0 leading-4">
+                  <span className="block font-medium">{item.label}</span>
+                  <span className="mt-0.5 inline-block rounded bg-[#d6eaf4] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-3 tracking-[0.06em] text-[#2e647b]">
+                    Insights
+                  </span>
                 </span>
+              ) : null}
+              {!featured ? (
+                <span className="min-w-0 truncate">{item.label}</span>
               ) : null}
             </Link>
           </li>
@@ -293,6 +435,7 @@ export function AdminShell() {
             </div>
           </div>
         </div>
+
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-[236px]">
@@ -441,7 +584,8 @@ function currentLabel(pathname: string) {
   if (pathname.startsWith("/admin/payments")) return "Payment review";
   if (pathname.startsWith("/admin/notifications")) return "Notifications";
   return (
-    [...ownerNav, ...staffNav].find((item) => isActive(pathname, item))
-      ?.label ?? "Dashboard"
+    flatNavItems([...ownerNav, ...staffNav]).find((item) =>
+      isActive(pathname, item),
+    )?.label ?? "Dashboard"
   );
 }
