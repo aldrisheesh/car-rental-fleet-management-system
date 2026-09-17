@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  clearSupabaseBrowserAuthStorage,
+  getSupabaseBrowserClient,
+} from "@/lib/supabase/client";
 
 type CallbackSearch = { code?: string; next?: string };
 
@@ -72,7 +75,13 @@ function OAuthCallbackPage() {
         return;
       }
 
-      await client.auth.signOut({ scope: "local" });
+      // The browser and httpOnly cookie layers currently refer to the same
+      // Supabase session. Calling signOut here revokes the refresh token that
+      // the app has just saved, so later route checks appear to log the user
+      // out. Stop browser refreshes and discard only the temporary OAuth state;
+      // the server cookie remains the canonical app session.
+      client.auth.stopAutoRefresh();
+      clearSupabaseBrowserAuthStorage();
 
       window.location.replace(payload.destination);
     }
