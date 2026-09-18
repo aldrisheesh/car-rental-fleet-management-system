@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
   ArrowRight,
@@ -351,16 +351,24 @@ function AuthenticationPage() {
           >
             <div className="auth-panel-header">
               <div>
-                <a
-                  className="harbor-booking-back"
-                  href={
-                    search.vehicle
-                      ? `/vehicles/${encodeURIComponent(search.vehicle)}${contextQuery()}`
-                      : "/vehicles"
-                  }
-                >
-                  <ArrowLeft size={16} aria-hidden="true" /> Back to vehicles
-                </a>
+                {search.vehicle ? (
+                  <Link
+                    className="harbor-booking-back"
+                    to="/vehicles/$vehicleId"
+                    params={{ vehicleId: search.vehicle }}
+                    search={{ ...search, vehicle: undefined, returnTo: undefined }}
+                  >
+                    <ArrowLeft size={16} aria-hidden="true" /> Back to vehicles
+                  </Link>
+                ) : (
+                  <Link
+                    className="harbor-booking-back"
+                    to="/vehicles"
+                    search={{ ...search, returnTo: undefined }}
+                  >
+                    <ArrowLeft size={16} aria-hidden="true" /> Back to vehicles
+                  </Link>
+                )}
                 <h1 id="auth-title">
                   {!emailStepComplete
                     ? vehicle

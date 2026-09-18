@@ -60,7 +60,10 @@ export function generateAllocationDrafts(
     .sort((a, b) => a.branchId.localeCompare(b.branchId) || a.id.localeCompare(b.id));
   const destinationRemaining = new Map(destinations.map((e) => [e.id, e.shortageUnits]));
   const sourceRemaining = new Map(sources.map((e) => [e.id, e.surplusUnits]));
-  const candidateCursor = new Map(sources.map((e) => [e.id, 0]));
+  // A vehicle can only appear once in a generated batch. A source may be
+  // surplus in more than one forecast week, but committing the same physical
+  // vehicle to multiple moves would make the batch internally inconsistent.
+  const allocatedVehicleIds = new Set<string>();
   const drafts: AllocationDraft[] = [];
 
   for (const destination of destinations) {
@@ -72,15 +75,16 @@ export function generateAllocationDrafts(
         source.targetWeekStart !== destination.targetWeekStart ||
         source.targetWeekEnd !== destination.targetWeekEnd
       ) continue;
-      const candidates = candidatesBySource.get(source.id) ?? [];
-      const cursor = candidateCursor.get(source.id) ?? 0;
+      const candidates = (candidatesBySource.get(source.id) ?? []).filter(
+        (candidate) => !allocatedVehicleIds.has(candidate.vehicleId),
+      );
       const recommendedUnits = Math.min(
         destinationRemaining.get(destination.id) ?? 0,
         sourceRemaining.get(source.id) ?? 0,
-        candidates.length - cursor,
+        candidates.length,
       );
       if (recommendedUnits <= 0) continue;
-      drafts.push({ source, destination, recommendedUnits, candidates: candidates.slice(cursor, cursor + recommendedUnits) });
+      drafts.push({ source, destination, recommendedUnits, candidates: candidates.slice(0, recommendedUnits) });
       destinationRemaining.set(
         destination.id,
         (destinationRemaining.get(destination.id) ?? 0) - recommendedUnits,
@@ -89,7 +93,8 @@ export function generateAllocationDrafts(
         source.id,
         (sourceRemaining.get(source.id) ?? 0) - recommendedUnits,
       );
-      candidateCursor.set(source.id, cursor + recommendedUnits);
+      for (const candidate of candidates.slice(0, recommendedUnits))
+        allocatedVehicleIds.add(candidate.vehicleId);
     }
   }
   return drafts;

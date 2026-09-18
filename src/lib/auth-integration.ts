@@ -164,7 +164,10 @@ export async function continueWithProvider(
 
   const { error } = await getSupabaseBrowserClient().auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: getProviderStartUrl(provider, next) },
+    options: {
+      redirectTo: getProviderStartUrl(provider, next),
+      queryParams: { prompt: "select_account" },
+    },
   });
 
   return error

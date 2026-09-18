@@ -29,12 +29,14 @@ export function SignInDialog({
   customerSuccessTo,
   customerSuccessSearch,
   adminSuccessTo,
+  onAuthenticated,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   customerSuccessTo?: string;
   customerSuccessSearch?: Record<string, unknown>;
   adminSuccessTo?: string;
+  onAuthenticated?: () => void;
 }) {
   const emailRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -155,11 +157,12 @@ export function SignInDialog({
       setSubmitting(false);
       return;
     }
-    onOpenChange(false);
     const destination =
       result.principal?.role === "Owner/Admin"
         ? (adminSuccessTo ?? "/admin")
         : customerDestination();
+    onAuthenticated?.();
+    onOpenChange(false);
     if (result.principal?.role === "Customer/Renter" && customerSuccessSearch) {
       const search = new URLSearchParams(
         customerSuccessSearch as Record<string, string>,
@@ -167,6 +170,7 @@ export function SignInDialog({
       window.location.assign(`${destination}?${search.toString()}`);
       return;
     }
+    if (destination === customerDestination()) return;
     window.location.assign(destination);
   }
 
@@ -211,8 +215,11 @@ export function SignInDialog({
       setSubmitting(false);
       return;
     }
+    const destination = customerDestination();
+    onAuthenticated?.();
     onOpenChange(false);
-    window.location.assign(customerDestination());
+    if (destination === customerDestination()) return;
+    window.location.assign(destination);
   }
 
   async function googleReady() {

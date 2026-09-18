@@ -7,6 +7,7 @@ import {
   isAppRole,
   type AppPrincipal,
 } from "./auth.ts";
+import { readFile } from "node:fs/promises";
 
 test("application roles are canonical and closed", () => {
   assert.deepEqual(APP_ROLES, [
@@ -51,4 +52,34 @@ test("coarse admin route access follows the frozen role matrix", () => {
   assert.equal(canAccessAdminPath(staff, "/admin/fleet"), false);
   assert.equal(canAccessAdminPath(staff, "/admin/reports"), true);
   assert.equal(canAccessAdminPath(customer, "/admin/bookings"), false);
+});
+
+test("admin sign-out waits for the shared credential session to clear", async () => {
+  const [adminAuth, adminShell, header] = await Promise.all([
+    readFile(new URL("./admin-auth.ts", import.meta.url), "utf8"),
+    readFile(
+      new URL("../components/admin/AdminShell.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../components/site/Header.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(adminAuth, /export async function signOutAdmin\(\)\s*\{\s*await signOutWithCredentialsApi\(\)/);
+  assert.match(adminShell, /async function handleSignOut\(\)[\s\S]*await signOutAdmin\(\)[\s\S]*navigate\(\{ to: "\/", replace: true \}\)/);
+  assert.doesNotMatch(adminShell, /clearCustomerSession/);
+  assert.match(header, /window\.addEventListener\(ADMIN_SESSION_CHANGED_EVENT, syncPrincipal\)/);
+});
+
+test("homepage authentication updates the shell in place and Google prompts for an account", async () => {
+  const [dialog, header, authIntegration] = await Promise.all([
+    readFile(
+      new URL("../components/site/SignInDialog.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../components/site/Header.tsx", import.meta.url), "utf8"),
+    readFile(new URL("./auth-integration.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(dialog, /onAuthenticated\?\.\(\);/);
+  assert.match(dialog, /if \(destination === customerDestination\(\)\) return;/);
+  assert.match(header, /onAuthenticated=\{\(\) => setPrincipal\(getClientPrincipal\(\)\)\}/);
+  assert.match(authIntegration, /queryParams: \{ prompt: "select_account" \}/);
 });

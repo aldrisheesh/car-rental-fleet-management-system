@@ -57,6 +57,25 @@ test("two revalidated candidates cap a multi-destination source at two units", (
   assert.equal(rows.reduce((sum, row) => sum + row.recommendedUnits, 0), 2);
 });
 
+test("a vehicle is not recommended twice across separate forecast weeks", () => {
+  const firstDestination = evaluation({ id: "d1", branchId: "destination", shortageUnits: 1 });
+  const firstSource = evaluation({ id: "s1", branchId: "source", surplusUnits: 1 });
+  const secondDestination = evaluation({
+    id: "d2", branchId: "destination", shortageUnits: 1, horizon: 2,
+    targetWeekStart: "2026-09-14", targetWeekEnd: "2026-09-21",
+  });
+  const secondSource = evaluation({
+    id: "s2", branchId: "source", surplusUnits: 1, horizon: 2,
+    targetWeekStart: "2026-09-14", targetWeekEnd: "2026-09-21",
+  });
+  const rows = generateAllocationDrafts(
+    [firstDestination, firstSource, secondDestination, secondSource],
+    new Map([["s1", [candidate("A")]], ["s2", [candidate("A")]]]),
+  );
+  assert.equal(rows.length, 1);
+  assert.deepEqual(rows[0]?.candidates.map((item: AllocationCandidate) => item.vehicleId), ["A"]);
+});
+
 test("known idle duration ranks longest first, unknown last, tie by vehicle", () => {
   const ranked = rankAllocationCandidates([
     { vehicleId: "z", vehicleName: "Z", licensePlate: null, idleDays: null, idleReference: null, revalidationState: "EligibleAtGeneration", explanationCodes: [] },

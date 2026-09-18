@@ -11,6 +11,7 @@ import {
   Eye,
   FileCheck2,
   MapPin,
+  QrCode,
   RefreshCw,
   Upload,
   type LucideIcon,
@@ -61,6 +62,7 @@ import type {
   CustomerPaymentResponse,
 } from "@/lib/payment-retrieval";
 import { getSession } from "@/lib/auth-client";
+import { calculateRentalDays } from "@/lib/rental-duration";
 
 export const Route = createFileRoute("/bookings/$bookingId")({
   head: () => ({
@@ -511,6 +513,8 @@ function BookingStateContent({
       return (
         <PaymentSubmission
           bookingId={booking.id}
+          booking={booking}
+          vehicle={vehicle}
           payment={composition.payment}
           methods={composition.paymentMethods}
           state={lifecycle.state}
@@ -1102,12 +1106,16 @@ function RequirementDocumentList({
 
 function PaymentSubmission({
   bookingId,
+  booking,
+  vehicle,
   payment,
   methods,
   state,
   onRefresh,
 }: {
   bookingId: string;
+  booking: CustomerBooking;
+  vehicle: CustomerVehicle | null;
   payment: CustomerPayment | null;
   methods: CustomerPaymentMethod[];
   state: "payment-action" | "payment-resubmission";
@@ -1126,7 +1134,12 @@ function PaymentSubmission({
   const [focusKey, setFocusKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const selectedMethod = methods.find((item) => item.id === method);
+  const showDemoQr =
+    selectedMethod?.is_demo === true ||
+    selectedMethod?.code === "demo-bank-transfer";
   const requiredAmount = numericValue(payment?.required_amount);
+  const paymentEstimate = downPaymentEstimate(booking, vehicle);
+  const amountDue = requiredAmount ?? paymentEstimate?.downPayment ?? null;
   const resubmissionReason = payment?.resubmission_reason?.trim();
 
   const errors = [
@@ -1289,6 +1302,9 @@ function PaymentSubmission({
                 Instructions appear after you choose a current payment method.
               </p>
             )}
+            {showDemoQr ? (
+              <PaymentQr amountDue={amountDue} estimate={paymentEstimate} />
+            ) : null}
           </div>
 
           <div className="booking-form-field">
@@ -1413,6 +1429,132 @@ function PaymentSubmission({
       </form>
     </section>
   );
+}
+
+function PaymentQr({
+  amountDue,
+  estimate,
+}: {
+  amountDue: number | null;
+  estimate: PaymentEstimate | null;
+}) {
+  const size = 21;
+  const modules: React.ReactNode[] = [];
+  const isFinderModule = (column: number, row: number) => {
+    const finders = [
+      [0, 0],
+      [size - 7, 0],
+      [0, size - 7],
+    ];
+    return finders.some(([left, top]) => {
+      const localColumn = column - left;
+      const localRow = row - top;
+      if (localColumn < 0 || localColumn > 6 || localRow < 0 || localRow > 6)
+        return false;
+      return (
+        localColumn === 0 ||
+        localColumn === 6 ||
+        localRow === 0 ||
+        localRow === 6 ||
+        (localColumn >= 2 && localColumn <= 4 && localRow >= 2 && localRow <= 4)
+      );
+    });
+  };
+  const insideFinder = (column: number, row: number) =>
+    [
+      [0, 0],
+      [size - 7, 0],
+      [0, size - 7],
+    ].some(
+      ([left, top]) =>
+        column >= left && column <= left + 6 && row >= top && row <= top + 6,
+    );
+
+  for (let row = 0; row < size; row += 1) {
+    for (let column = 0; column < size; column += 1) {
+      const filled = insideFinder(column, row)
+        ? isFinderModule(column, row)
+        : (column * 13 + row * 7 + column * row) % 5 < 2;
+      if (!filled) continue;
+      modules.push(
+        <rect key={`${column}-${row}`} x={column} y={row} width="1" height="1" />,
+      );
+    }
+  }
+
+  return (
+    <figure className="booking-payment-qr" aria-labelledby="payment-qr-title">
+      <div className="booking-payment-qr__code" aria-hidden="true">
+        <svg viewBox={`-1 -1 ${size + 2} ${size + 2}`} focusable="false">
+          {modules}
+        </svg>
+        <span>QR Ph</span>
+      </div>
+      <figcaption>
+        <div className="booking-payment-qr__topline">
+          <div className="booking-payment-qr__heading">
+            <QrCode size={18} aria-hidden="true" />
+            <h3 id="payment-qr-title">Pay by QR</h3>
+          </div>
+          {amountDue !== null ? (
+            <div className="booking-payment-qr__amount" aria-live="polite">
+              <span>Amount to pay</span>
+              <strong>{formatCurrency(amountDue)}</strong>
+            </div>
+          ) : null}
+        </div>
+        <p>
+          Use GCash or your online banking app to make your payment.
+        </p>
+        {estimate ? (
+          <dl className="booking-payment-qr__breakdown">
+            <div>
+              <dt>Base rental</dt>
+              <dd>{formatCurrency(estimate.baseRental)}</dd>
+            </div>
+            <div>
+              <dt>Down payment</dt>
+              <dd>
+                50% · {estimate.rentalDays} {estimate.rentalDays === 1 ? "day" : "days"}
+              </dd>
+            </div>
+          </dl>
+        ) : null}
+        <small>
+          Keep the transaction reference, then enter it below and upload your
+          payment proof for review.
+        </small>
+      </figcaption>
+    </figure>
+  );
+}
+
+type PaymentEstimate = {
+  rentalDays: number;
+  baseRental: number;
+  downPayment: number;
+};
+
+function downPaymentEstimate(
+  booking: CustomerBooking,
+  vehicle: CustomerVehicle | null,
+): PaymentEstimate | null {
+  const dailyRate = numericValue(vehicle?.daily_rate);
+  if (dailyRate === null || dailyRate < 0) return null;
+  try {
+    const rentalDays = calculateRentalDays(
+      new Date(booking.pickup_at),
+      new Date(booking.return_at),
+    );
+    const baseRental = rentalDays * dailyRate;
+    return {
+      rentalDays,
+      baseRental,
+      downPayment: Math.round(baseRental * 50) / 100,
+    };
+  } catch {
+    return null;
+  }
 }
 
 function PaymentUnderReview({ payment }: { payment: CustomerPayment | null }) {

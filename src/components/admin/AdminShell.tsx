@@ -40,7 +40,6 @@ import {
   type AdminRole,
   type AdminSession,
 } from "@/lib/admin-auth";
-import { clearCustomerSession } from "@/lib/customer-auth";
 import {
   NOTIFICATIONS_CHANGED_EVENT,
   type NotificationsResponse,
@@ -382,10 +381,9 @@ export function AdminShell() {
     };
   }, [pathname, session]);
 
-  function handleSignOut() {
-    signOutAdmin();
-    clearCustomerSession();
+  async function handleSignOut() {
     setSession(null);
+    await signOutAdmin();
     void navigate({ to: "/", replace: true });
   }
 

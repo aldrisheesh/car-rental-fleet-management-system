@@ -188,17 +188,17 @@ test("calendar page has real loading, error, empty, and month-navigation states"
     "utf8",
   );
   assert.match(page, /fetch\(\s*`\/api\/admin-calendar\?month=/);
-  assert.match(page, /shiftMonth\(value, -1\)/);
-  assert.match(page, /shiftMonth\(value, 1\)/);
+  assert.match(page, /onClick=\{\(\) => changeMonth\(-1\)\}/);
+  assert.match(page, /onClick=\{\(\) => changeMonth\(1\)\}/);
   assert.match(page, /latestRequest\.current === request/);
   assert.match(page, /Loading calendar schedule/);
   assert.match(page, /Unable to load the calendar schedule/);
-  assert.match(page, /pickup: "Deliver"/);
-  assert.match(page, /return: "Returned"/);
+  assert.match(page, /pickup: "Delivery"/);
+  assert.match(page, /return: "Return"/);
   assert.match(page, /reservation: "Reserved"/);
   assert.match(
     page,
-    /No reservations, deliveries, returns, or maintenance are scheduled/,
+    /No reservations, deliveries, returns, or maintenance are planned/,
   );
   assert.match(page, /aria-label="Previous month"/);
   assert.match(page, /aria-label="Next month"/);

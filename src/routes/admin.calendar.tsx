@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -299,9 +299,9 @@ function CalendarPage() {
             </dl>
           </section>
 
-          <a href="/admin/bookings" className="admin-calendar-queue-link">
+          <Link to="/admin/bookings" className="admin-calendar-queue-link">
             Open operations queue <ArrowRight className="h-4 w-4" />
-          </a>
+          </Link>
         </aside>
       </div>
     </div>

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   createFileRoute,
-  Link,
   Outlet,
   redirect,
   useRouterState,
@@ -11,6 +10,8 @@ import {
   ChevronRight,
   CreditCard,
   FileText,
+  Minus,
+  Plus,
   Search,
 } from "lucide-react";
 import {
@@ -19,6 +20,15 @@ import {
   ErrorState,
   TInput,
 } from "@/components/admin/ui";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 import {
   bookingReference,
@@ -46,6 +56,64 @@ type LoadState =
   | { status: "error"; message: string }
   | { status: "ready"; payments: AdminPayment[] };
 
+type PaymentChecklist = {
+  referenceMatches: boolean;
+  proofIsClear: boolean;
+  paymentReceived: boolean;
+};
+
+const paymentChecklistStoragePrefix = "briah-payment-review-checklist:";
+
+function paymentChecklistStorageKey(
+  payment: AdminPayment,
+  proof: ReturnType<typeof currentPaymentProof>,
+) {
+  return `${paymentChecklistStoragePrefix}${payment.id}:${proof?.id ?? "none"}:${proof?.version ?? 0}`;
+}
+
+function readPaymentChecklist(key: string): PaymentChecklist {
+  const empty = {
+    referenceMatches: false,
+    proofIsClear: false,
+    paymentReceived: false,
+  };
+  if (typeof window === "undefined") return empty;
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(key) ?? "null") as
+      | Partial<PaymentChecklist>
+      | null;
+    return {
+      referenceMatches: stored?.referenceMatches === true,
+      proofIsClear: stored?.proofIsClear === true,
+      paymentReceived: stored?.paymentReceived === true,
+    };
+  } catch {
+    return empty;
+  }
+}
+
+function resubmissionRemark(checklist: PaymentChecklist) {
+  const reasons = [
+    !checklist.referenceMatches && "The payment reference does not match the booking.",
+    !checklist.proofIsClear && "The payment proof is unclear or unreadable.",
+    !checklist.paymentReceived && "We could not confirm that the payment was received.",
+  ].filter(Boolean);
+  return reasons.length
+    ? reasons.join(" ")
+    : "Please submit a corrected payment proof for review.";
+}
+
+function formatPaymentRentalWindow(start: string, end: string) {
+  const formatter = new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return `${formatter.format(new Date(start))} – ${formatter.format(new Date(end))}`;
+}
+
 function PaymentsRouteComponent() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
@@ -62,7 +130,10 @@ function PaymentsQueuePage() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("");
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(
-    null,
+    () =>
+      typeof window === "undefined"
+        ? null
+        : new URLSearchParams(window.location.search).get("payment"),
   );
 
   const load = useCallback(async () => {
@@ -127,6 +198,38 @@ function PaymentsQueuePage() {
     setQuery("");
     setStatus("");
   };
+
+  const reviewPayment = useCallback(
+    async (
+      payment: AdminPayment,
+      action: "verify" | "resubmit",
+      reason = "",
+    ) => {
+      const proof = currentPaymentProof(payment);
+      if (!proof || proof.version == null)
+        throw new Error("A current payment proof is required before review.");
+      const response = await fetch("/api/payments", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          paymentId: payment.id,
+          action,
+          reason,
+          proofVersion: proof.version,
+          submittedAmount: payment.submitted_amount,
+          transactionReference: payment.transaction_reference ?? "",
+        }),
+      });
+      const body = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
+      if (!response.ok)
+        throw new Error(body?.message ?? "Unable to save the payment review.");
+      await load();
+    },
+    [load],
+  );
 
   const selectedPayment =
     filtered.find((payment) => payment.id === selectedPaymentId) ??
@@ -198,7 +301,11 @@ function PaymentsQueuePage() {
                 setStatus={setStatus}
                 statusOptions={statusOptions}
               />
-              <PaymentReviewPreview payment={selectedPayment} />
+              <PaymentReviewPreview
+                key={selectedPayment.id}
+                payment={selectedPayment}
+                onReview={reviewPayment}
+              />
             </div>
           ) : null}
         </>
@@ -344,13 +451,103 @@ function PaymentRow({
   );
 }
 
-function PaymentReviewPreview({ payment }: { payment: AdminPayment }) {
+function PaymentReviewPreview({
+  payment,
+  onReview,
+}: {
+  payment: AdminPayment;
+  onReview: (
+    payment: AdminPayment,
+    action: "verify" | "resubmit",
+    reason?: string,
+  ) => Promise<void>;
+}) {
   const proof = currentPaymentProof(payment);
   const method =
     payment.payment_methods?.label ??
     payment.payment_method_label ??
     "Method not recorded";
-  const booking = useBookingContext(payment.booking_id);
+  const reviewContext = usePaymentReviewContext(payment, proof);
+  const checklistKey = paymentChecklistStorageKey(payment, proof);
+  const [checklist, setChecklist] = useState<PaymentChecklist>(() =>
+    readPaymentChecklist(checklistKey),
+  );
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [resubmissionOpen, setResubmissionOpen] = useState(false);
+  const [resubmissionNote, setResubmissionNote] = useState("");
+  const reviewable =
+    payment.status === "Pending Verification" && proof?.version != null;
+  const canVerify =
+    reviewable &&
+    checklist.referenceMatches &&
+    checklist.proofIsClear &&
+    checklist.paymentReceived &&
+    !saving;
+  const generatedResubmissionRemark = resubmissionRemark(checklist);
+
+  useEffect(() => {
+    setChecklist(readPaymentChecklist(checklistKey));
+    setFeedback("");
+    setSaving(false);
+    setResubmissionOpen(false);
+    setResubmissionNote("");
+  }, [checklistKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(checklistKey, JSON.stringify(checklist));
+    } catch {
+      // The checklist remains usable even when browser storage is unavailable.
+    }
+  }, [checklist, checklistKey]);
+
+  async function verify() {
+    if (!canVerify) return;
+    setSaving(true);
+    setFeedback("");
+    try {
+      await onReview(payment, "verify");
+      if (typeof window !== "undefined")
+        window.localStorage.removeItem(checklistKey);
+      setFeedback("Payment verified. The queue has been refreshed.");
+    } catch (error) {
+      setFeedback(
+        error instanceof Error ? error.message : "Unable to verify this payment.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function requestResubmission() {
+    const remark = resubmissionNote.trim();
+    if (!reviewable || !remark) return;
+    setSaving(true);
+    setFeedback("");
+    try {
+      await onReview(payment, "resubmit", remark);
+      setResubmissionOpen(false);
+      if (typeof window !== "undefined")
+        window.localStorage.removeItem(checklistKey);
+      setFeedback("Resubmission requested. The customer can now send a corrected proof.");
+    } catch (error) {
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : "Unable to request a resubmission.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function openResubmission() {
+    setResubmissionNote(generatedResubmissionRemark);
+    setResubmissionOpen(true);
+  }
+
   return (
     <aside
       className="admin-payments-preview"
@@ -367,9 +564,12 @@ function PaymentReviewPreview({ payment }: { payment: AdminPayment }) {
           <ChevronRight aria-hidden="true" />
         </span>
       </header>
-      <div className="admin-payments-preview__body">
-        <PaymentProofViewer proof={proof} />
-        <div className="admin-payments-preview__details">
+      {reviewContext.status === "loading" ? (
+        <PaymentReviewSelectionLoading />
+      ) : (
+        <div className="admin-payments-preview__body">
+          <PaymentProofViewer proof={proof} source={reviewContext.proof} />
+          <div className="admin-payments-preview__details">
           <section>
             <div className="admin-payments-preview__title">
               <div>
@@ -390,7 +590,10 @@ function PaymentReviewPreview({ payment }: { payment: AdminPayment }) {
             </p>
             <p>{payment.booking?.customer?.email ?? "Email unavailable"}</p>
           </section>
-          <BookingDetails booking={booking} />
+          <BookingDetails
+            booking={reviewContext.booking}
+            message={reviewContext.bookingMessage}
+          />
           <section>
             <h4>Payment details</h4>
             <dl>
@@ -419,30 +622,149 @@ function PaymentReviewPreview({ payment }: { payment: AdminPayment }) {
           </section>
           <section className="admin-payments-preview__check">
             <h4>Verification checklist</h4>
-            <p>✓ Reference matches the booking.</p>
-            <p>✓ Proof is clear and readable.</p>
+            <label>
+              <input
+                type="checkbox"
+                checked={checklist.referenceMatches}
+                disabled={!reviewable || saving}
+                onChange={(event) =>
+                  setChecklist((current) => ({
+                    ...current,
+                    referenceMatches: event.target.checked,
+                  }))
+                }
+              />
+              <span>Reference matches the booking.</span>
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={checklist.proofIsClear}
+                disabled={!reviewable || saving}
+                onChange={(event) =>
+                  setChecklist((current) => ({
+                    ...current,
+                    proofIsClear: event.target.checked,
+                  }))
+                }
+              />
+              <span>Proof is clear and readable.</span>
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={checklist.paymentReceived}
+                disabled={!reviewable || saving}
+                onChange={(event) =>
+                  setChecklist((current) => ({
+                    ...current,
+                    paymentReceived: event.target.checked,
+                  }))
+                }
+              />
+              <span>Payment received.</span>
+            </label>
+            {!reviewable ? (
+              <p className="admin-payments-preview__check-note">
+                This payment is not currently eligible for verification.
+              </p>
+            ) : null}
           </section>
+          </div>
         </div>
-      </div>
+      )}
       <footer className="admin-payments-preview__footer">
         <p>
           Use resubmission only if the proof is unclear, cropped, or does not
           match the approved booking.
         </p>
-        <Link
-          to={`/admin/payments/${encodeURIComponent(payment.id)}` as never}
+        <button
+          type="button"
           className="admin-payments-preview__resubmit"
+          disabled={!reviewable || saving || reviewContext.status === "loading"}
+          onClick={openResubmission}
         >
           Request resubmission
-        </Link>
-        <Link
-          to={`/admin/payments/${encodeURIComponent(payment.id)}` as never}
+        </button>
+        <button
+          type="button"
           className="admin-payments-preview__verify"
+          disabled={!canVerify}
+          onClick={() => void verify()}
         >
-          <CreditCard className="h-4 w-4" aria-hidden="true" /> Verify payment
-        </Link>
+          <CreditCard className="h-4 w-4" aria-hidden="true" /> {saving ? "Verifying…" : "Verify payment"}
+        </button>
+        {feedback ? (
+          <p className="admin-payments-preview__feedback" role="status">
+            {feedback}
+          </p>
+        ) : null}
       </footer>
+      <Dialog open={resubmissionOpen} onOpenChange={setResubmissionOpen}>
+        <DialogContent className="admin-payment-resubmission-dialog">
+          <DialogHeader>
+            <DialogTitle className="admin-payment-resubmission-dialog__title">
+              Request a corrected payment proof
+            </DialogTitle>
+            <DialogDescription className="admin-payment-resubmission-dialog__description">
+              The customer will receive this remark with their payment request.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="admin-payment-resubmission-dialog__field">
+            <label htmlFor="payment-resubmission-remark">Customer remark</label>
+            <Textarea
+              id="payment-resubmission-remark"
+              className="admin-payment-resubmission-dialog__remark"
+              value={resubmissionNote}
+              onChange={(event) => setResubmissionNote(event.target.value)}
+              maxLength={500}
+              rows={3}
+              disabled={saving}
+              aria-describedby="payment-resubmission-remark-help"
+            />
+            <p id="payment-resubmission-remark-help">
+              Suggested from the unchecked review items. You can adjust it before sending.
+            </p>
+          </div>
+          <DialogFooter>
+            <button
+              type="button"
+              className="admin-payment-resubmission-dialog__cancel"
+              onClick={() => setResubmissionOpen(false)}
+              disabled={saving}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-payment-resubmission-dialog__submit"
+              onClick={() => void requestResubmission()}
+              disabled={saving || !resubmissionNote.trim()}
+            >
+              {saving ? "Sending…" : "Confirm request"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </aside>
+  );
+}
+
+function PaymentReviewSelectionLoading() {
+  return (
+    <div
+      className="admin-payments-preview__selection-loading"
+      aria-live="polite"
+      aria-label="Loading payment review record"
+    >
+      <span className="sr-only">Loading payment review record</span>
+      <div className="admin-payments-preview__selection-proof" />
+      <div className="admin-payments-preview__selection-details">
+        {Array.from({ length: 5 }, (_, index) => (
+          <i key={index} />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -505,67 +827,28 @@ function PaymentWorkspaceLoading() {
 
 function PaymentProofViewer({
   proof,
+  source,
 }: {
   proof: ReturnType<typeof currentPaymentProof>;
+  source: PaymentProofSource;
 }) {
-  const [state, setState] = useState<{
-    status: "loading" | "ready" | "error" | "empty";
-    url?: string;
-    message?: string;
-  }>({ status: proof ? "loading" : "empty" });
+  const [zoom, setZoom] = useState(1);
+  const increaseZoom = () => setZoom((current) => Math.min(2, current + 0.25));
+  const decreaseZoom = () => setZoom((current) => Math.max(0.75, current - 0.25));
   useEffect(() => {
-    let active = true;
-    if (!proof) {
-      setState({ status: "empty" });
-      return;
-    }
-    setState({ status: "loading" });
-    void fetch(`/api/payments?proofId=${encodeURIComponent(proof.id)}`, {
-      credentials: "same-origin",
-    })
-      .then(async (response) => {
-        const body = (await response.json().catch(() => null)) as {
-          url?: string;
-          message?: string;
-        } | null;
-        if (!response.ok || !body?.url)
-          throw new Error(
-            body?.message ?? "This proof is unavailable for preview.",
-          );
-        if (active) setState({ status: "ready", url: body.url });
-      })
-      .catch((error) => {
-        if (active)
-          setState({
-            status: "error",
-            message:
-              error instanceof Error
-                ? error.message
-                : "This proof is unavailable for preview.",
-          });
-      });
-    return () => {
-      active = false;
-    };
+    setZoom(1);
   }, [proof?.id]);
-  if (state.status === "loading")
-    return (
-      <div className="admin-payments-proof-viewer is-loading">
-        <FileText />
-        <span>Loading secure proof…</span>
-      </div>
-    );
-  if (state.status === "empty" || state.status === "error")
+  if (source.status === "empty" || source.status === "error")
     return (
       <div className="admin-payments-proof-viewer is-empty">
         <FileText />
         <strong>
-          {state.status === "error"
+          {source.status === "error"
             ? "Preview unavailable"
             : "No current payment proof"}
         </strong>
         <span>
-          {state.message ?? "No preview can be shown for this payment."}
+          {source.message ?? "No preview can be shown for this payment."}
         </span>
       </div>
     );
@@ -573,15 +856,26 @@ function PaymentProofViewer({
     <div
       className={`admin-payments-proof-viewer ${proof?.mime_type === "application/pdf" ? "is-pdf" : "is-image"}`}
     >
+      <div className="admin-payments-proof-viewer__zoom" aria-label="Proof zoom controls">
+        <button type="button" onClick={decreaseZoom} disabled={zoom <= 0.75} aria-label="Zoom out">
+          <Minus aria-hidden="true" />
+        </button>
+        <output aria-live="polite">{Math.round(zoom * 100)}%</output>
+        <button type="button" onClick={increaseZoom} disabled={zoom >= 2} aria-label="Zoom in">
+          <Plus aria-hidden="true" />
+        </button>
+      </div>
       {proof?.mime_type === "application/pdf" ? (
         <iframe
           title={`Preview of ${proof.original_filename ?? "payment proof"}`}
-          src={state.url}
+          src={source.url}
+          style={{ width: `${zoom * 100}%`, height: `${31 * zoom}rem` }}
         />
       ) : (
         <img
-          src={state.url}
+          src={source.url}
           alt={`Preview of ${proof?.original_filename ?? "payment proof"}`}
+          style={{ width: `${zoom * 100}%`, maxWidth: "none", maxHeight: "none" }}
         />
       )}
     </div>
@@ -596,84 +890,141 @@ function shortPaymentStatus(status: string) {
       : status;
 }
 
-function useBookingContext(bookingId: string) {
-  const [state, setState] = useState<{
-    status: "loading" | "ready" | "unavailable";
-    booking: AdminBooking | null;
-  }>({ status: "loading", booking: null });
+type PaymentProofSource = {
+  status: "ready" | "empty" | "error";
+  url?: string;
+  message?: string;
+};
+
+type PaymentReviewContext =
+  | { status: "loading" }
+  | {
+      status: "ready";
+      booking: AdminBooking | null;
+      bookingMessage?: string;
+      proof: PaymentProofSource;
+    };
+
+function usePaymentReviewContext(
+  payment: AdminPayment,
+  proof: ReturnType<typeof currentPaymentProof>,
+) {
+  const [state, setState] = useState<PaymentReviewContext>({
+    status: "loading",
+  });
   useEffect(() => {
     let active = true;
-    setState({ status: "loading", booking: null });
-    void fetch("/api/bookings", { credentials: "same-origin" })
+    setState({ status: "loading" });
+    const bookingRequest = fetch("/api/bookings", {
+      credentials: "same-origin",
+    })
       .then(async (response) => {
         const body = await parseAdminBookingResponse(response, {
           allowStaffResponse: false,
         });
         const booking = exactAdminEntity(
           body.bookings as AdminBooking[],
-          bookingId,
+          payment.booking_id,
         );
-        if (active)
-          setState({ status: booking ? "ready" : "unavailable", booking });
+        return {
+          booking,
+          message: booking
+            ? undefined
+            : "Exact booking details are unavailable.",
+        };
       })
-      .catch(() => {
-        if (active) setState({ status: "unavailable", booking: null });
+      .catch((error) => ({
+        booking: null,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Exact booking details are unavailable.",
+      }));
+    const proofRequest: Promise<PaymentProofSource> = !proof
+      ? Promise.resolve({ status: "empty" })
+      : fetch(`/api/payments?proofId=${encodeURIComponent(proof.id)}`, {
+          credentials: "same-origin",
+        })
+          .then(async (response) => {
+            const body = (await response.json().catch(() => null)) as {
+              url?: string;
+              message?: string;
+            } | null;
+            if (!response.ok || !body?.url)
+              throw new Error(
+                body?.message ?? "This proof is unavailable for preview.",
+              );
+            return { status: "ready", url: body.url } as const;
+          })
+          .catch((error) => ({
+            status: "error" as const,
+            message:
+              error instanceof Error
+                ? error.message
+                : "This proof is unavailable for preview.",
+          }));
+
+    void Promise.all([bookingRequest, proofRequest]).then(([booking, preview]) => {
+      if (!active) return;
+      setState({
+        status: "ready",
+        booking: booking.booking,
+        bookingMessage: booking.message,
+        proof: preview,
       });
+    });
     return () => {
       active = false;
     };
-  }, [bookingId]);
+  }, [payment.booking_id, payment.id, proof?.id]);
   return state;
 }
 
 function BookingDetails({
   booking,
+  message,
 }: {
-  booking: ReturnType<typeof useBookingContext>;
+  booking: AdminBooking | null;
+  message?: string;
 }) {
   return (
     <section className="admin-payments-preview__booking">
       <h4>Booking details</h4>
-      {booking.status === "loading" ? (
-        <p className="admin-payments-preview__loading">
-          Loading exact booking details…
-        </p>
-      ) : booking.booking ? (
+      {booking ? (
         <dl>
           <div>
             <dt>Vehicle</dt>
             <dd>
-              {booking.booking.assigned_vehicle?.name ??
-                booking.booking.requested_vehicle?.name ??
+              {booking.assigned_vehicle?.name ??
+                booking.requested_vehicle?.name ??
                 "Vehicle unavailable"}
             </dd>
           </div>
-          <div>
+          <div className="admin-payments-preview__rental-dates">
             <dt>Rental dates</dt>
             <dd>
-              {formatAdminDateTime(booking.booking.pickup_at)} –{" "}
-              {formatAdminDateTime(booking.booking.return_at)}
+              {formatPaymentRentalWindow(booking.pickup_at, booking.return_at)}
             </dd>
           </div>
           <div>
             <dt>Pickup</dt>
             <dd>
-              {booking.booking.pickup_delivery_option ??
+              {booking.pickup_delivery_option ??
                 "Pickup option unavailable"}
             </dd>
           </div>
           <div>
             <dt>Location</dt>
             <dd>
-              {booking.booking.pickup_branch?.name ??
-                booking.booking.pickup_location ??
+              {booking.pickup_branch?.name ??
+                booking.pickup_location ??
                 "Location unavailable"}
             </dd>
           </div>
         </dl>
       ) : (
         <p className="admin-payments-preview__loading">
-          Exact booking details are unavailable.
+          {message ?? "Exact booking details are unavailable."}
         </p>
       )}
     </section>

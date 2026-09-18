@@ -126,23 +126,32 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
   );
   assert.match(
     page,
-    /body: JSON\.stringify\(\{\s*forecastId,\s*idempotencyKey: crypto\.randomUUID\(\),\s*\}\)/s,
+    /body: JSON\.stringify\(\{\s*forecastIds,\s*idempotencyKey,\s*\}\)/s,
   );
   assert.match(page, /setSupportVersion\(\(version\) => version \+ 1\)/);
   assert.match(
     page,
     /\[analyticsRange\.end, analyticsRange\.start, supportVersion\]/,
   );
-  assert.match(page, /canShowSupplyEvaluationActions\(/);
-  assert.match(page, /showSupplyEvaluationActions \?/);
-  assert.match(page, /Persisted forecasts without a supply snapshot/);
-  assert.match(page, /supplyRows\.map\(\(evaluation\) =>/);
-  assert.match(
-    page,
-    /No canonical projected-supply evaluations are available yet/,
-  );
-  assert.match(page, /Sufficient covered demand history is required/);
-  assert.match(page, /Insufficient historical eligibility data/);
+  assert.match(page, /latestForecastIds/);
+  assert.match(page, /currentSupplyRows/);
+  assert.match(page, /Decision brief/);
+  assert.match(page, /Review supply gaps/);
+  assert.match(page, /Generate transfer recommendations/);
+  assert.match(page, /Branch balance/);
+  assert.match(page, /Vehicle attention/);
+  assert.match(page, /Supply analysis/);
+  assert.match(page, /automatic-supply-/);
+  assert.match(page, /automatic-allocation-/);
+  assert.match(page, /hasForecastSnapshot/);
+  assert.match(page, /actual weekly demand/);
+  assert.match(page, /selectedBranchId === "all"/);
+  assert.match(page, /Forecast horizon:/);
+  assert.match(page, /supplyWeekSummaries\.map\(\(summary\) =>/);
+  assert.match(page, /Automatic readiness snapshots/);
+  assert.match(page, /approvedUnits/);
+  assert.doesNotMatch(page, /window\.prompt/);
+  assert.doesNotMatch(page, /High priority|expected unmet rental|revenue/i);
   assert.doesNotMatch(
     page,
     /Toyota Hilux|NDA 6610|Taft, Manila|High confidence/,
@@ -150,5 +159,6 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
   assert.doesNotMatch(page, /const forecast = \[/);
   assert.match(forecastsApi, /branch:branches\(id,name\)/);
   assert.match(forecastsApi, /category:vehicle_categories\(id,name\)/);
+  assert.doesNotMatch(forecastsApi, /extractDailyDemand/);
   assert.match(supplyApi, /if \(principal\.role !== "Owner\/Admin"\)/);
 });

@@ -450,10 +450,10 @@ function BookingDetailPage() {
     <div className="admin-booking-detail-page">
       <header className="admin-booking-detail-page__header">
         <div>
-          <a href="/admin/bookings" className="touch-target">
+          <Link to="/admin/bookings" replace className="touch-target">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back to Bookings
-          </a>
+          </Link>
           <h1>{booking.customer?.full_name ?? "Booking detail"}</h1>
           <p>
             {bookingReferenceLabel(booking.id)} <span />{" "}
@@ -596,9 +596,8 @@ function BookingDetailPage() {
                 </p>
                 {payment ? (
                   <Link
-                    to="/admin/payments/$paymentId"
-                    params={{ paymentId: payment.id }}
-                    search={{ fromBooking: bookingId } as never}
+                    to="/admin/payments"
+                    search={{ payment: payment.id } as never}
                     className="touch-target admin-booking-ledger__payment-link"
                   >
                     Review {payment.booking?.customer?.full_name ?? "customer"}
@@ -997,7 +996,7 @@ function BookingRequirementsReview({
                   options={["Not Checked", "Clear", "Concern", "Unavailable"]}
                 />
               </fieldset>
-              <div className="flex flex-wrap gap-2">
+              <div className="admin-booking-ledger__review-actions flex flex-wrap gap-2">
                 <Btn
                   variant={gate.canResubmit ? "danger" : "primary"}
                   disabled={saving || (!gate.canVerify && !gate.canResubmit)}
@@ -1631,16 +1630,6 @@ function ActivityCard({ booking }: { booking: AdminBooking }) {
       label: "Booking record updated",
       detail: "Booking details were updated.",
       value: booking.updated_at,
-    },
-    {
-      label: "Vehicle handover scheduled",
-      detail: "Pickup or delivery is scheduled.",
-      value: booking.pickup_at,
-    },
-    {
-      label: "Vehicle return scheduled",
-      detail: "The agreed return is scheduled.",
-      value: booking.return_at,
     },
     ...(booking.rental?.started_at
       ? [

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { getClientPrincipal } from "@/lib/auth-client";
+import { ADMIN_SESSION_CHANGED_EVENT } from "@/lib/admin-auth";
 import { clearCustomerSession } from "@/lib/customer-auth";
 import type { AppPrincipal } from "@/lib/auth";
 import { isMyBookingsPath } from "@/lib/customer-navigation";
@@ -45,6 +46,13 @@ export function Header({
 
   useEffect(() => {
     setPrincipal(getClientPrincipal());
+  }, []);
+
+  useEffect(() => {
+    const syncPrincipal = () => setPrincipal(getClientPrincipal());
+    window.addEventListener(ADMIN_SESSION_CHANGED_EVENT, syncPrincipal);
+    return () =>
+      window.removeEventListener(ADMIN_SESSION_CHANGED_EVENT, syncPrincipal);
   }, []);
 
   useEffect(() => {
@@ -439,7 +447,11 @@ export function Header({
           </div>
         ) : null}
       </header>
-      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} />
+      <SignInDialog
+        open={signInOpen}
+        onOpenChange={setSignInOpen}
+        onAuthenticated={() => setPrincipal(getClientPrincipal())}
+      />
     </>
   );
 }

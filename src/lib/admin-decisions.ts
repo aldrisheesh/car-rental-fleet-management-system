@@ -15,6 +15,14 @@ export type CanonicalForecast = {
   required_vehicle_units: number | string;
   actual_demand: number | string | null;
   ape: number | string | null;
+  inputs?: Array<{
+    source_type?: "Actual" | "Forecast";
+    source_week_start: string;
+    source_value: number | string;
+    input_order?: number;
+    weight?: number | string;
+    weighted_contribution?: number | string;
+  }>;
   branch?: { id: string; name: string } | null;
   category?: { id: string; name: string } | null;
 };

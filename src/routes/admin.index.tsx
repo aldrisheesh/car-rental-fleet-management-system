@@ -782,9 +782,7 @@ function ReviewWork({
         const submittedAt = staffView
           ? ((item as AdminBooking).created_at ?? (item as AdminBooking).updated_at)
           : (item as AdminRequirementSet).submitted_at;
-        const href = staffView
-          ? `/admin/bookings/${encodeURIComponent(bookingId)}`
-          : `/admin/requirements/${encodeURIComponent(bookingId)}`;
+        const href = `/admin/bookings/${encodeURIComponent(bookingId)}`;
         return (
           <Link key={item.id} to={href as never} className="admin-review-item">
             <span className="admin-review-item__document" aria-hidden="true"><FileText /></span>

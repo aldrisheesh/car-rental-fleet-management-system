@@ -41,6 +41,933 @@
     0 0 0 1px rgb(231 122 61 / 0.24), 0 10px 30px -10px rgb(231 122 61 / 0.28);
 }
 
+/* Decision support workspace */
+.admin-decision-workspace {
+  display: grid;
+  gap: 1rem;
+  max-width: 100%;
+  color: #182321;
+}
+
+.admin-decision-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 0.25rem 0 0.1rem;
+}
+
+.admin-decision-heading h1 {
+  font-size: clamp(1.875rem, 3vw, 2.4rem);
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.admin-decision-heading > div:first-child > p {
+  margin-top: 0.45rem;
+  color: #52635f;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.admin-decision-advisory {
+  display: flex;
+  max-width: 34rem;
+  align-items: center;
+  gap: 0.65rem;
+  padding-bottom: 0.35rem;
+  color: #52635f;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.admin-decision-advisory svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+  color: #2e647b;
+}
+
+.admin-decision-advisory strong {
+  color: #2e647b;
+}
+
+.admin-decision-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(20rem, 0.9fr);
+  gap: 1rem;
+}
+
+.admin-decision-panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #d8d5cc;
+  border-radius: 0.75rem;
+  background: #fff;
+  scroll-margin-top: 5.5rem;
+}
+
+.admin-decision-panel:focus-visible {
+  outline: 3px solid color-mix(in srgb, #0b6158 30%, transparent);
+  outline-offset: 3px;
+}
+
+.admin-decision-panel-heading {
+  display: flex;
+  min-width: 0;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1rem 1.15rem;
+  border-bottom: 1px solid #d8d5cc;
+}
+
+.admin-decision-panel-heading h2 {
+  font-size: 1.18rem;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.admin-decision-panel-heading p {
+  max-width: 65ch;
+  margin-top: 0.25rem;
+  color: #52635f;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.admin-decision-forecast-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: end;
+  gap: 0.55rem;
+}
+
+.admin-decision-forecast-filters label {
+  display: grid;
+  gap: 0.25rem;
+  color: #52635f;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.admin-decision-forecast-filters select,
+.admin-decision-balance-controls select,
+.admin-decision-review-actions input {
+  min-height: 2.65rem;
+  border: 1px solid #c9cec9;
+  border-radius: 0.625rem;
+  background: #fff;
+  padding: 0 2.1rem 0 0.75rem;
+  color: #182321;
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+.admin-decision-forecast-filters select {
+  min-width: 8.4rem;
+}
+
+.admin-decision-forecast-filters select:focus-visible,
+.admin-decision-balance-controls select:focus-visible,
+.admin-decision-review-actions input:focus-visible {
+  outline: 3px solid color-mix(in srgb, #0b6158 24%, transparent);
+  outline-offset: 1px;
+  border-color: #0b6158;
+}
+
+.admin-decision-forecast-filters .touch-target {
+  min-height: 2.65rem;
+}
+
+.admin-decision-chart {
+  height: 19rem;
+  padding: 0.75rem 0.85rem 0.1rem;
+}
+
+.admin-decision-chart-state {
+  display: grid;
+  height: 100%;
+  place-content: center;
+  justify-items: center;
+  gap: 0.4rem;
+  padding: 2rem;
+  color: #52635f;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.admin-decision-chart-state svg {
+  width: 1.6rem;
+  height: 1.6rem;
+  color: #2e647b;
+}
+
+.admin-decision-chart-state strong {
+  color: #182321;
+  font-size: 1rem;
+}
+
+.admin-decision-chart-state.is-error,
+.admin-decision-empty.is-error,
+.admin-decision-feedback.is-error {
+  color: #9f2f2f;
+}
+
+.admin-decision-chart-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1.25rem;
+  min-height: 3rem;
+  padding: 0.65rem 1.15rem;
+  border-top: 1px solid #ebe9e2;
+  color: #52635f;
+  font-size: 0.75rem;
+}
+
+.admin-decision-chart-footer strong {
+  margin-right: auto;
+  color: #182321;
+  font-size: 0.8rem;
+}
+
+.admin-decision-chart-footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.admin-decision-chart-footer i {
+  width: 1.4rem;
+  height: 2px;
+  background: #123f3a;
+}
+
+.admin-decision-chart-footer i.is-forecast {
+  background: repeating-linear-gradient(
+    90deg,
+    #2e647b 0 0.38rem,
+    transparent 0.38rem 0.62rem
+  );
+}
+
+.admin-decision-chart-footer small {
+  flex-basis: 100%;
+  color: #6c7a77;
+}
+
+.admin-decision-brief ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-decision-brief-item {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+  padding: 1rem 1.05rem;
+}
+
+.admin-decision-brief-item + .admin-decision-brief-item {
+  border-top: 1px solid #e4e1da;
+}
+
+.admin-decision-brief-item > svg {
+  width: 2rem;
+  height: 2rem;
+  padding: 0.42rem;
+  border-radius: 50%;
+  background: #eef2f1;
+  color: #52635f;
+}
+
+.admin-decision-brief-item.is-attention > svg {
+  background: #fff1dc;
+  color: #a45b13;
+}
+
+.admin-decision-brief-item.is-info > svg {
+  background: #e9f1f4;
+  color: #2e647b;
+}
+
+.admin-decision-brief-item.is-success > svg {
+  background: #e8f3ed;
+  color: #267a55;
+}
+
+.admin-decision-brief-item strong {
+  display: block;
+  line-height: 1.35;
+}
+
+.admin-decision-brief-item p {
+  margin-top: 0.22rem;
+  color: #52635f;
+  font-size: 0.78rem;
+  line-height: 1.42;
+}
+
+.admin-decision-brief-item small {
+  display: block;
+  margin-top: 0.4rem;
+  color: #6c7a77;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.admin-decision-brief-item .touch-target {
+  grid-column: 2;
+  justify-self: end;
+  min-height: 2.45rem;
+  padding-inline: 0.8rem;
+  white-space: nowrap;
+  font-size: 0.75rem;
+}
+
+.admin-decision-brief-feedback,
+.admin-decision-feedback {
+  margin: 0.75rem 1rem 1rem;
+  border: 1px solid #b8cad2;
+  border-radius: 0.625rem;
+  background: #f1f6f7;
+  padding: 0.75rem;
+  color: #2e647b;
+  font-size: 0.78rem;
+}
+
+.admin-decision-brief-feedback.is-error,
+.admin-decision-feedback.is-error {
+  border-color: #e4bcbc;
+  background: #fff5f4;
+}
+
+.admin-decision-balance-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: end;
+  gap: 0.85rem;
+}
+
+.admin-decision-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.85rem;
+  color: #52635f;
+  font-size: 0.7rem;
+}
+
+.admin-decision-legend span,
+.admin-decision-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.admin-decision-legend i,
+.admin-decision-state i,
+.admin-decision-balance-table td span i {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  border-radius: 50%;
+  background: #88938f;
+}
+
+.admin-decision-legend i.is-shortage,
+.admin-decision-state.is-shortage i,
+.admin-decision-balance-table td.is-shortage span i {
+  background: #b43b3b;
+}
+
+.admin-decision-legend i.is-balanced,
+.admin-decision-state.is-balanced i,
+.admin-decision-balance-table td.is-balanced span i {
+  background: #267a55;
+}
+
+.admin-decision-legend i.is-surplus,
+.admin-decision-state.is-surplus i,
+.admin-decision-balance-table td.is-surplus span i {
+  background: #a45b13;
+}
+
+.admin-decision-legend i.is-pending,
+.admin-decision-state.is-pending i,
+.admin-decision-balance-table td.is-pending span i {
+  background: #7d8985;
+}
+
+.admin-decision-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.admin-decision-balance-table,
+.admin-decision-data-table {
+  width: 100%;
+  min-width: 54rem;
+  border-collapse: collapse;
+  color: #182321;
+  font-size: 0.79rem;
+}
+
+.admin-decision-balance-table th,
+.admin-decision-balance-table td,
+.admin-decision-data-table th,
+.admin-decision-data-table td {
+  border-bottom: 1px solid #e4e1da;
+  padding: 0.75rem 0.9rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.admin-decision-balance-table thead th,
+.admin-decision-data-table thead th {
+  background: #fbfaf7;
+  color: #52635f;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.admin-decision-balance-table thead th:not(:first-child),
+.admin-decision-balance-table td {
+  text-align: center;
+}
+
+.admin-decision-balance-table tbody th {
+  min-width: 10rem;
+  font-size: 0.82rem;
+}
+
+.admin-decision-balance-table td {
+  min-width: 8.75rem;
+}
+
+.admin-decision-balance-table td strong,
+.admin-decision-balance-table td span {
+  display: block;
+}
+
+.admin-decision-balance-table td strong {
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-decision-balance-table td span {
+  margin-top: 0.18rem;
+  color: #52635f;
+  font-size: 0.7rem;
+}
+
+.admin-decision-balance-table td span i {
+  display: inline-block;
+  margin-right: 0.3rem;
+}
+
+.admin-decision-balance-table td.is-shortage {
+  background: #fff6f5;
+}
+
+.admin-decision-balance-table td.is-surplus {
+  background: #fffaf1;
+}
+
+.admin-decision-balance-table td.is-balanced {
+  background: #f5faf7;
+}
+
+.admin-decision-balance-note {
+  padding: 0.65rem 1.15rem;
+  color: #6c7a77;
+  font-size: 0.7rem;
+}
+
+.admin-decision-supply-summary {
+  display: grid;
+}
+
+.admin-decision-supply-summary article {
+  display: grid;
+  grid-template-columns: minmax(11rem, 1fr) minmax(15rem, 1.25fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.15rem;
+}
+
+.admin-decision-supply-summary article + article {
+  border-top: 1px solid #e4e1da;
+}
+
+.admin-decision-supply-summary article > div {
+  min-width: 0;
+}
+
+.admin-decision-supply-summary article > div:first-child strong,
+.admin-decision-supply-summary article > div:first-child span,
+.admin-decision-supply-summary article > div:nth-child(2) small {
+  display: block;
+}
+
+.admin-decision-supply-summary article > div:first-child strong {
+  color: #182321;
+  font-size: 0.84rem;
+}
+
+.admin-decision-supply-summary article > div:first-child span,
+.admin-decision-supply-summary article > div:nth-child(2) small {
+  margin-top: 0.2rem;
+  color: #6c7a77;
+  font-size: 0.72rem;
+}
+
+.admin-decision-supply-summary article > div:nth-child(2) small {
+  padding-left: 0.15rem;
+}
+
+.admin-decision-supply-summary .touch-target {
+  min-height: 2.3rem;
+  padding-inline: 0.8rem;
+  font-size: 0.72rem;
+}
+
+.admin-decision-data-table td strong,
+.admin-decision-data-table td small {
+  display: block;
+}
+
+.admin-decision-data-table td small {
+  margin-top: 0.2rem;
+  color: #6c7a77;
+  font-size: 0.69rem;
+}
+
+.admin-decision-data-table td.is-numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-decision-data-table td.is-action {
+  text-align: right;
+}
+
+.admin-decision-data-table td.is-action .touch-target {
+  min-height: 2.35rem;
+  padding-inline: 0.75rem;
+  font-size: 0.72rem;
+}
+
+.admin-decision-state {
+  white-space: nowrap;
+  color: #52635f;
+}
+
+.admin-decision-text-link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.35rem;
+  color: #123f3a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: #9bad9f;
+  text-underline-offset: 0.28rem;
+}
+
+.admin-decision-text-link:hover {
+  text-decoration-color: #123f3a;
+}
+
+.admin-decision-text-link:focus-visible {
+  border-radius: 0.25rem;
+  outline: 3px solid color-mix(in srgb, #0b6158 25%, transparent);
+  outline-offset: 3px;
+}
+
+.admin-decision-text-link svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.admin-decision-empty {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.45rem;
+  min-height: 9rem;
+  padding: 1.5rem;
+  color: #52635f;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.admin-decision-empty svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.admin-decision-empty strong {
+  color: #182321;
+  font-size: 0.9rem;
+}
+
+.admin-decision-empty span {
+  max-width: 34rem;
+}
+
+.admin-decision-transfer-layout {
+  display: grid;
+  grid-template-columns: minmax(17rem, 0.78fr) minmax(0, 1.6fr);
+  min-height: 24rem;
+}
+
+.admin-decision-transfer-list {
+  border-right: 1px solid #d8d5cc;
+}
+
+.admin-decision-transfer-list > button {
+  display: flex;
+  width: 100%;
+  min-height: 4.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  border: 0;
+  border-bottom: 1px solid #e4e1da;
+  background: #fff;
+  padding: 0.85rem 1rem;
+  color: #182321;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.admin-decision-transfer-list > button:hover {
+  background: #f7f7f3;
+}
+
+.admin-decision-transfer-list > button.is-selected {
+  background: #edf5f2;
+  color: #0b6158;
+}
+
+.admin-decision-transfer-list > button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 3px solid color-mix(in srgb, #0b6158 28%, transparent);
+  outline-offset: -4px;
+}
+
+.admin-decision-transfer-list button strong,
+.admin-decision-transfer-list button small {
+  display: block;
+}
+
+.admin-decision-transfer-list button strong {
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.admin-decision-transfer-list button small {
+  margin-top: 0.25rem;
+  color: #52635f;
+  font-size: 0.69rem;
+}
+
+.admin-decision-recommendation-state {
+  flex: none;
+  color: #52635f;
+  font-size: 0.69rem;
+  font-weight: 700;
+}
+
+.admin-decision-recommendation-state.is-pending {
+  color: #a45b13;
+}
+
+.admin-decision-recommendation-state.is-approved {
+  color: #267a55;
+}
+
+.admin-decision-recommendation-state.is-rejected {
+  color: #b43b3b;
+}
+
+.admin-decision-transfer-detail {
+  min-width: 0;
+  padding: 1.1rem;
+}
+
+.admin-decision-transfer-title,
+.admin-decision-transfer-title > div {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.admin-decision-transfer-title > div > span {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: #e9f1ef;
+  color: #123f3a;
+}
+
+.admin-decision-transfer-title svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.admin-decision-transfer-title h3 {
+  font-size: 1.1rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.admin-decision-transfer-title p {
+  margin-top: 0.2rem;
+  color: #52635f;
+  font-size: 0.78rem;
+}
+
+.admin-decision-transfer-evidence {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 1rem;
+  border-block: 1px solid #e4e1da;
+}
+
+.admin-decision-transfer-evidence > div {
+  padding: 0.85rem 0.75rem;
+}
+
+.admin-decision-transfer-evidence > div + div {
+  border-left: 1px solid #e4e1da;
+}
+
+.admin-decision-transfer-evidence dt {
+  color: #6c7a77;
+  font-size: 0.67rem;
+}
+
+.admin-decision-transfer-evidence dd {
+  margin-top: 0.22rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-decision-candidates {
+  padding: 1rem 0;
+}
+
+.admin-decision-candidates h4 {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.admin-decision-candidates ol {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-decision-candidates li {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid #efede7;
+}
+
+.admin-decision-candidates li > span {
+  display: grid;
+  width: 1.55rem;
+  height: 1.55rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #edf5f2;
+  color: #123f3a;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.admin-decision-candidates li strong,
+.admin-decision-candidates li small {
+  display: block;
+}
+
+.admin-decision-candidates li strong {
+  font-size: 0.78rem;
+}
+
+.admin-decision-candidates li small,
+.admin-decision-candidates > p {
+  color: #6c7a77;
+  font-size: 0.69rem;
+}
+
+.admin-decision-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #d8d5cc;
+}
+
+.admin-decision-review-actions label {
+  display: grid;
+  gap: 0.25rem;
+  margin-right: auto;
+  color: #52635f;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.admin-decision-review-actions input {
+  width: 7rem;
+  padding-right: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1180px) {
+  .admin-decision-heading,
+  .admin-decision-panel-heading {
+    align-items: start;
+  }
+
+  .admin-decision-overview,
+  .admin-decision-transfer-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-decision-transfer-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-right: 0;
+    border-bottom: 1px solid #d8d5cc;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-decision-workspace {
+    gap: 0.75rem;
+  }
+
+  .admin-decision-heading,
+  .admin-decision-panel-heading,
+  .admin-decision-balance-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-decision-heading {
+    gap: 0.75rem;
+  }
+
+  .admin-decision-advisory {
+    padding-bottom: 0;
+  }
+
+  .admin-decision-forecast-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: stretch;
+  }
+
+  .admin-decision-forecast-filters label,
+  .admin-decision-forecast-filters select,
+  .admin-decision-forecast-filters .touch-target {
+    width: 100%;
+  }
+
+  .admin-decision-forecast-filters .touch-target {
+    grid-column: 1 / -1;
+  }
+
+  .admin-decision-supply-summary article {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .admin-decision-supply-summary .touch-target {
+    width: 100%;
+  }
+
+  .admin-decision-chart {
+    height: 16rem;
+  }
+
+  .admin-decision-brief-item {
+    grid-template-columns: 1.8rem minmax(0, 1fr);
+  }
+
+  .admin-decision-brief-item > svg {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+
+  .admin-decision-brief-item .touch-target {
+    grid-column: 2;
+    width: 100%;
+  }
+
+  .admin-decision-transfer-list {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-decision-transfer-evidence {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-decision-transfer-evidence > div:nth-child(3) {
+    border-left: 0;
+    border-top: 1px solid #e4e1da;
+  }
+
+  .admin-decision-transfer-evidence > div:nth-child(4) {
+    border-top: 1px solid #e4e1da;
+  }
+
+  .admin-decision-review-actions,
+  .admin-decision-review-actions > *,
+  .admin-decision-review-actions label,
+  .admin-decision-review-actions input {
+    width: 100%;
+  }
+
+  .admin-decision-candidates li {
+    grid-template-columns: 1.6rem minmax(0, 1fr);
+  }
+
+  .admin-decision-candidates li > small {
+    grid-column: 2;
+  }
+}
+
 /* Booking approval ledger */
 .admin-booking-ledger {
   display: grid;
@@ -449,6 +1376,9 @@
   grid-column: 1/-1;
   padding-top: 0.9rem;
   border-top: 1px solid #dfe4e1;
+}
+.admin-booking-ledger__review-actions {
+  margin-top: 0.85rem;
 }
 .admin-booking-ledger__requirements .grid {
   padding-top: 0;
@@ -3362,7 +4292,7 @@
   .admin-payments-preview__check {
     margin: 0 1.25rem 1.25rem;
     padding: 0.9rem 1rem;
-    border-left: 3px solid #0b6158;
+    border: 1px solid #cfe0d8;
     background: #f0f6f1;
   }
   .admin-payments-preview__check h3 {
@@ -3745,6 +4675,7 @@
     grid-template-columns: minmax(15rem, 0.83fr) minmax(18rem, 1.17fr);
   }
   .admin-payments-proof-viewer {
+    position: relative;
     display: grid;
     min-height: 0;
     place-items: center;
@@ -3758,6 +4689,55 @@
     max-height: 31rem;
     object-fit: contain;
     box-shadow: 0 8px 22px rgb(26 43 39 / 0.18);
+  }
+  .admin-payments-proof-viewer__zoom {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin: 0;
+    border: 1px solid #d6ddd7;
+    border-radius: 0.45rem;
+    background: rgb(255 255 255 / 0.96);
+    padding: 0.22rem;
+    box-shadow: 0 6px 16px rgb(26 43 39 / 0.12);
+    transform: translateX(-50%);
+  }
+  .admin-payments-proof-viewer__zoom button {
+    display: grid;
+    width: 1.9rem;
+    height: 1.9rem;
+    place-items: center;
+    border: 0;
+    border-radius: 0.3rem;
+    background: transparent;
+    color: #123f3a;
+    cursor: pointer;
+  }
+  .admin-payments-proof-viewer__zoom button:hover:not(:disabled) {
+    background: #edf4f0;
+  }
+  .admin-payments-proof-viewer__zoom button:focus-visible {
+    outline: 3px solid color-mix(in srgb, #0b6158 28%, transparent);
+    outline-offset: 1px;
+  }
+  .admin-payments-proof-viewer__zoom button:disabled {
+    color: #9aa7a2;
+    cursor: not-allowed;
+  }
+  .admin-payments-proof-viewer__zoom svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+  .admin-payments-proof-viewer__zoom output {
+    min-width: 2.7rem;
+    color: #38514d;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-align: center;
   }
   .admin-payments-proof-viewer.is-pdf iframe {
     width: 100%;
@@ -3841,15 +4821,34 @@
     overflow-wrap: anywhere;
   }
   .admin-payments-preview__check {
-    padding-left: 0.75rem;
-    border-left: 3px solid #0b6158;
+    border: 1px solid #cfe0d8;
+    border-radius: 0.5rem;
+    background: #f4f9f6;
+    padding: 0.8rem;
   }
-  .admin-payments-preview__check p {
-    color: #466059 !important;
+  .admin-payments-preview__check label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+    color: #38514d;
+    font-size: 0.73rem;
+    line-height: 1.4;
+    cursor: pointer;
   }
-  .admin-payments-preview__check p::first-letter {
-    color: #0b6158;
-    font-weight: 800;
+  .admin-payments-preview__check input {
+    width: 1rem;
+    height: 1rem;
+    margin: 0.05rem 0 0;
+    accent-color: #0b6158;
+  }
+  .admin-payments-preview__check input:disabled + span {
+    color: #83918c;
+  }
+  .admin-payments-preview__check-note {
+    margin: 0.7rem 0 0 !important;
+    color: #687772 !important;
+    font-size: 0.68rem !important;
   }
   .admin-payments-preview__footer {
     display: grid;
@@ -3881,17 +4880,136 @@
   }
   .admin-payments-preview__resubmit {
     border: 1px solid #829892;
+    background: #fff;
     color: #123f3a;
+    cursor: pointer;
   }
   .admin-payments-preview__resubmit:hover {
     background: #f2f6f2;
   }
+  .admin-payments-preview__resubmit:disabled {
+    border-color: #c2ccc7;
+    color: #83918c;
+    cursor: not-allowed;
+  }
   .admin-payments-preview__verify {
+    border: 1px solid #123f3a;
     background: #123f3a;
     color: #fff;
+    cursor: pointer;
   }
   .admin-payments-preview__verify:hover {
     background: #0b6158;
+  }
+  .admin-payments-preview__verify:disabled {
+    border-color: #aab9b4;
+    background: #aab9b4;
+    cursor: not-allowed;
+  }
+  .admin-payments-preview__verify:focus-visible {
+    outline: 3px solid color-mix(in srgb, #0b6158 28%, transparent);
+    outline-offset: 2px;
+  }
+  .admin-payments-preview__feedback {
+    grid-column: 1 / -1;
+    max-width: none !important;
+    color: #267a55 !important;
+  }
+  .admin-payments-preview__selection-loading {
+    display: grid;
+    min-height: 37rem;
+    grid-template-columns: minmax(15rem, 0.83fr) minmax(18rem, 1.17fr);
+  }
+  .admin-payments-preview__selection-proof,
+  .admin-payments-preview__selection-details i {
+    display: block;
+    background: linear-gradient(90deg, #f4f6f2 0%, #e6ece6 50%, #f4f6f2 100%);
+    background-size: 220% 100%;
+    animation: admin-skeleton-shift 1.35s ease-in-out infinite;
+  }
+  .admin-payments-preview__selection-proof {
+    margin: 1.4rem;
+    border-radius: 0.25rem;
+  }
+  .admin-payments-preview__selection-details {
+    display: grid;
+    align-content: start;
+    gap: 1.25rem;
+    padding: 1.35rem 1.45rem;
+  }
+  .admin-payments-preview__selection-details i {
+    height: 3.2rem;
+    border-radius: 0.2rem;
+  }
+  .admin-payment-resubmission-dialog {
+    max-width: 31rem;
+    border-color: #ccdcd4 !important;
+    background-color: #fffdf9 !important;
+    color: #123f3a !important;
+    box-shadow: 0 1.25rem 3.5rem rgb(18 63 58 / 0.2);
+  }
+  .admin-payment-resubmission-dialog > button {
+    color: #38514d !important;
+  }
+  .admin-payment-resubmission-dialog__title {
+    color: #123f3a !important;
+  }
+  .admin-payment-resubmission-dialog__description {
+    color: #5b706b !important;
+  }
+  .admin-payment-resubmission-dialog__field {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .admin-payment-resubmission-dialog__field > label {
+    color: #294b45;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .admin-payment-resubmission-dialog__remark {
+    margin: 0;
+    border: 1px solid #d7e2dc !important;
+    border-radius: 0.4rem;
+    background-color: #f7faf7 !important;
+    padding: 0.8rem 0.85rem;
+    color: #38514d !important;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    resize: vertical;
+  }
+  .admin-payment-resubmission-dialog__remark:focus-visible {
+    border-color: #0b6158;
+    outline: 2px solid rgb(11 97 88 / 0.22);
+    outline-offset: 1px;
+  }
+  .admin-payment-resubmission-dialog__field > p {
+    margin: 0;
+    color: #667b75 !important;
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+  .admin-payment-resubmission-dialog__cancel,
+  .admin-payment-resubmission-dialog__submit {
+    min-height: 2.5rem;
+    border-radius: 0.35rem;
+    padding-inline: 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 650;
+  }
+  .admin-payment-resubmission-dialog__cancel {
+    border: 1px solid #aebdb6;
+    background: #fff;
+    color: #38514d;
+  }
+  .admin-payment-resubmission-dialog__submit {
+    border: 1px solid #123f3a;
+    background: #123f3a;
+    color: #fff;
+  }
+  .admin-payment-resubmission-dialog__submit:disabled,
+  .admin-payment-resubmission-dialog__cancel:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
   }
   .admin-payments-loading__layout {
     grid-template-columns: 0.38fr 0.62fr;
@@ -3913,6 +5031,9 @@
     .admin-payments-preview__body {
       grid-template-columns: minmax(15rem, 0.82fr) minmax(18rem, 1.18fr);
     }
+    .admin-payments-preview__selection-loading {
+      grid-template-columns: minmax(15rem, 0.82fr) minmax(18rem, 1.18fr);
+    }
     .admin-payments-loading__layout {
       grid-template-columns: 1fr;
     }
@@ -3922,6 +5043,10 @@
   }
   @media (max-width: 767px) {
     .admin-payments-preview__body {
+      grid-template-columns: 1fr;
+    }
+    .admin-payments-preview__selection-loading {
+      min-height: 32rem;
       grid-template-columns: 1fr;
     }
     .admin-payments-proof-viewer {
@@ -4004,6 +5129,10 @@
   }
   .admin-payments-preview__booking dd {
     max-width: 31ch;
+  }
+  .admin-payments-preview__rental-dates dd {
+    max-width: none;
+    white-space: nowrap;
   }
   .admin-payments-preview__loading {
     color: #687772 !important;
@@ -12446,12 +13575,7 @@
 .vehicle-detail-skeleton i {
   display: block;
   border-radius: 0.25rem;
-  background: linear-gradient(
-    100deg,
-    #e1e8e1 20%,
-    #f3f6f1 46%,
-    #e1e8e1 72%
-  );
+  background: linear-gradient(100deg, #e1e8e1 20%, #f3f6f1 46%, #e1e8e1 72%);
   background-size: 220% 100%;
   animation: finder-fleet-skeleton-shift 1.35s ease-in-out infinite;
 }
@@ -12809,7 +13933,7 @@
     grid-template-columns: 1fr;
   }
 
-.home-filmstrip-gallery {
+  .home-filmstrip-gallery {
     gap: 0.2rem;
     padding-block: 0.2rem;
   }
@@ -13915,6 +15039,130 @@
     margin: 0;
   }
 
+  .booking-payment-qr {
+    display: grid;
+    grid-template-columns: 8.75rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: center;
+    margin: 0.35rem 0 0;
+    padding: 1rem;
+    border: 1px solid #b7ccc5;
+    border-radius: 0.75rem;
+    background: #f2f7f4;
+  }
+
+  .booking-payment-qr__code {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.65rem;
+    border-radius: 0.5rem;
+    background: #fffdf8;
+    color: #123f3a;
+    text-align: center;
+  }
+
+  .booking-payment-qr__code svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    fill: currentColor;
+  }
+
+  .booking-payment-qr__code span {
+    color: #4d635d;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .booking-payment-qr figcaption {
+    display: grid;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+
+  .booking-payment-qr__topline {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .booking-payment-qr__heading {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #123f3a;
+  }
+
+  .booking-payment-qr__heading h3 {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+  }
+
+  .booking-payment-qr__amount {
+    display: grid;
+    justify-items: end;
+    gap: 0.1rem;
+    color: #123f3a;
+    text-align: right;
+  }
+
+  .booking-payment-qr__amount span {
+    color: #4d635d;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .booking-payment-qr__amount strong {
+    font-family: "Newsreader", Georgia, serif;
+    font-size: 1.625rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .booking-payment-qr figcaption p,
+  .booking-payment-qr figcaption small {
+    margin: 0;
+    color: #4d635d;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
+  .booking-payment-qr__breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin: 0;
+  }
+
+  .booking-payment-qr__breakdown div {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .booking-payment-qr__breakdown dt {
+    color: #4d635d;
+    font-size: 0.75rem;
+  }
+
+  .booking-payment-qr__breakdown dd {
+    margin: 0;
+    color: #123f3a;
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  .booking-payment-qr figcaption small {
+    color: #123f3a;
+    font-weight: 600;
+  }
+
   .booking-currency-input {
     display: grid;
     grid-template-columns: 3.5rem minmax(0, 1fr);
@@ -14212,6 +15460,23 @@
 
     .booking-payment-form legend {
       font-size: 1.5rem;
+    }
+
+    .booking-payment-qr {
+      grid-template-columns: 1fr;
+    }
+
+    .booking-payment-qr__code {
+      width: min(10rem, 100%);
+    }
+
+    .booking-payment-qr__topline {
+      align-items: end;
+    }
+
+    .booking-payment-qr__amount {
+      justify-items: start;
+      text-align: left;
     }
   }
 }

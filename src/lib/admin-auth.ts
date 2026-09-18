@@ -198,8 +198,8 @@ export function isAdminSignedIn() {
   return getAdminSession() != null;
 }
 
-export function signOutAdmin() {
-  void signOutWithCredentialsApi();
+export async function signOutAdmin() {
+  await signOutWithCredentialsApi();
   notifyAdminSessionChanged();
 }
 
