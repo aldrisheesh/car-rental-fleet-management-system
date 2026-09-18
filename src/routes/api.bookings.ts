@@ -24,10 +24,23 @@ async function readBookings({ request }: { request: Request }) {
   try {
     const principal = await requirePrincipal();
     const client = getSupabaseServerClient();
-    let query = (client as any).from("booking_requests").select(BOOKING_READ_SELECT).order("created_at", { ascending: false });
+    const url = new URL(request.url);
+    const queue = principal.role !== "Customer/Renter" && url.searchParams.get("view") === "queue";
+    const queuePage = queue ? boundedInteger(url.searchParams.get("page"), 1, 1, 10_000) : undefined;
+    const queueLimit = queue ? boundedInteger(url.searchParams.get("limit"), 25, 10, 100) : undefined;
+    if (queue && (queuePage === undefined || queueLimit === undefined)) return errorResponse("Invalid pagination.");
+    const page = queuePage ?? 1;
+    const limit = queueLimit ?? 25;
+    let query = (client as any).from("booking_requests").select(
+      BOOKING_READ_SELECT,
+      queue ? { count: "exact" } : undefined,
+    ).order("created_at", { ascending: false });
     if (principal.role === "Customer/Renter") query = query.eq("customer_id", principal.userId);
-    else if (new URL(request.url).searchParams.get("includeDraft") !== "1")
+    else if (url.searchParams.get("includeDraft") !== "1")
       query = query.neq("booking_status", "Draft");
+    if (queue && url.searchParams.get("status")) query = query.eq("booking_status", url.searchParams.get("status"));
+    if (queue && url.searchParams.get("branch")) query = query.eq("pickup_branch_id", url.searchParams.get("branch"));
+    if (queue) query = query.range((page - 1) * limit, page * limit - 1);
     const result = await query;
     if (result.error) return errorResponse("Unable to load booking requests.", 503);
     const rows = result.data ?? [];
@@ -57,14 +70,41 @@ async function readBookings({ request }: { request: Request }) {
       const payMap = new Map((pays.data ?? []).map((x: any) => [x.booking_id, x.status]));
       rows.forEach((b: any) => { b.requirement_status = reqMap.get(b.id) ?? "Not Submitted"; b.payment_status = payMap.get(b.id) ?? "Not Submitted"; });
     }
+    const queueMetadata = queue ? Promise.all([
+      (client as any).from("branches").select("id,name").eq("is_active", true).order("name"),
+      (client as any).from("booking_requests").select("booking_status").neq("booking_status", "Draft"),
+    ]) : null;
+    const queueResponse = async () => {
+      const [branches, statuses] = await queueMetadata!;
+      return {
+        pagination: { page, limit, total: result.count ?? 0 },
+        branches: branches.data ?? [],
+        statuses: [...new Set((statuses.data ?? []).map((row: any) => row.booking_status).filter(Boolean))].sort(),
+      };
+    };
     if (principal.role === "Owner/Admin") {
-      const vehicles = await (client as any).from("vehicles").select("id,name,license_plate,branch_id,is_active,branch:branches(id,name),category:vehicle_categories(id,name)").eq("is_active", true).order("name");
-      return Response.json({ bookings: rows, candidateVehicles: vehicles.data ?? [] });
+      const vehicles = await (client as any)
+        .from("vehicles")
+        .select("id,name,license_plate,branch_id,is_active,branch:branches(id,name),category:vehicle_categories(id,name)")
+        .eq("is_active", true)
+        .order("name");
+      const queueFields = queue ? await queueResponse() : {};
+      return Response.json({
+        bookings: rows,
+        candidateVehicles: vehicles.data ?? [],
+        ...queueFields,
+      });
     }
-    return Response.json({ bookings: rows });
+    return Response.json({ bookings: rows, ...(queue ? await queueResponse() : {}) });
   } catch (error) {
     return errorResponse(error instanceof Error && error.message === "forbidden" ? "Forbidden." : "Authentication required.", error instanceof Error && error.message === "forbidden" ? 403 : 401);
   }
+}
+
+function boundedInteger(value: string | null, fallback: number, minimum: number, maximum: number) {
+  if (!value) return fallback;
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= minimum && parsed <= maximum ? parsed : undefined;
 }
 
 async function mutateBooking({ request }: { request: Request }) {

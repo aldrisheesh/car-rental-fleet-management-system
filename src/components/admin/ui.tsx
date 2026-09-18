@@ -100,6 +100,52 @@ export function Toolbar({ children }: { children: ReactNode }) {
   );
 }
 
+export function QueuePagination({
+  page,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
+  itemLabel = "records",
+}: {
+  page: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
+  itemLabel?: string;
+}) {
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+  return (
+    <nav
+      aria-label={`${itemLabel} pagination`}
+      className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 sm:px-5"
+    >
+      <p className="text-sm tabular-nums text-muted-foreground" aria-live="polite">
+        {start}–{end} of {total} {itemLabel}
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Rows</span>
+          <select
+            value={pageSize}
+            onChange={(event) => onPageSizeChange(Number(event.target.value))}
+            className="input-control min-h-9 w-[4.5rem] py-1 text-sm"
+            aria-label="Rows per page"
+          >
+            {[25, 50].map((size) => <option key={size} value={size}>{size}</option>)}
+          </select>
+        </label>
+        <Btn disabled={page <= 1} onClick={() => onPageChange(page - 1)}>Previous</Btn>
+        <span className="min-w-20 text-center text-sm tabular-nums text-muted-foreground">Page {page} of {pageCount}</span>
+        <Btn disabled={page >= pageCount} onClick={() => onPageChange(page + 1)}>Next</Btn>
+      </div>
+    </nav>
+  );
+}
+
 export function TInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input

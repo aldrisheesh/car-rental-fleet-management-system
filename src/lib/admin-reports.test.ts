@@ -6,6 +6,7 @@ import {
   assertCanonicalBranch,
   buildAdminReport,
   handleAdminReportsRequest,
+  previousReportRange,
   ReportSourceError,
   ReportValidationError,
   validateReportRange,
@@ -192,6 +193,15 @@ test("report dates are valid, inclusive, Manila-bound, and limited to 366 days",
   );
 });
 
+test("previous report period has the same inclusive Manila calendar length", () => {
+  const selected = validateReportRange("2026-09-01", "2026-09-30");
+  const previous = previousReportRange(selected);
+  assert.deepEqual(
+    { start: previous.start, end: previous.end, days: previous.days.length },
+    { start: "2026-08-02", end: "2026-08-31", days: 30 },
+  );
+});
+
 test("booking requests use created_at boundaries, retain cancelled history, statuses, and branch grouping", () => {
   const report = buildAdminReport(
     "Owner/Admin",
@@ -234,6 +244,35 @@ test("rental metrics come from canonical start/end timestamps, not booking statu
       ?.rentalStarts,
     1,
   );
+});
+
+test("historical report data compares equal-length periods and groups weekly actuals", () => {
+  const data = sources();
+  data.bookings.push({
+    id: "previous-booking",
+    status: "Confirmed",
+    createdAt: "2026-08-31T15:59:59.999Z",
+    branchId: "b1",
+  });
+  const report = buildAdminReport(
+    "Owner/Admin",
+    validateReportRange("2026-09-01", "2026-09-01"),
+    ALL_BRANCHES,
+    data,
+  );
+  assert.deepEqual(report.historical.previousRange, {
+    start: "2026-08-31",
+    end: "2026-08-31",
+  });
+  assert.equal(report.historical.previous.bookingRequests, 2);
+  assert.equal(report.historical.trend.length, 1);
+  assert.deepEqual(report.historical.trend[0], {
+    start: "2026-09-01",
+    end: "2026-09-01",
+    bookingRequests: 2,
+    rentalsStarted: 1,
+    rentalsCompleted: 1,
+  });
 });
 
 test("complete utilization is averaged while partial coverage stays unavailable", () => {

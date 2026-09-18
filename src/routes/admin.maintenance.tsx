@@ -1,16 +1,13 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { History, Plus, RefreshCw } from "lucide-react";
+import { CalendarDays, CarFront, ChevronRight, Fuel, Gauge, Plus, RefreshCw, Search, UsersRound, Wrench } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   MaintenanceRecordDialog,
   type MaintenanceVehicleOption,
 } from "@/components/admin/MaintenanceRecordDialog";
 import {
-  Badge,
   Btn,
   Card,
-  CardHeader,
-  PageHeader,
   TInput,
 } from "@/components/admin/ui";
 import {
@@ -45,6 +42,12 @@ type VehicleResponse = {
   id: string;
   name: string;
   license_plate: string;
+  image_url: string | null;
+  transmission: string | null;
+  fuel_type: string | null;
+  seat_capacity: number | null;
+  daily_rate: number | null;
+  category: { name: string } | null;
   branch: { name: string } | null;
 };
 
@@ -109,7 +112,10 @@ async function responseJson<T>(response: Response): Promise<T> {
 function MaintenancePage() {
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
   const [vehicles, setVehicles] = useState<MaintenanceVehicleOption[]>([]);
+  const [vehicleRows, setVehicleRows] = useState<VehicleResponse[]>([]);
   const [readiness, setReadiness] = useState<ReadinessItem[]>([]);
+  const [query, setQuery] = useState("");
+  const [queueFilter, setQueueFilter] = useState<"All" | "Open" | "Completed">("All");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -150,6 +156,7 @@ function MaintenancePage() {
           branch: vehicle.branch?.name,
         })),
       );
+      setVehicleRows(vehicleRows);
       setReadiness(nextReadiness);
     } catch (error) {
       setLoadError(
@@ -182,6 +189,15 @@ function MaintenancePage() {
       null,
     [active, maintenanceHistory, records, selectedRecordId],
   );
+  const filteredRecords = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    return [...active, ...maintenanceHistory].filter((record) => {
+      const matchesFilter = queueFilter === "All" || record.status === queueFilter;
+      const haystack = [record.vehicle?.name, record.vehicle?.license_plate, record.maintenance_type].filter(Boolean).join(" ").toLowerCase();
+      return matchesFilter && (!normalized || haystack.includes(normalized));
+    });
+  }, [active, maintenanceHistory, query, queueFilter]);
+  const vehicleById = useMemo(() => new Map(vehicleRows.map((vehicle) => [vehicle.id, vehicle])), [vehicleRows]);
 
   useEffect(() => {
     setSelectedRecordId((current) =>
@@ -282,30 +298,28 @@ function MaintenancePage() {
   }
 
   const header = (
-    <PageHeader
-      title="Maintenance"
-      subtitle="Preventive maintenance, service records, and vehicle readiness."
-      actions={
-        <Btn variant="primary" onClick={openCreateDialog} disabled={loading}>
-          <Plus className="h-4 w-4" /> Add maintenance record
-        </Btn>
-      }
-    />
+    <header className="admin-maintenance-heading">
+      <div>
+        <h1>Maintenance</h1>
+        <p>Review service records and vehicle readiness before the next booking.</p>
+      </div>
+      <Btn variant="primary" onClick={openCreateDialog} disabled={loading}>
+        <Plus className="h-4 w-4" /> Add maintenance record
+      </Btn>
+    </header>
   );
 
   if (loading && records.length === 0)
     return (
-      <div>
+      <div className="admin-maintenance-workspace">
         {header}
-        <Card className="p-8 text-center text-sm text-muted-foreground">
-          Loading maintenance data…
-        </Card>
+        <MaintenanceWorkspaceLoading />
       </div>
     );
 
   if (loadError)
     return (
-      <div>
+      <div className="admin-maintenance-workspace">
         {header}
         <Card className="p-8 text-center">
           <p role="alert" className="text-sm text-rose-400">
@@ -319,14 +333,14 @@ function MaintenancePage() {
     );
 
   return (
-    <div>
+    <div className="admin-maintenance-workspace">
       {header}
 
       {feedback && (
         <div
           role={feedback.kind === "warning" ? "alert" : "status"}
           aria-live="polite"
-          className={`mb-5 rounded-lg border px-4 py-3 text-sm ${
+          className={`admin-maintenance-feedback ${
             feedback.kind === "warning"
               ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
               : "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
@@ -336,109 +350,33 @@ function MaintenancePage() {
         </div>
       )}
 
-      {records.length === 0 && (
-        <p className="mb-5 rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-          No maintenance records yet.
-        </p>
-      )}
-
-      <p className="mb-5 text-sm text-muted-foreground">
-        {active.length} open record{active.length === 1 ? "" : "s"} ·{" "}
-        {attention.length} vehicle{attention.length === 1 ? "" : "s"} with
-        derived readiness attention. Record status is canonical; readiness is
-        derived and is not persisted.
-      </p>
-
-      <Card className="mt-6">
-        <CardHeader
-          title="Maintenance / readiness attention"
-          hint="Canonical PMS and vehicle readiness checks"
-        />
-        <div className="overflow-x-auto">
-          {attention.length === 0 ? (
-            <p className="p-5 text-sm text-muted-foreground">
-              All vehicles are maintenance-ready.
-            </p>
+      <div className="admin-maintenance-layout">
+        <section className="admin-maintenance-queue" aria-label="Service records">
+          <header>
+            <div><h2>Service records</h2><p>Select a record to inspect the work and its rental impact.</p></div>
+          </header>
+          <label className="admin-maintenance-search"><Search aria-hidden="true" /><input aria-label="Search service records" name="service-record-search" autoComplete="off" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search vehicle, plate or service type…" /></label>
+          <div className="admin-maintenance-filters" aria-label="Filter service records">
+            {(["All", "Open", "Completed"] as const).map((filter) => <button key={filter} type="button" className={queueFilter === filter ? "is-active" : ""} onClick={() => setQueueFilter(filter)}>{filter}<span>{filter === "All" ? records.length : filter === "Open" ? active.length : maintenanceHistory.filter((record) => record.status === "Completed").length}</span></button>)}
+          </div>
+          {records.length === 0 ? (
+            <p className="admin-maintenance-empty">No service records yet. Add the first maintenance record to begin tracking readiness.</p>
           ) : (
-            <table className="w-full min-w-[620px] text-sm">
-              <caption className="sr-only">
-                Vehicles with maintenance readiness attention
-              </caption>
-              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                <tr className="border-b border-border">
-                  <th className="px-5 py-3 text-left font-semibold">Vehicle</th>
-                  <th className="px-5 py-3 text-left font-semibold">
-                    Readiness
-                  </th>
-                  <th className="px-5 py-3 text-left font-semibold">
-                    Canonical evidence
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {attention.map((item) => (
-                  <tr
-                    key={item.vehicleId}
-                    className="border-b border-border/60 align-top"
-                  >
-                    <td className="px-5 py-4">
-                      <div className="font-medium">{item.vehicleName}</div>
-                      <div className="font-mono text-xs text-muted-foreground">
-                        {item.licensePlate}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <Badge>Not maintenance-ready</Badge>
-                    </td>
-                    <td className="px-5 py-4 text-muted-foreground">
-                      {item.reasons.join("; ")}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="admin-maintenance-records">
+              {filteredRecords.map((record) => (
+                <button key={record.id} type="button" onClick={() => setSelectedRecordId(record.id)} className={`admin-maintenance-record ${selectedRecord?.id === record.id ? "is-selected" : ""}`} aria-pressed={selectedRecord?.id === record.id}>
+                  <span className="admin-maintenance-record__vehicle">{vehicleById.get(record.vehicle_id)?.image_url ? <img src={vehicleById.get(record.vehicle_id)?.image_url ?? ""} alt="" width="50" height="50" loading="lazy" /> : <Wrench aria-hidden="true" />}<span><strong>{record.vehicle?.name ?? "Unknown vehicle"}</strong><small>{record.vehicle?.license_plate ?? "Plate unavailable"}</small></span></span>
+                  <span className="admin-maintenance-record__service"><strong>{record.maintenance_type}</strong><small>{record.next_service_date ? `Due ${formatDate(record.next_service_date)}` : formatDate(record.service_started_at)}</small></span>
+                  <span className={`admin-maintenance-record__state is-${record.status.toLowerCase()}`}>{record.status}</span>
+                  <ChevronRight className="admin-maintenance-record__arrow" />
+                </button>
+              ))}
+              {filteredRecords.length === 0 ? <p className="admin-maintenance-empty">No records match this filter.</p> : null}
+            </div>
           )}
-        </div>
-      </Card>
-
-      <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
-        <Card>
-          <CardHeader
-            title="Active maintenance"
-            hint="Open records; blocking work is prioritized"
-          />
-          {active.length === 0 ? (
-            <p className="p-5 text-sm text-muted-foreground">
-              No active maintenance.
-            </p>
-          ) : (
-            <MaintenanceTable
-              records={active}
-              active
-              selectedId={selectedRecord?.id}
-              onSelect={setSelectedRecordId}
-              onComplete={(record) => openTransition(record, "Completed")}
-              onCancel={(record) => openTransition(record, "Cancelled")}
-            />
-          )}
-        </Card>
-        <MaintenanceDetail record={selectedRecord} />
+        </section>
+        <MaintenanceWorkspaceDetail record={selectedRecord} vehicle={selectedRecord ? vehicleById.get(selectedRecord.vehicle_id) ?? null : null} history={selectedRecord ? records.filter((item) => item.vehicle_id === selectedRecord.vehicle_id && item.id !== selectedRecord.id).slice(0, 3) : []} readiness={readiness} onComplete={(record) => openTransition(record, "Completed")} onCancel={(record) => openTransition(record, "Cancelled")} />
       </div>
-
-      <Card className="mt-6">
-        <CardHeader
-          title="Maintenance history"
-          hint="Completed and cancelled records"
-          right={<History className="h-4 w-4 text-muted-foreground" />}
-        />
-        {maintenanceHistory.length === 0 ? (
-          <p className="p-5 text-sm text-muted-foreground">
-            No maintenance history.
-          </p>
-        ) : (
-          <MaintenanceTable records={maintenanceHistory} />
-        )}
-      </Card>
 
       <MaintenanceRecordDialog
         open={createOpen}
@@ -472,309 +410,35 @@ function MaintenancePage() {
   );
 }
 
-function MaintenanceTable({
-  records,
-  active = false,
-  selectedId,
-  onSelect,
-  onComplete,
-  onCancel,
-}: {
-  records: MaintenanceRecord[];
-  active?: boolean;
-  selectedId?: string;
-  onSelect?: (id: string) => void;
-  onComplete?: (record: MaintenanceRecord) => void;
-  onCancel?: (record: MaintenanceRecord) => void;
-}) {
+function MaintenanceWorkspaceDetail({ record, vehicle, history, readiness, onComplete, onCancel }: { record: MaintenanceRecord | null; vehicle: VehicleResponse | null; history: MaintenanceRecord[]; readiness: ReadinessItem[]; onComplete: (record: MaintenanceRecord) => void; onCancel: (record: MaintenanceRecord) => void; }) {
+  const recordReadiness = record ? readiness.find((item) => item.vehicleId === record.vehicle_id) : null;
   return (
-    <div>
-      <div className="hidden overflow-x-auto lg:block">
-        <table className="w-full text-sm">
-          <caption className="sr-only">Canonical maintenance records</caption>
-          <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-            <tr className="border-b border-border">
-              <th className="px-5 py-3 text-left font-semibold">Vehicle</th>
-              <th className="px-5 py-3 text-left font-semibold">
-                Service facts
-              </th>
-              <th className="px-5 py-3 text-left font-semibold">
-                Due evidence
-              </th>
-              <th className="px-5 py-3 text-left font-semibold">Status</th>
-              {active ? (
-                <th className="px-5 py-3 text-right font-semibold">Actions</th>
-              ) : null}
-            </tr>
-          </thead>
-          <tbody>
-            {records.map((record) => (
-              <MaintenanceRow
-                key={record.id}
-                record={record}
-                active={active}
-                selected={selectedId === record.id}
-                onSelect={onSelect}
-                onComplete={onComplete}
-                onCancel={onCancel}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="divide-y divide-border lg:hidden">
-        {records.map((record) => (
-          <MaintenanceDisclosure
-            key={record.id}
-            record={record}
-            active={active}
-            selected={selectedId === record.id}
-            onSelect={onSelect}
-            onComplete={onComplete}
-            onCancel={onCancel}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MaintenanceRow({
-  record,
-  active,
-  selected,
-  onSelect,
-  onComplete,
-  onCancel,
-}: {
-  record: MaintenanceRecord;
-  active: boolean;
-  selected: boolean;
-  onSelect?: (id: string) => void;
-  onComplete?: (record: MaintenanceRecord) => void;
-  onCancel?: (record: MaintenanceRecord) => void;
-}) {
-  return (
-    <tr
-      className={`border-b border-border/60 align-top ${selected ? "bg-secondary/50" : "hover:bg-secondary/30"}`}
-    >
-      <td className="px-5 py-4">
-        {onSelect ? (
-          <button
-            className="min-h-11 text-left"
-            onClick={() => onSelect(record.id)}
-            aria-label={`View maintenance record for ${record.vehicle?.name ?? "vehicle"}`}
-          >
-            <span className="block font-medium">
-              {record.vehicle?.name ?? "Unknown vehicle"}
-            </span>
-            <span className="block font-mono text-xs text-muted-foreground">
-              {record.vehicle?.license_plate ?? "Plate unavailable"}
-            </span>
-          </button>
-        ) : (
-          <>
-            <div className="font-medium">
-              {record.vehicle?.name ?? "Unknown vehicle"}
-            </div>
-            <div className="font-mono text-xs text-muted-foreground">
-              {record.vehicle?.license_plate ?? "Plate unavailable"}
-            </div>
-          </>
-        )}
-        {record.blocks_rental_use ? (
-          <div className="mt-2 text-xs font-semibold text-[#a45b13]">
-            Blocks rental use
-          </div>
-        ) : null}
-      </td>
-      <td className="max-w-md px-5 py-4">
-        <div className="font-medium">{record.maintenance_type}</div>
-        <div className="mt-1 text-muted-foreground">{record.description}</div>
-        <div className="mt-2 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
-          <span>Started: {formatDate(record.service_started_at, true)}</span>
-          <span>Odometer: {formatOdometer(record.odometer_at_service)}</span>
-          <span>Cost: {formatMoney(record.cost_php)}</span>
-          {record.completed_at ? (
-            <span>Completed: {formatDate(record.completed_at, true)}</span>
-          ) : null}
-        </div>
-        {record.remarks ? (
-          <div className="mt-2 text-xs text-muted-foreground">
-            Remarks: {record.remarks}
-          </div>
-        ) : null}
-      </td>
-      <td className="px-5 py-4 text-sm text-muted-foreground">
-        <div>{formatDate(record.next_service_date)}</div>
-        <div className="mt-1 text-xs">
-          {formatOdometer(record.next_service_odometer)}
-        </div>
-      </td>
-      <td className="px-5 py-4">
-        <Badge>{record.status}</Badge>
-      </td>
-      {active ? (
-        <td className="px-5 py-4">
-          <div className="flex justify-end gap-2">
-            <Btn variant="primary" onClick={() => onComplete?.(record)}>
-              Complete
-            </Btn>
-            <Btn variant="danger" onClick={() => onCancel?.(record)}>
-              Cancel
-            </Btn>
-          </div>
-        </td>
-      ) : null}
-    </tr>
-  );
-}
-
-function MaintenanceDisclosure({
-  record,
-  active,
-  selected,
-  onSelect,
-  onComplete,
-  onCancel,
-}: {
-  record: MaintenanceRecord;
-  active: boolean;
-  selected: boolean;
-  onSelect?: (id: string) => void;
-  onComplete?: (record: MaintenanceRecord) => void;
-  onCancel?: (record: MaintenanceRecord) => void;
-}) {
-  return (
-    <details
-      className={`group px-5 py-4 ${selected ? "bg-secondary/50" : ""}`}
-      onToggle={() => onSelect?.(record.id)}
-    >
-      <summary className="flex min-h-11 cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
-        <div className="min-w-0">
-          <div className="font-medium">
-            {record.vehicle?.name ?? "Unknown vehicle"}
-          </div>
-          <div className="mt-1 font-mono text-xs text-muted-foreground">
-            {record.vehicle?.license_plate ?? "Plate unavailable"}
-          </div>
-        </div>
-        <Badge>{record.status}</Badge>
-      </summary>
-      <div className="mt-4 grid gap-3 border-t border-border pt-4 text-sm">
-        <div>
-          <span className="text-xs uppercase tracking-wider text-muted-foreground">
-            Service
-          </span>
-          <p className="mt-1 font-medium">{record.maintenance_type}</p>
-          <p className="text-muted-foreground">{record.description}</p>
-        </div>
-        <dl className="grid gap-2 text-muted-foreground sm:grid-cols-2">
-          <div>
-            <dt>Started</dt>
-            <dd className="text-foreground">
-              {formatDate(record.service_started_at, true)}
-            </dd>
-          </div>
-          <div>
-            <dt>Odometer</dt>
-            <dd className="text-foreground">
-              {formatOdometer(record.odometer_at_service)}
-            </dd>
-          </div>
-          <div>
-            <dt>Next service</dt>
-            <dd className="text-foreground">
-              {formatDate(record.next_service_date)} ·{" "}
-              {formatOdometer(record.next_service_odometer)}
-            </dd>
-          </div>
-          <div>
-            <dt>Cost</dt>
-            <dd className="text-foreground">{formatMoney(record.cost_php)}</dd>
-          </div>
-        </dl>
-        {record.blocks_rental_use ? (
-          <p className="text-xs font-semibold text-[#a45b13]">
-            Blocks rental use
-          </p>
-        ) : null}
-        {record.remarks ? (
-          <p className="text-xs text-muted-foreground">
-            Remarks: {record.remarks}
-          </p>
-        ) : null}
-        {active ? (
-          <div className="flex flex-wrap gap-2">
-            <Btn variant="primary" onClick={() => onComplete?.(record)}>
-              Complete
-            </Btn>
-            <Btn variant="danger" onClick={() => onCancel?.(record)}>
-              Cancel
-            </Btn>
-          </div>
-        ) : null}
-      </div>
-    </details>
-  );
-}
-
-function MaintenanceDetail({ record }: { record: MaintenanceRecord | null }) {
-  return (
-    <Card as="aside" className="h-fit xl:sticky xl:top-6">
+    <aside className="admin-maintenance-detail">
       {!record ? (
-        <p className="p-6 text-sm text-muted-foreground">
-          Select a maintenance record to inspect its canonical service facts.
-        </p>
+        <p className="admin-maintenance-empty">Select a service record to inspect its work and rental impact.</p>
       ) : (
         <>
-          <div className="border-b border-border px-5 py-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Selected record
-            </p>
-            <h2 className="mt-1 text-xl font-semibold">
-              {record.vehicle?.name ?? "Unknown vehicle"}
-            </h2>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">
-              {record.vehicle?.license_plate ?? "Plate unavailable"} ·{" "}
-              {record.id}
-            </p>
-            <div className="mt-3">
-              <Badge>{record.status}</Badge>
-            </div>
+          <header className="admin-maintenance-detail__hero">
+            <div className="admin-maintenance-detail__image">{vehicle?.image_url ? <img src={vehicle.image_url} alt="" width="520" height="320" fetchPriority="high" /> : <CarFront aria-hidden="true" />}</div>
+            <div className="admin-maintenance-detail__identity"><div><h2>{record.vehicle?.name ?? "Unknown vehicle"}</h2><span>{record.vehicle?.license_plate ?? "Plate unavailable"}</span></div><strong className={`is-${record.status.toLowerCase()}`}>{record.status}</strong><dl><Detail label="Vehicle"><CarFront aria-hidden="true" /> {vehicle?.category?.name ?? "Vehicle"}</Detail><Detail label="Fuel"><Fuel aria-hidden="true" /> {vehicle?.fuel_type ?? "—"}</Detail><Detail label="Capacity"><UsersRound aria-hidden="true" /> {vehicle?.seat_capacity ? `${vehicle.seat_capacity} seats` : "—"}</Detail>{record.odometer_at_service != null ? <Detail label="Service odometer"><Gauge aria-hidden="true" /> {formatOdometer(record.odometer_at_service)}</Detail> : null}</dl></div>
+            <section className="admin-maintenance-detail__readiness"><h3>Current readiness</h3><div><span className={recordReadiness?.maintenanceReady ? "is-ready" : "is-attention"} /><p><strong>{recordReadiness?.maintenanceReady ? "Ready for service" : "Needs attention"}</strong><small>{recordReadiness?.maintenanceReady ? "No active maintenance issues." : (recordReadiness?.reasons.join(" ") ?? "Readiness information is unavailable.")}</small></p></div></section>
+          </header>
+          <div className="admin-maintenance-detail__body">
+            <section><div className="admin-maintenance-detail__section-title"><h3>Service details</h3><span>{record.id.slice(0, 8)}</span></div><dl>
+              <Detail label="Service type">{record.maintenance_type}</Detail><Detail label="Started">{formatDate(record.service_started_at, true)}</Detail><Detail label="Description">{record.description}</Detail><Detail label="Odometer">{formatOdometer(record.odometer_at_service)}</Detail><Detail label="Next service">{formatDate(record.next_service_date)} · {formatOdometer(record.next_service_odometer)}</Detail><Detail label="Cost">{formatMoney(record.cost_php)}</Detail>
+            </dl></section>
+            <div className="admin-maintenance-detail__side"><section><h3>Record notes</h3><p>{record.remarks || "No additional notes were recorded."}</p>{record.completed_at ? <p className="admin-maintenance-detail__completion">{record.status} {formatDate(record.completed_at, true)}</p> : null}</section><section><h3>Rental impact</h3><p>{record.blocks_rental_use ? "This record blocks rental use until the work is closed." : "This record does not block rental use."}</p></section></div>
           </div>
-          <dl className="grid gap-3 px-5 py-5 text-sm sm:grid-cols-2 xl:grid-cols-1">
-            <Detail label="Maintenance type">{record.maintenance_type}</Detail>
-            <Detail label="Description">{record.description}</Detail>
-            <Detail label="Started">
-              {formatDate(record.service_started_at, true)}
-            </Detail>
-            <Detail label="Next service">
-              {formatDate(record.next_service_date)} ·{" "}
-              {formatOdometer(record.next_service_odometer)}
-            </Detail>
-            <Detail label="Odometer">
-              {formatOdometer(record.odometer_at_service)}
-            </Detail>
-            <Detail label="Cost">{formatMoney(record.cost_php)}</Detail>
-            <Detail label="Rental use">
-              {record.blocks_rental_use
-                ? "Blocks rental use"
-                : "Does not block rental use"}
-            </Detail>
-            {record.remarks ? (
-              <Detail label="Remarks">{record.remarks}</Detail>
-            ) : null}
-          </dl>
-          <p className="border-t border-border px-5 py-4 text-xs leading-5 text-muted-foreground">
-            Record facts are read from the canonical maintenance API. State
-            transitions remain limited to the supported Open → Completed or Open
-            → Cancelled mutations.
-          </p>
+          <section className="admin-maintenance-detail__history-list"><div className="admin-maintenance-detail__section-title"><h3>Service history</h3><span>{history.length ? `${history.length} recent record${history.length === 1 ? "" : "s"}` : "No earlier records"}</span></div>{history.map((item) => <div key={item.id}><span className={`is-${item.status.toLowerCase()}`} /><time>{formatDate(item.completed_at ?? item.service_started_at)}</time><strong>{item.maintenance_type}</strong><small>{item.status}</small></div>)}</section>
+          {record.status === "Open" ? <footer className="admin-maintenance-detail__actions"><Btn variant="danger" onClick={() => onCancel(record)}>Cancel record</Btn><Btn variant="primary" onClick={() => onComplete(record)}>Complete service</Btn></footer> : <footer className="admin-maintenance-detail__history">This record is retained in maintenance history.</footer>}
         </>
       )}
-    </Card>
+    </aside>
   );
+}
+
+function MaintenanceWorkspaceLoading() {
+  return <div className="admin-maintenance-loading" role="status" aria-label="Loading maintenance data"><div className="admin-maintenance-loading__ledger">{Array.from({ length: 3 }, (_, index) => <i key={index} />)}</div><div className="admin-maintenance-loading__layout"><section><header><i /><i /></header>{Array.from({ length: 5 }, (_, index) => <div key={index}><i /><i /><i /></div>)}</section><aside><i className="is-title" /><i className="is-impact" /><div>{Array.from({ length: 6 }, (_, index) => <i key={index} />)}</div><footer><i /><i /></footer></aside></div></div>;
 }
 
 function Detail({
@@ -786,10 +450,7 @@ function Detail({
 }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="mt-1 break-words">{children}</dd>
+      <dt>{label}</dt><dd>{children}</dd>
     </div>
   );
 }

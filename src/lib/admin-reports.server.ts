@@ -1,6 +1,7 @@
 import {
   assertCanonicalBranch,
   buildAdminReport,
+  previousReportRange,
   ReportSourceError,
   type AdminReportsResponse,
   type ReportRange,
@@ -14,6 +15,7 @@ export async function loadAdminReport(
   branchFilter: string,
 ): Promise<AdminReportsResponse> {
   const client = getSupabaseServerClient();
+  const historicalStart = previousReportRange(range).startInstant;
   const [
     branches,
     categories,
@@ -28,7 +30,7 @@ export async function loadAdminReport(
     client
       .from("booking_requests")
       .select("id,booking_status,created_at,pickup_branch_id")
-      .gte("created_at", range.startInstant)
+      .gte("created_at", historicalStart)
       .lt("created_at", range.endExclusiveInstant),
     client
       .from("rental_transactions")

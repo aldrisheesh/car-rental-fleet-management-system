@@ -420,22 +420,6 @@ export function AdminShell() {
           <SidebarLinks items={navItems} pathname={pathname} />
         </nav>
 
-        <div className="border-t border-border px-4 py-4">
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-semibold text-white">
-              {getInitials(session.name)}
-            </span>
-            <div className="min-w-0 leading-5">
-              <div className="truncate text-sm font-semibold">
-                {session.name}
-              </div>
-              <div className="truncate text-xs text-muted-foreground">
-                {session.role}
-              </div>
-            </div>
-          </div>
-        </div>
-
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-[236px]">

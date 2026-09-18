@@ -80,6 +80,28 @@ export type AdminReportsResponse = {
     rentalsCompleted: number;
     fleetCount: number;
   };
+  historical: {
+    previousRange: { start: string; end: string };
+    previous: {
+      bookingRequests: number;
+      rentalsStarted: number;
+      rentalsCompleted: number;
+      fleetCount: number;
+    };
+    change: {
+      bookingRequests: number | null;
+      rentalsStarted: number | null;
+      rentalsCompleted: number | null;
+      fleetCount: number | null;
+    };
+    trend: Array<{
+      start: string;
+      end: string;
+      bookingRequests: number;
+      rentalsStarted: number;
+      rentalsCompleted: number;
+    }>;
+  };
   bookings: {
     requests: number;
     statusBreakdown: Array<{ status: string; count: number }>;
@@ -154,6 +176,16 @@ export function defaultReportRange(now = new Date()) {
   return { start: addDays(end, -29), end };
 }
 
+/**
+ * The preceding period uses the same number of Manila calendar days as the
+ * selected reporting range. This keeps historical comparisons descriptive and
+ * prevents a partial month from being compared with a full month.
+ */
+export function previousReportRange(range: ReportRange): ReportRange {
+  const end = addDays(range.start, -1);
+  return validateReportRange(addDays(end, -(range.days.length - 1)), end);
+}
+
 export function assertCanonicalBranch(
   branchFilter: string,
   branches: ReportBranch[],
@@ -208,8 +240,13 @@ export function buildAdminReport(
 ): AdminReportsResponse {
   const branchMatches = (branchId: string | null) =>
     branchFilter === ALL_BRANCHES || branchId === branchFilter;
+  const previousRange = previousReportRange(range);
   const bookings = sources.bookings.filter(
     (row) => branchMatches(row.branchId) && inRange(row.createdAt, range),
+  );
+  const previousBookings = sources.bookings.filter(
+    (row) =>
+      branchMatches(row.branchId) && inRange(row.createdAt, previousRange),
   );
   const rentals = sources.rentals.filter((row) => branchMatches(row.branchId));
   const vehicles = sources.vehicles.filter(
@@ -226,6 +263,12 @@ export function buildAdminReport(
   );
   const rentalsStarted = rentals.filter((row) => inRange(row.startedAt, range));
   const rentalsCompleted = rentals.filter((row) => inRange(row.endedAt, range));
+  const previousRentalsStarted = rentals.filter((row) =>
+    inRange(row.startedAt, previousRange),
+  );
+  const previousRentalsCompleted = rentals.filter((row) =>
+    inRange(row.endedAt, previousRange),
+  );
   const periodEnd = instant(range.endExclusiveInstant);
   const activeAtPeriodEnd = rentals.filter(
     (row) =>
@@ -276,6 +319,42 @@ export function buildAdminReport(
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  const percentageChange = (current: number, previous: number) =>
+    previous === 0 ? null : ((current - previous) / previous) * 100;
+  const vehiclesAtPreviousPeriodEnd = sources.vehicles.filter(
+    (row) =>
+      branchMatches(row.branchId) &&
+      instant(row.createdAt) < instant(previousRange.endExclusiveInstant),
+  );
+  const pointInRange = (value: string | null, start: string, end: string) => {
+    if (value == null) return false;
+    const key = dayKey(new Date(value));
+    return key >= start && key <= end;
+  };
+  const trend = Array.from(
+    { length: Math.ceil(range.days.length / 7) },
+    (_, index) => {
+      const days = range.days.slice(index * 7, index * 7 + 7);
+      const [start, end] = [days[0]!, days[days.length - 1]!];
+      return {
+        start,
+        end,
+        bookingRequests: sources.bookings.filter(
+          (row) =>
+            branchMatches(row.branchId) &&
+            pointInRange(row.createdAt, start, end),
+        ).length,
+        rentalsStarted: rentals.filter(
+          (row) =>
+            pointInRange(row.startedAt, start, end),
+        ).length,
+        rentalsCompleted: rentals.filter((row) =>
+          pointInRange(row.endedAt, start, end),
+        ).length,
+      };
+    },
+  );
+
   return {
     role,
     range: { start: range.start, end: range.end },
@@ -286,6 +365,31 @@ export function buildAdminReport(
       rentalsStarted: rentalsStarted.length,
       rentalsCompleted: rentalsCompleted.length,
       fleetCount: vehicles.length,
+    },
+    historical: {
+      previousRange: { start: previousRange.start, end: previousRange.end },
+      previous: {
+        bookingRequests: previousBookings.length,
+        rentalsStarted: previousRentalsStarted.length,
+        rentalsCompleted: previousRentalsCompleted.length,
+        fleetCount: vehiclesAtPreviousPeriodEnd.length,
+      },
+      change: {
+        bookingRequests: percentageChange(bookings.length, previousBookings.length),
+        rentalsStarted: percentageChange(
+          rentalsStarted.length,
+          previousRentalsStarted.length,
+        ),
+        rentalsCompleted: percentageChange(
+          rentalsCompleted.length,
+          previousRentalsCompleted.length,
+        ),
+        fleetCount: percentageChange(
+          vehicles.length,
+          vehiclesAtPreviousPeriodEnd.length,
+        ),
+      },
+      trend,
     },
     bookings: {
       requests: bookings.length,

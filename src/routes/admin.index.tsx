@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlertCircle,
+  ArrowRight,
   Bell,
   Brain,
   CalendarDays,
@@ -19,7 +20,6 @@ import {
   CardHeader,
   EmptyState,
   ErrorState,
-  LoadingRows,
   PageHeader,
 } from "@/components/admin/ui";
 import type {
@@ -203,18 +203,7 @@ function DashboardOverview() {
   }, [loadDashboard]);
 
   if (state.status === "loading") {
-    return (
-      <div>
-        <PageHeader
-          title="Operations dashboard"
-          subtitle="Loading operational dashboard…"
-        />
-        <Card>
-          <CardHeader title="Needs attention" />
-          <LoadingRows count={4} />
-        </Card>
-      </div>
-    );
+    return <DashboardLoadingState />;
   }
 
   if (state.status === "error") {
@@ -236,6 +225,159 @@ function DashboardOverview() {
 
   return (
     <DashboardContent data={state.data} onRetry={() => void loadDashboard()} />
+  );
+}
+
+function DashboardLoadingState() {
+  return (
+    <div
+      className="admin-dispatch-dashboard admin-dispatch-dashboard--loading"
+      aria-busy="true"
+      aria-label="Loading operational dashboard"
+    >
+      <span className="sr-only" role="status">
+        Loading operational dashboard
+      </span>
+      <header className="admin-dispatch-heading">
+        <div>
+          <h1>Today at Briah’s</h1>
+          <p>Keep every pickup, return, and review moving on time.</p>
+        </div>
+        <div className="admin-dispatch-heading__date" aria-hidden="true">
+          <CalendarDays />
+          <span>
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--date" />
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--timestamp" />
+          </span>
+        </div>
+      </header>
+
+      <section className="admin-trip-board" aria-labelledby="loading-trip-timeline-title">
+        <div className="admin-dispatch-section-heading">
+          <h2 id="loading-trip-timeline-title">Today’s trip timeline</h2>
+          <i className="admin-dispatch-skeleton admin-dispatch-skeleton--link" aria-hidden="true" />
+        </div>
+        <div className="admin-trip-timeline" aria-hidden="true">
+          <div className="admin-timeline-scale">
+            {timelineTicks.map((tick) => (
+              <span
+                key={tick.hour}
+                style={{ left: `${((tick.hour - 6) / 15) * 100}%` }}
+              >
+                {tick.label}
+              </span>
+            ))}
+          </div>
+          <LoadingTimelineLane label="Pickups" positions={[22, 52]} />
+          <LoadingTimelineLane label="Returns" positions={[38]} />
+        </div>
+      </section>
+
+      <div className="admin-dispatch-grid" aria-hidden="true">
+        <LoadingActionColumn />
+        <LoadingReviewColumn />
+        <LoadingFleetColumn />
+      </div>
+    </div>
+  );
+}
+
+function LoadingTimelineLane({
+  label,
+  positions,
+}: {
+  label: string;
+  positions: number[];
+}) {
+  return (
+    <div className="admin-trip-lane">
+      <h3>{label}</h3>
+      <div className="admin-trip-lane__plot">
+        {positions.map((position) => (
+          <span
+            key={position}
+            className="admin-loading-trip-stop"
+            style={{ left: `${position}%` }}
+          >
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--line" />
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--short" />
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LoadingColumnHeader({ title }: { title: string }) {
+  return (
+    <div className="admin-dispatch-section-heading">
+      <h2>{title}</h2>
+      <i className="admin-dispatch-skeleton admin-dispatch-skeleton--link" />
+    </div>
+  );
+}
+
+function LoadingActionColumn() {
+  return (
+    <section className="admin-dispatch-column">
+      <LoadingColumnHeader title="What to do next" />
+      <div className="admin-loading-action-list">
+        {[1, 2, 3, 4].map((item) => (
+          <div className="admin-loading-action" key={item}>
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--circle" />
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--number" />
+            <span>
+              <i className="admin-dispatch-skeleton admin-dispatch-skeleton--line" />
+              <i className="admin-dispatch-skeleton admin-dispatch-skeleton--short" />
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function LoadingReviewColumn() {
+  return (
+    <section className="admin-dispatch-column admin-dispatch-reviews">
+      <LoadingColumnHeader title="Requirements to review" />
+      <div className="admin-loading-review-list">
+        {[1, 2, 3, 4].map((item) => (
+          <div className="admin-loading-review" key={item}>
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--circle" />
+            <span>
+              <i className="admin-dispatch-skeleton admin-dispatch-skeleton--line" />
+              <i className="admin-dispatch-skeleton admin-dispatch-skeleton--short" />
+            </span>
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--button" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function LoadingFleetColumn() {
+  return (
+    <section className="admin-dispatch-column">
+      <LoadingColumnHeader title="Fleet availability" />
+      <div className="admin-loading-fleet-list">
+        {[1, 2, 3, 4].map((item) => (
+          <div className="admin-loading-fleet" key={item}>
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--dot" />
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--line" />
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--number" />
+          </div>
+        ))}
+        <div className="admin-loading-fleet-summary">
+          <i className="admin-dispatch-skeleton admin-dispatch-skeleton--circle" />
+          <span>
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--line" />
+            <i className="admin-dispatch-skeleton admin-dispatch-skeleton--short" />
+          </span>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -267,14 +409,82 @@ function DashboardContent({
     [data.bookings],
   );
 
+  const submittedBookings =
+    data.bookings?.filter((booking) => booking.booking_status === "Submitted") ?? [];
+  const reviewItems = staffView ? submittedBookings : pendingRequirements;
+  const reviewSourceUnavailable = staffView
+    ? data.bookings == null
+    : data.requirements == null;
+  const actionItems = staffView
+    ? [
+        {
+          icon: <CalendarDays />,
+          value: events.length,
+          label: "handoffs today",
+          detail: events.length > 0 ? "Open today’s operating schedule" : "No handoffs are scheduled today",
+          href: "/admin/calendar",
+        },
+        {
+          icon: <UserRound />,
+          value: data.base.operational.submittedBookings,
+          label: "requests to review",
+          detail: "New rental requests awaiting operational review",
+          href: "/admin/bookings?status=Submitted",
+        },
+        {
+          icon: <CircleAlert />,
+          value: data.notifications == null ? "—" : lowAvailability.length,
+          label: "availability notices",
+          detail: "Notices that may affect new reservations",
+          href: "/admin/notifications",
+        },
+      ]
+    : [
+        {
+          icon: <CalendarDays />,
+          value: pickups.length,
+          label: "pickups due",
+          detail: pickups.length > 0 ? `Next: ${eventTime(pickups[0])}` : "No pickups scheduled today",
+          href: "/admin/calendar",
+        },
+        {
+          icon: <Clock3 />,
+          value: returns.length,
+          label: "returns due",
+          detail: returns.length > 0 ? `Next: ${eventTime(returns[0])}` : "No returns scheduled today",
+          href: "/admin/calendar",
+        },
+        {
+          icon: <FileText />,
+          value: data.requirements == null ? "—" : pendingRequirements.length,
+          label: "requirements to review",
+          detail: "Submitted customer documents awaiting review",
+          href: "/admin/requirements",
+        },
+        {
+          icon: <CreditCard />,
+          value: data.payments == null ? "—" : pendingPayments.length,
+          label: "payments to verify",
+          detail: "Payment proofs awaiting verification",
+          href: "/admin/payments",
+        },
+      ];
+
   return (
-    <div>
-      <PageHeader
-        title={
-          staffView ? "Staff operations dashboard" : "Operations dashboard"
-        }
-        subtitle="What needs your attention now."
-      />
+    <div className="admin-dispatch-dashboard">
+      <header className="admin-dispatch-heading">
+        <div>
+          <h1>{staffView ? "Today’s operations" : "Today at Briah’s"}</h1>
+          <p>Keep every pickup, return, and review moving on time.</p>
+        </div>
+        <div className="admin-dispatch-heading__date">
+          <CalendarDays aria-hidden="true" />
+          <span>
+            <strong>{formatAdminDate(data.base.generatedAt)}</strong>
+            <small>Updated {formatAdminDateTime(data.base.generatedAt)}</small>
+          </span>
+        </div>
+      </header>
 
       {data.failures.length > 0 ? (
         <div
@@ -302,133 +512,329 @@ function DashboardContent({
         </div>
       ) : null}
 
-      {!staffView ? (
-        <DecisionSupportHighlight
-          submittedBookings={data.base.operational.submittedBookings}
-          readinessAttention={data.base.operational.readinessAttention}
-          availableVehicles={data.base.operational.availableVehicles}
-        />
-      ) : null}
+      <TripTimeline
+        events={events}
+        bookingsById={bookingsById}
+        calendarAvailable={data.calendar != null}
+      />
 
-      <Card>
-        <CardHeader
-          title="Needs attention"
-          right={
-            <Link
-              to="/admin/bookings"
-              className="touch-target inline-flex items-center text-sm font-semibold text-primary underline underline-offset-4 hover:text-[#0d322e]"
-            >
-              View bookings
-            </Link>
-          }
-        />
-        <div className="divide-y divide-border">
-          {staffView ? (
-            <>
-              <AttentionRow
-                icon={<UserRound />}
-                label="Submitted requests"
-                detail="New rental requests awaiting operational review."
-                count={data.base.operational.submittedBookings}
-                href="/admin/bookings?status=Submitted"
-                action="Open bookings"
-              />
-              <AttentionRow
-                icon={<CalendarDays />}
-                label="Deliveries & returns today"
-                detail={
-                  data.calendar == null
-                    ? "Today’s schedule is unavailable."
-                    : "Today’s delivery and return schedule."
-                }
-                count={data.calendar == null ? "—" : events.length}
-                href="/admin/calendar"
-                action="Open calendar"
-              />
-              <AttentionRow
-                icon={<CircleAlert />}
-                label="Low availability notice"
-                detail={
-                  data.notifications == null
-                    ? "Notification source is unavailable."
-                    : lowAvailability.length > 0
-                      ? "A role-eligible availability notice needs review."
-                      : "No low availability notice is currently recorded."
-                }
-                count={
-                  data.notifications == null ? "—" : lowAvailability.length
-                }
-                href="/admin/notifications"
-                action="Open notifications"
-              />
-            </>
-          ) : (
-            <>
-              <AttentionRow
-                icon={<FileText />}
-                label="Requirements review"
-                detail={
-                  data.requirements == null
-                    ? "Requirement review source is unavailable."
-                    : "Customer requests with documents awaiting manual review."
-                }
-                count={
-                  data.requirements == null ? "—" : pendingRequirements.length
-                }
-                href="/admin/requirements"
-                action="Open queue"
-              />
-              <AttentionRow
-                icon={<CreditCard />}
-                label="Payment verification"
-                detail={
-                  data.payments == null
-                    ? "Payment review source is unavailable."
-                    : "Submitted payments awaiting manual verification."
-                }
-                count={data.payments == null ? "—" : pendingPayments.length}
-                href="/admin/payments"
-                action="Open queue"
-              />
-              <AttentionRow
-                icon={<UserRound />}
-                label="Submitted requests"
-                detail="New rental requests awaiting assignment or confirmation."
-                count={data.base.operational.submittedBookings}
-                href="/admin/bookings?status=Submitted"
-                action="Open bookings"
-              />
-              <AttentionRow
-                icon={<Wrench />}
-                label="Fleet readiness"
-                detail="Vehicles requiring canonical maintenance or inspection attention."
-                count={data.base.operational.readinessAttention}
-                href="/admin/maintenance"
-                action="Open readiness"
-              />
-            </>
-          )}
+      <div className="admin-dispatch-grid">
+        <section className="admin-dispatch-column" aria-labelledby="next-actions-title">
+          <DashboardSectionHeader
+            id="next-actions-title"
+            title="What to do next"
+            href={staffView ? "/admin/bookings" : "/admin/calendar"}
+            action="Open operations"
+          />
+          <div className="admin-next-actions">
+            {actionItems.map((item) => (
+              <DispatchAction key={item.label} {...item} />
+            ))}
+          </div>
+        </section>
+
+        <section className="admin-dispatch-column admin-dispatch-reviews" aria-labelledby="review-work-title">
+          <DashboardSectionHeader
+            id="review-work-title"
+            title={staffView ? "Requests to review" : "Requirements to review"}
+            href={staffView ? "/admin/bookings?status=Submitted" : "/admin/requirements"}
+            action="View queue"
+          />
+          <ReviewWork
+            items={reviewItems}
+            staffView={staffView}
+            sourceUnavailable={reviewSourceUnavailable}
+          />
+        </section>
+
+        <section className="admin-dispatch-column" aria-labelledby="fleet-state-title">
+          <DashboardSectionHeader
+            id="fleet-state-title"
+            title="Fleet availability"
+            href="/admin/fleet"
+            action="View fleet"
+          />
+          <FleetAvailability
+            available={data.base.operational.availableVehicles}
+            active={data.base.operational.activeRentals}
+            dueBack={returns.length}
+            attention={data.base.operational.readinessAttention}
+          />
+        </section>
+      </div>
+
+    </div>
+  );
+}
+
+function eventTime(event: CalendarEvent | undefined) {
+  if (!event?.dateTime) return "Time not recorded";
+  const value = new Date(event.dateTime);
+  if (Number.isNaN(value.getTime())) return "Time not recorded";
+  return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(value);
+}
+
+const timelineTicks = [
+  { label: "6:00 AM", hour: 6 },
+  { label: "9:00 AM", hour: 9 },
+  { label: "12:00 PM", hour: 12 },
+  { label: "3:00 PM", hour: 15 },
+  { label: "6:00 PM", hour: 18 },
+  { label: "9:00 PM", hour: 21 },
+];
+
+function timelinePosition(event: CalendarEvent) {
+  if (!event.dateTime) return 0;
+  const parts = new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    hour: "numeric",
+    minute: "numeric",
+    hourCycle: "h23",
+  }).formatToParts(new Date(event.dateTime));
+  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? 6);
+  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? 0);
+  return Math.max(0, Math.min(100, ((hour + minute / 60 - 6) / 15) * 100));
+}
+
+function DashboardSectionHeader({
+  id,
+  title,
+  href,
+  action,
+}: {
+  id: string;
+  title: string;
+  href: string;
+  action: string;
+}) {
+  return (
+    <div className="admin-dispatch-section-heading">
+      <h2 id={id}>{title}</h2>
+      <Link to={href as never}>
+        {action}
+        <ArrowRight aria-hidden="true" />
+      </Link>
+    </div>
+  );
+}
+
+function TripTimeline({
+  events,
+  bookingsById,
+  calendarAvailable,
+}: {
+  events: CalendarEvent[];
+  bookingsById: Map<string, AdminBooking>;
+  calendarAvailable: boolean;
+}) {
+  const pickups = events.filter((event) => event.kind === "pickup");
+  const returns = events.filter((event) => event.kind === "return");
+  return (
+    <section className="admin-trip-board" aria-labelledby="trip-timeline-title">
+      <DashboardSectionHeader
+        id="trip-timeline-title"
+        title="Today’s trip timeline"
+        href="/admin/calendar"
+        action="View calendar"
+      />
+      {!calendarAvailable ? (
+        <div className="admin-trip-board__empty" role="status">
+          Today’s schedule is unavailable. Calendar data could not be loaded.
         </div>
-      </Card>
-
-      {staffView ? (
-        <StaffDashboardLower
-          events={events}
-          base={data.base}
-          bookings={data.bookings}
-          bookingsById={bookingsById}
-        />
+      ) : events.length === 0 ? (
+        <div className="admin-trip-board__empty">
+          <strong>No handoffs scheduled today.</strong>
+          <span>The board will update when a confirmed pickup or return enters today’s schedule.</span>
+        </div>
       ) : (
-        <OwnerDashboardLower
-          pickups={pickups}
-          returns={returns}
-          base={data.base}
-          bookings={data.bookings}
-          recentNotifications={recentNotifications}
-          bookingsById={bookingsById}
-          calendarAvailable={data.calendar != null}
-        />
+        <div className="admin-trip-timeline">
+          <div className="admin-timeline-scale" aria-hidden="true">
+            {timelineTicks.map((tick) => (
+              <span
+                key={tick.hour}
+                style={{ left: `${((tick.hour - 6) / 15) * 100}%` }}
+              >
+                {tick.label}
+              </span>
+            ))}
+          </div>
+          <div className="admin-trip-lanes">
+          <TimelineLane label="Pickups" events={pickups} bookingsById={bookingsById} />
+          <TimelineLane label="Returns" events={returns} bookingsById={bookingsById} />
+          </div>
+        </div>
       )}
+    </section>
+  );
+}
+
+function TimelineLane({
+  label,
+  events,
+  bookingsById,
+}: {
+  label: string;
+  events: CalendarEvent[];
+  bookingsById: Map<string, AdminBooking>;
+}) {
+  return (
+    <div className="admin-trip-lane">
+      <h3>{label}</h3>
+      <div className="admin-trip-lane__plot">
+        {events.length === 0 ? (
+          <p className="admin-trip-lane__empty">No {label.toLowerCase()} scheduled</p>
+        ) : (
+          events.slice(0, 5).map((event) => {
+            const bookingId = eventBookingId(event);
+            const booking = bookingsById.get(bookingId ?? "");
+            const position = timelinePosition(event);
+            const isAtEnd = position > 80;
+            const content = (
+              <>
+                <span className="admin-trip-marker" aria-hidden="true" />
+                <strong>{eventTime(event)}</strong>
+                <span>{booking?.requested_vehicle?.name ?? event.label}</span>
+                <small>{booking?.customer?.full_name ?? (bookingId ? bookingReference(bookingId) : "Operational schedule")}</small>
+              </>
+            );
+            return bookingId ? (
+              <Link
+                key={event.id}
+                to={`/admin/bookings/${encodeURIComponent(bookingId)}` as never}
+                className={`admin-trip-stop${isAtEnd ? " is-end" : ""}`}
+                style={{ left: `${position}%` }}
+              >
+                {content}
+              </Link>
+            ) : (
+              <div
+                key={event.id}
+                className={`admin-trip-stop${isAtEnd ? " is-end" : ""}`}
+                style={{ left: `${position}%` }}
+              >
+                {content}
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DispatchAction({
+  icon,
+  value,
+  label,
+  detail,
+  href,
+}: {
+  icon: ReactNode;
+  value: number | string;
+  label: string;
+  detail: string;
+  href: string;
+}) {
+  return (
+    <Link to={href as never} className="admin-next-action">
+      <span className="admin-next-action__icon" aria-hidden="true">{icon}</span>
+      <strong>{value}</strong>
+      <span className="admin-next-action__copy">
+        <b>{label}</b>
+        <small>{detail}</small>
+      </span>
+      <ArrowRight className="admin-next-action__arrow" aria-hidden="true" />
+    </Link>
+  );
+}
+
+function ReviewWork({
+  items,
+  staffView,
+  sourceUnavailable,
+}: {
+  items: Array<AdminBooking | AdminRequirementSet>;
+  staffView: boolean;
+  sourceUnavailable: boolean;
+}) {
+  if (sourceUnavailable) {
+    return <div className="admin-review-empty" role="status">The review queue is temporarily unavailable.</div>;
+  }
+  if (items.length === 0) {
+    return (
+      <div className="admin-review-empty">
+        <strong>Review queue is clear.</strong>
+        <span>New submitted work will appear here.</span>
+      </div>
+    );
+  }
+  return (
+    <div className="admin-review-list">
+      {items.slice(0, 4).map((item) => {
+        const bookingId = staffView ? item.id : (item as AdminRequirementSet).booking_id;
+        const booking = staffView ? (item as AdminBooking) : (item as AdminRequirementSet).booking;
+        const name = booking?.customer?.full_name ?? "Customer";
+        const vehicle = booking?.requested_vehicle?.name ?? "Vehicle not assigned";
+        const submittedAt = staffView
+          ? ((item as AdminBooking).created_at ?? (item as AdminBooking).updated_at)
+          : (item as AdminRequirementSet).submitted_at;
+        const href = staffView
+          ? `/admin/bookings/${encodeURIComponent(bookingId)}`
+          : `/admin/requirements/${encodeURIComponent(bookingId)}`;
+        return (
+          <Link key={item.id} to={href as never} className="admin-review-item">
+            <span className="admin-review-item__document" aria-hidden="true"><FileText /></span>
+            <span className="admin-review-item__copy">
+              <strong>{bookingReference(bookingId)}</strong>
+              <b>{name}</b>
+              <small>{vehicle}</small>
+            </span>
+            <time dateTime={submittedAt ?? undefined}>{formatAdminDateTime(submittedAt)}</time>
+            <span className="admin-review-item__action">Review <ArrowRight aria-hidden="true" /></span>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+function FleetAvailability({
+  available,
+  active,
+  dueBack,
+  attention,
+}: {
+  available: number;
+  active: number;
+  dueBack: number;
+  attention: number;
+}) {
+  const rows = [
+    { label: "Available now", value: available, tone: "ready" },
+    { label: "On active rental", value: active, tone: "active" },
+    { label: "Due back today", value: dueBack, tone: "return" },
+    { label: "Needs readiness attention", value: attention, tone: "attention" },
+  ];
+  return (
+    <div className="admin-fleet-state">
+      {rows.map((row) => (
+        <div key={row.label} className="admin-fleet-state__row">
+          <span className={`admin-fleet-state__dot is-${row.tone}`} aria-hidden="true" />
+          <span>{row.label}</span>
+          <strong>{row.value}</strong>
+        </div>
+      ))}
+      <div className="admin-fleet-state__summary">
+        <Car aria-hidden="true" />
+        <span>
+          <strong>{available} {available === 1 ? "car is" : "cars are"} ready to rent</strong>
+          <small>Maintenance-ready and not currently on rent.</small>
+        </span>
+      </div>
     </div>
   );
 }

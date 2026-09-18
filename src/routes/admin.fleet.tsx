@@ -1,19 +1,14 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Image, Plus, Wrench } from "lucide-react";
+import { CalendarDays, CarFront, Image, MapPin, Plus, Wrench } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   MaintenanceRecordDialog,
   type MaintenanceRecordDraft,
 } from "@/components/admin/MaintenanceRecordDialog";
 import {
-  Badge,
   Btn,
-  Card,
-  DomainStatus,
-  PageHeader,
   TInput,
   TSelect,
-  Toolbar,
 } from "@/components/admin/ui";
 import {
   FLEET_STATUSES,
@@ -376,25 +371,21 @@ function FleetPage() {
 
   const branches = snapshot?.branches ?? [];
   const categories = snapshot?.categories ?? [];
+  const readinessExceptions = (snapshot?.vehicles ?? []).filter(
+    (vehicle) => !vehicle.maintenanceReady,
+  );
 
   return (
-    <div>
-      <PageHeader
-        title="Fleet"
-        subtitle="Scan canonical vehicle identity, current operational state, allocation location, and derived readiness. Allocation locations are internal operations bases, not customer delivery addresses."
-        actions={
-          <Btn
-            variant="primary"
-            onClick={() => {
-              setAddError("");
-              setAddDraft(emptyAddVehicleDraft());
-              setAddOpen(true);
-            }}
-          >
-            <Plus className="h-4 w-4" /> Add vehicle
-          </Btn>
-        }
-      />
+    <div className="admin-fleet-workspace">
+      <header className="admin-fleet-heading">
+        <div>
+          <h1>Fleet</h1>
+          <p>Review vehicle identity, current state, and readiness before the next booking.</p>
+        </div>
+        <Btn variant="primary" onClick={() => { setAddError(""); setAddDraft(emptyAddVehicleDraft()); setAddOpen(true); }}>
+          <Plus className="h-4 w-4" /> Add vehicle
+        </Btn>
+      </header>
 
       {mutationFeedback ? (
         <p
@@ -414,97 +405,46 @@ function FleetPage() {
         </p>
       ) : null}
 
-      <Toolbar>
-        <label className="min-w-60 flex-1">
-          <span className="sr-only">Search fleet</span>
-          <TInput
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search vehicle, plate, category…"
-            aria-label="Search fleet"
-          />
-        </label>
-        <label>
-          <span className="sr-only">Filter by state</span>
-          <TSelect
-            value={status}
-            onChange={(event) =>
-              setStatus(event.target.value as (typeof statuses)[number])
-            }
-            aria-label="Filter fleet by state"
-          >
-            {statuses.map((item) => (
-              <option key={item} value={item}>
-                {item === "All" ? "All Status" : item}
-              </option>
-            ))}
-          </TSelect>
-        </label>
-        <label>
-          <span className="sr-only">Filter by allocation location</span>
-          <TSelect
-            value={branch}
-            onChange={(event) => setBranch(event.target.value)}
-            aria-label="Filter fleet by allocation location"
-          >
-            <option value="All">All locations</option>
-            {branches.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </TSelect>
-        </label>
-        <span className="text-xs text-muted-foreground sm:ml-auto">
-          {snapshot
-            ? `${rows.length} of ${snapshot.vehicles.length} canonical vehicles`
-            : "Loading fleet…"}
-        </span>
-      </Toolbar>
-
       {loading && !snapshot ? (
-        <div role="status">
-          <Card className="p-8 text-center text-sm text-muted-foreground">
-            Loading canonical fleet data…
-          </Card>
-        </div>
+        <FleetLoading />
       ) : loadError ? (
-        <Card className="p-8 text-center">
+        <section className="admin-fleet-message">
           <p className="text-sm text-[#b43b3b]" role="alert">
             {loadError}
           </p>
           <Btn className="mt-4" onClick={() => void loadFleet()}>
             Retry loading fleet
           </Btn>
-        </Card>
+        </section>
       ) : !rows.length ? (
-        <Card className="p-8 text-center text-sm text-muted-foreground">
+        <section className="admin-fleet-message text-sm text-muted-foreground">
           {snapshot?.vehicles.length
             ? "No vehicles match these filters."
             : "No canonical vehicles are available."}
-        </Card>
+        </section>
       ) : (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
-          <Card className="overflow-hidden">
-            <div className="border-b border-border px-5 py-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <>
+          <section className="admin-fleet-ledger" aria-label="Fleet availability summary">
+            <FleetMetric label="Available now" value={snapshot?.operational.availableVehicles ?? 0} tone="is-available" />
+            <FleetMetric label="On rental" value={snapshot?.operational.ongoingRentals ?? 0} tone="is-rented" />
+            <FleetMetric label="Reserved" value={snapshot?.operational.reservedVehicles ?? 0} tone="is-reserved" />
+            <FleetMetric label="Needs attention" value={snapshot?.operational.readinessAttention ?? 0} tone="is-attention" />
+          </section>
+
+          <div className="admin-fleet-layout">
+            <section className="admin-fleet-register" aria-labelledby="fleet-register-heading">
+              <header className="admin-fleet-register__heading">
                 <div>
-                  <h2 className="text-xl font-semibold">Operational fleet</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Current use is a coarse canonical state. Readiness is
-                    derived from supported maintenance data.
-                  </p>
+                  <h2 id="fleet-register-heading">Vehicle register</h2>
+                  <p>{rows.length} of {snapshot?.vehicles.length ?? 0} canonical vehicles</p>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  Canonical returns:{" "}
-                  {snapshot?.operational.completedRentals ?? "Unavailable"}
-                  {snapshot?.generatedAt
-                    ? ` · Read ${formatTimestamp(snapshot.generatedAt)}`
-                    : ""}
-                </span>
-              </div>
-            </div>
-            <div className="hidden overflow-x-auto lg:block">
+                <div className="admin-fleet-register__filters">
+                  <label className="min-w-52 flex-1"><span className="sr-only">Search fleet</span><TInput value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search vehicle or plate…" aria-label="Search fleet" /></label>
+                  <label><span className="sr-only">Filter by state</span><TSelect value={status} onChange={(event) => setStatus(event.target.value as (typeof statuses)[number])} aria-label="Filter fleet by state">{statuses.map((item) => <option key={item} value={item}>{item === "All" ? "All states" : item}</option>)}</TSelect></label>
+                  <label><span className="sr-only">Filter by allocation location</span><TSelect value={branch} onChange={(event) => setBranch(event.target.value)} aria-label="Filter fleet by allocation location"><option value="All">All locations</option>{branches.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</TSelect></label>
+                </div>
+              </header>
+              <div className="hidden overflow-x-auto lg:block">
               <table className="w-full text-sm">
                 <caption className="sr-only">Canonical fleet vehicles</caption>
                 <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -512,19 +452,12 @@ function FleetPage() {
                     <th className="px-5 py-3 text-left font-semibold">
                       Vehicle / plate
                     </th>
-                    <th className="px-5 py-3 text-left font-semibold">
-                      Category
-                    </th>
-                    <th className="px-5 py-3 text-left font-semibold">
-                      Allocation location
-                    </th>
+                    <th className="px-5 py-3 text-left font-semibold">Location</th>
                     <th className="px-5 py-3 text-left font-semibold">State</th>
                     <th className="px-5 py-3 text-left font-semibold">
                       Readiness
                     </th>
-                    <th className="px-5 py-3 text-right font-semibold">
-                      Action
-                    </th>
+                    <th className="px-5 py-3 text-right font-semibold">Open</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -532,19 +465,13 @@ function FleetPage() {
                     <FleetRow
                       key={vehicle.id}
                       vehicle={vehicle}
-                      branches={branches}
-                      branchSaving={branchSavingId === vehicle.id}
                       selected={selectedId === vehicle.id}
                       onSelect={() => setSelectedId(vehicle.id)}
-                      onBranchChange={(value) =>
-                        void changeBranch(vehicle, value)
-                      }
-                      onService={() => openService(vehicle)}
                     />
                   ))}
                 </tbody>
               </table>
-            </div>
+              </div>
             <div className="divide-y divide-border lg:hidden">
               {rows.map((vehicle) => (
                 <FleetDisclosure
@@ -558,14 +485,13 @@ function FleetPage() {
                 />
               ))}
             </div>
-          </Card>
+            </section>
 
-          <FleetDetail
-            vehicle={selectedVehicle}
-            onService={openService}
-            onEditImage={openImageEditor}
-          />
-        </div>
+            <FleetDetail vehicle={selectedVehicle} onService={openService} onEditImage={openImageEditor} />
+          </div>
+
+          <FleetExceptions vehicles={readinessExceptions} onService={openService} />
+        </>
       )}
 
       <MaintenanceRecordDialog
@@ -612,28 +538,18 @@ function FleetPage() {
 
 function FleetRow({
   vehicle,
-  branches,
-  branchSaving,
   selected,
   onSelect,
-  onBranchChange,
-  onService,
 }: {
   vehicle: FleetVehicleRow;
-  branches: AdminFleetResponse["branches"];
-  branchSaving: boolean;
   selected: boolean;
   onSelect: () => void;
-  onBranchChange: (branchId: string) => void;
-  onService: () => void;
 }) {
   return (
-    <tr
-      className={`border-b border-border/60 align-top ${selected ? "bg-secondary/50" : "hover:bg-secondary/30"}`}
-    >
+    <tr className={`admin-fleet-row ${selected ? "is-selected" : ""}`}>
       <td className="px-5 py-4">
         <button
-          className="min-h-11 text-left"
+          className="admin-fleet-row__vehicle"
           onClick={onSelect}
           aria-label={`View details for ${vehicle.name}`}
         >
@@ -644,41 +560,18 @@ function FleetRow({
         </button>
       </td>
       <td className="px-5 py-4 text-muted-foreground">
-        <span>{displayValue(vehicle.category)}</span>
-        <span className="mt-1 block text-xs">
-          {displayValue(vehicle.transmission)} · {displayValue(vehicle.seats)}{" "}
-          seats
-        </span>
+        <span className="admin-fleet-location"><MapPin className="h-3.5 w-3.5" /> {displayValue(vehicle.branch)}</span>
+        <span className="mt-1 block text-xs">{displayValue(vehicle.category)} · {displayValue(vehicle.seats)} seats</span>
       </td>
       <td className="px-5 py-4">
-        <TSelect
-          value={vehicle.branchId ?? ""}
-          disabled={branchSaving || !vehicle.categoryId}
-          onChange={(event) => onBranchChange(event.target.value)}
-          aria-label={`Allocation location for ${vehicle.name}`}
-          className="min-w-36 text-xs"
-        >
-          <option value="">Unassigned location</option>
-          {branches.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </TSelect>
-      </td>
-      <td className="px-5 py-4">
-        <Badge>{vehicle.status}</Badge>
-        <span className="mt-1 block text-xs text-muted-foreground">
-          {currentUse(vehicle.status)}
-        </span>
+        <FleetStatusMark status={vehicle.status} />
+        <span className="mt-1 block text-xs text-muted-foreground">{currentUse(vehicle.status)}</span>
       </td>
       <td className="max-w-56 px-5 py-4">
         <Readiness vehicle={vehicle} />
       </td>
       <td className="px-5 py-4 text-right">
-        <Btn variant="ghost" onClick={onService}>
-          <Wrench className="h-4 w-4" /> Service
-        </Btn>
+        <button type="button" className="admin-fleet-row__open" onClick={onSelect}>View</button>
       </td>
     </tr>
   );
@@ -705,7 +598,7 @@ function FleetDisclosure({
           </span>
         </span>
         <span className="shrink-0">
-          <Badge>{vehicle.status}</Badge>
+          <FleetStatusMark status={vehicle.status} />
         </span>
       </summary>
       <div className="mt-4 grid gap-4 border-t border-border pt-4 text-sm">
@@ -748,20 +641,64 @@ function FleetDisclosure({
 }
 
 function Readiness({ vehicle }: { vehicle: FleetVehicleRow }) {
-  if (vehicle.maintenanceReady)
-    return (
-      <DomainStatus
-        label="Ready — derived"
-        tone="success"
-        detail="Derived from canonical maintenance/readiness data; not persisted."
-      />
-    );
   return (
-    <DomainStatus
-      label="Not ready — derived"
-      tone="warning"
-      detail={vehicle.readinessReasons.join("; ")}
-    />
+    <span
+      className={`admin-fleet-readiness ${vehicle.maintenanceReady ? "is-ready" : "is-not-ready"}`}
+      title={vehicle.readinessReasons.join("; ")}
+    >
+      <i /> {vehicle.maintenanceReady ? "Ready" : "Needs attention"}
+    </span>
+  );
+}
+
+function FleetStatusMark({ status }: { status: FleetStatus }) {
+  const tone = status === "Available" ? "is-available" : status === "Rented" ? "is-rented" : status === "Reserved" ? "is-reserved" : "is-attention";
+  return <span className={`admin-fleet-status ${tone}`}><i /> {status}</span>;
+}
+
+function FleetMetric({ label, value, tone }: { label: string; value: number; tone: string }) {
+  return (
+    <div className={tone}>
+      <i />
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function FleetExceptions({ vehicles, onService }: { vehicles: FleetVehicleRow[]; onService: (vehicle?: FleetVehicleRow) => void }) {
+  return (
+    <section className="admin-fleet-exceptions" aria-labelledby="fleet-exceptions-heading">
+      <header>
+        <div>
+          <h2 id="fleet-exceptions-heading">Readiness exceptions</h2>
+          <p>Vehicles that need attention before their next booking.</p>
+        </div>
+        <span>{vehicles.length} {vehicles.length === 1 ? "vehicle" : "vehicles"}</span>
+      </header>
+      {vehicles.length ? (
+        <ul>
+          {vehicles.map((vehicle) => (
+            <li key={vehicle.id}>
+              <div><strong>{vehicle.name}</strong><span>{displayValue(vehicle.plate)} · {displayValue(vehicle.branch)}</span></div>
+              <p>{vehicle.readinessReasons.join("; ")}</p>
+              <Btn variant="ghost" onClick={() => onService(vehicle)}><Wrench className="h-4 w-4" /> Record service</Btn>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="admin-fleet-exceptions__empty">Every vehicle is currently ready under the available maintenance data.</p>
+      )}
+    </section>
+  );
+}
+
+function FleetLoading() {
+  return (
+    <div className="admin-fleet-loading" role="status" aria-label="Loading fleet data">
+      <div className="admin-fleet-loading__metrics">{Array.from({ length: 4 }, (_, index) => <div key={index}><i /><span /><strong /></div>)}</div>
+      <div className="admin-fleet-loading__workspace"><section><header><i /><span><i /><i /><i /></span></header>{Array.from({ length: 7 }, (_, index) => <div className="admin-fleet-loading__row" key={index}><i /><i /><i /><i /></div>)}</section><aside><i className="admin-fleet-loading__image" /><i className="admin-fleet-loading__vehicle" /><span><i /><i /></span><div>{Array.from({ length: 6 }, (_, index) => <i key={index} />)}</div><footer><i /><i /></footer></aside></div>
+    </div>
   );
 }
 
@@ -775,53 +712,45 @@ function FleetDetail({
   onEditImage: (vehicle: FleetVehicleRow) => void;
 }) {
   return (
-    <Card as="aside" className="h-fit xl:sticky xl:top-6">
+    <aside className="admin-fleet-detail">
       {!vehicle ? (
         <p className="p-6 text-sm text-muted-foreground">
           Select a vehicle to inspect its canonical details.
         </p>
       ) : (
         <>
-          <div className="border-b border-border px-5 py-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Selected vehicle
-            </p>
-            <h2 className="mt-1 text-xl font-semibold">{vehicle.name}</h2>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">
-              {displayValue(vehicle.plate)} · {displayValue(vehicle.id)}
-            </p>
+          <div className="admin-fleet-detail__identity">
+            {vehicle.imageUrl ? <img src={vehicle.imageUrl} alt="" /> : <div className="admin-fleet-detail__image-fallback"><CarFront /></div>}
+            <div>
+              <h2>{vehicle.name}</h2>
+              <p>{displayValue(vehicle.plate)}</p>
+            </div>
           </div>
-          <dl className="grid gap-3 px-5 py-5 text-sm sm:grid-cols-2 xl:grid-cols-1">
-            <Detail label="Status">
-              <Badge>{vehicle.status}</Badge>
-            </Detail>
-            <Detail label="Current allocation">
-              {currentUse(vehicle.status)}
-            </Detail>
+          <div className="admin-fleet-detail__states">
+            <FleetStatusMark status={vehicle.status} />
+            <Readiness vehicle={vehicle} />
+          </div>
+          <dl className="admin-fleet-detail__facts">
+            <Detail label="Allocation location"><MapPin className="h-4 w-4" /> {displayValue(vehicle.branch)}</Detail>
+            <Detail label="Daily rate">{formatPeso(vehicle.pricePerDay)}</Detail>
             <Detail label="Category">{displayValue(vehicle.category)}</Detail>
-            <Detail label="Allocation location">
-              {displayValue(vehicle.branch)}
-            </Detail>
-            <Detail label="Daily rate">
-              {formatPeso(vehicle.pricePerDay)}
-            </Detail>
-            <Detail label="Readiness">
-              <Readiness vehicle={vehicle} />
-            </Detail>
+            <Detail label="Seats">{displayValue(vehicle.seats)} seats</Detail>
+            <Detail label="Transmission">{displayValue(vehicle.transmission)}</Detail>
+            <Detail label="Status note">{currentUse(vehicle.status)}</Detail>
           </dl>
-          <div className="border-t border-border px-5 py-4">
-            <div className="flex flex-wrap gap-2">
-              <Btn variant="primary" onClick={() => onService(vehicle)}>
-                <Wrench className="h-4 w-4" /> Add maintenance record
-              </Btn>
-              <Btn variant="ghost" onClick={() => onEditImage(vehicle)}>
-                <Image className="h-4 w-4" /> Change image
-              </Btn>
+          <div className="admin-fleet-detail__actions">
+            <div className="admin-fleet-detail__action-group">
+              <a href="/admin/calendar" className="admin-fleet-detail__schedule"><CalendarDays className="h-4 w-4" /> View schedule</a>
+              <Btn variant="ghost" className="admin-fleet-detail__service" onClick={() => onService(vehicle)}><Wrench className="h-4 w-4" /> Record service</Btn>
+            </div>
+            <div className="admin-fleet-detail__asset-action">
+              <span>Vehicle image</span>
+              <button type="button" className="admin-fleet-detail__image-link" onClick={() => onEditImage(vehicle)}><Image className="h-4 w-4" /> Change image</button>
             </div>
           </div>
         </>
       )}
-    </Card>
+    </aside>
   );
 }
 
@@ -834,9 +763,7 @@ function Detail({
 }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-        {label}
-      </dt>
+      <dt>{label}</dt>
       <dd className="mt-1 min-w-0 break-words">{children}</dd>
     </div>
   );

@@ -2,11 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
+  ArrowRight,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
 } from "lucide-react";
-import { Btn, Card, CardHeader, PageHeader } from "@/components/admin/ui";
+import { Btn } from "@/components/admin/ui";
 import type {
   AdminCalendarResponse,
   CalendarEvent,
@@ -17,16 +18,16 @@ export const Route = createFileRoute("/admin/calendar")({
   component: CalendarPage,
 });
 
-const kindStyles: Record<CalendarEventKind, string> = {
-  pickup: "bg-primary/15 text-primary border-primary/30",
-  return: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  maintenance: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  reservation: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+const kindClass: Record<CalendarEventKind, string> = {
+  pickup: "is-pickup",
+  return: "is-return",
+  maintenance: "is-maintenance",
+  reservation: "is-reservation",
 };
 
 const kindLabel: Record<CalendarEventKind, string> = {
-  pickup: "Deliver",
-  return: "Returned",
+  pickup: "Delivery",
+  return: "Return",
   maintenance: "Maintenance",
   reservation: "Reserved",
 };
@@ -62,15 +63,21 @@ function formatMonth(period: string) {
   }).format(new Date(Date.UTC(year, month - 1, 1)));
 }
 
-function formatEventDate(event: CalendarEvent) {
-  if (!event.dateTime)
-    return new Intl.DateTimeFormat("en-PH", {
-      dateStyle: "medium",
-      timeZone: "UTC",
-    }).format(new Date(`${event.date}T00:00:00Z`));
+function formatSelectedDate(date: string) {
   return new Intl.DateTimeFormat("en-PH", {
-    dateStyle: "medium",
-    timeStyle: "short",
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${date}T00:00:00Z`));
+}
+
+function formatEventTime(event: CalendarEvent) {
+  if (!event.dateTime) return "All day";
+  return new Intl.DateTimeFormat("en-PH", {
+    hour: "numeric",
+    minute: "2-digit",
     timeZone: "Asia/Manila",
   }).format(new Date(event.dateTime));
 }
@@ -78,6 +85,12 @@ function formatEventDate(event: CalendarEvent) {
 function CalendarPage() {
   const [period, setPeriod] = useState(currentManilaMonth);
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Manila",
+    }).format(new Date());
+    return today.startsWith(currentManilaMonth()) ? today : `${currentManilaMonth()}-01`;
+  });
   const latestRequest = useRef(0);
 
   const loadCalendar = useCallback(async () => {
@@ -93,16 +106,18 @@ function CalendarPage() {
         | AdminCalendarResponse
         | { message?: string }
         | null;
-      if (!response.ok || !body || !("events" in body))
+      if (!response.ok || !body || !("events" in body)) {
         throw new Error(
           body && "message" in body && body.message
             ? body.message
             : "Unable to load the calendar schedule.",
         );
-      if (latestRequest.current === request)
+      }
+      if (latestRequest.current === request) {
         setState({ status: "ready", data: body });
+      }
     } catch (error) {
-      if (latestRequest.current === request)
+      if (latestRequest.current === request) {
         setState({
           status: "error",
           message:
@@ -110,6 +125,7 @@ function CalendarPage() {
               ? error.message
               : "Unable to load the calendar schedule.",
         });
+      }
     }
   }, [period]);
 
@@ -129,190 +145,175 @@ function CalendarPage() {
     return { cells };
   }, [period]);
 
-  const events = state.status === "ready" ? state.data.events : [];
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Manila",
   }).format(new Date());
+  const events = state.status === "ready" ? state.data.events : [];
+  const selectedEvents = events.filter((event) => event.date === selectedDate);
+  const selectedCounts = (Object.keys(kindLabel) as CalendarEventKind[]).map(
+    (kind) => ({ kind, value: selectedEvents.filter((event) => event.kind === kind).length }),
+  );
+
+  const changeMonth = (amount: number) => {
+    setPeriod((value) => {
+      const next = shiftMonth(value, amount);
+      setSelectedDate(`${next}-01`);
+      return next;
+    });
+  };
 
   return (
-    <div>
-      <PageHeader
-        title="Calendar"
-        subtitle="Canonical view of reserved vehicles, deliveries, returns, and maintenance."
-      />
-
-      <Card>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-4 sm:px-5">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              type="button"
-              aria-label="Previous month"
-              onClick={() => setPeriod((value) => shiftMonth(value, -1))}
-              className="touch-target grid place-items-center rounded-md border border-border bg-background hover:bg-secondary"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <h2 className="min-w-32 text-center font-display text-base font-semibold sm:min-w-36">
-              {formatMonth(period)}
-            </h2>
-            <button
-              type="button"
-              aria-label="Next month"
-              onClick={() => setPeriod((value) => shiftMonth(value, 1))}
-              className="touch-target grid place-items-center rounded-md border border-border bg-background hover:bg-secondary"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-            {(Object.keys(kindLabel) as CalendarEventKind[]).map((kind) => (
-              <span key={kind} className="inline-flex items-center gap-1.5">
-                <span
-                  className={`h-2 w-2 rounded-full ${kindStyles[kind].split(" ")[0].replace("/15", "")}`}
-                />
-                <span className="text-muted-foreground">{kindLabel[kind]}</span>
-              </span>
-            ))}
-          </div>
+    <div className="admin-calendar-workspace" aria-busy={state.status === "loading" || undefined}>
+      <header className="admin-calendar-heading">
+        <div>
+          <h1>Calendar</h1>
+          <p>Track reservations, delivery windows, returns, and maintenance.</p>
         </div>
+        <div className="admin-calendar-controls">
+          <button
+            type="button"
+            aria-label="Previous month"
+            onClick={() => changeMonth(-1)}
+            className="touch-target admin-calendar-nav-button"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <h2>{formatMonth(period)}</h2>
+          <button
+            type="button"
+            aria-label="Next month"
+            onClick={() => changeMonth(1)}
+            className="touch-target admin-calendar-nav-button"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </header>
 
-        {state.status === "loading" ? (
-          <p className="px-5 py-12 text-center text-sm text-muted-foreground">
-            Loading calendar schedule...
-          </p>
-        ) : state.status === "error" ? (
-          <div role="alert" className="px-5 py-10 text-center">
-            <AlertTriangle className="mx-auto h-6 w-6 text-amber-400" />
-            <p className="mt-3 text-sm">{state.message}</p>
-            <Btn className="mt-4" onClick={() => void loadCalendar()}>
-              <RefreshCw className="h-4 w-4" /> Retry
-            </Btn>
+      <div className="admin-calendar-layout">
+        <section className="admin-calendar-board" aria-labelledby="calendar-month-heading">
+          <div className="admin-calendar-board__heading">
+            <h2 id="calendar-month-heading">{formatMonth(period)}</h2>
+            <div className="admin-calendar-legend" aria-label="Calendar legend">
+              {(Object.keys(kindLabel) as CalendarEventKind[]).map((kind) => (
+                <span key={kind} className={kindClass[kind]}>
+                  <i /> {kindLabel[kind]}
+                </span>
+              ))}
+            </div>
           </div>
-        ) : (
-          <>
-            {events.length === 0 ? (
-              <p className="border-b border-border px-5 py-4 text-center text-sm text-muted-foreground">
-                No reservations, deliveries, returns, or maintenance are scheduled
-                for {formatMonth(period)}.
-              </p>
-            ) : null}
-            <div className="overflow-x-auto">
-              <div className="min-w-[700px]">
-                <div className="grid grid-cols-7 border-b border-border bg-secondary/40 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-                    (day) => (
-                      <div
-                        key={day}
-                        className="border-r border-border px-3 py-2 last:border-r-0"
-                      >
-                        {day}
-                      </div>
-                    ),
-                  )}
-                </div>
 
-                <div className="grid grid-cols-7">
+          {state.status === "loading" ? (
+            <CalendarLoading />
+          ) : state.status === "error" ? (
+            <div role="alert" className="admin-calendar-message">
+              <AlertTriangle className="h-6 w-6" />
+              <p>{state.message}</p>
+              <Btn onClick={() => void loadCalendar()}>
+                <RefreshCw className="h-4 w-4" /> Retry
+              </Btn>
+            </div>
+          ) : (
+            <div className="admin-calendar-scroll">
+              <div className="admin-calendar-grid">
+                <div className="admin-calendar-weekdays">
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                    <div key={day}>{day}</div>
+                  ))}
+                </div>
+                <div className="admin-calendar-days">
                   {calendar.cells.map((day, index) => {
-                    const date = day
-                      ? `${period}-${String(day).padStart(2, "0")}`
-                      : null;
-                    const dayEvents = date
-                      ? events.filter((event) => event.date === date)
-                      : [];
+                    const date = day ? `${period}-${String(day).padStart(2, "0")}` : null;
+                    const dayEvents = date ? events.filter((event) => event.date === date) : [];
+                    const primaryEvent = dayEvents[0];
                     const isWeekend = index % 7 === 0 || index % 7 === 6;
                     return (
-                      <div
+                      <button
                         key={`${period}:${index}`}
-                        className={`min-h-28 border-b border-r border-border p-2 last:border-r-0 ${isWeekend ? "bg-background/40" : ""} ${index >= calendar.cells.length - 7 ? "border-b-0" : ""}`}
+                        type="button"
+                        disabled={!date}
+                        aria-label={date ? `${formatSelectedDate(date)}${dayEvents.length ? `, ${dayEvents.length} scheduled item${dayEvents.length === 1 ? "" : "s"}` : ", no scheduled items"}` : undefined}
+                        onClick={() => date && setSelectedDate(date)}
+                        className={`admin-calendar-day ${isWeekend ? "is-weekend" : ""} ${date === selectedDate ? "is-selected" : ""} ${date === today ? "is-today" : ""}`}
                       >
                         {day ? (
                           <>
-                            <div
-                              className={`mb-1.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs ${date === today ? "bg-primary font-semibold text-primary-foreground" : "text-muted-foreground"}`}
-                            >
-                              {day}
-                            </div>
-                            <div className="space-y-1">
-                              {dayEvents.map((event) => (
-                                <div
-                                  key={event.id}
-                                  title={`${event.label} · ${formatEventDate(event)}`}
-                                  className={`truncate rounded border px-1.5 py-0.5 text-[10px] font-medium ${kindStyles[event.kind]}`}
-                                >
-                                  {event.label}
-                                </div>
-                              ))}
-                            </div>
+                            <span className="admin-calendar-date">{day}</span>
+                            {primaryEvent ? (
+                              <span className={`admin-calendar-event ${kindClass[primaryEvent.kind]}`}>
+                                <i /> {primaryEvent.label}
+                              </span>
+                            ) : null}
+                            {dayEvents.length > 1 ? (
+                              <span className="admin-calendar-more">+{dayEvents.length - 1} more</span>
+                            ) : null}
                           </>
                         ) : null}
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
               </div>
             </div>
-          </>
-        )}
-      </Card>
+          )}
+        </section>
 
-      {state.status === "ready" && events.length > 0 ? (
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
-          <EventList
-            title="Reserved & deliveries"
-            events={events.filter(
-              (event) =>
-                event.kind === "reservation" || event.kind === "pickup",
-            )}
-          />
-          <EventList
-            title="Returned & maintenance"
-            events={events.filter(
-              (event) =>
-                event.kind === "return" || event.kind === "maintenance",
-            )}
-          />
-        </div>
-      ) : null}
+        <aside className="admin-calendar-drawer" aria-labelledby="day-schedule-heading">
+          <header>
+            <h2 id="day-schedule-heading">{formatSelectedDate(selectedDate)}</h2>
+            <p>{selectedEvents.length} scheduled {selectedEvents.length === 1 ? "item" : "items"}</p>
+          </header>
+
+          <div className="admin-calendar-day-events">
+            {state.status === "ready" && selectedEvents.length > 0 ? (
+              selectedEvents.map((event) => (
+                <div key={event.id} className={`admin-calendar-day-event ${kindClass[event.kind]}`}>
+                  <time>{formatEventTime(event)}</time>
+                  <span aria-hidden="true" />
+                  <div>
+                    <strong>{event.label}</strong>
+                    <small>{kindLabel[event.kind]}</small>
+                  </div>
+                </div>
+              ))
+            ) : state.status === "ready" ? (
+              <div className="admin-calendar-day-empty">
+                <strong>No scheduled handoffs</strong>
+                <p>No reservations, deliveries, returns, or maintenance are planned for this date.</p>
+              </div>
+            ) : null}
+          </div>
+
+          <section className="admin-calendar-signals" aria-labelledby="calendar-signals-heading">
+            <div>
+              <h3 id="calendar-signals-heading">Day at a glance</h3>
+              <span>{formatMonth(period)}</span>
+            </div>
+            <dl>
+              {selectedCounts.map(({ kind, value }) => (
+                <div key={kind} className={kindClass[kind]}>
+                  <dt>{kindLabel[kind]}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+
+          <a href="/admin/bookings" className="admin-calendar-queue-link">
+            Open operations queue <ArrowRight className="h-4 w-4" />
+          </a>
+        </aside>
+      </div>
     </div>
   );
 }
 
-function EventList({
-  title,
-  events,
-}: {
-  title: string;
-  events: CalendarEvent[];
-}) {
+function CalendarLoading() {
   return (
-    <Card>
-      <CardHeader title={title} />
-      {events.length === 0 ? (
-        <p className="px-5 py-6 text-sm text-muted-foreground">
-          No matching events this month.
-        </p>
-      ) : (
-        <ul className="divide-y divide-border text-sm">
-          {events.map((event) => (
-            <li
-              key={event.id}
-              className="flex flex-wrap items-center justify-between gap-2 px-5 py-3"
-            >
-              <div className="min-w-0">
-                <div className="font-medium">{event.label}</div>
-                <div className="text-xs text-muted-foreground">
-                  {formatEventDate(event)}
-                </div>
-              </div>
-              <span
-                className={`rounded border px-2 py-0.5 text-[10px] font-medium ${kindStyles[event.kind]}`}
-              >
-                {kindLabel[event.kind]}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Card>
+    <div className="admin-calendar-loading" aria-label="Loading calendar schedule">
+      {Array.from({ length: 35 }, (_, index) => (
+        <div key={index}><i /><i /></div>
+      ))}
+    </div>
   );
 }
