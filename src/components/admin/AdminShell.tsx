@@ -81,7 +81,11 @@ const ownerNav: NavEntry[] = [
     icon: Car,
     items: [
       { to: "/admin/fleet", label: "Fleet", icon: Car },
-      { to: "/admin/maintenance", label: "Maintenance", icon: Wrench },
+      {
+        to: "/admin/maintenance",
+        label: "Maintenance",
+        icon: Wrench,
+      },
       { to: "/admin/branches", label: "Locations", icon: Building2 },
     ],
   },
@@ -171,7 +175,9 @@ function SidebarLinks({
     <ul className="space-y-1.5">
       {items.map((entry) => {
         if (isNavGroup(entry)) {
-          const groupActive = entry.items.some((item) => isActive(pathname, item));
+          const groupActive = entry.items.some((item) =>
+            isActive(pathname, item),
+          );
           const expanded = expandedGroups[entry.id] || groupActive;
           const Icon = entry.icon;
           const regionId = `admin-nav-${entry.id}`;
@@ -215,7 +221,9 @@ function SidebarLinks({
                       <li key={item.to}>
                         <Link
                           to={item.to as never}
-                          activeOptions={item.exact ? { exact: true } : undefined}
+                          activeOptions={
+                            item.exact ? { exact: true } : undefined
+                          }
                           onClick={onNavigate}
                           aria-current={active ? "page" : undefined}
                           tabIndex={expanded ? undefined : -1}
@@ -419,11 +427,10 @@ export function AdminShell() {
         >
           <SidebarLinks items={navItems} pathname={pathname} />
         </nav>
-
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col lg:pl-[236px]">
-        <header className="sticky top-0 z-30 border-b border-border bg-white">
+      <div className="flex min-w-0 flex-1 flex-col pt-[76px] lg:pl-[236px]">
+        <header className="fixed inset-x-0 top-0 z-30 border-b border-border bg-white lg:left-[236px]">
           <div className="flex min-h-[76px] items-center gap-4 px-5 md:px-8 xl:px-10">
             <button
               type="button"

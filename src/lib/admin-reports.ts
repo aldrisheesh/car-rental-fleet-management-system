@@ -40,9 +40,9 @@ export type ReportMaintenanceSource = {
   id: string;
   vehicleId: string;
   branchId: string | null;
-  status: "Open" | "Completed" | "Cancelled";
+  status: "Scheduled" | "In Progress" | "Completed" | "Overdue" | "Cancelled" | "Open";
   blocksRentalUse: boolean;
-  serviceStartedAt: string;
+  serviceStartedAt: string | null;
   completedAt: string | null;
   updatedAt: string;
 };
@@ -224,6 +224,7 @@ function maintenanceEnd(row: ReportMaintenanceSource) {
 function overlapsRange(row: ReportMaintenanceSource, range: ReportRange) {
   const end = maintenanceEnd(row);
   return (
+    row.serviceStartedAt != null &&
     instant(row.serviceStartedAt) < instant(range.endExclusiveInstant) &&
     (end == null || instant(end) > instant(range.startInstant))
   );

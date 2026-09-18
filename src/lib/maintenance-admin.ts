@@ -1,4 +1,4 @@
-export type MaintenanceStatus = "Open" | "Completed" | "Cancelled";
+export type MaintenanceStatus = "Scheduled" | "In Progress" | "Completed" | "Overdue" | "Cancelled" | "Open";
 
 export type MaintenanceRecord = {
   id: string;
@@ -7,7 +7,9 @@ export type MaintenanceRecord = {
   description: string;
   status: MaintenanceStatus;
   blocks_rental_use: boolean;
-  service_started_at: string;
+  scheduled_for?: string | null;
+  archived_at?: string | null;
+  service_started_at: string | null;
   completed_at: string | null;
   odometer_at_service: number | null;
   next_service_odometer: number | null;
@@ -27,34 +29,33 @@ export type MaintenanceDraft = {
   maintenanceType: string;
   description: string;
   blocksRentalUse: boolean;
-  serviceStartedAt: string;
-  odometerAtService: string;
+  scheduledFor?: string;
+  currentOdometer?: string;
+  serviceStartedAt?: string;
+  odometerAtService?: string;
   nextServiceOdometer: string;
   nextServiceDate: string;
   costPhp: string;
   remarks: string;
 };
 
-export type MaintenanceFinalDraft = Pick<
-  MaintenanceDraft,
-  | "odometerAtService"
-  | "nextServiceOdometer"
-  | "nextServiceDate"
-  | "costPhp"
-  | "remarks"
->;
+export type MaintenanceFinalDraft = Pick<MaintenanceDraft, "odometerAtService" | "nextServiceOdometer" | "nextServiceDate" | "costPhp" | "remarks"> & {
+  cancellationReason?: string;
+};
 
 export function maintenanceSummary(records: MaintenanceRecord[]) {
-  const active = records.filter((record) => record.status === "Open");
+  const active = records.filter((record) =>
+    ["Scheduled", "In Progress", "Overdue", "Open"].includes(record.status),
+  );
   return {
-    open: active.length,
+    active: active.length,
     blocking: active.filter((record) => record.blocks_rental_use).length,
   };
 }
 
 export function isMaintenanceDraftValid(draft: MaintenanceDraft) {
   return Boolean(
-    draft.vehicleId && draft.maintenanceType.trim() && draft.description.trim(),
+    draft.vehicleId && draft.maintenanceType.trim() && draft.description.trim() && Boolean(draft.scheduledFor),
   );
 }
 
@@ -65,12 +66,16 @@ export function partitionMaintenanceRecords(records: MaintenanceRecord[]) {
     );
   return {
     active: records
-      .filter((record) => record.status === "Open")
+      .filter((record) =>
+        ["Scheduled", "In Progress", "Overdue", "Open"].includes(
+          record.status,
+        ),
+      )
       .sort(
         (left, right) =>
           Number(right.blocks_rental_use) - Number(left.blocks_rental_use) ||
-          String(right.service_started_at ?? right.created_at).localeCompare(
-            String(left.service_started_at ?? left.created_at),
+          String(right.scheduled_for ?? right.service_started_at ?? right.created_at).localeCompare(
+            String(left.scheduled_for ?? left.service_started_at ?? left.created_at),
           ),
       ),
     history: records
@@ -82,12 +87,11 @@ export function partitionMaintenanceRecords(records: MaintenanceRecord[]) {
   };
 }
 
-function optionalNumber(value: string) {
+function optionalNumber(value?: string) {
   return value === "" ? undefined : Number(value);
 }
 
 export function createMaintenancePayload(draft: MaintenanceDraft) {
-  const odometerAtService = optionalNumber(draft.odometerAtService);
   const nextServiceOdometer = optionalNumber(draft.nextServiceOdometer);
   const costPhp = optionalNumber(draft.costPhp);
   return {
@@ -95,10 +99,9 @@ export function createMaintenancePayload(draft: MaintenanceDraft) {
     maintenanceType: draft.maintenanceType.trim(),
     description: draft.description.trim(),
     blocksRentalUse: draft.blocksRentalUse,
-    ...(draft.serviceStartedAt
-      ? { serviceStartedAt: new Date(draft.serviceStartedAt).toISOString() }
+    ...(draft.scheduledFor
+      ? { scheduledFor: new Date(draft.scheduledFor).toISOString() }
       : {}),
-    ...(odometerAtService === undefined ? {} : { odometerAtService }),
     ...(nextServiceOdometer === undefined ? {} : { nextServiceOdometer }),
     ...(draft.nextServiceDate
       ? { nextServiceDate: draft.nextServiceDate }
@@ -110,16 +113,22 @@ export function createMaintenancePayload(draft: MaintenanceDraft) {
 
 export function transitionMaintenancePayload(
   id: string,
-  status: "Completed" | "Cancelled",
+  status: "In Progress" | "Completed" | "Cancelled",
   draft: MaintenanceFinalDraft,
 ) {
   const odometerAtService = optionalNumber(draft.odometerAtService);
   const nextServiceOdometer = optionalNumber(draft.nextServiceOdometer);
   const costPhp = optionalNumber(draft.costPhp);
+  const remarks = [
+    status === "Cancelled" ? draft.cancellationReason?.trim() : "",
+    draft.remarks.trim(),
+  ]
+    .filter(Boolean)
+    .join(" — ");
   return {
     id,
     status,
-    ...(status === "Completed" && odometerAtService !== undefined
+    ...(status !== "Cancelled" && odometerAtService !== undefined
       ? { odometerAtService }
       : {}),
     ...(status === "Completed" && nextServiceOdometer !== undefined
@@ -129,6 +138,6 @@ export function transitionMaintenancePayload(
       ? { nextServiceDate: draft.nextServiceDate }
       : {}),
     ...(status === "Completed" && costPhp !== undefined ? { costPhp } : {}),
-    ...(draft.remarks.trim() ? { remarks: draft.remarks.trim() } : {}),
+    ...(remarks ? { remarks } : {}),
   };
 }

@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/vehicles")({
         const result = await getSupabaseServerClient()
           .from("vehicles")
           .select(
-            "id,name,license_plate,transmission,fuel_type,seat_capacity,daily_rate,image_url,branch:branches(id,name),category:vehicle_categories(id,name)",
+            "id,name,license_plate,transmission,fuel_type,seat_capacity,daily_rate,image_url,current_odometer_km,condition_blocks_rental_use,branch:branches(id,name),category:vehicle_categories(id,name)",
           )
           .eq("is_active", true)
           .order("name");

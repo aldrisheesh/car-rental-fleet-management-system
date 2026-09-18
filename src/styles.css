@@ -1387,17 +1387,99 @@
     box-shadow: 0 0 0 3px rgb(11 97 88 / 0.15);
   }
 
+  .admin-maintenance-transition-dialog {
+    --background: #ffffff;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --card-foreground: #182321;
+    --popover: #ffffff;
+    --popover-foreground: #182321;
+    --foreground: #182321;
+    --primary: #0f4f48;
+    --primary-foreground: #ffffff;
+    --secondary: #eff3ef;
+    --secondary-foreground: #182321;
+    --muted: #f3f5f2;
+    --muted-foreground: #52635f;
+    --destructive: #b43b3b;
+    --destructive-foreground: #ffffff;
+    --border: #cbd4cd;
+    --input: #cbd4cd;
+    --ring: #0b6158;
+    background: #ffffff;
+    color: #182321;
+    color-scheme: light;
+  }
+
+  .admin-maintenance-transition-dialog :is(p, label, span) { color: #42534f; }
+  .admin-maintenance-transition-dialog h2 { color: #13211f; }
+  .admin-maintenance-transition-dialog .input-control {
+    border-color: #b9c5bc;
+    background: #ffffff;
+    color: #182321;
+    caret-color: #123f3a;
+  }
+  .admin-maintenance-transition-dialog .input-control:focus,
+  .admin-maintenance-transition-dialog .input-control:focus-visible {
+    border-color: #0b6158;
+    box-shadow: 0 0 0 3px rgb(11 97 88 / .16);
+  }
+
+  /* Fleet dialogs are portaled outside the admin shell, so retain the same
+     light palette and readable form controls at the dialog boundary. */
+  .admin-fleet-vehicle-dialog {
+    --background: #ffffff;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --card-foreground: #182321;
+    --popover: #ffffff;
+    --popover-foreground: #182321;
+    --foreground: #182321;
+    --primary: #0f4f48;
+    --primary-foreground: #ffffff;
+    --secondary: #eff3ef;
+    --secondary-foreground: #182321;
+    --muted: #f3f5f2;
+    --muted-foreground: #52635f;
+    --destructive: #b43b3b;
+    --destructive-foreground: #ffffff;
+    --border: #b9c5bc;
+    --input: #b9c5bc;
+    --ring: #0b6158;
+    background: #ffffff;
+    color: #182321;
+    color-scheme: light;
+  }
+
+  .admin-fleet-vehicle-dialog h2 { color: #13211f; }
+  .admin-fleet-vehicle-dialog label > span { color: #42534f; }
+  .admin-fleet-vehicle-dialog .input-control {
+    border-color: #b9c5bc;
+    background: #ffffff;
+    color: #182321;
+    caret-color: #123f3a;
+  }
+  .admin-fleet-vehicle-dialog .input-control::placeholder { color: #52635f; opacity: 1; }
+  .admin-fleet-vehicle-dialog .input-control:focus,
+  .admin-fleet-vehicle-dialog .input-control:focus-visible {
+    border-color: #0b6158;
+    box-shadow: 0 0 0 3px rgb(11 97 88 / .16);
+  }
+
   .admin-bookings-workspace {
     max-width: 100%;
   }
 
   .admin-fleet-workspace { max-width: 100rem; margin-inline: auto; }
-  .admin-fleet-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:2rem; margin-bottom:2rem; }
-  .admin-fleet-heading h1 { margin:0; color:#13211f; font-size:clamp(2rem,3vw,3rem); font-weight:650; letter-spacing:-.035em; line-height:1.02; }
+  .admin-fleet-heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:.5rem; }
+  .admin-fleet-heading h1 { margin:0; color:#13211f; font-size:clamp(1.45rem,2vw,1.85rem); font-weight:650; letter-spacing:-.035em; line-height:1.05; }
+  .admin-fleet-heading__actions { display:flex; align-items:end; justify-content:flex-end; gap:.45rem; }.admin-fleet-search { width:12rem; }.admin-fleet-search input { min-height:2.35rem; font-size:.76rem; }.admin-fleet-branch-sort { display:grid; flex:none; gap:.2rem; color:#687772; font-size:.62rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }.admin-fleet-branch-sort select { min-width:8.5rem; min-height:2.2rem; font-size:.76rem; text-transform:none; }.admin-fleet-maintenance-link { display:inline-flex; min-height:2.35rem; align-items:center; justify-content:center; gap:.4rem; border:1px solid #cbd4cd; border-radius:.35rem; padding-inline:.75rem; color:#123f3a; font-size:.76rem; font-weight:650; }.admin-fleet-maintenance-link:hover { background:#f4f7f3; }
   .admin-fleet-heading p { max-width:44rem; margin:.5rem 0 0; color:#52635f; font-size:1.05rem; line-height:1.5; }
-  .admin-fleet-ledger { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin-bottom:1.5rem; border-top:1px solid #cfd5ce; border-bottom:1px solid #cfd5ce; background:#fff; }
-  .admin-fleet-ledger > div { display:grid; grid-template-columns:.55rem minmax(0,1fr) auto; min-height:5.25rem; align-items:center; gap:.65rem; padding:1rem 1.25rem; }
-  .admin-fleet-ledger > div + div { border-left:1px solid #e1e3dc; }
+  .admin-fleet-ledger { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); margin-bottom:.55rem; border:1px solid #cfd5ce; border-radius:.6rem; overflow:hidden; background:#fff; }
+  .admin-fleet-status-tab { display:grid; grid-template-columns:minmax(0,1fr) auto; min-height:4.75rem; align-items:center; gap:.65rem; padding:1rem 1.1rem; color:#52635f; text-align:left; transition:background 160ms ease-out,color 160ms ease-out; }
+  .admin-fleet-status-tab + .admin-fleet-status-tab { border-left:1px solid #e1e3dc; }
+  .admin-fleet-status-tab:hover { background:#f7faf6; color:#123f3a; }.admin-fleet-status-tab.is-active { box-shadow:inset 0 -3px #0b6158; background:#eff6f0; color:#123f3a; }
+  .admin-fleet-status-tab span { font-size:.78rem; font-weight:650; }.admin-fleet-status-tab strong { color:#182321; font-size:1.45rem; font-weight:650; font-variant-numeric:tabular-nums; }
   .admin-fleet-ledger i,.admin-fleet-status i,.admin-fleet-readiness i { width:.55rem; height:.55rem; flex:none; border-radius:999px; background:var(--fleet-tone); }
   .admin-fleet-ledger span { color:#52635f; font-size:.8rem; }
   .admin-fleet-ledger strong { color:#182321; font-size:1.55rem; font-weight:650; font-variant-numeric:tabular-nums; }
@@ -1405,11 +1487,14 @@
   .admin-fleet-workspace .is-rented { --fleet-tone:#5e86b8; }
   .admin-fleet-workspace .is-reserved { --fleet-tone:#d99211; }
   .admin-fleet-workspace .is-attention { --fleet-tone:#a4523e; }
-  .admin-fleet-layout { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(20rem,.7fr); border-top:1px solid #cfd5ce; border-bottom:1px solid #cfd5ce; background:#fff; }
+  .admin-fleet-workspace .is-inspection { --fleet-tone:#7d5da7; }
+  .admin-fleet-layout { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(18rem,.62fr); border-top:1px solid #cfd5ce; border-bottom:1px solid #cfd5ce; background:#fff; }
   .admin-fleet-register { min-width:0; }
-  .admin-fleet-register__heading { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; padding:1.25rem; border-bottom:1px solid #e1e3dc; }
+  .admin-fleet-register__rows { overflow:hidden; }
+  .admin-fleet-empty-state { display:grid; min-height:18rem; place-content:center; justify-items:center; gap:.55rem; padding:2rem; text-align:center; }.admin-fleet-empty-state h3 { margin:0; color:#182321; font-size:1rem; font-weight:700; }.admin-fleet-empty-state p { max-width:22rem; margin:0; color:#687772; font-size:.82rem; line-height:1.5; }
+  .admin-fleet-register__heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; min-height:4.2rem; padding:.75rem 1rem; border-bottom:1px solid #e1e3dc; }
   .admin-fleet-register__heading h2,.admin-fleet-exceptions h2 { margin:0; color:#182321; font-size:1.12rem; font-weight:650; letter-spacing:-.02em; }
-  .admin-fleet-register__heading p,.admin-fleet-exceptions header p { margin:.3rem 0 0; color:#687772; font-size:.76rem; }
+  .admin-fleet-register__heading p,.admin-fleet-exceptions header p { margin:.15rem 0 0; color:#687772; font-size:.76rem; }
   .admin-fleet-register__filters { display:flex; min-width:0; flex:1; justify-content:flex-end; gap:.5rem; }
   .admin-fleet-register__filters label { min-width:0; }
   .admin-fleet-register table thead { background:#fafbf8; }
@@ -1420,8 +1505,8 @@
   .admin-fleet-row__vehicle { min-height:2.75rem; color:#182321; text-align:left; }
   .admin-fleet-row__vehicle:focus-visible,.admin-fleet-row__open:focus-visible,.admin-fleet-detail__image-link:focus-visible { outline:3px solid rgb(11 97 88 / .25); outline-offset:3px; }
   .admin-fleet-location { display:inline-flex; align-items:center; gap:.35rem; color:#34433f; }
-  .admin-fleet-status,.admin-fleet-readiness { display:inline-flex; align-items:center; gap:.4rem; color:#34433f; font-size:.78rem; font-weight:650; }
-  .admin-fleet-status.is-available { --fleet-tone:#0b6158; }.admin-fleet-status.is-rented { --fleet-tone:#5e86b8; }.admin-fleet-status.is-reserved { --fleet-tone:#d99211; }.admin-fleet-status.is-attention { --fleet-tone:#a4523e; }
+  .admin-fleet-status,.admin-fleet-readiness { display:inline-flex; align-items:center; gap:.4rem; color:#34433f; font-size:.78rem; font-weight:650; }.admin-fleet-readiness-summary { display:grid; gap:.3rem; }.admin-fleet-readiness-summary small { color:#687772; font-size:.69rem; font-weight:500; line-height:1.35; }
+  .admin-fleet-status.is-available { --fleet-tone:#0b6158; }.admin-fleet-status.is-rented { --fleet-tone:#5e86b8; }.admin-fleet-status.is-reserved { --fleet-tone:#d99211; }.admin-fleet-status.is-inspection { --fleet-tone:#7d5da7; }.admin-fleet-status.is-attention { --fleet-tone:#a4523e; }
   .admin-fleet-readiness.is-ready { --fleet-tone:#0b6158; }.admin-fleet-readiness.is-not-ready { --fleet-tone:#a4523e; }
   .admin-fleet-row__open { min-height:2.25rem; padding-inline:.75rem; border:1px solid #cbd4cd; border-radius:.35rem; color:#123f3a; font-size:.75rem; font-weight:650; }
   .admin-fleet-row__open:hover { background:#f4f7f3; }
@@ -1430,10 +1515,13 @@
   .admin-fleet-detail__identity img,.admin-fleet-detail__image-fallback { display:block; width:100%; height:11.5rem; margin-bottom:1rem; object-fit:cover; background:#edf2ed; }
   .admin-fleet-detail__image-fallback { display:grid; place-items:center; color:#52635f; }.admin-fleet-detail__image-fallback svg { width:2rem; height:2rem; }
   .admin-fleet-detail__identity h2 { margin:0; color:#182321; font-size:1.5rem; font-weight:650; letter-spacing:-.03em; }.admin-fleet-detail__identity p { margin:.25rem 0 0; color:#687772; font-size:.78rem; font-variant-numeric:tabular-nums; }
-  .admin-fleet-detail__states { display:flex; flex-wrap:wrap; gap:1rem; padding:1rem 1.25rem; border-bottom:1px solid #e1e3dc; }
+  .admin-fleet-detail__states { display:flex; flex-wrap:wrap; gap:1rem; padding:1rem 1.25rem; border-bottom:1px solid #e1e3dc; }.admin-fleet-detail__states > div { display:grid; gap:.3rem; }.admin-fleet-detail__states > div > span:first-child { color:#687772; font-size:.68rem; }
   .admin-fleet-detail__facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; margin:0; padding:1.25rem; }.admin-fleet-detail__facts dt { color:#687772; font-size:.68rem; }.admin-fleet-detail__facts dd { display:flex; align-items:center; gap:.35rem; margin:.25rem 0 0; color:#34433f; font-size:.78rem; line-height:1.4; }
   .admin-fleet-detail__actions { padding:1.25rem; border-top:1px solid #e1e3dc; }
-  .admin-fleet-detail__action-group { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:.55rem; }
+  .admin-fleet-inspection { display:grid; gap:.7rem; margin-bottom:1rem; padding:1rem; border:1px solid #d7c9e6; border-radius:.45rem; background:#faf7fd; }.admin-fleet-inspection h3 { margin:0; color:#433258; font-size:.92rem; font-weight:700; }.admin-fleet-inspection p { margin:0; color:#665878; font-size:.76rem; line-height:1.45; }.admin-fleet-inspection label { display:grid; gap:.3rem; color:#524360; font-size:.72rem; font-weight:650; }.admin-fleet-inspection textarea { min-height:4.5rem; resize:vertical; border:1px solid #cbbcdc; border-radius:.35rem; background:#fff; padding:.55rem .65rem; color:#273228; font:inherit; font-size:.8rem; }.admin-fleet-inspection > div { display:flex; flex-wrap:wrap; gap:.5rem; }.admin-fleet-inspection__previous { border-top:1px solid #e5dcec; padding-top:.65rem; }
+  .admin-fleet-pagination { display:flex; min-height:3.25rem; align-items:center; justify-content:space-between; gap:1rem; padding:.55rem 1rem; border-top:1px solid #e1e3dc; color:#687772; font-size:.76rem; }.admin-fleet-pagination > div { display:flex; align-items:center; gap:.35rem; }.admin-fleet-pagination__page { display:grid; width:2rem; height:2rem; place-items:center; border:1px solid #cbd4cd; border-radius:.35rem; color:#52635f; font-size:.75rem; font-weight:650; }.admin-fleet-pagination__page:hover,.admin-fleet-pagination__page.is-current { border-color:#0d7468; background:#e7f2ee; color:#123f3a; }
+  @media (min-width:1101px) { #admin-main:has(.admin-fleet-workspace) { height:calc(100dvh - 76px); overflow:hidden; padding-top:.65rem; padding-bottom:.65rem; }.admin-fleet-workspace { display:flex; height:100%; flex-direction:column; }.admin-fleet-layout { min-height:0; flex:1; }.admin-fleet-register { display:flex; min-height:0; flex-direction:column; }.admin-fleet-register__rows { max-height:none; min-height:0; flex:1; }.admin-fleet-register th,.admin-fleet-register td { padding-right:.8rem; padding-left:.8rem; }.admin-fleet-detail { min-height:0; overflow:hidden; }.admin-fleet-detail__identity { display:grid; grid-template-columns:7rem minmax(0,1fr); align-items:center; gap:.75rem; padding:.65rem .9rem; }.admin-fleet-detail__identity img,.admin-fleet-detail__image-fallback { width:7rem; height:4.7rem; margin:0; }.admin-fleet-detail__identity h2 { font-size:1.25rem; }.admin-fleet-detail__states { gap:.75rem; padding:.55rem .9rem; }.admin-fleet-detail__facts { gap:.55rem .8rem; padding:.7rem .9rem; }.admin-fleet-detail__actions { padding:.7rem .9rem; }.admin-fleet-detail__action-group { gap:.4rem; }.admin-fleet-detail__schedule,.admin-fleet-detail__service { min-height:2.2rem; padding-inline:.45rem; font-size:.72rem; }.admin-fleet-detail__asset-action { margin-top:.65rem; padding-top:.65rem; }.admin-fleet-empty-state { min-height:0; flex:1; } }
+  .admin-fleet-detail__action-group { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:.55rem; }.admin-fleet-detail__action-group > :only-child { grid-column:1 / -1; }
   .admin-fleet-detail__schedule,.admin-fleet-detail__service { display:inline-flex; min-height:2.6rem; align-items:center; justify-content:center; gap:.45rem; border-radius:.35rem; padding-inline:.75rem; font-size:.78rem; font-weight:650; }
   .admin-fleet-detail__schedule { background:#123f3a; color:#fff; }.admin-fleet-detail__schedule:hover { background:#0b6158; }
   .admin-fleet-detail__service { width:100%; border:1px solid #cbd4cd; color:#123f3a; }.admin-fleet-detail__service:hover { background:#f4f7f3; }
@@ -1443,7 +1531,7 @@
   .admin-fleet-exceptions { margin-top:1.5rem; border-top:1px solid #cfd5ce; border-bottom:1px solid #cfd5ce; background:#fff; }.admin-fleet-exceptions header { display:flex; align-items:center; justify-content:space-between; gap:1rem; min-height:4rem; padding-inline:1.25rem; border-bottom:1px solid #e1e3dc; }.admin-fleet-exceptions header > span { color:#687772; font-size:.75rem; }.admin-fleet-exceptions ul { margin:0; padding:0; list-style:none; }.admin-fleet-exceptions li { display:grid; grid-template-columns:minmax(10rem,.8fr) minmax(0,1.25fr) auto; align-items:center; gap:1rem; padding:1rem 1.25rem; }.admin-fleet-exceptions li + li { border-top:1px solid #e1e3dc; }.admin-fleet-exceptions li strong,.admin-fleet-exceptions li span { display:block; }.admin-fleet-exceptions li strong { color:#182321; font-size:.84rem; }.admin-fleet-exceptions li span,.admin-fleet-exceptions li p { margin:.2rem 0 0; color:#687772; font-size:.74rem; }.admin-fleet-exceptions__empty { padding:1.25rem; color:#687772; font-size:.82rem; }
   .admin-fleet-message { display:grid; min-height:20rem; place-content:center; padding:2rem; border-top:1px solid #cfd5ce; border-bottom:1px solid #cfd5ce; background:#fff; text-align:center; }.admin-fleet-loading__metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); border-top:1px solid #cfd5ce; border-bottom:1px solid #cfd5ce; background:#fff; }.admin-fleet-loading__metrics i { display:block; min-height:5.25rem; border-right:1px solid #e1e3dc; background:linear-gradient(90deg,#fff 0%,#eff2ee 50%,#fff 100%); }.admin-fleet-loading__workspace { display:grid; grid-template-columns:1.5fr .7fr; min-height:27rem; margin-top:1.5rem; border-top:1px solid #cfd5ce; border-bottom:1px solid #cfd5ce; }.admin-fleet-loading__workspace i,.admin-fleet-loading__exceptions i { display:block; background:#e9ede8; }.admin-fleet-loading__workspace i + i { border-left:1px solid #cfd5ce; }.admin-fleet-loading__exceptions { min-height:8rem; margin-top:1.5rem; border-top:1px solid #cfd5ce; border-bottom:1px solid #cfd5ce; }
   @media (max-width:1100px) { .admin-fleet-layout { grid-template-columns:1fr; }.admin-fleet-detail { border-top:1px solid #cfd5ce; border-left:0; }.admin-fleet-detail__identity { display:grid; grid-template-columns:12rem minmax(0,1fr); gap:1rem; align-items:end; }.admin-fleet-detail__identity img,.admin-fleet-detail__image-fallback { height:7rem; margin:0; }.admin-fleet-register__filters { justify-content:stretch; } }
-  @media (max-width:767px) { .admin-fleet-heading { flex-direction:column; gap:1rem; margin-bottom:1.5rem; }.admin-fleet-ledger { grid-template-columns:repeat(2,minmax(0,1fr)); }.admin-fleet-ledger > div + div { border-left:0; }.admin-fleet-ledger > div:nth-child(even) { border-left:1px solid #e1e3dc; }.admin-fleet-ledger > div:nth-child(n+3) { border-top:1px solid #e1e3dc; }.admin-fleet-register__heading { flex-direction:column; }.admin-fleet-register__filters { width:100%; flex-wrap:wrap; justify-content:stretch; }.admin-fleet-register__filters label:first-child { flex-basis:100%; }.admin-fleet-exceptions li { grid-template-columns:1fr; }.admin-fleet-detail__identity { display:block; }.admin-fleet-detail__identity img,.admin-fleet-detail__image-fallback { height:10rem; margin-bottom:1rem; } }
+  @media (max-width:767px) { .admin-fleet-heading { flex-direction:column; gap:1rem; margin-bottom:1.5rem; align-items:stretch; }.admin-fleet-heading__actions { flex-wrap:wrap; justify-content:stretch; }.admin-fleet-search { width:auto; flex:1 1 100%; }.admin-fleet-search input { width:100%; }.admin-fleet-branch-sort { flex:1; }.admin-fleet-branch-sort select { width:100%; }.admin-fleet-ledger { grid-template-columns:repeat(2,minmax(0,1fr)); }.admin-fleet-status-tab:nth-child(odd) { border-left:0; }.admin-fleet-status-tab:nth-child(n+3) { border-top:1px solid #e1e3dc; }.admin-fleet-register__heading { flex-direction:column; }.admin-fleet-register__filters { width:100%; flex-wrap:wrap; justify-content:stretch; }.admin-fleet-register__filters label:first-child { flex-basis:100%; }.admin-fleet-detail__identity { display:block; }.admin-fleet-detail__identity img,.admin-fleet-detail__image-fallback { height:10rem; margin-bottom:1rem; } }
 
   .admin-payments-workspace { max-width:100rem; margin-inline:auto; }
   .admin-payments-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:2rem; margin-bottom:2rem; }
@@ -1545,6 +1633,61 @@
   .admin-maintenance-detail__body { grid-template-columns:minmax(0,1fr) minmax(11rem,.38fr); gap:1.5rem; padding:1.15rem 1.25rem .85rem; }.admin-maintenance-detail__body dl { margin-top:.6rem; }.admin-maintenance-detail__body dl > div { grid-template-columns:6.3rem minmax(0,1fr); gap:.8rem; padding:.5rem 0; }.admin-maintenance-detail__body dl > div:nth-child(3) { grid-column:1 / -1; }.admin-maintenance-detail__body dl > div:nth-child(3) dd { max-width:54ch; }.admin-maintenance-detail__side { gap:0; border-left:1px solid #e4e7e1; }.admin-maintenance-detail__side section { padding:0 0 .95rem 1.15rem; border:0; border-radius:0; background:transparent; }.admin-maintenance-detail__side section + section { padding-top:.95rem; border-top:1px solid #e4e7e1; }.admin-maintenance-detail__side section > p { margin-top:.42rem; }.admin-maintenance-detail__history-list { margin:0 1.25rem 1.1rem; padding-top:.8rem; }.admin-maintenance-detail__history-list > div:not(.admin-maintenance-detail__section-title) { grid-template-columns:.55rem 6rem minmax(0,1fr) 4.5rem; padding:.45rem 0; }.admin-maintenance-detail__history-list small { text-align:right; }.admin-maintenance-detail__actions { padding:1rem 1.25rem; }
   @media (max-width:1200px) { .admin-maintenance-detail__hero { grid-template-columns:minmax(11rem,.72fr) minmax(12rem,1fr); }.admin-maintenance-detail__readiness { grid-column:1 / -1; min-height:auto; border-top:1px solid #e1e7df; border-left:0; }.admin-maintenance-detail__body { grid-template-columns:minmax(0,1fr) minmax(10rem,.36fr); } }
   @media (max-width:767px) { .admin-maintenance-detail__hero { grid-template-columns:1fr; }.admin-maintenance-detail__identity dl { grid-template-columns:1fr 1fr; }.admin-maintenance-detail__readiness { border-top:1px solid #e1e7df; }.admin-maintenance-detail__body { grid-template-columns:1fr; }.admin-maintenance-detail__side { border-top:1px solid #e4e7e1; border-left:0; }.admin-maintenance-detail__side section { padding:1rem 0 0; }.admin-maintenance-detail__side section + section { margin-top:1rem; }.admin-maintenance-detail__history-list > div:not(.admin-maintenance-detail__section-title) { grid-template-columns:.55rem 5.5rem minmax(0,1fr); }.admin-maintenance-detail__history-list small { display:none; } }
+
+  /* Maintenance follows the Fleet workspace rhythm: compact heading, lifecycle ledger, register, and fixed detail rail. */
+  .admin-maintenance-workspace { max-width:100rem; }
+  .admin-maintenance-heading { align-items:center; margin-bottom:.5rem; }
+  .admin-maintenance-heading h1 { font-family:inherit; font-size:clamp(1.45rem,2vw,1.85rem); line-height:1.05; }
+  .admin-maintenance-heading p { display:none; }
+  .admin-maintenance-heading__actions { display:flex; align-items:center; gap:.45rem; }
+  .admin-maintenance-header-search { display:flex; width:12rem; min-height:2.35rem; align-items:center; gap:.45rem; border:1px solid #d8ddd6; border-radius:.45rem; padding:0 .7rem; background:#fff; color:#687772; }
+  .admin-maintenance-header-search svg { width:.9rem; flex:none; }
+  .admin-maintenance-header-search input { width:100%; border:0; outline:0; background:transparent; color:#314440; font-size:.76rem; }
+  .admin-maintenance-header-search input::placeholder { color:#788783; }
+  .admin-maintenance-ledger { grid-template-columns:repeat(5,minmax(0,1fr)); margin-bottom:.55rem; border:1px solid #cfd5ce; border-radius:.6rem; overflow:hidden; background:#fff; }
+  .admin-maintenance-status-tab { display:grid; grid-template-columns:minmax(0,1fr) auto; min-height:4.75rem; align-items:center; gap:.65rem; padding:1rem 1.1rem; color:#52635f; text-align:left; transition:background 160ms ease-out,color 160ms ease-out; }
+  .admin-maintenance-status-tab + .admin-maintenance-status-tab { border-left:1px solid #e1e3dc; }
+  .admin-maintenance-status-tab span { font-size:.76rem; font-weight:650; }
+  .admin-maintenance-status-tab strong { color:#182321; font-size:1.3rem; font-weight:700; font-variant-numeric:tabular-nums; }
+  .admin-maintenance-status-tab.is-active { box-shadow:inset 0 -3px #0b6158; background:#edf5ef; color:#123f3a; }
+  .admin-maintenance-layout { grid-template-columns:minmax(33rem,1.5fr) minmax(20rem,1fr); min-height:25rem; border-radius:.45rem; }
+  .admin-maintenance-queue > header { min-height:4.55rem; align-items:center; padding:.8rem 1.05rem; }
+  .admin-maintenance-queue h2 { font-family:inherit; color:#182321; font-size:1rem; font-weight:700; }
+  .admin-maintenance-queue header p { margin:.2rem 0 0; font-size:.7rem; }
+  .admin-maintenance-record { grid-template-columns:minmax(10rem,1.1fr) minmax(8rem,.85fr) minmax(6rem,.55fr) .5rem; min-height:4.1rem; padding:.65rem 1rem; }
+  .admin-maintenance-record__service { min-width:0; }
+  .admin-maintenance-record__service strong,.admin-maintenance-record__service small { overflow-wrap:anywhere; }
+  .admin-maintenance-record__vehicle img { width:2.35rem; height:2.35rem; }
+  .admin-maintenance-record__vehicle strong { font-size:.76rem; }
+  .admin-maintenance-record__service strong { font-size:.7rem; }
+  .admin-maintenance-record__state { justify-self:start; font-size:.66rem; }
+  .admin-maintenance-detail__hero { grid-template-columns:1fr; gap:.7rem; padding:.85rem .9rem; }
+  .admin-maintenance-detail__image { min-height:5rem; max-height:5rem; }
+  .admin-maintenance-detail__identity { grid-template-columns:minmax(0,1fr) auto; }
+  .admin-maintenance-detail__identity h2 { font-family:inherit; font-size:1.1rem; }
+  .admin-maintenance-detail__identity dl { grid-template-columns:1fr 1fr; gap:.35rem; margin-top:.45rem; }
+  .admin-maintenance-detail__readiness { padding:.7rem 0 0; border-top:1px solid #e1e7df; border-left:0; }
+  .admin-maintenance-detail__readiness > div { margin-top:.35rem; }
+  .admin-maintenance-detail__body { grid-template-columns:1fr; gap:.8rem; padding:.8rem .9rem; }
+  .admin-maintenance-detail__body dl > div { grid-template-columns:5.25rem minmax(0,1fr); padding:.38rem 0; }
+  .admin-maintenance-detail__body dl > div:nth-child(3) { grid-column:auto; }
+  .admin-maintenance-detail__side { border-top:1px solid #e4e7e1; border-left:0; }
+  .admin-maintenance-detail__side section { padding:.75rem 0 0; }
+  .admin-maintenance-detail__history-list { margin:0 .9rem .75rem; }
+  .admin-maintenance-detail__history-list > div:not(.admin-maintenance-detail__section-title) { grid-template-columns:.55rem 4.6rem minmax(0,1fr); }
+  .admin-maintenance-detail__history-list small { display:none; }
+  .admin-maintenance-detail__actions,.admin-maintenance-detail__history { padding:.8rem .9rem; }
+  .admin-maintenance-preview { display:flex; min-width:0; flex-direction:column; padding:.9rem; background:#fff; }
+  .admin-maintenance-preview__heading { display:flex; align-items:start; justify-content:space-between; gap:.7rem; padding-bottom:.75rem; border-bottom:1px solid #e4e7e1; }
+  .admin-maintenance-preview h2 { margin:0; color:#182321; font-size:1rem; font-weight:700; overflow-wrap:anywhere; }
+  .admin-maintenance-preview__heading span { display:block; margin-top:.2rem; color:#687772; font-size:.7rem; }
+  .admin-maintenance-preview__heading strong,.admin-maintenance-history__rows button > .is-completed,.admin-maintenance-history__rows button > .is-cancelled { padding:.28rem .45rem; border-radius:.25rem; font-size:.66rem; }
+  .admin-maintenance-preview__heading strong.is-completed,.admin-maintenance-history__rows button > .is-completed { background:#e9f5eb; color:#0b6158; }.admin-maintenance-preview__heading strong.is-cancelled,.admin-maintenance-history__rows button > .is-cancelled { background:#fbeaea; color:#a4523e; }.admin-maintenance-preview__heading strong.is-in { background:#fff3d7; color:#a45b13; }
+  .admin-maintenance-empty--lifecycle { display:grid; min-height:14rem; place-content:center; gap:.6rem; padding:2rem 3rem; text-align:center; }.admin-maintenance-empty--lifecycle strong { color:#182321; font-size:.95rem; }.admin-maintenance-empty--lifecycle p { max-width:32rem; margin:0; color:#687772; font-size:.78rem; line-height:1.5; }.admin-maintenance-empty--lifecycle button { justify-self:center; margin-top:.4rem; }
+  .admin-maintenance-preview dl { display:grid; gap:.65rem; margin:1rem 0; }.admin-maintenance-preview dl div { display:grid; gap:.15rem; }.admin-maintenance-preview dt { color:#687772; font-size:.66rem; }.admin-maintenance-preview dd { margin:0; color:#314440; font-size:.74rem; font-weight:650; line-height:1.4; }.admin-maintenance-preview > p { margin:0 0 1rem; color:#687772; font-size:.7rem; line-height:1.45; }.admin-maintenance-preview > button { width:100%; margin-top:auto; }
+  .admin-maintenance-history { margin-top:1.25rem; border:1px solid #dfe3dc; border-radius:.45rem; overflow:hidden; background:#fff; }.admin-maintenance-history__heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.9rem 1.05rem; border-bottom:1px solid #e4e7e1; }.admin-maintenance-history__heading h2 { margin:0; color:#182321; font-size:1rem; font-weight:700; }.admin-maintenance-history__heading p,.admin-maintenance-history__heading > span { margin:.2rem 0 0; color:#687772; font-size:.7rem; }.admin-maintenance-history__heading > span { white-space:nowrap; }.admin-maintenance-history__rows button { display:grid; grid-template-columns:minmax(10rem,1fr) minmax(10rem,1fr) auto; align-items:center; gap:1rem; width:100%; padding:.75rem 1.05rem; color:inherit; text-align:left; }.admin-maintenance-history__rows button + button { border-top:1px solid #e4e7e1; }.admin-maintenance-history__rows button:hover { background:#f8faf7; }.admin-maintenance-history__rows strong,.admin-maintenance-history__rows small { display:block; }.admin-maintenance-history__rows strong { color:#314440; font-size:.75rem; }.admin-maintenance-history__rows small { margin-top:.2rem; color:#687772; font-size:.68rem; }.admin-maintenance-details-dialog .admin-maintenance-detail { min-height:0; width:100%; overflow:hidden; }.admin-maintenance-details-dialog .admin-maintenance-detail__hero { grid-template-columns:minmax(10rem,.55fr) minmax(14rem,1fr) minmax(12rem,.65fr); }.admin-maintenance-details-dialog .admin-maintenance-detail__image { min-height:8rem; }.admin-maintenance-details-dialog .admin-maintenance-detail__history-list .admin-maintenance-detail__section-title { flex-wrap:wrap; align-items:baseline; }.admin-maintenance-details-dialog .admin-maintenance-detail__section-title > span { min-width:0; white-space:normal; overflow-wrap:anywhere; text-align:left; }.admin-maintenance-details-dialog .admin-maintenance-detail__history-list > div:not(.admin-maintenance-detail__section-title) { grid-template-columns:.55rem minmax(4.75rem,.45fr) minmax(0,1fr); }
+  @media (max-width:1100px) { .admin-maintenance-layout { grid-template-columns:1fr; }.admin-maintenance-detail { border-top:1px solid #dfe3dc; }.admin-maintenance-detail__hero { grid-template-columns:minmax(10rem,.55fr) minmax(12rem,1fr); }.admin-maintenance-detail__readiness { grid-column:1 / -1; }.admin-maintenance-detail__image { min-height:7rem; max-height:none; } }
+  @media (max-width:767px) { .admin-maintenance-heading { align-items:stretch; flex-direction:column; gap:1rem; }.admin-maintenance-heading__actions { flex-wrap:wrap; }.admin-maintenance-header-search { width:auto; flex:1 1 100%; }.admin-maintenance-ledger { grid-template-columns:repeat(2,minmax(0,1fr)); }.admin-maintenance-status-tab:nth-child(odd) { border-left:0; }.admin-maintenance-status-tab:nth-child(n+3) { border-top:1px solid #e1e3dc; }.admin-maintenance-record { grid-template-columns:minmax(0,1fr) auto .5rem; }.admin-maintenance-record__service { display:none; }.admin-maintenance-detail__hero { grid-template-columns:1fr; }.admin-maintenance-detail__image { min-height:10rem; }.admin-maintenance-detail__readiness { grid-column:auto; }.admin-maintenance-history__rows button { grid-template-columns:1fr auto; }.admin-maintenance-history__rows button > span:nth-child(2) { display:none; } }
 
   .admin-calendar-workspace {
     max-width: 100rem;

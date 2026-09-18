@@ -3,6 +3,7 @@ import {
   isMaintenanceDraftValid,
   type MaintenanceDraft,
 } from "@/lib/maintenance-admin";
+import type { MaintenanceReadinessReason } from "@/lib/maintenance-readiness";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,10 @@ export type MaintenanceVehicleOption = {
   name: string;
   plate: string;
   branch?: string;
+  currentOdometer?: number | null;
+  conditionBlocksRentalUse?: boolean;
+  maintenanceReady?: boolean;
+  readinessReasons?: MaintenanceReadinessReason[];
 };
 
 const typeOptions = [
@@ -57,6 +62,7 @@ export function MaintenanceRecordDialog({
   }
 
   const canSave = isMaintenanceDraftValid(draft);
+  const selectedVehicle = vehicles.find((vehicle) => vehicle.id === draft.vehicleId);
 
   return (
     <Dialog
@@ -65,14 +71,26 @@ export function MaintenanceRecordDialog({
     >
       <DialogContent className="maintenance-record-dialog max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add maintenance record</DialogTitle>
+          <DialogTitle>Schedule maintenance</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4 py-2 sm:grid-cols-2">
           <Field label="Vehicle *">
             <TSelect
               value={draft.vehicleId}
-              onChange={(event) => updateDraft("vehicleId", event.target.value)}
+              onChange={(event) => {
+                const vehicle = vehicles.find(
+                  (option) => option.id === event.target.value,
+                );
+                onDraftChange({
+                  ...draft,
+                  vehicleId: event.target.value,
+                  currentOdometer:
+                    vehicle?.currentOdometer == null
+                      ? ""
+                      : String(vehicle.currentOdometer),
+                });
+              }}
               required
             >
               <option value="">Select vehicle</option>
@@ -84,6 +102,19 @@ export function MaintenanceRecordDialog({
               ))}
             </TSelect>
           </Field>
+          {selectedVehicle && (
+            <section className="sm:col-span-2 rounded-md border border-border bg-muted/30 p-3 text-sm">
+              <p className="font-semibold">Vehicle maintenance context</p>
+              <div className="mt-2 grid gap-1 sm:grid-cols-3">
+                <span>Current odometer: {selectedVehicle.currentOdometer == null ? "Not recorded" : `${selectedVehicle.currentOdometer.toLocaleString()} km`}</span>
+                <span>Condition: {selectedVehicle.conditionBlocksRentalUse ? "Unsuitable for rental" : "No recorded block"}</span>
+                <span>Maintenance: {selectedVehicle.maintenanceReady ? "Maintenance-ready" : "Not maintenance-ready"}</span>
+              </div>
+              {!selectedVehicle.maintenanceReady && selectedVehicle.readinessReasons?.length ? (
+                <p className="mt-2 text-muted-foreground">{selectedVehicle.readinessReasons.join(" · ")}</p>
+              ) : null}
+            </section>
+          )}
           <Field label="Maintenance type *">
             <TSelect
               value={draft.maintenanceType}
@@ -100,24 +131,22 @@ export function MaintenanceRecordDialog({
               ))}
             </TSelect>
           </Field>
-          <Field label="Service started">
+          <Field label="Scheduled service date/time">
             <TInput
               type="datetime-local"
-              value={draft.serviceStartedAt}
+              value={draft.scheduledFor}
               onChange={(event) =>
-                updateDraft("serviceStartedAt", event.target.value)
+                updateDraft("scheduledFor", event.target.value)
               }
             />
           </Field>
-          <Field label="Odometer at service (km)">
+          <Field label="Current odometer (km)">
             <TInput
               type="number"
               min="0"
               step="0.1"
-              value={draft.odometerAtService}
-              onChange={(event) =>
-                updateDraft("odometerAtService", event.target.value)
-              }
+              value={draft.currentOdometer}
+              readOnly
             />
           </Field>
           <Field label="Next service date">
@@ -140,7 +169,7 @@ export function MaintenanceRecordDialog({
               }
             />
           </Field>
-          <Field label="Cost (PHP)">
+          <Field label="Estimated cost (PHP)">
             <TInput
               type="number"
               min="0"
@@ -157,7 +186,7 @@ export function MaintenanceRecordDialog({
                 updateDraft("blocksRentalUse", event.target.checked)
               }
             />
-            Blocks rental use
+            Unresolved concern prevents rental use
           </label>
           <Field label="Description *" className="sm:col-span-2">
             <textarea
@@ -195,10 +224,12 @@ export function MaintenanceRecordDialog({
           <Btn
             variant="primary"
             disabled={!canSave || saving}
-            title={canSave ? "Save record" : "Complete all required fields"}
+            title={
+              canSave ? "Schedule maintenance" : "Complete all required fields"
+            }
             onClick={onSave}
           >
-            {saving ? "Saving…" : "Save record"}
+            {saving ? "Scheduling…" : "Schedule maintenance"}
           </Btn>
         </DialogFooter>
       </DialogContent>

@@ -54,7 +54,18 @@ export const Route = createFileRoute("/api/maintenance")({
           const result = await query;
           if (result.error)
             return fail("Unable to load maintenance records.", 503);
-          return Response.json(result.data ?? []);
+          const now = Date.now();
+          return Response.json(
+            (result.data ?? []).map((record) =>
+              record.status === "Open"
+                ? { ...record, status: "In Progress" }
+                : record.status === "Scheduled" &&
+              record.scheduled_for &&
+              new Date(record.scheduled_for).getTime() < now
+                ? { ...record, status: "Overdue" }
+                : record,
+            ),
+          );
         } catch (error) {
           return fail(
             error instanceof Error && error.message === "forbidden"
@@ -89,16 +100,13 @@ export const Route = createFileRoute("/api/maintenance")({
           return fail("Service type is required.");
         if (typeof body.description !== "string" || !body.description.trim())
           return fail("Description is required.");
-        const odo = numberOrNull(body.odometerAtService, "Odometer");
         const nextOdo = numberOrNull(
           body.nextServiceOdometer,
           "Next-service odometer",
         );
         const cost = numberOrNull(body.costPhp, "Cost");
-        if (odo.error || nextOdo.error || cost.error)
-          return fail(odo.error ?? nextOdo.error ?? cost.error!);
-        if (body.status != null && body.status !== "Open")
-          return fail("New maintenance records must start Open.");
+        if (nextOdo.error || cost.error)
+          return fail(nextOdo.error ?? cost.error!);
         const client = getSupabaseServerClient();
         const vehicle = await client
           .from("vehicles")
@@ -107,24 +115,14 @@ export const Route = createFileRoute("/api/maintenance")({
           .maybeSingle();
         if (vehicle.error || !vehicle.data)
           return fail("Vehicle not found.", 404);
-        if (
-          odo.value != null &&
-          vehicle.data.current_odometer_km != null &&
-          odo.value < Number(vehicle.data.current_odometer_km)
-        )
-          return fail(
-            "Odometer cannot be lower than the current vehicle odometer.",
-          );
+        if (typeof body.scheduledFor !== "string" || !body.scheduledFor)
+          return fail("Scheduled service date/time is required.");
         const result = await client.rpc("create_maintenance_atomic", {
           p_vehicle_id: body.vehicleId,
           p_maintenance_type: body.maintenanceType.trim(),
           p_description: body.description.trim(),
           p_blocks: body.blocksRentalUse === true,
-          p_started_at:
-            typeof body.serviceStartedAt === "string" && body.serviceStartedAt
-              ? body.serviceStartedAt
-              : new Date().toISOString(),
-          p_odometer: odo.value ?? null,
+          p_scheduled_for: body.scheduledFor,
           p_next_odometer: nextOdo.value ?? null,
           p_next_date:
             typeof body.nextServiceDate === "string" && body.nextServiceDate
@@ -172,11 +170,21 @@ export const Route = createFileRoute("/api/maintenance")({
         > | null;
         const id = typeof body?.id === "string" ? body.id : null;
         const status = body?.status;
-        if (!id || (status !== "Completed" && status !== "Cancelled"))
-          return fail(
-            "Only Open to Completed or Open to Cancelled is supported.",
-          );
+        if (!id) return fail("A maintenance record is required.");
         const client = getSupabaseServerClient();
+        if (body?.action === "archive") {
+          const archived = await client.rpc("archive_maintenance_record", {
+            p_record_id: id,
+            p_actor: actor.userId,
+          });
+          if (archived.error)
+            return fail("Only completed or cancelled maintenance can be closed.");
+          return Response.json(archived.data);
+        }
+        if (status !== "In Progress" && status !== "Completed" && status !== "Cancelled")
+          return fail(
+            "Only lifecycle-supported maintenance transitions are allowed.",
+          );
         const existing = await client
           .from("maintenance_records")
           .select("*")
@@ -184,13 +192,18 @@ export const Route = createFileRoute("/api/maintenance")({
           .maybeSingle();
         if (existing.error || !existing.data)
           return fail("Maintenance record not found.", 404);
-        if (existing.data.status !== "Open")
-          return fail("Only Open records can be transitioned.");
+        if (!(["Scheduled", "In Progress", "Overdue"] as string[]).includes(existing.data.status))
+          return fail("This historical maintenance record cannot be transitioned.");
+        if (
+          status === "Cancelled" &&
+          !["Scheduled", "Overdue"].includes(existing.data.status)
+        )
+          return fail(
+            "In-progress maintenance must be completed; it cannot be cancelled.",
+          );
         const patch: Record<string, unknown> = {
           status,
           updated_by: actor.userId,
-          completed_at:
-            status === "Completed" ? new Date().toISOString() : null,
         };
         for (const [key, label] of [
           ["odometerAtService", "Odometer"],
@@ -215,6 +228,7 @@ export const Route = createFileRoute("/api/maintenance")({
         const result = await client.rpc("update_maintenance_atomic", {
           p_record_id: id,
           p_status: status,
+          p_started_at: status === "In Progress" ? new Date().toISOString() : null,
           p_odometer: (patch.odometer_at_service as number | null) ?? null,
           p_next_odometer:
             (patch.next_service_odometer as number | null) ?? null,

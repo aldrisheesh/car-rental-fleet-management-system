@@ -2,7 +2,10 @@ import { getSupabaseServerClient } from "./supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./supabase/database.types";
 import { instantToManilaCalendarDate } from "./business-time";
-import { evaluateMaintenanceReadiness } from "./maintenance-readiness";
+import {
+  evaluateMaintenanceReadiness,
+  type MaintenanceReadiness,
+} from "./maintenance-readiness";
 export {
   evaluateMaintenanceReadiness,
   selectAuthoritativePreventiveTargets,
@@ -95,7 +98,7 @@ export async function calculateFleetMaintenanceSnapshot(
   const readiness = (vehiclesResult.data ?? []).map((vehicle) => ({
     vehicleId: vehicle.id,
     vehicleName: vehicle.name,
-    licensePlate: vehicle.license_plate,
+    licensePlate: vehicle.license_plate ?? "Plate unavailable",
     ...evaluateMaintenanceReadiness(
       vehicle,
       recordsByVehicle.get(vehicle.id) ?? [],
