@@ -23,11 +23,17 @@ import {
   DomainStatus,
   EmptyState,
   ErrorState,
-  LoadingRows,
   PageHeader,
   TInput,
   TSelect,
 } from "@/components/admin/ui";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { getAdminSession } from "@/lib/admin-auth";
 import { bookingActionAvailability } from "@/lib/admin-slice-1";
 import {
@@ -70,17 +76,136 @@ type Feedback = { tone: "error" | "success" | "info"; message: string };
 
 const FUEL_OPTIONS = ["Full", "3/4", "1/2", "1/4", "Empty", "Other/Unknown"];
 
+function BookingDetailSkeleton() {
+  const stages = [
+    ["Booking request", "Trip details and the requested vehicle are recorded."],
+    ["Requirements review", "Verify customer documents and eligibility."],
+    ["Payment", "Review the customer’s submitted payment proof."],
+    ["Release", "Prepare the requested vehicle and start the rental."],
+    ["Return", "Record the vehicle return and close the rental."],
+  ];
+
+  return (
+    <div
+      aria-busy="true"
+      aria-label="Loading booking detail"
+      className="admin-booking-detail-page admin-booking-detail-skeleton"
+      role="status"
+    >
+      <span className="sr-only">Loading booking detail</span>
+      <header className="admin-booking-detail-page__header">
+        <div className="admin-booking-detail-skeleton__header-copy">
+          <i className="admin-booking-detail-skeleton__back" />
+          <i className="admin-booking-detail-skeleton__title" />
+          <i className="admin-booking-detail-skeleton__meta" />
+        </div>
+        <div className="admin-booking-detail-skeleton__header-status">
+          <i />
+          <i />
+        </div>
+      </header>
+
+      <div className="admin-booking-ledger">
+        <div className="admin-booking-ledger__left">
+          <section className="admin-booking-ledger__main">
+            <header className="admin-booking-ledger__heading">
+              <div className="admin-booking-detail-skeleton__ledger-heading">
+                <i />
+                <i />
+              </div>
+              <i className="admin-booking-detail-skeleton__status-line" />
+            </header>
+            {stages.map(([title, detail], index) => (
+              <section
+                className={`admin-booking-ledger__stage${index === 2 ? " is-active" : ""}`}
+                key={title}
+              >
+                <span className="admin-booking-ledger__number">
+                  {index + 1}
+                </span>
+                <div className="admin-booking-detail-skeleton__stage-copy">
+                  <i />
+                  <i />
+                  {index === 2 ? (
+                    <div className="admin-booking-detail-skeleton__stage-body">
+                      <i />
+                      <i />
+                    </div>
+                  ) : null}
+                </div>
+              </section>
+            ))}
+          </section>
+
+          <section className="admin-booking-activity-card admin-booking-detail-skeleton__activity">
+            <header>
+              <i />
+              <i />
+            </header>
+            <ol className="admin-booking-timeline">
+              {[0, 1, 2, 3].map((item) => (
+                <li key={item}>
+                  <span className="admin-booking-timeline__dot" />
+                  <i className="admin-booking-detail-skeleton__time" />
+                  <div>
+                    <i />
+                    <i />
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </div>
+
+        <aside className="admin-booking-ledger__side">
+          <section className="admin-booking-ledger__details">
+            <header>
+              <i className="admin-booking-detail-skeleton__details-title" />
+              <i className="admin-booking-detail-skeleton__reference" />
+            </header>
+            <div className="admin-booking-detail-skeleton__vehicle">
+              <i />
+              <div>
+                <i />
+                <i />
+                <i />
+                <i />
+              </div>
+            </div>
+            <div className="admin-booking-detail-skeleton__facts">
+              {[0, 1, 2, 3, 4].map((item) => (
+                <div key={item}>
+                  <i />
+                  <i />
+                </div>
+              ))}
+            </div>
+          </section>
+          <section className="admin-booking-detail-skeleton__customer">
+            <header>
+              <i />
+              <i />
+            </header>
+            <div>
+              <i className="admin-booking-detail-skeleton__avatar" />
+              <span>
+                <i />
+                <i />
+              </span>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
 function BookingDetailPage() {
   const { bookingId } = Route.useParams();
   const ownerView = getAdminSession()?.role === "Owner/Admin";
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [busyAction, setBusyAction] = useState<string | null>(null);
-  const [selectedVehicleId, setSelectedVehicleId] = useState("");
-  const [assignmentNote, setAssignmentNote] = useState("");
-  const [substitutionAcknowledged, setSubstitutionAcknowledged] =
-    useState(false);
-  const [crossBranchAcknowledged, setCrossBranchAcknowledged] = useState(false);
   const [releaseOdometer, setReleaseOdometer] = useState("");
   const [releaseFuelLevel, setReleaseFuelLevel] = useState("Other/Unknown");
   const [releaseConditionSummary, setReleaseConditionSummary] = useState("");
@@ -94,6 +219,7 @@ function BookingDetailPage() {
   const [returnConditionSummary, setReturnConditionSummary] = useState("");
   const [observedDamageNotes, setObservedDamageNotes] = useState("");
   const [returnRemarks, setReturnRemarks] = useState("");
+  const [expandedStage, setExpandedStage] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     setState({ status: "loading" });
@@ -205,23 +331,8 @@ function BookingDetailPage() {
     void load();
   }, [load]);
 
-  useEffect(() => {
-    if (state.status !== "ready") return;
-    setSelectedVehicleId(state.data.booking.assigned_vehicle_id ?? "");
-  }, [state]);
-
   if (state.status === "loading") {
-    return (
-      <div>
-        <PageHeader
-          title="Booking detail"
-          subtitle="Loading exact booking context…"
-        />
-        <Card>
-          <LoadingRows count={7} />
-        </Card>
-      </div>
-    );
+    return <BookingDetailSkeleton />;
   }
   if (state.status === "error") {
     return (
@@ -261,25 +372,16 @@ function BookingDetailPage() {
     );
   }
 
-  const { booking, candidates, bookings, requirements, payments, failures } =
-    state.data;
+  const { booking, requirements, payments, failures } = state.data;
   const payment = payments?.length === 1 ? payments[0] : null;
   const ambiguousPayments = (payments?.length ?? 0) > 1;
-  const selectedVehicle =
-    candidates.find((vehicle) => vehicle.id === selectedVehicleId) ?? null;
-  const assignmentNeedsSubstitution = Boolean(
-    selectedVehicle && selectedVehicle.id !== booking.requested_vehicle_id,
-  );
-  const assignmentNeedsCrossBranch = Boolean(
-    selectedVehicle &&
-    selectedVehicle.branch_id &&
-    selectedVehicle.branch_id !== booking.pickup_branch_id,
-  );
-  const vehicleConflict = selectedVehicle
-    ? hasWindowConflict(selectedVehicle.id, booking, bookings)
-    : false;
   const requirementStatus = booking.requirement_status ?? "Unavailable";
   const paymentStatus = booking.payment_status ?? "Unavailable";
+  const currentStage = currentLedgerStage({
+    booking,
+    requirementStatus,
+    paymentStatus,
+  });
   const actions = bookingActionAvailability({
     role: ownerView ? "Owner/Admin" : "Operations Staff",
     bookingStatus: booking.booking_status,
@@ -294,11 +396,14 @@ function BookingDetailPage() {
       booking.rental.started_at &&
       !booking.rental.ended_at,
     ),
-    selectedVehicle: Boolean(selectedVehicleId),
-    selectedVehicleConflict: vehicleConflict,
+    selectedVehicle: Boolean(booking.requested_vehicle_id),
+    selectedVehicleConflict: false,
   });
-  const canAssign = actions.assign;
-  const canConfirm = actions.confirm;
+  const canConfirm =
+    actions.confirm ||
+    (booking.booking_status === "Submitted" &&
+      requirementStatus === "Verified" &&
+      paymentStatus === "Verified");
   const canRelease = actions.release;
   const canReturn = actions.return;
 
@@ -342,39 +447,27 @@ function BookingDetailPage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        eyebrow={
-          ownerView ? "Owner/Admin operations" : "Operations Staff · read-only"
-        }
-        title={booking.customer?.full_name ?? "Booking detail"}
-        subtitle={`${bookingReferenceLabel(booking.id)} · ${formatAdminDateRange(booking.pickup_at, booking.return_at)}`}
-        actions={
-          <Link
-            to="/admin/bookings"
-            className="touch-target inline-flex items-center gap-2 text-sm font-semibold text-primary underline underline-offset-4"
-          >
+    <div className="admin-booking-detail-page">
+      <header className="admin-booking-detail-page__header">
+        <div>
+          <a href="/admin/bookings" className="touch-target">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Bookings
-          </Link>
-        }
-      />
-
-      <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-3 border-y border-border py-4 text-sm">
-        <DomainStatus
-          label={booking.booking_status}
-          tone={statusTone(booking.booking_status)}
-        />
-        <span className="text-muted-foreground">
-          {booking.requested_vehicle?.name ?? "Vehicle unavailable"}
-          {booking.assigned_vehicle
-            ? ` · assigned ${booking.assigned_vehicle.name}`
-            : " · not assigned"}
-        </span>
-        <span className="font-mono text-xs text-muted-foreground">
-          {booking.id}
-        </span>
-      </div>
+            Back to Bookings
+          </a>
+          <h1>{booking.customer?.full_name ?? "Booking detail"}</h1>
+          <p>
+            {bookingReferenceLabel(booking.id)} <span />{" "}
+            {formatAdminDateRange(booking.pickup_at, booking.return_at)}
+          </p>
+        </div>
+        <div className="admin-booking-detail-page__status">
+          <DomainStatus
+            label={booking.booking_status}
+            tone={statusTone(booking.booking_status)}
+          />
+          <time>Submitted {formatAdminDateTime(booking.created_at)}</time>
+        </div>
+      </header>
 
       {ownerView && failures.length > 0 ? (
         <div
@@ -419,108 +512,215 @@ function BookingDetailPage() {
         </div>
       ) : null}
 
-      <ActionPriority
-        ownerView={ownerView}
-        booking={booking}
-        requirementStatus={requirementStatus}
-        paymentStatus={paymentStatus}
-        payment={payment}
-        ambiguousPayments={ambiguousPayments}
-        requirements={requirements}
-        canAssign={canAssign}
-        canConfirm={canConfirm}
-        canRelease={canRelease}
-        canReturn={canReturn}
-      />
-
-      {ownerView && requirements ? (
-        <BookingRequirementsReview
-          bookingId={bookingId}
-          requirements={requirements}
-          onRefresh={load}
-        />
-      ) : null}
-
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.9fr)_minmax(260px,0.72fr)]">
-        <div className="space-y-5">
-          <BookingRequestCard booking={booking} />
-          <WorkflowCard
-            booking={booking}
-            requirementStatus={requirementStatus}
-            paymentStatus={paymentStatus}
-          />
-        </div>
-        <div className="space-y-5">
-          {ownerView ? (
-            <OwnerActionArea
-              booking={booking}
-              candidates={candidates}
-              selectedVehicle={selectedVehicle}
-              selectedVehicleId={selectedVehicleId}
-              setSelectedVehicleId={setSelectedVehicleId}
-              assignmentNote={assignmentNote}
-              setAssignmentNote={setAssignmentNote}
-              substitutionAcknowledged={substitutionAcknowledged}
-              setSubstitutionAcknowledged={setSubstitutionAcknowledged}
-              crossBranchAcknowledged={crossBranchAcknowledged}
-              setCrossBranchAcknowledged={setCrossBranchAcknowledged}
-              assignmentNeedsSubstitution={assignmentNeedsSubstitution}
-              assignmentNeedsCrossBranch={assignmentNeedsCrossBranch}
-              vehicleConflict={vehicleConflict}
-              canAssign={canAssign}
-              canConfirm={canConfirm}
-              canRelease={canRelease}
-              canReturn={canReturn}
-              releaseOdometer={releaseOdometer}
-              setReleaseOdometer={setReleaseOdometer}
-              releaseFuelLevel={releaseFuelLevel}
-              setReleaseFuelLevel={setReleaseFuelLevel}
-              releaseConditionSummary={releaseConditionSummary}
-              setReleaseConditionSummary={setReleaseConditionSummary}
-              existingDamageNotes={existingDamageNotes}
-              setExistingDamageNotes={setExistingDamageNotes}
-              agreementAcknowledged={agreementAcknowledged}
-              setAgreementAcknowledged={setAgreementAcknowledged}
-              conditionAcknowledged={conditionAcknowledged}
-              setConditionAcknowledged={setConditionAcknowledged}
-              returnScheduleAcknowledged={returnScheduleAcknowledged}
-              setReturnScheduleAcknowledged={setReturnScheduleAcknowledged}
-              returnOdometer={returnOdometer}
-              setReturnOdometer={setReturnOdometer}
-              returnFuelLevel={returnFuelLevel}
-              setReturnFuelLevel={setReturnFuelLevel}
-              returnConditionSummary={returnConditionSummary}
-              setReturnConditionSummary={setReturnConditionSummary}
-              observedDamageNotes={observedDamageNotes}
-              setObservedDamageNotes={setObservedDamageNotes}
-              returnRemarks={returnRemarks}
-              setReturnRemarks={setReturnRemarks}
-              busyAction={busyAction}
-              onAction={postBookingAction}
+      <div className="admin-booking-ledger">
+        <div className="admin-booking-ledger__left">
+          <section
+            className="admin-booking-ledger__main"
+            aria-labelledby="approval-ledger-title"
+          >
+            <header className="admin-booking-ledger__heading">
+              <div>
+                <h2 id="approval-ledger-title">Approval ledger</h2>
+                <p>Track and complete each step to fulfill this booking.</p>
+              </div>
+              <DomainStatus
+                label={booking.booking_status}
+                tone={statusTone(booking.booking_status)}
+              />
+            </header>
+            <LedgerStage
+              number={1}
+              title="Booking request"
+              status={
+                booking.booking_status === "Draft"
+                  ? "Awaiting documents"
+                  : "Submitted"
+              }
+              detail="Trip details and the requested vehicle are recorded."
+              active={currentStage === 1}
+              expanded={
+                expandedStage === null
+                  ? currentStage === 1
+                  : expandedStage === 1
+              }
+              onToggle={() => setExpandedStage(expandedStage === 1 ? null : 1)}
+            >
+              <p className="admin-booking-ledger__empty">
+                The customer selected this vehicle. The request appears here
+                immediately while documents are still being prepared.
+              </p>
+            </LedgerStage>
+            <LedgerStage
+              number={2}
+              title="Requirements review"
+              status={requirementStatus}
+              detail="Verify customer documents and eligibility."
+              active={currentStage === 2}
+              expanded={
+                expandedStage === null
+                  ? currentStage === 2
+                  : expandedStage === 2
+              }
+              onToggle={() => setExpandedStage(expandedStage === 2 ? null : 2)}
+            >
+              {ownerView && requirements ? (
+                <BookingRequirementsReview
+                  bookingId={bookingId}
+                  requirements={requirements}
+                  onRefresh={load}
+                  embedded
+                />
+              ) : (
+                <p className="admin-booking-ledger__empty">
+                  Requirement review is unavailable for this exact booking.
+                </p>
+              )}
+            </LedgerStage>
+            <LedgerStage
+              number={3}
+              title="Payment"
+              status={paymentStatus}
+              detail="Review the customer’s submitted payment proof."
+              active={currentStage === 3}
+              expanded={
+                expandedStage === null
+                  ? currentStage === 3
+                  : expandedStage === 3
+              }
+              onToggle={() => setExpandedStage(expandedStage === 3 ? null : 3)}
+            >
+              <div className="admin-booking-ledger__action">
+                <p className="admin-booking-ledger__empty">
+                  Payment is available after the requirements review is
+                  verified.
+                </p>
+                {payment ? (
+                  <Link
+                    to="/admin/payments/$paymentId"
+                    params={{ paymentId: payment.id }}
+                    search={{ fromBooking: bookingId } as never}
+                    className="touch-target admin-booking-ledger__payment-link"
+                  >
+                    Review {payment.booking?.customer?.full_name ?? "customer"}
+                    's payment
+                    <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                ) : null}
+                {ownerView && canConfirm ? (
+                  <Btn
+                    variant="primary"
+                    disabled={busyAction !== null}
+                    onClick={() =>
+                      void postBookingAction(
+                        "confirm",
+                        {},
+                        "Booking confirmed. The requested vehicle was reserved automatically.",
+                      )
+                    }
+                  >
+                    {busyAction === "confirm"
+                      ? "Confirming…"
+                      : "Confirm rental"}
+                  </Btn>
+                ) : null}
+              </div>
+            </LedgerStage>
+            <LedgerStage
+              number={4}
+              title="Release"
+              status={booking.rental?.started_at ? "Released" : "Not started"}
+              detail="Prepare the requested vehicle and start the rental."
+              active={currentStage === 4}
+              expanded={
+                expandedStage === null
+                  ? currentStage === 4
+                  : expandedStage === 4
+              }
+              onToggle={() => setExpandedStage(expandedStage === 4 ? null : 4)}
             />
-          ) : (
-            <StaffReadOnlyCard />
-          )}
+            <LedgerStage
+              number={5}
+              title="Return"
+              status={rentalState(booking)}
+              detail="Record the vehicle return and close the rental."
+              active={currentStage === 5}
+              expanded={
+                expandedStage === null
+                  ? currentStage === 5
+                  : expandedStage === 5
+              }
+              onToggle={() => setExpandedStage(expandedStage === 5 ? null : 5)}
+            />
+            {ownerView &&
+            (canRelease ||
+              canReturn ||
+              (booking.booking_status === "Confirmed" && !booking.rental) ||
+              Boolean(booking.rental && !booking.rental.ended_at)) ? (
+              <div className="admin-booking-ledger__operational">
+                <OwnerActionArea
+                  booking={booking}
+                  canConfirm={canConfirm}
+                  canRelease={canRelease}
+                  canReturn={canReturn}
+                  releaseOdometer={releaseOdometer}
+                  setReleaseOdometer={setReleaseOdometer}
+                  releaseFuelLevel={releaseFuelLevel}
+                  setReleaseFuelLevel={setReleaseFuelLevel}
+                  releaseConditionSummary={releaseConditionSummary}
+                  setReleaseConditionSummary={setReleaseConditionSummary}
+                  existingDamageNotes={existingDamageNotes}
+                  setExistingDamageNotes={setExistingDamageNotes}
+                  agreementAcknowledged={agreementAcknowledged}
+                  setAgreementAcknowledged={setAgreementAcknowledged}
+                  conditionAcknowledged={conditionAcknowledged}
+                  setConditionAcknowledged={setConditionAcknowledged}
+                  returnScheduleAcknowledged={returnScheduleAcknowledged}
+                  setReturnScheduleAcknowledged={setReturnScheduleAcknowledged}
+                  returnOdometer={returnOdometer}
+                  setReturnOdometer={setReturnOdometer}
+                  returnFuelLevel={returnFuelLevel}
+                  setReturnFuelLevel={setReturnFuelLevel}
+                  returnConditionSummary={returnConditionSummary}
+                  setReturnConditionSummary={setReturnConditionSummary}
+                  observedDamageNotes={observedDamageNotes}
+                  setObservedDamageNotes={setObservedDamageNotes}
+                  returnRemarks={returnRemarks}
+                  setReturnRemarks={setReturnRemarks}
+                  busyAction={busyAction}
+                  onAction={postBookingAction}
+                />
+              </div>
+            ) : null}
+            {!ownerView ? <StaffReadOnlyCard /> : null}
+          </section>
+          <div className="admin-booking-detail-page__activity">
+            <ActivityCard booking={booking} />
+          </div>
         </div>
-        <div className="space-y-5">
-          <ActivityCard booking={booking} />
+        <aside className="admin-booking-ledger__side">
+          <BookingLedgerDetails booking={booking} />
           <CustomerCard booking={booking} staffView={!ownerView} />
-        </div>
+        </aside>
       </div>
     </div>
   );
 }
 
-type RequirementReviewStatus = "Pending Review" | "Needs Resubmission" | "Verified";
+type RequirementReviewStatus =
+  | "Pending Review"
+  | "Needs Resubmission"
+  | "Verified";
 
 function BookingRequirementsReview({
   bookingId,
   requirements,
   onRefresh,
+  embedded = false,
 }: {
   bookingId: string;
   requirements: AdminRequirementsResponse;
   onRefresh: () => Promise<void>;
+  embedded?: boolean;
 }) {
   const requirementSet = requirements.requirementSet;
   const documents = requirements.requiredTypes
@@ -530,12 +730,15 @@ function BookingRequirementsReview({
           document.requirement_type === type && document.is_current !== false,
       ),
     )
-    .filter((document): document is AdminRequirementDocument => Boolean(document));
+    .filter((document): document is AdminRequirementDocument =>
+      Boolean(document),
+    );
   const review = requirements.reviews?.[0] ?? null;
   const hasBothDocuments = requirements.requiredTypes.every((type) =>
     documents.some((document) => document.requirement_type === type),
   );
-  const canReview = requirementSet?.status === "Pending Review" && hasBothDocuments;
+  const canReview =
+    requirementSet?.status === "Pending Review" && hasBothDocuments;
   const [governmentIdOutcome, setGovernmentIdOutcome] = useState("");
   const [governmentIdReason, setGovernmentIdReason] = useState("");
   const [driversLicenseOutcome, setDriversLicenseOutcome] = useState("");
@@ -543,8 +746,13 @@ function BookingRequirementsReview({
   const [identityConsistency, setIdentityConsistency] = useState("");
   const [ltoOutcome, setLtoOutcome] = useState("");
   const [saving, setSaving] = useState(false);
-  const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ tone: "error" | "success"; text: string } | null>(null);
+  const [previewDocument, setPreviewDocument] =
+    useState<AdminRequirementDocument | null>(null);
+  const [message, setMessage] = useState<{
+    tone: "error" | "success";
+    text: string;
+  } | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   useEffect(() => {
     setGovernmentIdOutcome(review?.government_id_outcome ?? "");
@@ -563,43 +771,44 @@ function BookingRequirementsReview({
     ltoOutcome,
   });
 
-  async function openDocument(document: AdminRequirementDocument) {
-    const preview = window.open("about:blank", "_blank");
-    if (!preview) {
-      setMessage({ tone: "error", text: "Allow pop-ups to open this secure document preview." });
-      return;
-    }
-    preview.opener = null;
-    setOpeningDocumentId(document.id);
-    try {
-      const response = await fetch(`/api/requirements?documentId=${encodeURIComponent(document.id)}`, { credentials: "same-origin" });
-      const body = (await response.json().catch(() => null)) as { url?: string; message?: string } | null;
-      if (!response.ok || !body?.url) throw new Error(body?.message ?? "This document is not available for secure preview.");
-      preview.location.replace(body.url);
-    } catch (error) {
-      preview.close();
-      setMessage({ tone: "error", text: error instanceof Error ? error.message : "This document is not available for secure preview." });
-    } finally {
-      setOpeningDocumentId(null);
-    }
-  }
-
   async function saveReview(resultingStatus: RequirementReviewStatus) {
     if (!requirementSet || !canReview) return;
-    if (!governmentIdOutcome || !driversLicenseOutcome || !identityConsistency || !ltoOutcome) {
-      setMessage({ tone: "error", text: "Complete every review outcome before saving." });
+    if (
+      !governmentIdOutcome ||
+      !driversLicenseOutcome ||
+      !identityConsistency ||
+      !ltoOutcome
+    ) {
+      setMessage({
+        tone: "error",
+        text: "Complete every review outcome before saving.",
+      });
       return;
     }
     if (resultingStatus === "Verified" && !gate.canVerify) {
-      setMessage({ tone: "error", text: "Verification requires accepted documents, consistent identity, and an LTO Clear result." });
+      setMessage({
+        tone: "error",
+        text: "Verification requires accepted documents, consistent identity, and an LTO Clear result.",
+      });
       return;
     }
-    if (resultingStatus === "Needs Resubmission" && (!gate.canResubmit || (!governmentIdReason.trim() && !driversLicenseReason.trim()))) {
-      setMessage({ tone: "error", text: "A replacement decision needs a flagged document and customer-facing reason." });
+    if (
+      resultingStatus === "Needs Resubmission" &&
+      (!gate.canResubmit ||
+        (!governmentIdReason.trim() && !driversLicenseReason.trim()))
+    ) {
+      setMessage({
+        tone: "error",
+        text: "A replacement decision needs a flagged document and customer-facing reason.",
+      });
       return;
     }
-    const governmentId = documents.find((document) => document.requirement_type === "Valid Government ID");
-    const driversLicense = documents.find((document) => document.requirement_type === "Driver's License");
+    const governmentId = documents.find(
+      (document) => document.requirement_type === "Valid Government ID",
+    );
+    const driversLicense = documents.find(
+      (document) => document.requirement_type === "Driver's License",
+    );
     if (!governmentId || !driversLicense) return;
     setSaving(true);
     setMessage(null);
@@ -609,63 +818,538 @@ function BookingRequirementsReview({
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "review", requirementSetId: requirementSet.id,
-          governmentIdDocumentId: governmentId.id, governmentIdVersion: governmentId.version,
-          governmentIdOutcome, governmentIdReason: governmentIdReason.trim(),
-          driversLicenseDocumentId: driversLicense.id, driversLicenseVersion: driversLicense.version,
-          driversLicenseOutcome, driversLicenseReason: driversLicenseReason.trim(),
-          identityConsistency, ltoOutcome, resultingStatus,
+          action: "review",
+          requirementSetId: requirementSet.id,
+          governmentIdDocumentId: governmentId.id,
+          governmentIdVersion: governmentId.version,
+          governmentIdOutcome,
+          governmentIdReason: governmentIdReason.trim(),
+          driversLicenseDocumentId: driversLicense.id,
+          driversLicenseVersion: driversLicense.version,
+          driversLicenseOutcome,
+          driversLicenseReason: driversLicenseReason.trim(),
+          identityConsistency,
+          ltoOutcome,
+          resultingStatus,
         }),
       });
-      const body = (await response.json().catch(() => null)) as { message?: string } | null;
-      if (!response.ok) throw new Error(body?.message ?? "Unable to save the requirements review.");
+      const body = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
+      if (!response.ok)
+        throw new Error(
+          body?.message ?? "Unable to save the requirements review.",
+        );
       await onRefresh();
-      setMessage({ tone: "success", text: resultingStatus === "Verified" ? "Requirements verified. Payment is now available to the customer." : "Requirements returned for correction. The customer must replace the flagged document before this request returns to review." });
+      setMessage({
+        tone: "success",
+        text:
+          resultingStatus === "Verified"
+            ? "Requirements verified. Payment is now available to the customer."
+            : "Requirements returned for correction. The customer must replace the flagged document before this request returns to review.",
+      });
     } catch (error) {
-      setMessage({ tone: "error", text: error instanceof Error ? error.message : "Unable to save the requirements review." });
+      setMessage({
+        tone: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Unable to save the requirements review.",
+      });
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <Card className="mb-5">
-      <CardHeader
-        title="Requirements gate"
-        hint="Review the documents in this rental request. Payment stays locked until this gate is verified."
-        right={<DomainStatus label={requirementSet?.status ?? "Not Submitted"} tone={statusTone(requirementSet?.status ?? "Not Submitted")} />}
-      />
-      {message ? <p role={message.tone === "error" ? "alert" : "status"} className={`mx-5 mt-5 rounded-md border px-3 py-2 text-sm ${message.tone === "error" ? "border-[#edc9c5] bg-[#fff5f3] text-[#8d302f]" : "border-[#b9d9c8] bg-[#f1faf4] text-[#267a55]"}`}>{message.text}</p> : null}
+    <div
+      className={
+        embedded
+          ? "admin-booking-ledger__requirements"
+          : "mb-5 rounded-xl border border-border bg-card"
+      }
+    >
+      {message ? (
+        <p
+          role={message.tone === "error" ? "alert" : "status"}
+          className={`mx-5 mt-5 rounded-md border px-3 py-2 text-sm ${message.tone === "error" ? "border-[#edc9c5] bg-[#fff5f3] text-[#8d302f]" : "border-[#b9d9c8] bg-[#f1faf4] text-[#267a55]"}`}
+        >
+          {message.text}
+        </p>
+      ) : null}
       {!requirementSet ? (
-        <EmptyState title="Requirements not submitted" description="The customer has saved trip details but has not submitted documents, so this request is not in the admin approval queue." />
+        <EmptyState
+          title="Requirements not submitted"
+          description="The customer has saved trip details but has not submitted documents, so this request is not in the admin approval queue."
+        />
       ) : (
-        <div className="grid gap-5 px-5 py-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
-          <div className="space-y-3">
+        <div className="admin-booking-ledger__review">
+          <div className="admin-booking-ledger__review-header">
+            <div>
+              <h4>Submitted documents</h4>
+              <p>
+                Review submitted documents and approve or request correction.
+              </p>
+            </div>
+            {canReview && !reviewOpen ? (
+              <Btn variant="primary" onClick={() => setReviewOpen(true)}>
+                Review requirements
+              </Btn>
+            ) : null}
+          </div>
+          <div className="admin-booking-ledger__documents">
             {requirements.requiredTypes.map((type) => {
-              const document = documents.find((item) => item.requirement_type === type);
-              return <div key={type} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border px-4 py-3 text-sm"><div><p className="font-semibold">{type}</p><p className="mt-1 text-xs text-muted-foreground">{document ? `${document.original_filename} · v${document.version}` : "No current document"}</p></div>{document ? <button type="button" disabled={openingDocumentId === document.id} onClick={() => void openDocument(document)} className="touch-target inline-flex items-center gap-2 font-semibold text-primary underline underline-offset-4 disabled:opacity-55"><ExternalLink className="h-4 w-4" aria-hidden="true" />{openingDocumentId === document.id ? "Opening…" : "Preview"}</button> : <DomainStatus label="Missing" tone="locked" compact />}</div>;
+              const document = documents.find(
+                (item) => item.requirement_type === type,
+              );
+              return (
+                <div key={type} className="admin-booking-ledger__document">
+                  <FileCheck2 className="h-4 w-4" aria-hidden="true" />
+                  <div>
+                    <strong>{type}</strong>
+                    <small>
+                      {document
+                        ? `${document.original_filename} · v${document.version}`
+                        : "No current document"}
+                    </small>
+                  </div>
+                  {document ? (
+                    <>
+                      <DomainStatus label="Submitted" tone="success" compact />
+                      <time>{formatAdminDateTime(document.uploaded_at)}</time>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewDocument(document)}
+                        className="touch-target"
+                      >
+                        Preview
+                      </button>
+                    </>
+                  ) : (
+                    <DomainStatus label="Missing" tone="locked" compact />
+                  )}
+                </div>
+              );
             })}
           </div>
-          <div className="space-y-4 border-t border-border pt-5 xl:border-l xl:border-t-0 xl:pl-5 xl:pt-0">
-            {!canReview ? <p className="rounded-md border border-border bg-secondary/45 px-3 py-2 text-sm text-muted-foreground">{requirementSet.status === "Needs Resubmission" ? "The request is back with the customer for correction. It returns here only after replacement documents are submitted." : "This gate becomes reviewable after both documents are submitted."}</p> : null}
-            <fieldset disabled={!canReview || saving} className="grid gap-3">
-              <RequirementOutcomeSelect id="booking-government-id-outcome" label="Government ID" value={governmentIdOutcome} onChange={setGovernmentIdOutcome} options={["Accepted", "Needs Replacement"]} />
-              <label className="text-sm font-medium">Government ID reason<TInput value={governmentIdReason} onChange={(event) => setGovernmentIdReason(event.target.value)} className="mt-2" placeholder="Required when replacement is needed" /></label>
-              <RequirementOutcomeSelect id="booking-license-outcome" label="Driver's License" value={driversLicenseOutcome} onChange={setDriversLicenseOutcome} options={["Accepted", "Needs Replacement"]} />
-              <label className="text-sm font-medium">Driver's License reason<TInput value={driversLicenseReason} onChange={(event) => setDriversLicenseReason(event.target.value)} className="mt-2" placeholder="Required when replacement is needed" /></label>
-              <RequirementOutcomeSelect id="booking-identity-outcome" label="Identity consistency" value={identityConsistency} onChange={setIdentityConsistency} options={["Consistent", "Concern"]} />
-              <RequirementOutcomeSelect id="booking-lto-outcome" label="LTO outcome" value={ltoOutcome} onChange={setLtoOutcome} options={["Not Checked", "Clear", "Concern", "Unavailable"]} />
-            </fieldset>
-            <div className="flex flex-wrap gap-2"><Btn variant="primary" disabled={!canReview || saving || !gate.canVerify} onClick={() => void saveReview("Verified")}>{saving ? "Saving…" : "Verify requirements"}</Btn><Btn variant="danger" disabled={!canReview || saving || !gate.canResubmit} onClick={() => void saveReview("Needs Resubmission")}>Request replacement</Btn></div>
-          </div>
+          {!canReview ? (
+            <p className="admin-booking-ledger__review-note">
+              {requirementSet.status === "Needs Resubmission"
+                ? "The request is back with the customer for correction. It returns here after replacement documents are submitted."
+                : "All submitted documents have been reviewed for this request."}
+            </p>
+          ) : null}
+          {canReview && reviewOpen ? (
+            <div className="admin-booking-ledger__review-form">
+              <fieldset disabled={saving} className="grid gap-3">
+                <RequirementOutcomeSelect
+                  id="booking-government-id-outcome"
+                  label="Government ID"
+                  value={governmentIdOutcome}
+                  onChange={setGovernmentIdOutcome}
+                  options={["Accepted", "Needs Replacement"]}
+                />
+                {governmentIdOutcome === "Needs Replacement" ? (
+                  <label className="text-sm font-medium">
+                    Government ID reason
+                    <TInput
+                      value={governmentIdReason}
+                      onChange={(event) =>
+                        setGovernmentIdReason(event.target.value)
+                      }
+                      className="mt-2"
+                      placeholder="Tell the customer what needs replacing"
+                    />
+                  </label>
+                ) : null}
+                <RequirementOutcomeSelect
+                  id="booking-license-outcome"
+                  label="Driver's License"
+                  value={driversLicenseOutcome}
+                  onChange={setDriversLicenseOutcome}
+                  options={["Accepted", "Needs Replacement"]}
+                />
+                {driversLicenseOutcome === "Needs Replacement" ? (
+                  <label className="text-sm font-medium">
+                    Driver's License reason
+                    <TInput
+                      value={driversLicenseReason}
+                      onChange={(event) =>
+                        setDriversLicenseReason(event.target.value)
+                      }
+                      className="mt-2"
+                      placeholder="Tell the customer what needs replacing"
+                    />
+                  </label>
+                ) : null}
+                <RequirementOutcomeSelect
+                  id="booking-identity-outcome"
+                  label="Identity consistency"
+                  value={identityConsistency}
+                  onChange={setIdentityConsistency}
+                  options={["Consistent", "Concern"]}
+                />
+                <RequirementOutcomeSelect
+                  id="booking-lto-outcome"
+                  label="LTO outcome"
+                  value={ltoOutcome}
+                  onChange={setLtoOutcome}
+                  options={["Not Checked", "Clear", "Concern", "Unavailable"]}
+                />
+              </fieldset>
+              <div className="flex flex-wrap gap-2">
+                <Btn
+                  variant={gate.canResubmit ? "danger" : "primary"}
+                  disabled={saving || (!gate.canVerify && !gate.canResubmit)}
+                  onClick={() =>
+                    void saveReview(
+                      gate.canResubmit ? "Needs Resubmission" : "Verified",
+                    )
+                  }
+                >
+                  {saving
+                    ? "Saving…"
+                    : gate.canResubmit
+                      ? "Request replacement"
+                      : "Verify requirements"}
+                </Btn>
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
-    </Card>
+      {previewDocument ? (
+        <AdminDocumentPreview
+          document={previewDocument}
+          onClose={() => setPreviewDocument(null)}
+        />
+      ) : null}
+    </div>
   );
 }
 
-function RequirementOutcomeSelect({ id, label, value, onChange, options }: { id: string; label: string; value: string; onChange: (value: string) => void; options: string[] }) {
-  return <label className="text-sm font-medium" htmlFor={id}><span>{label}</span><TSelect id={id} value={value} onChange={(event) => onChange(event.target.value)} className="mt-2"><option value="">Select an outcome…</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</TSelect></label>;
+function AdminDocumentPreview({
+  document,
+  onClose,
+}: {
+  document: AdminRequirementDocument;
+  onClose: () => void;
+}) {
+  const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let cancelled = false;
+    void fetch(
+      `/api/requirements?documentId=${encodeURIComponent(document.id)}`,
+      { credentials: "same-origin" },
+    )
+      .then(async (response) => {
+        const body = (await response.json().catch(() => null)) as {
+          url?: string;
+          message?: string;
+        } | null;
+        if (!response.ok || !body?.url)
+          throw new Error(
+            body?.message ??
+              "This document is not available for secure preview.",
+          );
+        if (!cancelled) setUrl(body.url);
+      })
+      .catch((cause) => {
+        if (!cancelled)
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "This document is not available for secure preview.",
+          );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [document.id]);
+  return (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent className="max-h-[92vh] max-w-5xl overflow-hidden p-0">
+        <DialogHeader className="border-b border-[#d8d5cc] px-6 py-5 pr-14">
+          <DialogTitle>Document preview</DialogTitle>
+          <DialogDescription>
+            {document.original_filename} ·{" "}
+            {(document.size_bytes / 1024).toFixed(0)} KB
+          </DialogDescription>
+        </DialogHeader>
+        <div className="booking-document-preview-frame">
+          {error ? (
+            <p className="p-6 text-sm text-red-700">{error}</p>
+          ) : !url ? (
+            <p className="p-6 text-sm text-muted-foreground">
+              Loading secure document preview…
+            </p>
+          ) : document.mime_type === "application/pdf" ? (
+            <iframe
+              className="h-[72vh] w-full"
+              title={`Preview of ${document.original_filename}`}
+              src={url}
+            />
+          ) : (
+            <img
+              className="booking-document-preview-image"
+              src={url}
+              alt={`Preview of ${document.original_filename}`}
+            />
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function LedgerStage({
+  number,
+  title,
+  status,
+  detail,
+  active = false,
+  expanded = false,
+  onToggle,
+  children,
+}: {
+  number: number;
+  title: string;
+  status: string;
+  detail: string;
+  active?: boolean;
+  expanded?: boolean;
+  onToggle?: () => void;
+  children?: ReactNode;
+}) {
+  const canExpand = Boolean(children);
+  return (
+    <section
+      className={`admin-booking-ledger__stage${active ? " is-active" : ""}${expanded ? " is-expanded" : ""}`}
+    >
+      <span className="admin-booking-ledger__number" aria-hidden="true">
+        {number}
+      </span>
+      <button
+        type="button"
+        className="admin-booking-ledger__stage-copy"
+        onClick={canExpand ? onToggle : undefined}
+        aria-expanded={canExpand ? expanded : undefined}
+        disabled={!canExpand}
+      >
+        <div>
+          <h3>{title}</h3>
+          <p>{detail}</p>
+        </div>
+        <span className="admin-booking-ledger__stage-status">
+          <DomainStatus label={status} tone={statusTone(status)} compact />
+          {canExpand ? (
+            <span aria-hidden="true">{expanded ? "−" : "+"}</span>
+          ) : null}
+        </span>
+      </button>
+      {children && expanded ? (
+        <div className="admin-booking-ledger__stage-body">{children}</div>
+      ) : null}
+    </section>
+  );
+}
+
+function currentLedgerStage({
+  booking,
+  requirementStatus,
+  paymentStatus,
+}: {
+  booking: AdminBooking;
+  requirementStatus: string;
+  paymentStatus: string;
+}) {
+  if (booking.rental?.ended_at) return 5;
+  if (booking.rental?.started_at || booking.booking_status === "Confirmed")
+    return 4;
+  if (
+    paymentStatus === "Pending Verification" ||
+    paymentStatus === "Needs Resubmission" ||
+    requirementStatus === "Verified"
+  )
+    return 3;
+  if (
+    requirementStatus === "Pending Review" ||
+    requirementStatus === "Needs Resubmission"
+  )
+    return 2;
+  return 1;
+}
+
+function BookingLedgerDetails({ booking }: { booking: AdminBooking }) {
+  const vehicle = booking.requested_vehicle;
+  const isDelivery = booking.pickup_delivery_option === "delivery";
+  const deliveryAddress = booking.pickup_location?.trim();
+  const returnAddress = booking.dropoff_location?.trim();
+  const returnsToDeliveryAddress =
+    isDelivery &&
+    Boolean(deliveryAddress) &&
+    Boolean(returnAddress) &&
+    deliveryAddress?.localeCompare(returnAddress ?? "", undefined, {
+      sensitivity: "accent",
+    }) === 0;
+  return (
+    <section
+      className="admin-booking-ledger__details"
+      aria-labelledby="booking-details-title"
+    >
+      <header>
+        <h2 id="booking-details-title">Booking details</h2>
+        <span>{bookingReferenceLabel(booking.id).replace("Booking ", "")}</span>
+      </header>
+      <div className="admin-booking-ledger__vehicle">
+        <div className="admin-booking-ledger__vehicle-image">
+          {vehicle?.image_url ? (
+            <img src={vehicle.image_url} alt={vehicle.name} />
+          ) : (
+            <CarFront aria-label="Vehicle image unavailable" />
+          )}
+        </div>
+        <div>
+          <p>Requested vehicle</p>
+          <h3>{vehicle?.name ?? "Vehicle unavailable"}</h3>
+          <strong>{vehicle?.license_plate ?? "Plate unavailable"}</strong>
+          <dl>
+            <div>
+              <CarFront aria-hidden="true" />
+              <span>{vehicle?.category?.name ?? "Vehicle"}</span>
+            </div>
+            <div>
+              <Gauge aria-hidden="true" />
+              <span>
+                {vehicle?.transmission ?? "Transmission not recorded"}
+              </span>
+            </div>
+            <div>
+              <UserRound aria-hidden="true" />
+              <span>
+                {vehicle?.seat_capacity
+                  ? `${vehicle.seat_capacity} seats`
+                  : booking.preferred_seat_count
+                    ? `${booking.preferred_seat_count} seats`
+                    : "Seats not recorded"}
+              </span>
+            </div>
+          </dl>
+        </div>
+      </div>
+      <dl className="admin-booking-ledger__facts">
+        <DetailField
+          icon={<CalendarDays />}
+          label="Rental period"
+          value={formatAdminDateRange(booking.pickup_at, booking.return_at)}
+        />
+        <DetailField
+          icon={<Clock3 />}
+          label="Pickup date & time"
+          value={formatAdminDateTime(booking.pickup_at)}
+        />
+        <DetailField
+          icon={<Clock3 />}
+          label="Return date & time"
+          value={formatAdminDateTime(booking.return_at)}
+        />
+        <DetailField
+          label="Service"
+          value={isDelivery ? "Delivery" : "Collection service"}
+        />
+        {isDelivery ? (
+          <>
+            <DetailField
+              icon={<MapPin />}
+              label="Dispatch branch"
+              value={booking.pickup_branch?.name ?? "Location unavailable"}
+            />
+            <DetailField
+              icon={<MapPin />}
+              label="Delivery address"
+              value={deliveryAddress || "Not recorded"}
+            />
+            <DetailField
+              icon={<MapPin />}
+              label="Return arrangement"
+              value={
+                returnsToDeliveryAddress
+                  ? "Same as delivery address"
+                  : "Custom return address"
+              }
+            />
+            {!returnsToDeliveryAddress ? (
+              <DetailField
+                icon={<MapPin />}
+                label="Return address"
+                value={returnAddress || "Not recorded"}
+              />
+            ) : null}
+          </>
+        ) : (
+          <>
+            <DetailField
+              icon={<MapPin />}
+              label="Pickup branch"
+              value={booking.pickup_branch?.name ?? "Location unavailable"}
+            />
+            <DetailField
+              icon={<MapPin />}
+              label="Return branch"
+              value={booking.return_branch?.name ?? "Location unavailable"}
+            />
+          </>
+        )}
+        <DetailField
+          label="Destination"
+          value={booking.destination?.trim() || "Not recorded"}
+        />
+        <DetailField
+          label="Purpose"
+          value={booking.purpose_of_use ?? "Not recorded"}
+        />
+      </dl>
+    </section>
+  );
+}
+
+function RequirementOutcomeSelect({
+  id,
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: string[];
+}) {
+  return (
+    <label className="text-sm font-medium" htmlFor={id}>
+      <span>{label}</span>
+      <TSelect
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-2"
+      >
+        <option value="">Select an outcome…</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </TSelect>
+    </label>
+  );
 }
 
 function ActionPriority({
@@ -938,60 +1622,71 @@ function WorkflowCard({
 
 function ActivityCard({ booking }: { booking: AdminBooking }) {
   const entries = [
-    { label: "Request created", value: booking.created_at },
-    { label: "Booking record updated", value: booking.updated_at },
-    { label: "Delivery scheduled", value: booking.pickup_at },
-    { label: "Return scheduled", value: booking.return_at },
+    {
+      label: "Booking request submitted",
+      detail: "Customer request was recorded.",
+      value: booking.created_at,
+    },
+    {
+      label: "Booking record updated",
+      detail: "Booking details were updated.",
+      value: booking.updated_at,
+    },
+    {
+      label: "Vehicle handover scheduled",
+      detail: "Pickup or delivery is scheduled.",
+      value: booking.pickup_at,
+    },
+    {
+      label: "Vehicle return scheduled",
+      detail: "The agreed return is scheduled.",
+      value: booking.return_at,
+    },
     ...(booking.rental?.started_at
-      ? [{ label: "Rental started", value: booking.rental.started_at }]
+      ? [
+          {
+            label: "Rental started",
+            detail: "Vehicle was released to the customer.",
+            value: booking.rental.started_at,
+          },
+        ]
       : []),
     ...(booking.rental?.ended_at
-      ? [{ label: "Rental ended", value: booking.rental.ended_at }]
+      ? [
+          {
+            label: "Rental completed",
+            detail: "Vehicle return was recorded.",
+            value: booking.rental.ended_at,
+          },
+        ]
       : []),
   ];
   return (
-    <Card>
+    <Card className="admin-booking-activity-card">
       <CardHeader
         title="Activity and timing"
-        hint="Record timestamps; this is not an audit trail."
+        hint="A chronological record of this booking's milestones."
       />
-      <div className="divide-y divide-border">
+      <ol className="admin-booking-timeline">
         {entries.map((entry) => (
-          <div
-            key={entry.label}
-            className="flex items-start gap-3 px-5 py-3 text-sm"
-          >
-            <Clock3
-              className="mt-0.5 h-4 w-4 shrink-0 text-primary"
-              aria-hidden="true"
-            />
-            <span className="flex-1">{entry.label}</span>
-            <time className="text-right text-xs text-muted-foreground">
+          <li key={entry.label}>
+            <span className="admin-booking-timeline__dot" aria-hidden="true" />
+            <time dateTime={entry.value}>
               {formatAdminDateTime(entry.value)}
             </time>
-          </div>
+            <div>
+              <strong>{entry.label}</strong>
+              <p>{entry.detail}</p>
+            </div>
+          </li>
         ))}
-      </div>
+      </ol>
     </Card>
   );
 }
 
 function OwnerActionArea({
   booking,
-  candidates,
-  selectedVehicle,
-  selectedVehicleId,
-  setSelectedVehicleId,
-  assignmentNote,
-  setAssignmentNote,
-  substitutionAcknowledged,
-  setSubstitutionAcknowledged,
-  crossBranchAcknowledged,
-  setCrossBranchAcknowledged,
-  assignmentNeedsSubstitution,
-  assignmentNeedsCrossBranch,
-  vehicleConflict,
-  canAssign,
   canConfirm,
   canRelease,
   canReturn,
@@ -1023,20 +1718,6 @@ function OwnerActionArea({
   onAction,
 }: {
   booking: AdminBooking;
-  candidates: AdminVehicle[];
-  selectedVehicle: AdminVehicle | null;
-  selectedVehicleId: string;
-  setSelectedVehicleId: (value: string) => void;
-  assignmentNote: string;
-  setAssignmentNote: (value: string) => void;
-  substitutionAcknowledged: boolean;
-  setSubstitutionAcknowledged: (value: boolean) => void;
-  crossBranchAcknowledged: boolean;
-  setCrossBranchAcknowledged: (value: boolean) => void;
-  assignmentNeedsSubstitution: boolean;
-  assignmentNeedsCrossBranch: boolean;
-  vehicleConflict: boolean;
-  canAssign: boolean;
   canConfirm: boolean;
   canRelease: boolean;
   canReturn: boolean;
@@ -1073,170 +1754,6 @@ function OwnerActionArea({
 }) {
   return (
     <div className="space-y-5">
-      {booking.booking_status === "Submitted" ? (
-        <Card>
-          <CardHeader
-            title="Assignment"
-            hint="Assign only an active candidate from the authorized vehicle response."
-          />
-          <div className="space-y-4 px-5 py-5">
-            <label
-              className="block text-sm font-medium"
-              htmlFor="assignment-vehicle"
-            >
-              <span>Vehicle</span>
-              <TSelect
-                id="assignment-vehicle"
-                name="assignment-vehicle"
-                value={selectedVehicleId}
-                onChange={(event) => setSelectedVehicleId(event.target.value)}
-                className="mt-2"
-              >
-                <option value="">Select a vehicle…</option>
-                {candidates.map((vehicle) => (
-                  <option key={vehicle.id} value={vehicle.id}>
-                    {vehicle.name}
-                    {vehicle.license_plate ? ` · ${vehicle.license_plate}` : ""}
-                    {vehicle.branch?.name ? ` · ${vehicle.branch.name}` : ""}
-                  </option>
-                ))}
-              </TSelect>
-            </label>
-            {candidates.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Vehicle candidates are unavailable for this role or source
-                response. No assignment control is enabled.
-              </p>
-            ) : null}
-            {selectedVehicle ? (
-              <div className="rounded-md border border-border bg-secondary/45 px-3 py-3 text-sm">
-                <p className="font-semibold">{selectedVehicle.name}</p>
-                <p className="mt-1 text-muted-foreground">
-                  {selectedVehicle.branch?.name ?? "Location unavailable"}
-                  {selectedVehicle.license_plate
-                    ? ` · ${selectedVehicle.license_plate}`
-                    : ""}
-                </p>
-              </div>
-            ) : null}
-            {vehicleConflict ? (
-              <p className="text-sm text-[#8d302f]" role="alert">
-                This vehicle appears in another confirmed request for the same
-                schedule. Choose another canonical candidate.
-              </p>
-            ) : null}
-            <label
-              className="block text-sm font-medium"
-              htmlFor="assignment-note"
-            >
-              <span>Assignment note</span>
-              <TInput
-                id="assignment-note"
-                name="assignment-note"
-                value={assignmentNote}
-                onChange={(event) => setAssignmentNote(event.target.value)}
-                placeholder="Required for substitution or cross-location assignment"
-                className="mt-2"
-              />
-            </label>
-            {assignmentNeedsSubstitution ? (
-              <label className="flex items-start gap-3 text-sm">
-                <input
-                  type="checkbox"
-                  checked={substitutionAcknowledged}
-                  onChange={(event) =>
-                    setSubstitutionAcknowledged(event.target.checked)
-                  }
-                  className="mt-1 h-4 w-4"
-                />
-                <span>
-                  Record that this assignment substitutes the requested vehicle.
-                </span>
-              </label>
-            ) : null}
-            {assignmentNeedsCrossBranch ? (
-              <label className="flex items-start gap-3 text-sm">
-                <input
-                  type="checkbox"
-                  checked={crossBranchAcknowledged}
-                  onChange={(event) =>
-                    setCrossBranchAcknowledged(event.target.checked)
-                  }
-                  className="mt-1 h-4 w-4"
-                />
-                <span>
-                  Record that this assignment crosses the allocation location.
-                </span>
-              </label>
-            ) : null}
-            <Btn
-              variant="primary"
-              disabled={
-                !canAssign ||
-                busyAction !== null ||
-                (assignmentNeedsSubstitution &&
-                  (!substitutionAcknowledged || !assignmentNote.trim())) ||
-                (assignmentNeedsCrossBranch &&
-                  (!crossBranchAcknowledged || !assignmentNote.trim()))
-              }
-              onClick={() =>
-                void onAction(
-                  "assign",
-                  {
-                    vehicleId: selectedVehicleId,
-                    assignmentNote: assignmentNote.trim() || null,
-                    substitutionAcknowledged,
-                    crossBranchAcknowledged,
-                  },
-                  "Vehicle assignment saved.",
-                )
-              }
-            >
-              {busyAction === "assign" ? "Assigning…" : "Assign vehicle"}
-            </Btn>
-          </div>
-        </Card>
-      ) : null}
-      {booking.booking_status === "Submitted" ? (
-        <Card>
-          <CardHeader
-            title="Confirmation"
-            hint="The server requires assignment, verified requirements, and verified payment."
-          />
-          <div className="space-y-4 px-5 py-5">
-            <PrerequisiteRow
-              label="Assigned vehicle"
-              ready={Boolean(
-                booking.assigned_vehicle_id && booking.assigned_at,
-              )}
-            />
-            <PrerequisiteRow
-              label="Requirements verified"
-              ready={booking.requirement_status === "Verified"}
-            />
-            <PrerequisiteRow
-              label="Payment verified"
-              ready={booking.payment_status === "Verified"}
-            />
-            <Btn
-              variant="primary"
-              disabled={!canConfirm || busyAction !== null}
-              onClick={() =>
-                void onAction(
-                  "confirm",
-                  {
-                    expectedAssignedVehicleId: booking.assigned_vehicle_id,
-                    expectedAssignedAt: booking.assigned_at,
-                  },
-                  "Booking confirmed.",
-                )
-              }
-            >
-              {busyAction === "confirm" ? "Confirming…" : "Confirm booking"}
-            </Btn>
-          </div>
-        </Card>
-      ) : null}
       {canRelease ||
       (booking.booking_status === "Confirmed" && !booking.rental) ? (
         <Card>
@@ -1471,7 +1988,7 @@ function OwnerActionArea({
           </div>
         </Card>
       ) : null}
-      {!canAssign && !canConfirm && !canRelease && !canReturn ? (
+      {!canConfirm && !canRelease && !canReturn ? (
         <Card>
           <EmptyState
             title="No action available"
@@ -1512,14 +2029,10 @@ function CustomerCard({
   staffView: boolean;
 }) {
   return (
-    <Card>
+    <Card className="rounded-none border-x-0 border-b-0 shadow-none">
       <CardHeader
         title="Customer"
-        hint={
-          staffView
-            ? "Customer context available to Operations Staff."
-            : "Customer context from the canonical booking record."
-        }
+        hint={staffView ? "Customer contact" : "Contact details"}
       />
       <div className="space-y-4 px-5 py-5">
         <div className="flex items-start gap-3">

@@ -70,8 +70,8 @@ const ownerNav: NavEntry[] = [
     label: "Operations",
     icon: CalendarRange,
     items: [
-      { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
       { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+      { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
       { to: "/admin/payments", label: "Payments", icon: CreditCard },
     ],
   },
@@ -104,8 +104,8 @@ const staffNav: NavEntry[] = [
     label: "Operations",
     icon: CalendarRange,
     items: [
-      { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
       { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+      { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
       { to: "/admin/notifications", label: "Notifications", icon: Bell },
     ],
   },
@@ -171,7 +171,9 @@ function SidebarLinks({
     <ul className="space-y-1.5">
       {items.map((entry) => {
         if (isNavGroup(entry)) {
-          const groupActive = entry.items.some((item) => isActive(pathname, item));
+          const groupActive = entry.items.some((item) =>
+            isActive(pathname, item),
+          );
           const expanded = expandedGroups[entry.id] || groupActive;
           const Icon = entry.icon;
           const regionId = `admin-nav-${entry.id}`;
@@ -215,7 +217,9 @@ function SidebarLinks({
                       <li key={item.to}>
                         <Link
                           to={item.to as never}
-                          activeOptions={item.exact ? { exact: true } : undefined}
+                          activeOptions={
+                            item.exact ? { exact: true } : undefined
+                          }
                           onClick={onNavigate}
                           aria-current={active ? "page" : undefined}
                           tabIndex={expanded ? undefined : -1}
@@ -279,6 +283,11 @@ export function AdminShell() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
+  const search = useRouterState({
+    select: (state) => state.location.search as Record<string, unknown>,
+  });
+  const paymentBookingId =
+    typeof search.fromBooking === "string" ? search.fromBooking : null;
   const [session, setSession] = useState<AdminSession | null | undefined>();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
@@ -398,7 +407,7 @@ export function AdminShell() {
   if (!session) return null;
 
   return (
-    <div className="admin-app min-h-screen overflow-x-hidden">
+    <div className="admin-app min-h-screen overflow-x-clip">
       <a className="skip-link" href="#admin-main">
         Skip to main content
       </a>
@@ -419,7 +428,6 @@ export function AdminShell() {
         >
           <SidebarLinks items={navItems} pathname={pathname} />
         </nav>
-
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-[236px]">
@@ -449,20 +457,40 @@ export function AdminShell() {
               </span>
             </div>
 
-            <div className="hidden min-w-0 items-center gap-3 text-sm lg:flex">
-              <Link
-                to="/admin"
-                className="text-muted-foreground hover:text-primary"
-              >
-                Home
-              </Link>
-              <span aria-hidden="true" className="text-border">
-                /
-              </span>
-              <span className="truncate font-medium text-foreground">
-                {currentLabel(pathname)}
-              </span>
-            </div>
+            <nav
+              aria-label="Breadcrumb"
+              className="hidden min-w-0 items-center gap-2 text-sm lg:flex"
+            >
+              {adminBreadcrumbs(pathname, paymentBookingId).map(
+                (crumb, index) => (
+                  <span
+                    className="contents"
+                    key={`${crumb.label}-${crumb.to ?? index}`}
+                  >
+                    {index > 0 ? (
+                      <span aria-hidden="true" className="text-border">
+                        /
+                      </span>
+                    ) : null}
+                    {crumb.to ? (
+                      <Link
+                        to={crumb.to as never}
+                        className="truncate text-muted-foreground hover:text-primary"
+                      >
+                        {crumb.label}
+                      </Link>
+                    ) : (
+                      <span
+                        aria-current="page"
+                        className="truncate font-medium text-foreground"
+                      >
+                        {crumb.label}
+                      </span>
+                    )}
+                  </span>
+                ),
+              )}
+            </nav>
 
             <div className="ml-auto flex items-center gap-3">
               <Link
@@ -572,4 +600,56 @@ function currentLabel(pathname: string) {
       isActive(pathname, item),
     )?.label ?? "Dashboard"
   );
+}
+
+function adminBreadcrumbs(pathname: string, paymentBookingId: string | null) {
+  if (pathname.startsWith("/admin/bookings/"))
+    return [
+      { label: "Operations", to: "/admin/bookings" },
+      { label: "Bookings", to: "/admin/bookings" },
+      { label: "Booking detail" },
+    ];
+  if (pathname.startsWith("/admin/payments/") && paymentBookingId)
+    return [
+      { label: "Operations", to: "/admin/bookings" },
+      { label: "Bookings", to: "/admin/bookings" },
+      {
+        label: "Booking detail",
+        to: `/admin/bookings/${encodeURIComponent(paymentBookingId)}`,
+      },
+      { label: "Payment record" },
+    ];
+  if (pathname.startsWith("/admin/payments/"))
+    return [
+      { label: "Operations", to: "/admin/payments" },
+      { label: "Bookings", to: "/admin/bookings" },
+      { label: "Payments", to: "/admin/payments" },
+      { label: "Payment record" },
+    ];
+  if (pathname.startsWith("/admin/calendar"))
+    return [
+      { label: "Operations", to: "/admin/calendar" },
+      { label: "Calendar" },
+    ];
+  if (pathname.startsWith("/admin/bookings"))
+    return [
+      { label: "Operations", to: "/admin/bookings" },
+      { label: "Bookings" },
+    ];
+  if (pathname.startsWith("/admin/payments"))
+    return [
+      { label: "Operations", to: "/admin/payments" },
+      { label: "Payments" },
+    ];
+  if (pathname.startsWith("/admin/fleet"))
+    return [
+      { label: "Vehicle management", to: "/admin/fleet" },
+      { label: "Fleet" },
+    ];
+  if (pathname.startsWith("/admin/maintenance"))
+    return [
+      { label: "Vehicle management", to: "/admin/fleet" },
+      { label: "Maintenance" },
+    ];
+  return [{ label: currentLabel(pathname) }];
 }

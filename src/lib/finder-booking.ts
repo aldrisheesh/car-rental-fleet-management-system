@@ -39,6 +39,8 @@ export type FinderBookingSearch = {
   finderCategory?: string;
   finderDestination?: string;
   finderRank?: string | number;
+  /** Preserves a date-only trip search while moving through the fleet catalog. */
+  finderIntent?: string;
 };
 
 export type FinderMaterialBooking = {
@@ -78,6 +80,7 @@ export function validateFinderBookingSearch(
     finderCategory: searchText(search.finderCategory),
     finderDestination: searchText(search.finderDestination),
     finderRank: searchNumber(search.finderRank),
+    finderIntent: searchText(search.finderIntent),
   };
 }
 

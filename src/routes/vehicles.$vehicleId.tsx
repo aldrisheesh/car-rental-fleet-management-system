@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, RefreshCw } from "lucide-react";
 
@@ -6,7 +6,6 @@ import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import {
   CustomerPage,
-  FinderReasons,
   FinderRationale,
   Rate,
   StatusCallout,
@@ -15,6 +14,7 @@ import {
 } from "@/components/customer/CustomerPrimitives";
 import {
   ApiRequestError,
+  dateTimeInputFromIso,
   encodeSearch,
   fetchJson,
   formatDateRange,
@@ -52,6 +52,55 @@ function formatTripDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatTripTime(value: string) {
+  const match = /T(\d{2}):(\d{2})/.exec(value);
+  if (!match) return "Time not selected";
+  return new Intl.DateTimeFormat("en-PH", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(2000, 0, 1, Number(match[1]), Number(match[2])));
+}
+
+function VehicleDetailSkeleton() {
+  return (
+    <div
+      className="detail-layout vehicle-detail-skeleton"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading vehicle details"
+    >
+      <span className="sr-only">Loading vehicle details</span>
+      <section className="detail-gallery" aria-hidden="true">
+        <i className="vehicle-detail-skeleton__image" />
+        <i className="vehicle-detail-skeleton__thumb" />
+      </section>
+      <section className="detail-panel" aria-hidden="true">
+        <div className="vehicle-detail-skeleton__heading">
+          <i />
+          <i />
+          <i />
+        </div>
+        <div className="vehicle-detail-skeleton__facts">
+          {Array.from({ length: 4 }, (_, index) => (
+            <div key={index}>
+              <i />
+              <i />
+            </div>
+          ))}
+        </div>
+        <div className="vehicle-detail-skeleton__trip">
+          <i />
+          <span>
+            <i />
+            <i />
+          </span>
+        </div>
+        <i className="vehicle-detail-skeleton__action" />
+      </section>
+    </div>
+  );
+}
+
 function VehicleDetailPage() {
   const { vehicleId } = Route.useParams();
   const search = Route.useSearch();
@@ -79,11 +128,19 @@ function VehicleDetailPage() {
   const tripDates = handoff ?? selectedDates;
   const hasEvaluatedContext = Boolean(handoff);
 
-  async function loadVehicle() {
+  const loadVehicle = useCallback(async () => {
     setLoading(true);
     setLoadError("");
     try {
-      const rows = await fetchJson<CustomerVehicle[]>("/api/vehicles");
+      const availabilitySearch = tripDates
+        ? encodeSearch({
+            finderStart: dateTimeInputFromIso(tripDates.requestedStart),
+            finderEnd: dateTimeInputFromIso(tripDates.requestedEnd),
+          })
+        : "";
+      const rows = await fetchJson<CustomerVehicle[]>(
+        `/api/vehicles${availabilitySearch}`,
+      );
       setVehicles(rows);
     } catch (error) {
       setLoadError(
@@ -94,11 +151,11 @@ function VehicleDetailPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [tripDates?.requestedEnd, tripDates?.requestedStart]);
 
   useEffect(() => {
     void loadVehicle();
-  }, []);
+  }, [loadVehicle]);
 
   useEffect(() => {
     if (!handoff) {
@@ -141,6 +198,10 @@ function VehicleDetailPage() {
   const matchedRecommendation = finderResponse?.recommendations.find(
     (item) => item.vehicleId === vehicleId,
   );
+  const tripFitReasons =
+    matchedRecommendation?.reasons.filter(
+      (reason) => reason !== "Available for your selected dates",
+    ) ?? [];
 
   function continueWithVehicle() {
     if (!vehicle) return;
@@ -164,14 +225,7 @@ function VehicleDetailPage() {
           </div>
 
           {loading ? (
-            <div
-              className="finder-empty-state"
-              role="status"
-              aria-live="polite"
-            >
-              <h1>Loading vehicle details</h1>
-              <p>The selected vehicle is being loaded from the active fleet.</p>
-            </div>
+            <VehicleDetailSkeleton />
           ) : loadError ? (
             <StatusCallout
               tone="error"
@@ -192,6 +246,14 @@ function VehicleDetailPage() {
             <StatusCallout tone="info" title="Vehicle not found">
               This vehicle is not in the active fleet returned by the service.
               Go back to Find a Car to choose another vehicle.
+            </StatusCallout>
+          ) : tripDates && vehicle.is_available === false ? (
+            <StatusCallout
+              tone="warning"
+              title="Car unavailable for your dates"
+            >
+              This car cannot be selected for the requested rental period. Go
+              back to the available cars to choose another option.
             </StatusCallout>
           ) : (
             <div className="detail-layout">
@@ -255,12 +317,6 @@ function VehicleDetailPage() {
                     again.
                   </StatusCallout>
                 ) : null}
-                {matchedRecommendation ? (
-                  <FinderReasons
-                    reasons={matchedRecommendation.reasons.slice(0, 1)}
-                  />
-                ) : null}
-
                 <VehicleFacts vehicle={vehicle} />
 
                 <div className="detail-context">
@@ -280,6 +336,9 @@ function VehicleDetailPage() {
                           <span>Pick-up</span>
                           <strong>
                             {formatTripDate(tripDates.requestedStart)}
+                            <span>
+                              at {formatTripTime(tripDates.requestedStart)}
+                            </span>
                           </strong>
                         </time>
                         <span
@@ -290,6 +349,9 @@ function VehicleDetailPage() {
                           <span>Return</span>
                           <strong>
                             {formatTripDate(tripDates.requestedEnd)}
+                            <span>
+                              at {formatTripTime(tripDates.requestedEnd)}
+                            </span>
                           </strong>
                         </time>
                       </div>
@@ -310,6 +372,10 @@ function VehicleDetailPage() {
                   )}
                 </div>
 
+                {tripFitReasons.length ? (
+                  <FinderRationale reasons={tripFitReasons} />
+                ) : null}
+
                 <div className="detail-action-panel detail-action-panel-desktop">
                   <button
                     className="customer-primary-button"
@@ -326,9 +392,6 @@ function VehicleDetailPage() {
               </section>
             </div>
           )}
-          {matchedRecommendation ? (
-            <FinderRationale reasons={matchedRecommendation.reasons} />
-          ) : null}
           {vehicle ? (
             <div className="detail-action-panel detail-action-panel-mobile">
               <button

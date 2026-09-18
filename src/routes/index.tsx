@@ -5,7 +5,7 @@ import {
   type CSSProperties,
   type FormEvent,
 } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import type { DateRange } from "react-day-picker";
 import {
   ArrowRight,
@@ -39,10 +39,7 @@ import {
   type CustomerVehicle,
 } from "@/lib/customer-data";
 import { getClientPrincipal } from "@/lib/auth-client";
-import {
-  instantToManilaDateTimeLocal,
-  manilaDateTimeLocalToInstant,
-} from "@/lib/business-time";
+import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
 
 const featuredVehicleImages: Record<string, string> = {
   "Toyota Vios": toyotaViosImage,
@@ -118,6 +115,7 @@ function formatTime(value: string) {
 }
 
 function HomePage() {
+  const navigate = useNavigate();
   const [rentalStart, setRentalStart] = useState("");
   const [rentalEnd, setRentalEnd] = useState("");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -130,6 +128,7 @@ function HomePage() {
   const [featuredVehiclesLoading, setFeaturedVehiclesLoading] = useState(true);
   const [featuredVehiclesError, setFeaturedVehiclesError] = useState("");
   const [featuredOffset, setFeaturedOffset] = useState(0);
+  const [filmstripPaused, setFilmstripPaused] = useState(false);
 
   const firstAvailableDate = useMemo(() => {
     const date = new Date();
@@ -137,26 +136,6 @@ function HomePage() {
     date.setDate(date.getDate() + 1);
     return date;
   }, []);
-
-  const featuredAvailabilitySearch = useMemo(() => {
-    const selectedStart = manilaDateTimeLocalToInstant(rentalStart);
-    const selectedEnd = manilaDateTimeLocalToInstant(rentalEnd);
-    const hasSelectedRange =
-      selectedStart && selectedEnd && selectedStart < selectedEnd;
-    const defaultStart = manilaDateTimeLocalToInstant(
-      dateTimeLocalForDate(firstAvailableDate, "08:00"),
-    )!;
-    const defaultEnd = new Date(defaultStart.getTime() + 24 * 60 * 60_000);
-
-    return encodeSearch({
-      finderStart: hasSelectedRange
-        ? rentalStart
-        : instantToManilaDateTimeLocal(defaultStart),
-      finderEnd: hasSelectedRange
-        ? rentalEnd
-        : instantToManilaDateTimeLocal(defaultEnd),
-    });
-  }, [firstAvailableDate, rentalEnd, rentalStart]);
 
   const visibleFeaturedVehicles = useMemo(() => {
     if (!featuredVehicles.length) return [];
@@ -184,9 +163,7 @@ function HomePage() {
     setFeaturedVehiclesError("");
     setFeaturedOffset(0);
 
-    void fetchJson<CustomerVehicle[]>(
-      `/api/vehicles${featuredAvailabilitySearch}`,
-    )
+    void fetchJson<CustomerVehicle[]>("/api/vehicles")
       .then((vehicles) => {
         if (cancelled) return;
         setFeaturedVehicles(vehicles);
@@ -206,7 +183,21 @@ function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [featuredAvailabilitySearch]);
+  }, []);
+
+  useEffect(() => {
+    if (
+      filmstripPaused ||
+      featuredVehicles.length < 2 ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+
+    const timer = window.setInterval(() => {
+      setFeaturedOffset((offset) => (offset + 1) % featuredVehicles.length);
+    }, 6000);
+    return () => window.clearInterval(timer);
+  }, [featuredVehicles.length, filmstripPaused]);
 
   function submitFinder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -223,12 +214,14 @@ function HomePage() {
       return;
     }
 
-    window.location.assign(
-      `/vehicles${encodeSearch({
-        finderStart: start!.toISOString(),
-        finderEnd: end!.toISOString(),
-      })}`,
-    );
+    void navigate({
+      to: "/vehicles",
+      search: {
+        finderStart: rentalStart,
+        finderEnd: rentalEnd,
+        finderIntent: "trip",
+      } as never,
+    });
   }
 
   function openDatePicker() {
@@ -376,26 +369,26 @@ function HomePage() {
 
         <section
           className="home-featured home-filmstrip"
-          aria-labelledby="available-cars"
+          aria-labelledby="fleet-showcase"
+          onMouseEnter={() => setFilmstripPaused(true)}
+          onMouseLeave={() => setFilmstripPaused(false)}
+          onFocusCapture={() => setFilmstripPaused(true)}
+          onBlurCapture={() => setFilmstripPaused(false)}
         >
           <div className="home-filmstrip-masthead">
             <div className="customer-container home-filmstrip-masthead-inner">
-              <h2 id="available-cars">Available cars for the road ahead</h2>
-              <p>Available for your trip, with more in the full fleet.</p>
+              <h2 id="fleet-showcase">Find your next ride</h2>
+              <p>
+                The right car changes everything. Browse the fleet, then choose
+                your dates to check availability.
+              </p>
               <a className="home-filmstrip-all-link" href="/vehicles">
-                See every car <ArrowRight size={17} aria-hidden="true" />
+                Browse the fleet <ArrowRight size={17} aria-hidden="true" />
               </a>
             </div>
           </div>
 
-          {featuredVehiclesLoading ? (
-            <div
-              className="customer-container home-featured-status"
-              aria-live="polite"
-            >
-              Loading available cars…
-            </div>
-          ) : null}
+          {featuredVehiclesLoading ? <HomeFilmstripSkeleton /> : null}
           {featuredVehiclesError ? (
             <div
               className="customer-container home-featured-status"
@@ -412,16 +405,18 @@ function HomePage() {
           visibleFeaturedVehicles.length > 0 ? (
             <>
               <div
-                className="home-filmstrip-gallery"
+                className="home-filmstrip-gallery home-filmstrip-gallery--shift"
                 style={filmstripColumnStyle}
+                key={`gallery-${featuredOffset}`}
               >
                 {visibleFeaturedVehicles.map((vehicle) => (
                   <FilmstripVehicle key={vehicle.id} vehicle={vehicle} />
                 ))}
               </div>
               <div
-                className="home-filmstrip-detail-rail"
+                className="home-filmstrip-detail-rail home-filmstrip-detail-rail--shift"
                 style={filmstripColumnStyle}
+                key={`detail-rail-${featuredOffset}`}
               >
                 {visibleFeaturedVehicles.map((vehicle) => (
                   <FilmstripVehicleDetails key={vehicle.id} vehicle={vehicle} />
@@ -466,7 +461,9 @@ function HomePage() {
               className="customer-container home-featured-status"
               role="status"
             >
-              <p>There are no cars available to browse right now.</p>
+              <p>
+                There are no active cars in the fleet to showcase right now.
+              </p>
               <a className="customer-link" href="/vehicles">
                 Check the fleet <ArrowRight size={16} aria-hidden="true" />
               </a>
@@ -495,6 +492,36 @@ function HomePage() {
       </main>
       <Footer />
     </CustomerPage>
+  );
+}
+
+function HomeFilmstripSkeleton() {
+  return (
+    <div
+      className="home-filmstrip-skeleton"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading fleet showcase"
+    >
+      <span className="sr-only">Loading fleet showcase</span>
+      <div className="home-filmstrip-gallery" aria-hidden="true">
+        {Array.from({ length: 3 }, (_, index) => (
+          <div className="home-filmstrip-skeleton__media" key={index} />
+        ))}
+      </div>
+      <div className="home-filmstrip-detail-rail" aria-hidden="true">
+        {Array.from({ length: 3 }, (_, index) => (
+          <div className="home-filmstrip-skeleton__detail" key={index}>
+            <i />
+            <i />
+            <span>
+              <i />
+              <i />
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

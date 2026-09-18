@@ -71,7 +71,7 @@ export async function listCatalogVehiclesForAvailability(
         calculateMaintenanceReadiness(vehicle.id, client),
       ),
     );
-    const availableVehicles = vehicles.filter((vehicle, index) => {
+    const catalogVehicles = vehicles.map((vehicle, index) => {
       const hasBookingConflict = (bookingResult.data ?? []).some(
         (booking) =>
           booking.assigned_vehicle_id === vehicle.id &&
@@ -88,13 +88,15 @@ export async function listCatalogVehiclesForAvailability(
         validation.value.requestedStart,
         validation.value.requestedEnd,
       );
-      return (
-        readiness[index]?.maintenanceReady === true &&
-        !hasBookingConflict &&
-        !hasRentalConflict
-      );
+      return {
+        ...vehicle,
+        is_available:
+          readiness[index]?.maintenanceReady === true &&
+          !hasBookingConflict &&
+          !hasRentalConflict,
+      };
     });
-    return { ok: true as const, data: availableVehicles };
+    return { ok: true as const, data: catalogVehicles };
   } catch {
     return {
       ok: false as const,

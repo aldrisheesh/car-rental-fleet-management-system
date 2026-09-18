@@ -200,8 +200,20 @@ test("Finder selection uses canonical fleet/Finder APIs and preserves booking co
     vehiclesSource,
     /fetchJson<CustomerVehicle\[\]>\(\s*`\/api\/vehicles\$\{availabilitySearch\}`/,
   );
-  assert.match(vehiclesSource, /finderStart: search\.finderStart/);
-  assert.match(vehiclesSource, /finderEnd: search\.finderEnd/);
+  assert.match(vehiclesSource, /finderStart: availabilityStart/);
+  assert.match(vehiclesSource, /finderEnd: availabilityEnd/);
+  const vehicleDetailSource = await readFile(
+    new URL("../routes/vehicles.$vehicleId.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    vehicleDetailSource,
+    /finderStart: dateTimeInputFromIso\(tripDates\.requestedStart\)/,
+  );
+  assert.match(
+    vehicleDetailSource,
+    /finderEnd: dateTimeInputFromIso\(tripDates\.requestedEnd\)/,
+  );
   assert.match(
     vehiclesSource,
     /fetchJson<FinderResponse>\("\/api\/vehicle-finder"/,
@@ -293,7 +305,10 @@ test("same key and same Finder request creates one booking and one context", asy
   assert.match(originalMigration, /booking_id uuid primary key/);
   assert.ok(
     bookingSource.indexOf("lookup_booking_creation_idempotency") <
-      bookingSource.indexOf("evaluateCanonicalVehicleFinder(finderContext"),
+      bookingSource.indexOf(
+        "evaluateCanonicalVehicleFinder(",
+        bookingSource.indexOf("lookup_booking_creation_idempotency"),
+      ),
   );
 });
 

@@ -12,6 +12,10 @@ export type AdminVehicle = {
   license_plate?: string | null;
   branch_id?: string | null;
   is_active?: boolean | null;
+  image_url?: string | null;
+  seat_capacity?: number | null;
+  transmission?: string | null;
+  fuel_type?: string | null;
   branch?: { id?: string; name: string } | null;
   category?: { id?: string; name: string } | null;
 };

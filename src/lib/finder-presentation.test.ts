@@ -103,7 +103,7 @@ test("keeps complete Finder journeys distinct from direct browse across evaluati
   );
 });
 
-test("the vehicle route keeps evaluated failure visible and out of direct browse", async () => {
+test("the vehicle route keeps Finder feedback within the canonical fleet browse", async () => {
   const source = await readFile(
     new URL("../routes/vehicles.tsx", import.meta.url),
     "utf8",
@@ -122,10 +122,12 @@ test("the vehicle route keeps evaluated failure visible and out of direct browse
   );
   assert.match(source, /finderState === "failed"/);
   assert.match(source, /title="Finder evaluation failed"/);
-  assert.match(source, /finderState === "evaluated" && finderResponse/);
   assert.match(source, /void evaluateFinder\(finderRetryValues, false\)/);
-  assert.match(source, /Change trip/);
-  assert.match(source, /finderState === "direct-browse"/);
+  assert.match(source, /const finderViewState = "direct-browse"/);
   assert.match(source, /id="active-fleet-title"/);
-  assert.doesNotMatch(source, /\{!finderResponse \?/);
+  assert.match(source, /const matchedVehicleIds = finderResponse/);
+  assert.match(source, /vehicle\.is_available === false/);
+  assert.match(source, /Unavailable for your dates/);
+  assert.match(source, /Does not match your trip/);
+  assert.doesNotMatch(source, /function FinderResults/);
 });

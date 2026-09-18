@@ -1,4 +1,5 @@
 import type { Vehicle as LegacyVehicle } from "@/data/vehicles";
+import { Link } from "@tanstack/react-router";
 import type { CustomerVehicle } from "@/lib/customer-data";
 import { encodeSearch } from "@/lib/customer-data";
 import {
@@ -16,6 +17,10 @@ type VehicleCardProps = {
   reason?: string;
   bookingSearch?: Record<string, string | undefined>;
   bookingLabel?: string;
+  actionDisabled?: boolean;
+  disabledActionLabel?: string;
+  availabilityUnavailable?: boolean;
+  tripMismatch?: boolean;
 };
 
 type CardVehicle = CustomerVehicle;
@@ -27,6 +32,10 @@ export function VehicleCard({
   reason,
   bookingSearch,
   bookingLabel,
+  actionDisabled = false,
+  disabledActionLabel = "Unavailable for your dates",
+  availabilityUnavailable = false,
+  tripMismatch = false,
 }: VehicleCardProps) {
   const currentVehicle = vehicle ?? legacyVehicle(v);
   if (!currentVehicle) return null;
@@ -37,15 +46,25 @@ export function VehicleCard({
       vehicle: currentVehicle.id,
       ...bookingSearch,
     })}`;
+  const imageStatus = availabilityUnavailable
+    ? "Unavailable"
+    : tripMismatch
+      ? "Doesn't match trip"
+      : null;
 
   return (
-    <article className="vehicle-card">
+    <article
+      className={`vehicle-card${availabilityUnavailable ? " vehicle-card--unavailable" : ""}${tripMismatch ? " vehicle-card--trip-mismatch" : ""}`}
+    >
       <div className="vehicle-card-image">
         <VehicleImage
           src={currentVehicle.image_url}
           alt={currentVehicle.name}
           sizes="(max-width: 767px) 100vw, (max-width: 1100px) 50vw, 33vw"
         />
+        {imageStatus ? (
+          <span className="vehicle-card-image-status">{imageStatus}</span>
+        ) : null}
       </div>
       <div className="vehicle-card-body">
         <div className="vehicle-card-heading">
@@ -62,12 +81,22 @@ export function VehicleCard({
 
         <VehicleFacts vehicle={currentVehicle} className="vehicle-card-facts" />
 
-        <a
-          className="customer-primary-button vehicle-card-action"
-          href={destination}
-        >
-          {bookingLabel ?? "View car"}
-        </a>
+        {actionDisabled ? (
+          <button
+            className="customer-primary-button vehicle-card-action"
+            type="button"
+            disabled
+          >
+            {disabledActionLabel}
+          </button>
+        ) : (
+          <Link
+            className="customer-primary-button vehicle-card-action"
+            to={destination as never}
+          >
+            {bookingLabel ?? "View car"}
+          </Link>
+        )}
       </div>
     </article>
   );

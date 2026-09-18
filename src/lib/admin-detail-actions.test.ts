@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-test("admin queues route each review task to its record detail page", async () => {
+test("admin queues keep their record review destinations coherent", async () => {
   const [bookings, requirements, payments] = await Promise.all([
     readFile(new URL("../routes/admin.bookings.tsx", import.meta.url), "utf8"),
     readFile(
@@ -19,17 +19,14 @@ test("admin queues route each review task to its record detail page", async () =
     requirements,
     /\/admin\/bookings\/\$\{encodeURIComponent\(set\.booking_id\)\}/,
   );
-  assert.match(
-    payments,
-    /\/admin\/payments\/\$\{encodeURIComponent\(paymentId\)\}/,
-  );
-  for (const source of [bookings, requirements, payments]) {
+  for (const source of [bookings, requirements]) {
     assert.match(source, /useRouterState/);
     assert.match(source, /<Outlet \/>/);
   }
+  assert.match(payments, /admin-payments-layout/);
 });
 
-test("the single rental gate owns document review and payment stays downstream", async () => {
+test("the booking workflow shows the customer journey before rental operations", async () => {
   const [detail, lifecycle, migration] = await Promise.all([
     readFile(
       new URL("../routes/admin.bookings.$bookingId.tsx", import.meta.url),
@@ -44,11 +41,19 @@ test("the single rental gate owns document review and payment stays downstream",
       "utf8",
     ),
   ]);
-  assert.match(detail, /Requirements gate/);
-  assert.match(detail, /Payment stays locked until this gate is verified/);
-  assert.match(lifecycle, /Payment is available only after requirements are Verified/);
+  assert.match(detail, /Booking request/);
+  assert.match(detail, /Requirements review/);
+  assert.match(detail, /Review the customer’s submitted payment proof/);
+  assert.match(detail, /currentLedgerStage/);
+  assert.match(
+    lifecycle,
+    /Payment is available only after requirements are Verified/,
+  );
   assert.match(migration, /alter column booking_status set default 'Draft'/);
-  assert.match(migration, /create or replace function public\.submit_renter_requirements/);
+  assert.match(
+    migration,
+    /create or replace function public\.submit_renter_requirements/,
+  );
   assert.match(migration, /booking_status = 'Submitted'/);
   assert.match(migration, /booking_status = 'Draft'/);
 });

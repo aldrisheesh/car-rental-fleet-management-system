@@ -730,9 +730,8 @@ function RequirementsPanel({
         </StatusCallout>
       ) : (
         <StatusCallout tone="info" title="Before you start">
-          Upload one current file for each document type, then preview each
-          file here to confirm it is readable before sending it for
-          verification.
+          Upload one current file for each document type, then preview each file
+          here to confirm it is readable before sending it for verification.
         </StatusCallout>
       )}
 
@@ -839,7 +838,6 @@ function RequirementsPanel({
           </button>
         )}
       </div>
-
     </section>
   );
 }
@@ -902,13 +900,11 @@ function RequirementDocumentPreview({
           <DialogHeader className="border-b border-[#d8d5cc] px-6 py-5 pr-14">
             <DialogTitle>Document preview</DialogTitle>
             <DialogDescription>
-              {document.original_filename} · {fileSizeLabel(document.size_bytes)}
+              {document.original_filename} ·{" "}
+              {fileSizeLabel(document.size_bytes)}
             </DialogDescription>
           </DialogHeader>
-          <div
-            className="booking-document-preview-frame"
-            aria-busy={loading}
-          >
+          <div className="booking-document-preview-frame" aria-busy={loading}>
             {previewError ? (
               <StatusCallout tone="error" title="Preview unavailable">
                 {previewError}
@@ -927,7 +923,9 @@ function RequirementDocumentPreview({
                 />
               )
             ) : (
-              <p className="customer-helper">Loading secure document preview…</p>
+              <p className="customer-helper">
+                Loading secure document preview…
+              </p>
             )}
           </div>
         </DialogContent>
@@ -948,7 +946,10 @@ function PdfDocumentPreview({
 
   useEffect(() => {
     let cancelled = false;
-    let loadingTask: { destroy: () => Promise<void> } | null = null;
+    let loadingTask: {
+      destroy?: () => void | Promise<void>;
+      promise: Promise<any>;
+    } | null = null;
 
     async function renderPdf() {
       setPages([]);
@@ -981,7 +982,8 @@ function PdfDocumentPreview({
           canvas.width = Math.ceil(viewport.width * pixelRatio);
           canvas.height = Math.ceil(viewport.height * pixelRatio);
           const context = canvas.getContext("2d");
-          if (!context) throw new Error("The PDF preview canvas is unavailable.");
+          if (!context)
+            throw new Error("The PDF preview canvas is unavailable.");
           await page.render({
             canvasContext: context,
             transform: [pixelRatio, 0, 0, pixelRatio, 0, 0],
@@ -990,7 +992,9 @@ function PdfDocumentPreview({
           renderedPages.push(canvas.toDataURL("image/png"));
         }
         if (!cancelled) setPages(renderedPages);
-        await pdf.destroy();
+        // PDFDocumentProxy no longer guarantees a destroy method in current
+        // pdf.js builds. Its loading task owns teardown instead.
+        pdf.cleanup?.();
       } catch (error) {
         if (!cancelled) {
           setRenderError(
@@ -1006,7 +1010,7 @@ function PdfDocumentPreview({
     void renderPdf();
     return () => {
       cancelled = true;
-      void loadingTask?.destroy();
+      void Promise.resolve(loadingTask?.destroy?.()).catch(() => undefined);
     };
   }, [source]);
 

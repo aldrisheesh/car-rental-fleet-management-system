@@ -13,6 +13,7 @@ export type CustomerVehicle = {
   daily_rate: number | null;
   image_url: string | null;
   is_active?: boolean;
+  is_available?: boolean;
   branch: { id?: string; name: string } | null;
   category: { id?: string; name: string } | null;
 };
