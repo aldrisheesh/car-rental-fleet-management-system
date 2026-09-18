@@ -192,9 +192,12 @@ export type Database = {
           vehicle_id: string;
           maintenance_type: string;
           description: string;
-          status: "Open" | "Completed" | "Cancelled";
+          status: "Scheduled" | "In Progress" | "Completed" | "Overdue" | "Cancelled" | "Open";
           blocks_rental_use: boolean;
-          service_started_at: string;
+          scheduled_for: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          service_started_at: string | null;
           completed_at: string | null;
           odometer_at_service: number | null;
           next_service_odometer: number | null;
@@ -211,9 +214,12 @@ export type Database = {
           vehicle_id: string;
           maintenance_type: string;
           description: string;
-          status?: "Open" | "Completed" | "Cancelled";
+          status?: "Scheduled" | "In Progress" | "Completed" | "Overdue" | "Cancelled" | "Open";
           blocks_rental_use?: boolean;
-          service_started_at?: string;
+          scheduled_for?: string | null;
+          archived_at?: string | null;
+          archived_by?: string | null;
+          service_started_at?: string | null;
           completed_at?: string | null;
           odometer_at_service?: number | null;
           next_service_odometer?: number | null;
@@ -578,6 +584,14 @@ export type Database = {
           agreement_acknowledged: boolean;
           condition_acknowledged: boolean;
           return_schedule_acknowledged: boolean;
+          inspection_status:
+            | "Not required"
+            | "Pending"
+            | "Cleared"
+            | "Maintenance scheduled";
+          inspection_remarks: string | null;
+          inspected_at: string | null;
+          inspected_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -598,6 +612,14 @@ export type Database = {
           agreement_acknowledged?: boolean;
           condition_acknowledged?: boolean;
           return_schedule_acknowledged?: boolean;
+          inspection_status?:
+            | "Not required"
+            | "Pending"
+            | "Cleared"
+            | "Maintenance scheduled";
+          inspection_remarks?: string | null;
+          inspected_at?: string | null;
+          inspected_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -663,8 +685,7 @@ export type Database = {
           p_maintenance_type: string;
           p_description: string;
           p_blocks: boolean;
-          p_started_at: string;
-          p_odometer: number | null;
+          p_scheduled_for: string;
           p_next_odometer: number | null;
           p_next_date: string | null;
           p_cost: number | null;
@@ -677,6 +698,7 @@ export type Database = {
         Args: {
           p_record_id: string;
           p_status: string;
+          p_started_at: string | null;
           p_odometer: number | null;
           p_next_odometer: number | null;
           p_next_date: string | null;
@@ -685,6 +707,19 @@ export type Database = {
           p_actor: string;
         };
         Returns: Database["public"]["Tables"]["maintenance_records"]["Row"];
+      };
+      archive_maintenance_record: {
+        Args: { p_record_id: string; p_actor: string };
+        Returns: Database["public"]["Tables"]["maintenance_records"]["Row"];
+      };
+      resolve_return_inspection: {
+        Args: {
+          p_rental_id: string;
+          p_outcome: "Cleared" | "Maintenance scheduled";
+          p_remarks: string | null;
+          p_actor_id: string;
+        };
+        Returns: Database["public"]["Tables"]["rental_transactions"]["Row"];
       };
       reconcile_operational_notification_conditions: {
         Args: { p_conditions: unknown };

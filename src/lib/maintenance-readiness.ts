@@ -10,6 +10,8 @@ export type PreventiveTargetRecord = {
 export type MaintenanceReadinessReason =
   | "Vehicle inactive"
   | "Active blocking maintenance"
+  | "Unresolved maintenance concern prevents rental use"
+  | "Active maintenance in progress"
   | "Preventive maintenance due by date"
   | "Preventive maintenance due by odometer"
   | "Vehicle condition blocks rental use"
@@ -66,10 +68,14 @@ export function evaluateMaintenanceReadiness(
   if (!vehicle.is_active) reasons.push("Vehicle inactive");
   if (
     records.some(
-      (record) => record.status === "Open" && record.blocks_rental_use,
+      (record) =>
+        ["Scheduled", "Overdue"].includes(record.status) &&
+        record.blocks_rental_use,
     )
   )
-    reasons.push("Active blocking maintenance");
+    reasons.push("Unresolved maintenance concern prevents rental use");
+  if (records.some((record) => ["In Progress", "Open"].includes(record.status)))
+    reasons.push("Active maintenance in progress");
 
   const targetRecords = selectAuthoritativePreventiveTargets(records);
   if (

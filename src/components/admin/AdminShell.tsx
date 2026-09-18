@@ -80,7 +80,11 @@ const ownerNav: NavEntry[] = [
     icon: Car,
     items: [
       { to: "/admin/fleet", label: "Fleet", icon: Car },
-      { to: "/admin/maintenance", label: "Maintenance", icon: Wrench },
+      {
+        to: "/admin/maintenance",
+        label: "Maintenance",
+        icon: Wrench,
+      },
       { to: "/admin/branches", label: "Locations", icon: Building2 },
     ],
   },
@@ -428,8 +432,8 @@ export function AdminShell() {
         </nav>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col lg:pl-[236px]">
-        <header className="sticky top-0 z-30 border-b border-border bg-white">
+      <div className="flex min-w-0 flex-1 flex-col pt-[76px] lg:pl-[236px]">
+        <header className="fixed inset-x-0 top-0 z-30 border-b border-border bg-white lg:left-[236px]">
           <div className="flex min-h-[76px] items-center gap-4 px-5 md:px-8 xl:px-10">
             <button
               type="button"

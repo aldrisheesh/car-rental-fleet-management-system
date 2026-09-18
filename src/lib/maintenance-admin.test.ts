@@ -16,7 +16,7 @@ const draft: MaintenanceDraft = {
   maintenanceType: " Brake Service ",
   description: " Replace pads ",
   blocksRentalUse: true,
-  serviceStartedAt: "2026-09-02T10:30",
+  scheduledFor: "2026-09-02T10:30",
   odometerAtService: "42000.5",
   nextServiceOdometer: "50000",
   nextServiceDate: "2027-01-15",
@@ -35,6 +35,7 @@ function record(
     description: "Replace pads",
     status,
     blocks_rental_use: false,
+    scheduled_for: null,
     service_started_at: "2026-09-01T00:00:00Z",
     completed_at: status === "Completed" ? "2026-09-02T00:00:00Z" : null,
     odometer_at_service: null,
@@ -62,15 +63,14 @@ test("create requires vehicle, maintenance type, and description", () => {
   assert.equal(isMaintenanceDraftValid({ ...draft, description: " " }), false);
 });
 
-test("create serializes only canonical fields and leaves status implicit Open", () => {
+test("scheduling serializes a future service date without starting work", () => {
   const payload = createMaintenancePayload(draft);
   assert.deepEqual(payload, {
     vehicleId: "vehicle-1",
     maintenanceType: "Brake Service",
     description: "Replace pads",
     blocksRentalUse: true,
-    serviceStartedAt: new Date("2026-09-02T10:30").toISOString(),
-    odometerAtService: 42000.5,
+    scheduledFor: new Date("2026-09-02T10:30").toISOString(),
     nextServiceOdometer: 50000,
     nextServiceDate: "2027-01-15",
     costPhp: 3500.25,
@@ -83,12 +83,12 @@ test("create serializes only canonical fields and leaves status implicit Open", 
 
 test("summary and sections use canonical lifecycle values", () => {
   const records = [
-    record("Open"),
-    record("Open", { id: "blocking", blocks_rental_use: true }),
+    record("In Progress"),
+    record("In Progress", { id: "blocking", blocks_rental_use: true }),
     record("Completed"),
     record("Cancelled"),
   ];
-  assert.deepEqual(maintenanceSummary(records), { open: 2, blocking: 1 });
+  assert.deepEqual(maintenanceSummary(records), { active: 2, blocking: 1 });
   const partitioned = partitionMaintenanceRecords(records);
   assert.equal(partitioned.active.length, 2);
   assert.equal(partitioned.active[0]?.id, "blocking");
@@ -134,15 +134,26 @@ test("Admin Maintenance source is canonical and exposes honest states", async ()
   assert.match(page, /readiness=summary/);
   assert.match(page, /Loading maintenance data/);
   assert.match(page, /Unable to load maintenance records/);
-  assert.match(page, /No maintenance records yet/);
-  assert.match(page, /No active maintenance/);
-  assert.match(page, /No maintenance history/);
+  assert.match(page, /Scheduled/);
+  assert.match(page, /In Progress/);
+  assert.match(page, /Overdue/);
+  assert.match(page, /Cancelled/);
+  assert.match(page, /Rental readiness/);
+  assert.match(page, /Available for rental/);
+  assert.match(page, /Unavailable for rental/);
+  assert.match(page, /Start service/);
+  assert.match(
+    page,
+    /status === "Cancelled"\s*\? !\["Scheduled", "Overdue"\]\.includes\(record\.status\)/,
+  );
   assert.match(page, /active rental/);
   assert.match(page, /setMutationError/);
   assert.ok((page.match(/await loadCanonicalData\(\)/g) ?? []).length >= 2);
   assert.equal((page.match(/setRecords\(/g) ?? []).length, 1);
   assert.doesNotMatch(page, /method: "DELETE"/);
   assert.doesNotMatch(dialog, /Maintenance Status|Recorded By|Performed By/);
+  assert.match(dialog, /Scheduled service date\/time/);
+  assert.match(dialog, /Vehicle maintenance context/);
 });
 
 test("readiness summary remains Owner/Admin-only at the API boundary", async () => {
@@ -153,6 +164,11 @@ test("readiness summary remains Owner/Admin-only at the API boundary", async () 
   assert.match(api, /readiness"\) === "summary"/);
   assert.match(api, /principal\.role !== "Owner\/Admin"/);
   assert.match(api, /calculateFleetMaintenanceReadiness/);
+  assert.match(api, /archive_maintenance_record/);
+  assert.match(
+    api,
+    /In-progress maintenance must be completed; it cannot be cancelled/,
+  );
 });
 
 test("maintenance write RPCs are executable only through the trusted server role", async () => {
