@@ -46,12 +46,12 @@ export const Route = createFileRoute("/api/admin-fleet")({
               { message: "A return inspection is required." },
               { status: 400 },
             );
-          if (
-            body.outcome !== "Cleared" &&
-            body.outcome !== "Maintenance scheduled"
-          )
+          if (body.outcome !== "Cleared")
             return Response.json(
-              { message: "Choose a valid inspection outcome." },
+              {
+                message:
+                  "Schedule maintenance from the return-inspection workflow so the inspection and service record are saved together.",
+              },
               { status: 400 },
             );
           const result = await getSupabaseServerClient().rpc(

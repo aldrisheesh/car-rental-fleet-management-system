@@ -17,6 +17,16 @@ import {
   UserRound,
 } from "lucide-react";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Btn,
   Card,
   CardHeader,
@@ -52,6 +62,7 @@ import {
   type AdminVehicle,
 } from "@/lib/admin-presentations";
 import { parseAdminBookingResponse } from "@/lib/booking-retrieval";
+import { calculateRentalQuote } from "@/lib/rental-quote";
 
 export const Route = createFileRoute("/admin/bookings/$bookingId")({
   component: BookingDetailPage,
@@ -64,6 +75,34 @@ type DetailData = {
   requirements: AdminRequirementsResponse | null;
   payments: AdminPayment[] | null;
   failures: string[];
+};
+
+type RateCard = {
+  id: string;
+  package_code: string;
+  package_label: string;
+  duration_hours: number;
+  base_rate: number | string;
+  effective_from: string;
+  effective_until?: string | null;
+};
+
+type BookingRateQuote = {
+  id: string;
+  rate_card_id: string;
+  package_label: string;
+  duration_hours: number;
+  base_rental_amount: number | string;
+  delivery_fee: number | string;
+  approved_discount: number | string;
+  approved_subtotal: number | string;
+  required_down_payment: number | string;
+  quote_version: number;
+};
+
+type RateQuoteData = {
+  quote: BookingRateQuote | null;
+  rateCards: RateCard[];
 };
 
 type LoadState =
@@ -219,6 +258,8 @@ function BookingDetailPage() {
   const [returnConditionSummary, setReturnConditionSummary] = useState("");
   const [observedDamageNotes, setObservedDamageNotes] = useState("");
   const [returnRemarks, setReturnRemarks] = useState("");
+  const [cancellationReason, setCancellationReason] = useState("");
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [expandedStage, setExpandedStage] = useState<number | null>(null);
 
   const load = useCallback(async () => {
@@ -377,6 +418,17 @@ function BookingDetailPage() {
   const ambiguousPayments = (payments?.length ?? 0) > 1;
   const requirementStatus = booking.requirement_status ?? "Unavailable";
   const paymentStatus = booking.payment_status ?? "Unavailable";
+  const confirmationException = booking.confirmation_exception_message?.trim();
+  const paymentStageDetail =
+    confirmationException
+      ? `Payment approved. ${confirmationException}`
+      : payment?.status === "Not Submitted"
+      ? "Waiting for the customer to submit the payment proof."
+      : paymentStatus === "Not Submitted"
+        ? "Set the delivery fee and issue the customer’s payment request."
+        : paymentStatus === "Needs Resubmission"
+        ? "Review the customer’s resubmitted payment proof."
+        : "Review the customer’s submitted payment proof.";
   const currentStage = currentLedgerStage({
     booking,
     requirementStatus,
@@ -406,12 +458,13 @@ function BookingDetailPage() {
       paymentStatus === "Verified");
   const canRelease = actions.release;
   const canReturn = actions.return;
+  const canCancel = actions.cancel;
 
   async function postBookingAction(
-    action: "assign" | "confirm" | "release" | "return",
+    action: "assign" | "confirm" | "cancel" | "release" | "return",
     body: Record<string, unknown>,
     successMessage: string,
-  ) {
+  ): Promise<boolean> {
     setBusyAction(action);
     setFeedback(null);
     try {
@@ -433,6 +486,7 @@ function BookingDetailPage() {
         );
       await load();
       setFeedback({ tone: "success", message: successMessage });
+      return true;
     } catch (error) {
       setFeedback({
         tone: "error",
@@ -441,6 +495,7 @@ function BookingDetailPage() {
             ? error.message
             : "Unable to update this booking.",
       });
+      return false;
     } finally {
       setBusyAction(null);
     }
@@ -545,10 +600,21 @@ function BookingDetailPage() {
               }
               onToggle={() => setExpandedStage(expandedStage === 1 ? null : 1)}
             >
-              <p className="admin-booking-ledger__empty">
-                The customer selected this vehicle. The request appears here
-                immediately while documents are still being prepared.
-              </p>
+              {ownerView &&
+              (booking.booking_status === "Draft" ||
+                booking.booking_status === "Submitted") &&
+              !booking.rental ? (
+                <RejectUnconfirmedBooking
+                  bookingId={bookingId}
+                  busy={busyAction !== null}
+                  onResolved={load}
+                />
+              ) : (
+                <p className="admin-booking-ledger__empty">
+                  The customer selected this vehicle. The request appears here
+                  immediately while documents are still being prepared.
+                </p>
+              )}
             </LedgerStage>
             <LedgerStage
               number={2}
@@ -580,7 +646,7 @@ function BookingDetailPage() {
               number={3}
               title="Payment"
               status={paymentStatus}
-              detail="Review the customer’s submitted payment proof."
+              detail={paymentStageDetail}
               active={currentStage === 3}
               expanded={
                 expandedStage === null
@@ -590,10 +656,19 @@ function BookingDetailPage() {
               onToggle={() => setExpandedStage(expandedStage === 3 ? null : 3)}
             >
               <div className="admin-booking-ledger__action">
-                <p className="admin-booking-ledger__empty">
-                  Payment is available after the requirements review is
-                  verified.
-                </p>
+                {ownerView ? (
+                  <PaymentQuotePanel
+                    booking={booking}
+                    requirementsVerified={requirementStatus === "Verified"}
+                    payment={payment}
+                    onRefresh={load}
+                  />
+                ) : (
+                  <p className="admin-booking-ledger__empty">
+                    Payment is available after the customer requirements are
+                    verified.
+                  </p>
+                )}
                 {payment ? (
                   <Link
                     to="/admin/payments"
@@ -604,6 +679,15 @@ function BookingDetailPage() {
                     's payment
                     <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                   </Link>
+                ) : null}
+                {confirmationException ? (
+                  <div
+                    className="admin-booking-ledger__confirmation-exception"
+                    role="status"
+                  >
+                    <strong>Automatic confirmation paused</strong>
+                    <span>{confirmationException}</span>
+                  </div>
                 ) : null}
                 {ownerView && canConfirm ? (
                   <Btn
@@ -619,7 +703,9 @@ function BookingDetailPage() {
                   >
                     {busyAction === "confirm"
                       ? "Confirming…"
-                      : "Confirm rental"}
+                      : confirmationException
+                        ? "Try confirmation again"
+                        : "Confirm rental"}
                   </Btn>
                 ) : null}
               </div>
@@ -652,6 +738,7 @@ function BookingDetailPage() {
             />
             {ownerView &&
             (canRelease ||
+              canCancel ||
               canReturn ||
               (booking.booking_status === "Confirmed" && !booking.rental) ||
               Boolean(booking.rental && !booking.rental.ended_at)) ? (
@@ -659,6 +746,7 @@ function BookingDetailPage() {
                 <OwnerActionArea
                   booking={booking}
                   canConfirm={canConfirm}
+                  canCancel={canCancel}
                   canRelease={canRelease}
                   canReturn={canReturn}
                   releaseOdometer={releaseOdometer}
@@ -685,6 +773,10 @@ function BookingDetailPage() {
                   setObservedDamageNotes={setObservedDamageNotes}
                   returnRemarks={returnRemarks}
                   setReturnRemarks={setReturnRemarks}
+                  cancellationReason={cancellationReason}
+                  setCancellationReason={setCancellationReason}
+                  cancelDialogOpen={cancelDialogOpen}
+                  setCancelDialogOpen={setCancelDialogOpen}
                   busyAction={busyAction}
                   onAction={postBookingAction}
                 />
@@ -710,6 +802,785 @@ type RequirementReviewStatus =
   | "Needs Resubmission"
   | "Verified";
 
+function RateQuotePanel({
+  bookingId,
+  vehicleId,
+  requirementsVerified,
+  paymentStatus,
+  data,
+  onRefresh,
+}: {
+  bookingId: string;
+  vehicleId: string;
+  requirementsVerified: boolean;
+  paymentStatus: string;
+  data: RateQuoteData;
+  onRefresh: () => Promise<void>;
+}) {
+  const [rateCardId, setRateCardId] = useState(data.quote?.rate_card_id ?? "");
+  const [deliveryFee, setDeliveryFee] = useState(
+    String(data.quote?.delivery_fee ?? 0),
+  );
+  const [discount, setDiscount] = useState(
+    String(data.quote?.approved_discount ?? 0),
+  );
+  const [showRateCardForm, setShowRateCardForm] = useState(false);
+  const [packageCode, setPackageCode] = useState("");
+  const [packageLabel, setPackageLabel] = useState("");
+  const [durationHours, setDurationHours] = useState("24");
+  const [baseRate, setBaseRate] = useState("");
+  const [effectiveFrom, setEffectiveFrom] = useState(
+    new Date().toISOString().slice(0, 10),
+  );
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{
+    tone: "error" | "success" | "info";
+    text: string;
+  } | null>(null);
+  const quoteLocked = ["Pending Verification", "Verified"].includes(
+    paymentStatus,
+  );
+
+  useEffect(() => {
+    setRateCardId(data.quote?.rate_card_id ?? "");
+    setDeliveryFee(String(data.quote?.delivery_fee ?? 0));
+    setDiscount(String(data.quote?.approved_discount ?? 0));
+  }, [data.quote]);
+
+  async function request(body: Record<string, unknown>) {
+    const response = await fetch("/api/rate-quotes", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      message?: string;
+    } | null;
+    if (!response.ok)
+      throw new Error(payload?.message ?? "Unable to save the rate quote.");
+  }
+
+  async function createRateCard() {
+    setSaving(true);
+    setMessage(null);
+    try {
+      await request({
+        action: "create-rate-card",
+        vehicleId,
+        packageCode,
+        packageLabel,
+        durationHours: Number(durationHours),
+        baseRate: Number(baseRate),
+        effectiveFrom,
+      });
+      setShowRateCardForm(false);
+      setPackageCode("");
+      setPackageLabel("");
+      setBaseRate("");
+      await onRefresh();
+      setMessage({
+        tone: "success",
+        text: "Researcher-designed rate-card entry saved. Select it to approve the booking quote.",
+      });
+    } catch (error) {
+      setMessage({
+        tone: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Unable to save the rate-card entry.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function approveQuote() {
+    setSaving(true);
+    setMessage(null);
+    try {
+      await request({
+        action: "approve-quote",
+        bookingId,
+        rateCardId,
+        deliveryFee: Number(deliveryFee),
+        approvedDiscount: Number(discount),
+      });
+      await onRefresh();
+      setMessage({
+        tone: "success",
+        text: "Researcher-designed quote approved. The customer can now submit the required minimum down payment.",
+      });
+    } catch (error) {
+      setMessage({
+        tone: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Unable to approve the rate quote.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="rounded-lg border border-[#d6e3ed] bg-[#f8fbfd] p-4">
+      <h4 className="text-sm font-semibold">Researcher-designed rate quote</h4>
+      <p className="mt-1 text-sm text-muted-foreground">
+        This controlled prototype baseline establishes a payment threshold. It
+        is not a final quotation, deposit, refund, or penalty calculation.
+      </p>
+      {message ? (
+        <p
+          className={`mt-3 rounded-md border px-3 py-2 text-sm ${message.tone === "error" ? "border-[#edc9c5] bg-[#fff5f3] text-[#8d302f]" : "border-[#b9d9c8] bg-[#f1faf4] text-[#267a55]"}`}
+          role={message.tone === "error" ? "alert" : "status"}
+        >
+          {message.text}
+        </p>
+      ) : null}
+      {!requirementsVerified ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Verify requirements before approving a rate quote.
+        </p>
+      ) : null}
+      {data.quote ? (
+        <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-muted-foreground">Package</dt>
+            <dd>
+              {data.quote.package_label} ({data.quote.duration_hours} hours)
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Approved subtotal</dt>
+            <dd>
+              {formatAdminMoney(data.quote.approved_subtotal) ?? "Not recorded"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Minimum down payment</dt>
+            <dd>
+              {formatAdminMoney(data.quote.required_down_payment) ??
+                "Not recorded"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Quote version</dt>
+            <dd>v{data.quote.quote_version}</dd>
+          </div>
+        </dl>
+      ) : null}
+      {!quoteLocked ? (
+        <div className="mt-4 grid gap-3">
+          <label className="text-sm font-medium">
+            Rate-card entry
+            <TSelect
+              className="mt-1"
+              value={rateCardId}
+              onChange={(event) => setRateCardId(event.target.value)}
+              disabled={!requirementsVerified || saving}
+            >
+              <option value="">Select a researcher-designed rate…</option>
+              {data.rateCards.map((card) => (
+                <option key={card.id} value={card.id}>
+                  {card.package_label} · {card.duration_hours}h ·{" "}
+                  {formatAdminMoney(card.base_rate)}
+                </option>
+              ))}
+            </TSelect>
+          </label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="text-sm font-medium">
+              Agreed delivery fee
+              <TInput
+                className="mt-1"
+                type="number"
+                min="0"
+                step="0.01"
+                value={deliveryFee}
+                onChange={(event) => setDeliveryFee(event.target.value)}
+                disabled={!requirementsVerified || saving}
+              />
+            </label>
+            <label className="text-sm font-medium">
+              Approved discount
+              <TInput
+                className="mt-1"
+                type="number"
+                min="0"
+                step="0.01"
+                value={discount}
+                onChange={(event) => setDiscount(event.target.value)}
+                disabled={!requirementsVerified || saving}
+              />
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Btn
+              variant="primary"
+              disabled={!requirementsVerified || !rateCardId || saving}
+              onClick={() => void approveQuote()}
+            >
+              {saving
+                ? "Saving…"
+                : data.quote
+                  ? "Update approved quote"
+                  : "Approve rate quote"}
+            </Btn>
+            <Btn
+              variant="ghost"
+              disabled={saving || !vehicleId}
+              onClick={() => setShowRateCardForm((value) => !value)}
+            >
+              {showRateCardForm
+                ? "Close rate-card form"
+                : "Add researcher rate"}
+            </Btn>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-3 text-sm text-muted-foreground">
+          The approved quote is locked while payment is pending or verified.
+        </p>
+      )}
+      {showRateCardForm && !quoteLocked ? (
+        <div className="mt-4 grid gap-3 border-t border-[#d6e3ed] pt-4 sm:grid-cols-2">
+          <label className="text-sm font-medium">
+            Package code
+            <TInput
+              className="mt-1"
+              value={packageCode}
+              onChange={(event) => setPackageCode(event.target.value)}
+              placeholder="e.g. DEMO-24H"
+            />
+          </label>
+          <label className="text-sm font-medium">
+            Package label
+            <TInput
+              className="mt-1"
+              value={packageLabel}
+              onChange={(event) => setPackageLabel(event.target.value)}
+              placeholder="e.g. Controlled 24-hour test rate"
+            />
+          </label>
+          <label className="text-sm font-medium">
+            Duration in hours
+            <TInput
+              className="mt-1"
+              type="number"
+              min="1"
+              step="1"
+              value={durationHours}
+              onChange={(event) => setDurationHours(event.target.value)}
+            />
+          </label>
+          <label className="text-sm font-medium">
+            Base rate
+            <TInput
+              className="mt-1"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={baseRate}
+              onChange={(event) => setBaseRate(event.target.value)}
+            />
+          </label>
+          <label className="text-sm font-medium">
+            Effective from
+            <TInput
+              className="mt-1"
+              type="date"
+              value={effectiveFrom}
+              onChange={(event) => setEffectiveFrom(event.target.value)}
+            />
+          </label>
+          <div className="flex items-end">
+            <Btn
+              variant="ghost"
+              disabled={
+                saving ||
+                !packageCode.trim() ||
+                !packageLabel.trim() ||
+                !Number(durationHours) ||
+                !Number(baseRate) ||
+                !effectiveFrom
+              }
+              onClick={() => void createRateCard()}
+            >
+              {saving ? "Saving…" : "Save rate-card entry"}
+            </Btn>
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function PaymentQuotePanel({
+  booking,
+  requirementsVerified,
+  payment,
+  onRefresh,
+}: {
+  booking: AdminBooking;
+  requirementsVerified: boolean;
+  payment: AdminPayment | null;
+  onRefresh: () => Promise<void>;
+}) {
+  const [deliveryFee, setDeliveryFee] = useState("");
+  const [issuedQuote, setIssuedQuote] = useState<Record<string, unknown> | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<Feedback | null>(null);
+  const dailyRate = Number(booking.requested_vehicle?.daily_rate);
+  const fee = Number(deliveryFee);
+  const hasDailyRate = Number.isFinite(dailyRate) && dailyRate > 0;
+  const quote = hasDailyRate && Number.isFinite(fee) && fee >= 0
+    ? calculateRentalQuote(
+        dailyRate,
+        new Date(booking.pickup_at),
+        new Date(booking.return_at),
+        fee,
+      )
+    : null;
+  const locked = Boolean(payment && payment.status !== "Not Submitted");
+
+  useEffect(() => {
+    setConfirmed(false);
+    void fetch(
+      `/api/payment-quote?bookingId=${encodeURIComponent(booking.id)}`,
+      { credentials: "same-origin" },
+    )
+      .then((response) => response.json())
+      .then((body) => {
+        if (body?.quote) {
+          setIssuedQuote(body.quote);
+          setDeliveryFee(body.quote.delivery_fee ? String(body.quote.delivery_fee) : "");
+        }
+      })
+      .catch(() => undefined);
+  }, [booking.id]);
+
+  async function issue() {
+    if (!quote || !confirmed) return;
+    setSaving(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/payment-quote", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ bookingId: booking.id, deliveryFee: fee }),
+      });
+      const body = (await response.json().catch(() => null)) as {
+        message?: string;
+        quote?: Record<string, unknown>;
+      } | null;
+      if (!response.ok)
+        throw new Error(body?.message ?? "Unable to send the quote.");
+      setIssuedQuote(body?.quote ?? null);
+      setConfirmed(false);
+      await onRefresh();
+      setMessage({
+        tone: "success",
+        message: "Quote sent. The customer can now submit the required down payment.",
+      });
+    } catch (error) {
+      setMessage({
+        tone: "error",
+        message:
+          error instanceof Error ? error.message : "Unable to send the quote.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const customerName = booking.customer?.full_name?.trim() || "the customer";
+  const customerFirstName = customerName === "the customer"
+    ? "customer"
+    : customerName.split(/\s+/)[0];
+  const quoteIssued = Boolean(issuedQuote) || payment?.status === "Not Submitted";
+  const vehicleName = booking.requested_vehicle?.name || "Requested vehicle";
+  const bookingWindow = formatAdminDateRange(booking.pickup_at, booking.return_at);
+
+  return (
+    <section className="admin-booking-payment-terms admin-booking-payment-quote-panel">
+      {!hasDailyRate ? (
+        <p className="admin-booking-payment-terms__notice" role="alert">
+          Add a daily rate to the requested vehicle before creating a quote.
+        </p>
+      ) : null}
+
+      {quote ? (
+        <>
+          <header className="admin-booking-payment-quote-panel__header">
+            <h4>{quoteIssued ? "Waiting for customer payment" : "Review customer quote"}</h4>
+            <p>
+              {quoteIssued
+                ? `Quote sent to ${customerFirstName}. We’ll notify you when the down payment is submitted.`
+                : `${vehicleName} · ${bookingWindow}`}
+            </p>
+          </header>
+
+          <dl className="admin-booking-payment-quote-panel__review-list">
+            <div>
+              <dt>Daily rental rate</dt>
+              <dd>{formatAdminMoney(dailyRate)}</dd>
+            </div>
+            <div>
+              <dt>Billable rental</dt>
+              <dd>{quote.billableDays} day{quote.billableDays === 1 ? "" : "s"}</dd>
+            </div>
+            <div>
+              <dt>Rental charge</dt>
+              <dd>{formatAdminMoney(quote.rentalSubtotal)}</dd>
+            </div>
+            {quoteIssued ? (
+              <div>
+                <dt>Delivery fee</dt>
+                <dd>{formatAdminMoney(fee)}</dd>
+              </div>
+            ) : (
+              <div className="admin-booking-payment-quote-panel__delivery-row">
+                <dt>Delivery fee</dt>
+                <dd>
+                  <label>
+                    <span className="sr-only">Delivery fee</span>
+                    <span aria-hidden="true">₱</span>
+                    <TInput
+                      name="deliveryFee"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      inputMode="decimal"
+                      autoComplete="off"
+                      placeholder="0"
+                      value={deliveryFee}
+                      onChange={(event) => {
+                        setDeliveryFee(event.target.value);
+                        setConfirmed(false);
+                      }}
+                      disabled={saving || locked || !requirementsVerified}
+                    />
+                  </label>
+                </dd>
+              </div>
+            )}
+            <div className="admin-booking-payment-quote-panel__final-row">
+              <dt>Final rental price</dt>
+              <dd>{formatAdminMoney(quote.totalAmount)}</dd>
+            </div>
+          </dl>
+
+          <section className="admin-booking-payment-quote-panel__request-summary" aria-labelledby="payment-request-heading">
+            <div>
+              <h5 id="payment-request-heading">Payment request</h5>
+              <p>
+                50% down payment. {formatAdminMoney(quote.securityDepositAmount)} refundable security deposit collected before release.
+              </p>
+            </div>
+            <strong>{formatAdminMoney(quote.downPaymentAmount)} due today</strong>
+          </section>
+
+          <div className="admin-booking-payment-quote-panel__footer">
+            {quoteIssued ? (
+              <p className="admin-booking-payment-quote-panel__waiting" role="status">
+                Waiting for {customerFirstName} to submit the 50% down payment.
+              </p>
+            ) : !locked && requirementsVerified ? (
+              <label className="admin-booking-payment-quote-panel__confirmation">
+                <input
+                  type="checkbox"
+                  checked={confirmed}
+                  onChange={(event) => setConfirmed(event.target.checked)}
+                  disabled={saving}
+                />
+                <span>I confirm this quote matches the booking details</span>
+              </label>
+            ) : null}
+            {!quoteIssued && !locked && requirementsVerified ? (
+              <Btn
+                variant="primary"
+                disabled={saving || !confirmed}
+                onClick={() => void issue()}
+              >
+                {saving ? "Sending…" : `Send quote to ${customerFirstName}`}
+              </Btn>
+            ) : null}
+          </div>
+        </>
+      ) : null}
+
+      {!requirementsVerified ? (
+        <p className="admin-booking-payment-terms__notice">
+          Verify the customer’s requirements before sending a payment request.
+        </p>
+      ) : null}
+      {locked ? (
+        <p className="admin-booking-payment-terms__notice">
+          This payment request is locked because payment proof is already under review or verified.
+        </p>
+      ) : null}
+
+      {message ? (
+        <p
+          className={`admin-booking-payment-terms__message is-${message.tone}`}
+          role={message.tone === "error" ? "alert" : "status"}
+        >
+          {message.message}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function PaymentRequirementPanel({
+  bookingId,
+  requirementsVerified,
+  payment,
+  onRefresh,
+}: {
+  bookingId: string;
+  requirementsVerified: boolean;
+  payment: AdminPayment | null;
+  onRefresh: () => Promise<void>;
+}) {
+  const [amount, setAmount] = useState(
+    payment?.required_amount == null ? "" : String(payment.required_amount),
+  );
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<Feedback | null>(null);
+  const locked = Boolean(
+    payment &&
+    payment.status !== "Not Submitted" &&
+    !(
+      payment.status === "Needs Resubmission" && payment.required_amount == null
+    ),
+  );
+
+  useEffect(() => {
+    setAmount(
+      payment?.required_amount == null ? "" : String(payment.required_amount),
+    );
+    setMessage(null);
+  }, [payment?.id, payment?.required_amount]);
+
+  async function save() {
+    const requiredAmount = Number(amount);
+    if (!Number.isFinite(requiredAmount) || requiredAmount <= 0) {
+      setMessage({
+        tone: "error",
+        message: "Enter a valid required payment amount.",
+      });
+      return;
+    }
+    setSaving(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/payment-terms", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ bookingId, requiredAmount }),
+      });
+      const body = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
+      if (!response.ok)
+        throw new Error(
+          body?.message ?? "Unable to record the payment amount.",
+        );
+      await onRefresh();
+      setMessage({
+        tone: "success",
+        message: "Required payment amount recorded for the customer.",
+      });
+    } catch (error) {
+      setMessage({
+        tone: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to record the payment amount.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="admin-booking-payment-terms">
+      <div>
+        <h4>Required payment amount</h4>
+        <p>
+          Record the amount the customer must pay. It is shown on this booking
+          only and does not change when catalog prices are edited.
+        </p>
+      </div>
+      {!requirementsVerified ? (
+        <p className="admin-booking-payment-terms__notice">
+          Verify requirements before recording the payment amount.
+        </p>
+      ) : locked ? (
+        <p className="admin-booking-payment-terms__notice">
+          {formatAdminMoney(payment?.required_amount) ?? "The required amount"}{" "}
+          is locked because a payment proof is under review or verified.
+        </p>
+      ) : (
+        <div className="admin-booking-payment-terms__form">
+          <label>
+            <span>Amount in PHP</span>
+            <TInput
+              type="number"
+              min="0.01"
+              step="0.01"
+              inputMode="decimal"
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+              disabled={saving}
+              placeholder="e.g. 5000"
+            />
+          </label>
+          <Btn
+            variant="primary"
+            disabled={!requirementsVerified || saving || !amount.trim()}
+            onClick={() => void save()}
+          >
+            {saving
+              ? "Recording…"
+              : payment?.required_amount != null
+                ? "Update amount"
+                : "Record amount"}
+          </Btn>
+        </div>
+      )}
+      {message ? (
+        <p
+          className={`admin-booking-payment-terms__message is-${message.tone}`}
+          role={message.tone === "error" ? "alert" : "status"}
+        >
+          {message.message}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function RejectUnconfirmedBooking({
+  bookingId,
+  busy,
+  onResolved,
+}: {
+  bookingId: string;
+  busy: boolean;
+  onResolved: () => Promise<void>;
+}) {
+  const [reason, setReason] = useState("");
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  async function reject() {
+    if (!reason.trim()) return;
+    setSaving(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "reject",
+          bookingId,
+          resolutionReason: reason.trim(),
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
+      if (!response.ok)
+        throw new Error(payload?.message ?? "Unable to reject this request.");
+      await onResolved();
+      setOpen(false);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to reject this request.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="admin-booking-resolution">
+      <div>
+        <h4>Resolve unfinished request</h4>
+        <p>
+          Reject only when this request cannot proceed. The customer receives
+          the recorded reason.
+        </p>
+      </div>
+      <label>
+        <span>Reason for rejection</span>
+        <TInput
+          value={reason}
+          onChange={(event) => setReason(event.target.value)}
+          placeholder="Required for the customer and audit trail"
+          disabled={busy || saving}
+          maxLength={500}
+        />
+      </label>
+      {message ? (
+        <p className="admin-booking-resolution__message" role="alert">
+          {message}
+        </p>
+      ) : null}
+      <Btn
+        variant="danger"
+        disabled={busy || saving || !reason.trim()}
+        onClick={() => setOpen(true)}
+      >
+        Reject request
+      </Btn>
+      <AlertDialog
+        open={open}
+        onOpenChange={(next) => !saving && setOpen(next)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject this unfinished request?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The request will become inactive. The customer will see the reason
+              you entered, while the booking history remains available for
+              review.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>
+              Keep request
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={saving}
+              onClick={(event) => {
+                event.preventDefault();
+                void reject();
+              }}
+              className="border border-[#b43b3b] bg-white px-4 text-sm font-semibold text-[#b43b3b] shadow-none hover:bg-[#fff2f1]"
+            >
+              {saving ? "Rejecting…" : "Reject request"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </section>
+  );
+}
+
 function BookingRequirementsReview({
   bookingId,
   requirements,
@@ -733,17 +1604,21 @@ function BookingRequirementsReview({
       Boolean(document),
     );
   const review = requirements.reviews?.[0] ?? null;
-  const hasBothDocuments = requirements.requiredTypes.every((type) =>
+  const hasAllDocuments = requirements.requiredTypes.every((type) =>
     documents.some((document) => document.requirement_type === type),
   );
   const canReview =
-    requirementSet?.status === "Pending Review" && hasBothDocuments;
+    requirementSet?.status === "Pending Review" && hasAllDocuments;
+  const reviewDraftKey = `admin-requirements-review:${requirementSet?.id ?? bookingId}`;
   const [governmentIdOutcome, setGovernmentIdOutcome] = useState("");
   const [governmentIdReason, setGovernmentIdReason] = useState("");
   const [driversLicenseOutcome, setDriversLicenseOutcome] = useState("");
   const [driversLicenseReason, setDriversLicenseReason] = useState("");
+  const [proofOfBillingOutcome, setProofOfBillingOutcome] = useState("");
+  const [proofOfBillingReason, setProofOfBillingReason] = useState("");
+  const [selfieWithIdOutcome, setSelfieWithIdOutcome] = useState("");
+  const [selfieWithIdReason, setSelfieWithIdReason] = useState("");
   const [identityConsistency, setIdentityConsistency] = useState("");
-  const [ltoOutcome, setLtoOutcome] = useState("");
   const [saving, setSaving] = useState(false);
   const [previewDocument, setPreviewDocument] =
     useState<AdminRequirementDocument | null>(null);
@@ -751,54 +1626,125 @@ function BookingRequirementsReview({
     tone: "error" | "success";
     text: string;
   } | null>(null);
-  const [reviewOpen, setReviewOpen] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
 
   useEffect(() => {
-    setGovernmentIdOutcome(review?.government_id_outcome ?? "");
-    setGovernmentIdReason(review?.government_id_reason ?? "");
-    setDriversLicenseOutcome(review?.drivers_license_outcome ?? "");
-    setDriversLicenseReason(review?.drivers_license_reason ?? "");
-    setIdentityConsistency(review?.identity_consistency ?? "");
-    setLtoOutcome(review?.lto_outcome ?? "");
+    let draft: Record<string, string> | null = null;
+    if (requirementSet?.status === "Pending Review") {
+      try {
+        const saved = window.localStorage.getItem(reviewDraftKey);
+        if (saved) {
+          const parsed = JSON.parse(saved) as Record<string, unknown>;
+          draft = Object.fromEntries(
+            Object.entries(parsed).filter(([, value]) => typeof value === "string"),
+          ) as Record<string, string>;
+        }
+      } catch {
+        window.localStorage.removeItem(reviewDraftKey);
+      }
+    }
+    setGovernmentIdOutcome(draft?.governmentIdOutcome ?? review?.government_id_outcome ?? "");
+    setGovernmentIdReason(draft?.governmentIdReason ?? review?.government_id_reason ?? "");
+    setDriversLicenseOutcome(draft?.driversLicenseOutcome ?? review?.drivers_license_outcome ?? "");
+    setDriversLicenseReason(draft?.driversLicenseReason ?? review?.drivers_license_reason ?? "");
+    setProofOfBillingOutcome(draft?.proofOfBillingOutcome ?? review?.proof_of_billing_outcome ?? "");
+    setProofOfBillingReason(draft?.proofOfBillingReason ?? review?.proof_of_billing_reason ?? "");
+    setSelfieWithIdOutcome(draft?.selfieWithIdOutcome ?? review?.selfie_with_id_outcome ?? "");
+    setSelfieWithIdReason(draft?.selfieWithIdReason ?? review?.selfie_with_id_reason ?? "");
+    setIdentityConsistency(draft?.identityConsistency ?? review?.identity_consistency ?? "");
     setMessage(null);
-  }, [review]);
+    setDraftReady(true);
+  }, [review, requirementSet?.status, reviewDraftKey]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    if (!canReview) {
+      window.localStorage.removeItem(reviewDraftKey);
+      return;
+    }
+    window.localStorage.setItem(
+      reviewDraftKey,
+      JSON.stringify({
+        governmentIdOutcome,
+        governmentIdReason,
+        driversLicenseOutcome,
+        driversLicenseReason,
+        proofOfBillingOutcome,
+        proofOfBillingReason,
+        selfieWithIdOutcome,
+        selfieWithIdReason,
+        identityConsistency,
+      }),
+    );
+  }, [
+    canReview,
+    draftReady,
+    driversLicenseOutcome,
+    driversLicenseReason,
+    governmentIdOutcome,
+    governmentIdReason,
+    identityConsistency,
+    proofOfBillingOutcome,
+    proofOfBillingReason,
+    reviewDraftKey,
+    selfieWithIdOutcome,
+    selfieWithIdReason,
+  ]);
 
   const gate = requirementReviewGate({
     governmentIdOutcome,
     driversLicenseOutcome,
+    proofOfBillingOutcome,
+    selfieWithIdOutcome,
     identityConsistency,
-    ltoOutcome,
   });
+  const allOutcomesSelected = Boolean(
+    governmentIdOutcome &&
+    driversLicenseOutcome &&
+    proofOfBillingOutcome &&
+    selfieWithIdOutcome &&
+      identityConsistency,
+  );
+  const hasReplacementRequest = [
+    governmentIdOutcome,
+    driversLicenseOutcome,
+    proofOfBillingOutcome,
+    selfieWithIdOutcome,
+  ].some((outcome) => outcome === "Needs Replacement");
 
   async function saveReview(resultingStatus: RequirementReviewStatus) {
     if (!requirementSet || !canReview) return;
-    if (
-      !governmentIdOutcome ||
-      !driversLicenseOutcome ||
-      !identityConsistency ||
-      !ltoOutcome
-    ) {
+    if (!allOutcomesSelected) {
       setMessage({
         tone: "error",
-        text: "Complete every review outcome before saving.",
+        text: "Choose an outcome for every document and confirm identity consistency before saving.",
       });
       return;
     }
     if (resultingStatus === "Verified" && !gate.canVerify) {
       setMessage({
         tone: "error",
-        text: "Verification requires accepted documents, consistent identity, and an LTO Clear result.",
+        text: "Verification requires all four documents accepted and a consistent identity.",
       });
       return;
     }
+    const replacementReasons = [
+      [governmentIdOutcome, governmentIdReason],
+      [driversLicenseOutcome, driversLicenseReason],
+      [proofOfBillingOutcome, proofOfBillingReason],
+      [selfieWithIdOutcome, selfieWithIdReason],
+    ];
     if (
       resultingStatus === "Needs Resubmission" &&
       (!gate.canResubmit ||
-        (!governmentIdReason.trim() && !driversLicenseReason.trim()))
+        replacementReasons.some(
+          ([outcome, reason]) =>
+            outcome === "Needs Replacement" && !reason.trim(),
+        ))
     ) {
       setMessage({
         tone: "error",
-        text: "A replacement decision needs a flagged document and customer-facing reason.",
+        text: "Add a customer-facing reason for every document that needs reuploading.",
       });
       return;
     }
@@ -808,7 +1754,15 @@ function BookingRequirementsReview({
     const driversLicense = documents.find(
       (document) => document.requirement_type === "Driver's License",
     );
-    if (!governmentId || !driversLicense) return;
+    const proofOfBilling = documents.find(
+      (document) => document.requirement_type === "Proof of Billing",
+    );
+    const selfieWithId = documents.find(
+      (document) => document.requirement_type === "Selfie with ID",
+    );
+    if (!governmentId || !driversLicense || !proofOfBilling || !selfieWithId)
+      return;
+
     setSaving(true);
     setMessage(null);
     try {
@@ -827,25 +1781,35 @@ function BookingRequirementsReview({
           driversLicenseVersion: driversLicense.version,
           driversLicenseOutcome,
           driversLicenseReason: driversLicenseReason.trim(),
+          proofOfBillingDocumentId: proofOfBilling.id,
+          proofOfBillingVersion: proofOfBilling.version,
+          proofOfBillingOutcome,
+          proofOfBillingReason: proofOfBillingReason.trim(),
+          selfieWithIdDocumentId: selfieWithId.id,
+          selfieWithIdVersion: selfieWithId.version,
+          selfieWithIdOutcome,
+          selfieWithIdReason: selfieWithIdReason.trim(),
           identityConsistency,
-          ltoOutcome,
           resultingStatus,
         }),
       });
       const body = (await response.json().catch(() => null)) as {
         message?: string;
       } | null;
-      if (!response.ok)
+      if (!response.ok) {
         throw new Error(
           body?.message ?? "Unable to save the requirements review.",
         );
+      }
+      window.localStorage.removeItem(reviewDraftKey);
+      setDraftReady(false);
       await onRefresh();
       setMessage({
         tone: "success",
         text:
           resultingStatus === "Verified"
             ? "Requirements verified. Payment is now available to the customer."
-            : "Requirements returned for correction. The customer must replace the flagged document before this request returns to review.",
+            : "Reupload requested. The customer can replace only the flagged documents before submitting again.",
       });
     } catch (error) {
       setMessage({
@@ -859,6 +1823,41 @@ function BookingRequirementsReview({
       setSaving(false);
     }
   }
+
+  const documentControls = [
+    {
+      type: "Valid Government ID",
+      id: "booking-government-id",
+      outcome: governmentIdOutcome,
+      setOutcome: setGovernmentIdOutcome,
+      reason: governmentIdReason,
+      setReason: setGovernmentIdReason,
+    },
+    {
+      type: "Driver's License",
+      id: "booking-drivers-license",
+      outcome: driversLicenseOutcome,
+      setOutcome: setDriversLicenseOutcome,
+      reason: driversLicenseReason,
+      setReason: setDriversLicenseReason,
+    },
+    {
+      type: "Proof of Billing",
+      id: "booking-proof-of-billing",
+      outcome: proofOfBillingOutcome,
+      setOutcome: setProofOfBillingOutcome,
+      reason: proofOfBillingReason,
+      setReason: setProofOfBillingReason,
+    },
+    {
+      type: "Selfie with ID",
+      id: "booking-selfie-with-id",
+      outcome: selfieWithIdOutcome,
+      setOutcome: setSelfieWithIdOutcome,
+      reason: selfieWithIdReason,
+      setReason: setSelfieWithIdReason,
+    },
+  ];
 
   return (
     <div
@@ -883,136 +1882,67 @@ function BookingRequirementsReview({
         />
       ) : (
         <div className="admin-booking-ledger__review">
-          <div className="admin-booking-ledger__review-header">
-            <div>
-              <h4>Submitted documents</h4>
-              <p>
-                Review submitted documents and approve or request correction.
-              </p>
+          <fieldset
+            disabled={!canReview || saving}
+            className="admin-booking-ledger__documents"
+          >
+            <legend className="sr-only">Document review decisions</legend>
+            {documentControls.map((control) => (
+              <BookingDocumentReviewRow
+                key={control.type}
+                {...control}
+                document={documents.find(
+                  (item) => item.requirement_type === control.type,
+                )}
+                onPreview={setPreviewDocument}
+              />
+            ))}
+          </fieldset>
+          {canReview ? (
+            <div className="admin-booking-ledger__cross-check">
+              <div className="admin-booking-ledger__cross-check-copy">
+                <strong>Identity consistency</strong>
+                <p>
+                  Confirm that the name and likeness match across the submitted
+                  documents.
+                </p>
+              </div>
+              <RequirementOutcomeSelect
+                id="booking-identity-outcome"
+                label="Identity consistency outcome"
+                value={identityConsistency}
+                onChange={setIdentityConsistency}
+                options={["Consistent", "Concern"]}
+                hidePlaceholder
+                compact
+              />
             </div>
-            {canReview && !reviewOpen ? (
-              <Btn variant="primary" onClick={() => setReviewOpen(true)}>
-                Review requirements
-              </Btn>
-            ) : null}
-          </div>
-          <div className="admin-booking-ledger__documents">
-            {requirements.requiredTypes.map((type) => {
-              const document = documents.find(
-                (item) => item.requirement_type === type,
-              );
-              return (
-                <div key={type} className="admin-booking-ledger__document">
-                  <FileCheck2 className="h-4 w-4" aria-hidden="true" />
-                  <div>
-                    <strong>{type}</strong>
-                    <small>
-                      {document
-                        ? `${document.original_filename} · v${document.version}`
-                        : "No current document"}
-                    </small>
-                  </div>
-                  {document ? (
-                    <>
-                      <DomainStatus label="Submitted" tone="success" compact />
-                      <time>{formatAdminDateTime(document.uploaded_at)}</time>
-                      <button
-                        type="button"
-                        onClick={() => setPreviewDocument(document)}
-                        className="touch-target"
-                      >
-                        Preview
-                      </button>
-                    </>
-                  ) : (
-                    <DomainStatus label="Missing" tone="locked" compact />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          {!canReview ? (
+          ) : (
             <p className="admin-booking-ledger__review-note">
               {requirementSet.status === "Needs Resubmission"
                 ? "The request is back with the customer for correction. It returns here after replacement documents are submitted."
                 : "All submitted documents have been reviewed for this request."}
             </p>
-          ) : null}
-          {canReview && reviewOpen ? (
-            <div className="admin-booking-ledger__review-form">
-              <fieldset disabled={saving} className="grid gap-3">
-                <RequirementOutcomeSelect
-                  id="booking-government-id-outcome"
-                  label="Government ID"
-                  value={governmentIdOutcome}
-                  onChange={setGovernmentIdOutcome}
-                  options={["Accepted", "Needs Replacement"]}
-                />
-                {governmentIdOutcome === "Needs Replacement" ? (
-                  <label className="text-sm font-medium">
-                    Government ID reason
-                    <TInput
-                      value={governmentIdReason}
-                      onChange={(event) =>
-                        setGovernmentIdReason(event.target.value)
-                      }
-                      className="mt-2"
-                      placeholder="Tell the customer what needs replacing"
-                    />
-                  </label>
-                ) : null}
-                <RequirementOutcomeSelect
-                  id="booking-license-outcome"
-                  label="Driver's License"
-                  value={driversLicenseOutcome}
-                  onChange={setDriversLicenseOutcome}
-                  options={["Accepted", "Needs Replacement"]}
-                />
-                {driversLicenseOutcome === "Needs Replacement" ? (
-                  <label className="text-sm font-medium">
-                    Driver's License reason
-                    <TInput
-                      value={driversLicenseReason}
-                      onChange={(event) =>
-                        setDriversLicenseReason(event.target.value)
-                      }
-                      className="mt-2"
-                      placeholder="Tell the customer what needs replacing"
-                    />
-                  </label>
-                ) : null}
-                <RequirementOutcomeSelect
-                  id="booking-identity-outcome"
-                  label="Identity consistency"
-                  value={identityConsistency}
-                  onChange={setIdentityConsistency}
-                  options={["Consistent", "Concern"]}
-                />
-                <RequirementOutcomeSelect
-                  id="booking-lto-outcome"
-                  label="LTO outcome"
-                  value={ltoOutcome}
-                  onChange={setLtoOutcome}
-                  options={["Not Checked", "Clear", "Concern", "Unavailable"]}
-                />
-              </fieldset>
-              <div className="admin-booking-ledger__review-actions flex flex-wrap gap-2">
+          )}
+          {canReview ? (
+            <div className="admin-booking-ledger__review-actions flex flex-wrap justify-end gap-2">
+              {hasReplacementRequest ? (
                 <Btn
-                  variant={gate.canResubmit ? "danger" : "primary"}
-                  disabled={saving || (!gate.canVerify && !gate.canResubmit)}
-                  onClick={() =>
-                    void saveReview(
-                      gate.canResubmit ? "Needs Resubmission" : "Verified",
-                    )
-                  }
+                  variant="danger"
+                  disabled={saving || !gate.canResubmit}
+                  onClick={() => void saveReview("Needs Resubmission")}
                 >
-                  {saving
-                    ? "Saving…"
-                    : gate.canResubmit
-                      ? "Request replacement"
-                      : "Verify requirements"}
+                  {saving ? "Saving…" : "Send reupload request"}
                 </Btn>
-              </div>
+              ) : (
+                <Btn
+                  variant="primary"
+                  disabled={saving || !gate.canVerify}
+                  onClick={() => void saveReview("Verified")}
+                >
+                  {saving ? "Saving…" : "Verify requirements"}
+                </Btn>
+              )}
             </div>
           ) : null}
         </div>
@@ -1025,6 +1955,179 @@ function BookingRequirementsReview({
       ) : null}
     </div>
   );
+}
+
+function BookingDocumentReviewRow({
+  type,
+  id,
+  document,
+  outcome,
+  setOutcome,
+  reason,
+  setReason,
+  onPreview,
+}: {
+  type: string;
+  id: string;
+  document?: AdminRequirementDocument;
+  outcome: string;
+  setOutcome: (value: string) => void;
+  reason: string;
+  setReason: (value: string) => void;
+  onPreview: (document: AdminRequirementDocument) => void;
+}) {
+  return (
+    <div className="admin-booking-ledger__document-review">
+      <div className="admin-booking-ledger__document">
+        {document ? (
+          <div className="admin-booking-ledger__document-copy">
+            <button
+              type="button"
+              className="admin-booking-ledger__document-thumbnail-button"
+              onClick={() => onPreview(document)}
+              aria-label={`Preview ${type}: ${document.original_filename}`}
+            >
+              <AdminDocumentThumbnail document={document} />
+            </button>
+            <span>
+              <strong>{type}</strong>
+              <small>
+                {`${document.original_filename} · v${document.version} · ${formatAdminDateTime(document.uploaded_at)}`}
+              </small>
+            </span>
+          </div>
+        ) : (
+          <div className="admin-booking-ledger__document-missing">
+            <FileCheck2 className="h-4 w-4" aria-hidden="true" />
+            <span>
+              <strong>{type}</strong>
+              <small>No current document</small>
+            </span>
+          </div>
+        )}
+        <RequirementOutcomeSelect
+          id={`${id}-outcome`}
+          label={`${type} outcome`}
+          value={outcome}
+          onChange={setOutcome}
+          options={[
+            { value: "Accepted", label: "Accepted" },
+            { value: "Needs Replacement", label: "Needs reupload" },
+          ]}
+          hidePlaceholder
+          compact
+        />
+      </div>
+      {outcome === "Needs Replacement" ? (
+        <label
+          className="admin-booking-ledger__replacement-reason"
+          htmlFor={`${id}-reason`}
+        >
+          <span>Reason for reupload</span>
+          <TInput
+            id={`${id}-reason`}
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            placeholder="Tell the customer exactly what needs replacing"
+          />
+        </label>
+      ) : null}
+    </div>
+  );
+}
+
+function AdminDocumentThumbnail({
+  document,
+}: {
+  document: AdminRequirementDocument;
+}) {
+  const [url, setUrl] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch(
+      `/api/requirements?documentId=${encodeURIComponent(document.id)}`,
+      { credentials: "same-origin" },
+    )
+      .then(async (response) => {
+        const body = (await response.json().catch(() => null)) as {
+          url?: string;
+        } | null;
+        if (!response.ok || !body?.url) throw new Error("Preview unavailable");
+        if (!cancelled) setUrl(body.url);
+      })
+      .catch(() => {
+        if (!cancelled) setUrl("");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [document.id]);
+
+  return (
+    <span className="admin-booking-ledger__document-thumbnail" aria-hidden="true">
+      {url ? (
+        document.mime_type === "application/pdf" ? (
+          <AdminPdfThumbnail source={url} />
+        ) : (
+          <img src={url} alt="" />
+        )
+      ) : (
+        <FileCheck2 className="h-4 w-4" />
+      )}
+    </span>
+  );
+}
+
+function AdminPdfThumbnail({ source }: { source: string }) {
+  const [thumbnail, setThumbnail] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    let loadingTask: {
+      destroy?: () => void | Promise<void>;
+      promise: Promise<any>;
+    } | null = null;
+
+    async function renderThumbnail() {
+      try {
+        const [{ GlobalWorkerOptions, getDocument }, response] =
+          await Promise.all([
+            import("pdfjs-dist"),
+            fetch(source, { credentials: "omit" }),
+          ]);
+        if (!response.ok) throw new Error("The secure PDF could not be loaded.");
+        GlobalWorkerOptions.workerSrc = new URL(
+          "pdfjs-dist/build/pdf.worker.min.mjs",
+          import.meta.url,
+        ).toString();
+        loadingTask = getDocument({
+          data: new Uint8Array(await response.arrayBuffer()),
+        });
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 0.26 });
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        const context = canvas.getContext("2d");
+        if (!context) return;
+        await page.render({ canvasContext: context, viewport }).promise;
+        if (!cancelled) setThumbnail(canvas.toDataURL("image/png"));
+        pdf.cleanup?.();
+      } catch {
+        // The complete preview remains available even if a small PDF image cannot render.
+      }
+    }
+
+    void renderThumbnail();
+    return () => {
+      cancelled = true;
+      void Promise.resolve(loadingTask?.destroy?.()).catch(() => undefined);
+    };
+  }, [source]);
+
+  return thumbnail ? <img src={thumbnail} alt="" /> : <FileCheck2 className="h-4 w-4" />;
 }
 
 function AdminDocumentPreview({
@@ -1073,7 +2176,10 @@ function AdminDocumentPreview({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="max-h-[92vh] max-w-5xl overflow-hidden p-0">
+      <DialogContent
+        className="max-h-[92vh] max-w-5xl overflow-hidden p-0"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
         <DialogHeader className="border-b border-[#d8d5cc] px-6 py-5 pr-14">
           <DialogTitle>Document preview</DialogTitle>
           <DialogDescription>
@@ -1089,10 +2195,9 @@ function AdminDocumentPreview({
               Loading secure document preview…
             </p>
           ) : document.mime_type === "application/pdf" ? (
-            <iframe
-              className="h-[72vh] w-full"
-              title={`Preview of ${document.original_filename}`}
+            <AdminPdfDocumentPreview
               src={url}
+              filename={document.original_filename}
             />
           ) : (
             <img
@@ -1104,6 +2209,98 @@ function AdminDocumentPreview({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function AdminPdfDocumentPreview({
+  src,
+  filename,
+}: {
+  src: string;
+  filename: string;
+}) {
+  const [pages, setPages] = useState<string[]>([]);
+  const [renderError, setRenderError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    let loadingTask: {
+      destroy?: () => void | Promise<void>;
+      promise: Promise<any>;
+    } | null = null;
+
+    async function renderPdf() {
+      setPages([]);
+      setRenderError("");
+      try {
+        const [{ GlobalWorkerOptions, getDocument }, response] =
+          await Promise.all([
+            import("pdfjs-dist"),
+            fetch(src, { credentials: "omit" }),
+          ]);
+        if (!response.ok) throw new Error("The secure PDF could not be loaded.");
+        GlobalWorkerOptions.workerSrc = new URL(
+          "pdfjs-dist/build/pdf.worker.min.mjs",
+          import.meta.url,
+        ).toString();
+        loadingTask = getDocument({
+          data: new Uint8Array(await response.arrayBuffer()),
+        });
+        const pdf = await loadingTask.promise;
+        const renderedPages: string[] = [];
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+          const page = await pdf.getPage(pageNumber);
+          const initialViewport = page.getViewport({ scale: 1 });
+          const scale = Math.min(1.5, 980 / initialViewport.width);
+          const viewport = page.getViewport({ scale });
+          const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.ceil(viewport.width * pixelRatio);
+          canvas.height = Math.ceil(viewport.height * pixelRatio);
+          const context = canvas.getContext("2d");
+          if (!context) throw new Error("The PDF preview canvas is unavailable.");
+          await page.render({
+            canvasContext: context,
+            transform: [pixelRatio, 0, 0, pixelRatio, 0, 0],
+            viewport,
+          }).promise;
+          renderedPages.push(canvas.toDataURL("image/png"));
+        }
+        if (!cancelled) setPages(renderedPages);
+        pdf.cleanup?.();
+      } catch (cause) {
+        if (!cancelled) {
+          setRenderError(
+            cause instanceof Error
+              ? cause.message
+              : "This PDF could not be rendered for preview.",
+          );
+        }
+      }
+    }
+
+    void renderPdf();
+    return () => {
+      cancelled = true;
+      void Promise.resolve(loadingTask?.destroy?.()).catch(() => undefined);
+    };
+  }, [src]);
+
+  if (renderError) return <p className="p-6 text-sm text-red-700">{renderError}</p>;
+  if (pages.length === 0) {
+    return <p className="p-6 text-sm text-muted-foreground">Rendering secure PDF preview…</p>;
+  }
+  return (
+    <div className="booking-document-preview-pages">
+      {pages.map((page, index) => (
+        <img
+          alt={`${filename}, page ${index + 1}`}
+          className="booking-document-preview-image"
+          key={page}
+          src={page}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -1324,28 +2521,47 @@ function RequirementOutcomeSelect({
   value,
   onChange,
   options,
+  includePlaceholder = true,
+  hidePlaceholder = false,
+  compact = false,
 }: {
   id: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
-  options: string[];
+  options: Array<string | { value: string; label: string }>;
+  includePlaceholder?: boolean;
+  hidePlaceholder?: boolean;
+  compact?: boolean;
 }) {
   return (
-    <label className="text-sm font-medium" htmlFor={id}>
-      <span>{label}</span>
+    <label
+      className={
+        compact ? "admin-booking-ledger__outcome" : "text-sm font-medium"
+      }
+      htmlFor={id}
+    >
+      <span className={compact ? "sr-only" : undefined}>{label}</span>
       <TSelect
         id={id}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2"
+        className={compact ? undefined : "mt-2"}
       >
-        <option value="">Select an outcome…</option>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
+        {includePlaceholder ? (
+          <option value="" disabled={hidePlaceholder} hidden={hidePlaceholder}>
+            Select an outcome…
           </option>
-        ))}
+        ) : null}
+        {options.map((option) => {
+          const value = typeof option === "string" ? option : option.value;
+          const label = typeof option === "string" ? option : option.label;
+          return (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          );
+        })}
       </TSelect>
     </label>
   );
@@ -1677,6 +2893,7 @@ function ActivityCard({ booking }: { booking: AdminBooking }) {
 function OwnerActionArea({
   booking,
   canConfirm,
+  canCancel,
   canRelease,
   canReturn,
   releaseOdometer,
@@ -1703,11 +2920,16 @@ function OwnerActionArea({
   setObservedDamageNotes,
   returnRemarks,
   setReturnRemarks,
+  cancellationReason,
+  setCancellationReason,
+  cancelDialogOpen,
+  setCancelDialogOpen,
   busyAction,
   onAction,
 }: {
   booking: AdminBooking;
   canConfirm: boolean;
+  canCancel: boolean;
   canRelease: boolean;
   canReturn: boolean;
   releaseOdometer: string;
@@ -1734,15 +2956,95 @@ function OwnerActionArea({
   setObservedDamageNotes: (value: string) => void;
   returnRemarks: string;
   setReturnRemarks: (value: string) => void;
+  cancellationReason: string;
+  setCancellationReason: (value: string) => void;
+  cancelDialogOpen: boolean;
+  setCancelDialogOpen: (open: boolean) => void;
   busyAction: string | null;
   onAction: (
-    action: "assign" | "confirm" | "release" | "return",
+    action: "assign" | "confirm" | "cancel" | "release" | "return",
     body: Record<string, unknown>,
     message: string,
-  ) => Promise<void>;
+  ) => Promise<boolean>;
 }) {
   return (
     <div className="space-y-5">
+      {canCancel ? (
+        <Card>
+          <CardHeader
+            title="Cancel reservation"
+            hint="Cancellation is available only before the rental is released. The payment and requirement history will be retained."
+          />
+          <div className="space-y-4 px-5 py-5">
+            <label
+              className="block text-sm font-medium"
+              htmlFor="cancellation-reason"
+            >
+              <span>Cancellation reason</span>
+              <TInput
+                id="cancellation-reason"
+                name="cancellation-reason"
+                value={cancellationReason}
+                onChange={(event) => setCancellationReason(event.target.value)}
+                placeholder="Required for the audit trail"
+                className="mt-2"
+              />
+            </label>
+            <Btn
+              variant="danger"
+              disabled={busyAction !== null || !cancellationReason.trim()}
+              onClick={() => setCancelDialogOpen(true)}
+            >
+              Cancel confirmed reservation
+            </Btn>
+          </div>
+          <AlertDialog
+            open={cancelDialogOpen}
+            onOpenChange={(open) => {
+              if (!busyAction) setCancelDialogOpen(open);
+            }}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Cancel this confirmed reservation?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will cancel {bookingReferenceLabel(booking.id)} and
+                  release its vehicle allocation. Requirement and payment
+                  records will stay in the audit history.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={busyAction !== null}>
+                  Keep reservation
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={busyAction !== null}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    void onAction(
+                      "cancel",
+                      {
+                        expectedConfirmedAt: booking.confirmed_at,
+                        cancellationReason,
+                      },
+                      "Confirmed reservation cancelled and vehicle allocation released.",
+                    ).then((cancelled) => {
+                      if (cancelled) setCancelDialogOpen(false);
+                    });
+                  }}
+                  className="border border-[#b43b3b] bg-white px-4 text-sm font-semibold text-[#b43b3b] shadow-none hover:bg-[#fff2f1]"
+                >
+                  {busyAction === "cancel"
+                    ? "Cancelling…"
+                    : "Cancel reservation"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </Card>
+      ) : null}
       {canRelease ||
       (booking.booking_status === "Confirmed" && !booking.rental) ? (
         <Card>

@@ -117,15 +117,17 @@ function valueOrEmpty(value: number | null) {
   return value == null ? "" : String(value);
 }
 
-function rentalReadinessState(readiness: ReadinessItem | null) {
+function rentalReadinessState(readiness: ReadinessItem | null | undefined) {
   return readiness?.maintenanceReady
     ? "Available for rental"
     : "Unavailable for rental";
 }
 
-function rentalReadinessReasons(readiness: ReadinessItem | null) {
+function rentalReadinessReasons(readiness: ReadinessItem | null | undefined) {
   const labels: Record<MaintenanceReadinessReason, string> = {
     "Vehicle inactive": "The vehicle is inactive.",
+    "Return inspection pending":
+      "Return inspection must be completed before this vehicle can be rented.",
     "Active blocking maintenance":
       "An active maintenance concern prevents rental use.",
     "Unresolved maintenance concern prevents rental use":

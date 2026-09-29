@@ -8,6 +8,7 @@ import {
 import {
   ArrowRight,
   Car,
+  ChevronDown,
   CreditCard,
   FileText,
   Search,
@@ -229,7 +230,8 @@ function BookingsPage() {
   const readyForReviewCount = rows.filter(
     (booking) =>
       booking.booking_status === "Submitted" &&
-      booking.requirement_status === "Verified",
+      booking.requirement_status === "Verified" &&
+      booking.payment_status === "Verified",
   ).length;
   const paymentReviewCount = rows.filter(
     (booking) => booking.payment_status === "Pending Verification",
@@ -243,7 +245,7 @@ function BookingsPage() {
         <div>
           <h1>Rental requests</h1>
           <p>
-            Review requirements, confirm the request, then collect payment.
+            Review requirements, record and verify payment, then confirm the rental.
           </p>
         </div>
         <div className="admin-bookings-heading__stats" aria-label="Queue overview">
@@ -253,7 +255,7 @@ function BookingsPage() {
             loading={isLoading}
           />
           <QueueMetric
-            label="Needs attention"
+            label="Needs attention on this page"
             value={attentionCount}
             loading={isLoading}
             attention={attentionCount > 0}
@@ -448,8 +450,8 @@ function AttentionRail({
     },
     {
       icon: Car,
-      label: "Ready for request review",
-      detail: "Requirements verified; confirm vehicle and schedule",
+      label: "Ready to confirm",
+      detail: "Requirements and payment verified; confirm rental",
       value: readyForReviewCount,
       to: "/admin/bookings" as never,
     },
@@ -466,8 +468,8 @@ function AttentionRail({
   return (
     <aside className="admin-bookings-attention" aria-labelledby="attention-heading">
       <div className="admin-bookings-attention__heading">
-        <h2 id="attention-heading">Needs attention</h2>
-        <p>Work through the next unblocker for each request.</p>
+        <h2 id="attention-heading">Current page tasks</h2>
+        <p>Counts reflect the requests currently shown in this page.</p>
       </div>
       <div className="admin-bookings-attention__list">
         {items.map(({ icon: Icon, label, detail, value, to, attention }) => (
@@ -542,7 +544,7 @@ function BookingsWorkspaceSkeleton() {
 function BookingsTable({ rows }: { rows: AdminBooking[] }) {
   return (
     <>
-      <div className="hidden xl:block">
+      <div className="hidden 2xl:block">
         <Card className="admin-bookings-table-card">
           <div
             className="overflow-x-auto"
@@ -585,10 +587,7 @@ function BookingsTable({ rows }: { rows: AdminBooking[] }) {
           </div>
         </Card>
       </div>
-      <div className="space-y-3 xl:hidden">
-        <p className="text-xs text-muted-foreground">
-          Select a request to review its complete operational context.
-        </p>
+      <div className="admin-bookings-responsive-list 2xl:hidden">
         {rows.map((booking) => (
           <BookingDisclosure key={booking.id} booking={booking} />
         ))}
@@ -683,12 +682,10 @@ function BookingDisclosure({ booking }: { booking: AdminBooking }) {
               {booking.requested_vehicle?.name ?? "Vehicle not recorded"} ·{" "}
               {formatAdminDateRange(booking.pickup_at, booking.return_at)}
             </p>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">
-              {booking.id}
-            </p>
+            <p className="admin-bookings-reference">Ref. {shortBookingReference(booking.id)}</p>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
-            Review <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          <span className="admin-bookings-disclosure-toggle">
+            View details <ChevronDown className="h-4 w-4" aria-hidden="true" />
           </span>
         </div>
       </summary>

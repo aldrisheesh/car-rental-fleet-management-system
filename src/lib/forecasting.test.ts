@@ -1,45 +1,185 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { calculateWma, extractWeeklyDemand, trustworthyCoverageWeekStart, isoDay } from "./forecasting.server.ts";
+import {
+  calculateWma,
+  extractWeeklyDemand,
+  forecastAccuracy,
+  trustworthyCoverageWeekStart,
+  isoDay,
+} from "./forecasting.server.ts";
 
-const booking = (week: string, status = "Confirmed") => ({ booking_status: status, pickup_branch_id: "b", pickup_at: `${week}T04:00:00Z`, requested_vehicle: { category: { id: "c" } } });
+const booking = (week: string, status = "Confirmed") => ({
+  booking_status: status,
+  pickup_branch_id: "b",
+  pickup_at: `${week}T04:00:00Z`,
+  requested_vehicle: { category: { id: "c" } },
+});
 
 test("forecast generation uses the explicit requested-vehicle FK relationship", async () => {
-  const source = await readFile(new URL("./forecasting.server.ts", import.meta.url), "utf8");
-  assert.match(source, /from\("booking_requests"\)\.select\("id,booking_status,pickup_at,pickup_branch_id,requested_vehicle:vehicles!booking_requests_requested_vehicle_id_fkey\(id,category:vehicle_categories\(id,name\)\)"\)/);
-  assert.doesNotMatch(source, /vehicles!booking_requests_requested_vehicle_id\(/);
+  const source = await readFile(
+    new URL("./forecasting.server.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    source,
+    /from\("booking_requests"\)[\s\S]*booking_requests_requested_vehicle_id_fkey\(id,category:vehicle_categories\(id,name\)\)/,
+  );
+  assert.doesNotMatch(
+    source,
+    /vehicles!booking_requests_requested_vehicle_id\(/,
+  );
 });
 
 test("coverage is not inferred from an earliest historical booking", () => {
-  const result = extractWeeklyDemand([booking("2026-01-05")], "2026-09-01T00:00:00+08:00", new Date("2026-09-15T00:00:00+08:00"));
+  const result = extractWeeklyDemand(
+    [booking("2026-01-05")],
+    "2026-09-01T00:00:00+08:00",
+    new Date("2026-09-15T00:00:00+08:00"),
+  );
   assert.equal(result.size, 0);
 });
 
 test("fully covered prospective zero weeks are retained", () => {
-  const result = extractWeeklyDemand([booking("2026-09-07")], "2026-09-01T00:00:00+08:00", new Date("2026-09-29T00:00:00+08:00"));
-  assert.deepEqual(result.get("b:c")?.map(x => x.demand), [1, 0, 0]);
+  const result = extractWeeklyDemand(
+    [booking("2026-09-07")],
+    "2026-09-01T00:00:00+08:00",
+    new Date("2026-09-29T00:00:00+08:00"),
+  );
+  assert.deepEqual(
+    result.get("b:c")?.map((x) => x.demand),
+    [1, 0, 0],
+  );
 });
 
 test("partial tracking-start week is excluded and three consecutive observations are required", () => {
-  const result = extractWeeklyDemand([booking("2026-09-07"), booking("2026-09-21")], "2026-09-03T00:00:00+08:00", new Date("2026-09-29T00:00:00+08:00"));
-  assert.deepEqual(result.get("b:c")?.map(x => x.demand), [1, 0, 1]);
+  const result = extractWeeklyDemand(
+    [booking("2026-09-07"), booking("2026-09-21")],
+    "2026-09-03T00:00:00+08:00",
+    new Date("2026-09-29T00:00:00+08:00"),
+  );
+  assert.deepEqual(
+    result.get("b:c")?.map((x) => x.demand),
+    [1, 0, 1],
+  );
   assert.equal(calculateWma(result.get("b:c")!.slice(0, 2)), null);
   assert.ok(calculateWma(result.get("b:c")!));
 });
 test("canonical pair with covered all-zero weeks is forecastable", () => {
-  const r = extractWeeklyDemand([], "2026-09-07T00:00:00+08:00", new Date("2026-09-29T00:00:00+08:00"), [{ branchId: "b", categoryId: "c" }]);
-  assert.deepEqual(r.get("b:c")?.map(x => x.demand), [0, 0, 0]);
+  const r = extractWeeklyDemand(
+    [],
+    "2026-09-07T00:00:00+08:00",
+    new Date("2026-09-29T00:00:00+08:00"),
+    [{ branchId: "b", categoryId: "c" }],
+  );
+  assert.deepEqual(
+    r.get("b:c")?.map((x) => x.demand),
+    [0, 0, 0],
+  );
   assert.deepEqual(calculateWma(r.get("b:c")!)?.forecasts, [0, 0, 0]);
 });
 test("canonical pairs preserve observed qualifying demand", () => {
-  const r = extractWeeklyDemand([booking("2026-09-07"), booking("2026-09-14"), booking("2026-09-21")], "2026-09-07T00:00:00+08:00", new Date("2026-09-29T00:00:00+08:00"), [{ branchId: "b", categoryId: "c" }]);
-  assert.deepEqual(r.get("b:c")?.map(x => x.demand), [1, 1, 1]);
+  const r = extractWeeklyDemand(
+    [booking("2026-09-07"), booking("2026-09-14"), booking("2026-09-21")],
+    "2026-09-07T00:00:00+08:00",
+    new Date("2026-09-29T00:00:00+08:00"),
+    [{ branchId: "b", categoryId: "c" }],
+  );
+  assert.deepEqual(
+    r.get("b:c")?.map((x) => x.demand),
+    [1, 1, 1],
+  );
   assert.equal(calculateWma(r.get("b:c")!)?.forecasts[0], 1);
 });
 test("coverage begins only at exact Manila Monday midnight", () => {
-  assert.equal(isoDay(trustworthyCoverageWeekStart("2026-09-07T00:00:00+08:00")), "2026-09-07");
-  assert.equal(isoDay(trustworthyCoverageWeekStart("2026-09-07T00:00:01+08:00")), "2026-09-14");
-  assert.equal(isoDay(trustworthyCoverageWeekStart("2026-09-07T00:15:00+08:00")), "2026-09-14");
-  assert.equal(isoDay(trustworthyCoverageWeekStart("2026-09-08T00:00:00+08:00")), "2026-09-14");
+  assert.equal(
+    isoDay(trustworthyCoverageWeekStart("2026-09-07T00:00:00+08:00")),
+    "2026-09-07",
+  );
+  assert.equal(
+    isoDay(trustworthyCoverageWeekStart("2026-09-07T00:00:01+08:00")),
+    "2026-09-14",
+  );
+  assert.equal(
+    isoDay(trustworthyCoverageWeekStart("2026-09-07T00:15:00+08:00")),
+    "2026-09-14",
+  );
+  assert.equal(
+    isoDay(trustworthyCoverageWeekStart("2026-09-08T00:00:00+08:00")),
+    "2026-09-14",
+  );
+});
+
+test("forecast accuracy selects the latest eligible record within each branch and category series", () => {
+  const result = forecastAccuracy([
+    {
+      branchId: "a",
+      categoryId: "sedan",
+      horizon: 1,
+      targetWeekStart: "2026-09-21",
+      generatedAt: "2026-09-13T00:00:00Z",
+      actualDemand: 10,
+      forecastedDemand: 5,
+    },
+    {
+      branchId: "a",
+      categoryId: "sedan",
+      horizon: 1,
+      targetWeekStart: "2026-09-21",
+      generatedAt: "2026-09-20T00:00:00Z",
+      actualDemand: 10,
+      forecastedDemand: 8,
+    },
+    {
+      branchId: "b",
+      categoryId: "sedan",
+      horizon: 1,
+      targetWeekStart: "2026-09-21",
+      generatedAt: "2026-09-20T00:00:00Z",
+      actualDemand: 20,
+      forecastedDemand: 10,
+    },
+    {
+      branchId: "a",
+      categoryId: "van",
+      horizon: 1,
+      targetWeekStart: "2026-09-21",
+      generatedAt: "2026-09-20T00:00:00Z",
+      actualDemand: 0,
+      forecastedDemand: 4,
+    },
+    {
+      branchId: "a",
+      categoryId: "sedan",
+      horizon: 2,
+      targetWeekStart: "2026-09-28",
+      generatedAt: "2026-09-20T00:00:00Z",
+      actualDemand: 10,
+      forecastedDemand: 1,
+    },
+  ]);
+
+  assert.equal(result.eligibleForecasts, 2);
+  assert.equal(result.excludedZeroActuals, 1);
+  assert.equal(result.overallMape, 35);
+  assert.deepEqual(result.series, [
+    { branchId: "a", categoryId: "sedan", mape: 20, sampleSize: 1 },
+    { branchId: "b", categoryId: "sedan", mape: 50, sampleSize: 1 },
+  ]);
+});
+
+test("forecast accuracy excludes records generated after the target week began", () => {
+  const result = forecastAccuracy([
+    {
+      branchId: "a",
+      categoryId: "sedan",
+      horizon: 1,
+      targetWeekStart: "2026-09-21",
+      generatedAt: "2026-09-21T00:00:00+08:00",
+      actualDemand: 10,
+      forecastedDemand: 10,
+    },
+  ]);
+  assert.equal(result.overallMape, null);
+  assert.equal(result.eligibleForecasts, 0);
 });

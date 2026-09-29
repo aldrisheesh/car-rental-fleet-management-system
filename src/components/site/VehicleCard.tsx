@@ -14,6 +14,8 @@ type VehicleCardProps = {
   /** Kept for the older, out-of-slice customer landing route during migration. */
   v?: LegacyVehicle;
   href?: string;
+  detailHref?: string;
+  detailDisabled?: boolean;
   reason?: string;
   bookingSearch?: Record<string, string | undefined>;
   bookingLabel?: string;
@@ -29,6 +31,8 @@ export function VehicleCard({
   vehicle,
   v,
   href,
+  detailHref,
+  detailDisabled = false,
   reason,
   bookingSearch,
   bookingLabel,
@@ -79,7 +83,11 @@ export function VehicleCard({
 
         {reason ? <FinderReasons reasons={[reason]} compact /> : null}
 
-        <VehicleFacts vehicle={currentVehicle} className="vehicle-card-facts" />
+        <VehicleFacts
+          vehicle={currentVehicle}
+          className="vehicle-card-facts"
+          showBranch={false}
+        />
 
         {actionDisabled ? (
           <button
@@ -97,6 +105,19 @@ export function VehicleCard({
             {bookingLabel ?? "View car"}
           </Link>
         )}
+        {detailHref && detailDisabled ? (
+          <button
+            className="vehicle-card-detail-link"
+            type="button"
+            disabled
+          >
+            View details
+          </button>
+        ) : detailHref ? (
+          <Link className="vehicle-card-detail-link" to={detailHref as never}>
+            View details
+          </Link>
+        ) : null}
       </div>
     </article>
   );
@@ -111,6 +132,7 @@ function legacyVehicle(value: LegacyVehicle | undefined): CardVehicle | null {
     transmission: value.transmission,
     fuel_type: value.fuel,
     seat_capacity: value.seats,
+    large_luggage_capacity: null,
     daily_rate: value.pricePerDay,
     image_url: value.image,
     branch: { name: value.branch },

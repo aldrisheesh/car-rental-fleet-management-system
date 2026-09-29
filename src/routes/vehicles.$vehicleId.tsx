@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, RefreshCw } from "lucide-react";
 
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import {
   CustomerPage,
-  FinderRationale,
   Rate,
   StatusCallout,
   VehicleFacts,
@@ -17,10 +16,11 @@ import {
   dateTimeInputFromIso,
   encodeSearch,
   fetchJson,
-  formatDateRange,
+  formatMoney,
   type CustomerVehicle,
   type FinderResponse,
 } from "@/lib/customer-data";
+import { calculateRentalDays } from "@/lib/rental-duration";
 import {
   finderContextForSubmission,
   parseFinderDateSelection,
@@ -53,12 +53,13 @@ function formatTripDate(value: string) {
 }
 
 function formatTripTime(value: string) {
-  const match = /T(\d{2}):(\d{2})/.exec(value);
-  if (!match) return "Time not selected";
+  const instant = new Date(value);
+  if (Number.isNaN(instant.getTime())) return "Time not selected";
   return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
     hour: "numeric",
     minute: "2-digit",
-  }).format(new Date(2000, 0, 1, Number(match[1]), Number(match[2])));
+  }).format(instant);
 }
 
 function VehicleDetailSkeleton() {
@@ -110,13 +111,22 @@ function VehicleDetailPage() {
   const [finderStatus, setFinderStatus] = useState<
     "idle" | "checking" | "matched" | "stale" | "error"
   >("idle");
-  const [finderResponse, setFinderResponse] = useState<FinderResponse | null>(
-    null,
-  );
   const [activeImage, setActiveImage] = useState(0);
   const finderKey = useRef("");
 
   const vehicle = vehicles.find((item) => item.id === vehicleId) ?? null;
+  const galleryImages = useMemo(() => {
+    if (!vehicle) return [];
+    const images = vehicle.images?.length
+      ? [...vehicle.images]
+      : vehicle.image_url
+        ? [{ id: "cover", public_url: vehicle.image_url, is_cover: true }]
+        : [];
+    return images.sort(
+      (left, right) =>
+        Number(Boolean(right.is_cover)) - Number(Boolean(left.is_cover)),
+    );
+  }, [vehicle]);
   const handoff = useMemo(
     () => parseFinderBookingHandoff({ ...search, vehicle: vehicleId }),
     [search, vehicleId],
@@ -126,7 +136,7 @@ function VehicleDetailPage() {
     [search],
   );
   const tripDates = handoff ?? selectedDates;
-  const hasEvaluatedContext = Boolean(handoff);
+  const canContinue = Boolean(tripDates);
 
   const loadVehicle = useCallback(async () => {
     setLoading(true);
@@ -158,9 +168,12 @@ function VehicleDetailPage() {
   }, [loadVehicle]);
 
   useEffect(() => {
+    setActiveImage(0);
+  }, [vehicle?.id, galleryImages[0]?.id]);
+
+  useEffect(() => {
     if (!handoff) {
       finderKey.current = "";
-      setFinderResponse(null);
       setFinderStatus("idle");
       return;
     }
@@ -169,9 +182,8 @@ function VehicleDetailPage() {
       handoff.requestedStart,
       handoff.requestedEnd,
       handoff.passengerCount,
+      handoff.largeBagCount,
       handoff.maximumBudget,
-      handoff.preferredCategory,
-      handoff.destination,
     ].join("|");
     if (finderKey.current === key) return;
     finderKey.current = key;
@@ -182,7 +194,6 @@ function VehicleDetailPage() {
       body: JSON.stringify(finderContextForSubmission(handoff)),
     })
       .then((result) => {
-        setFinderResponse(result);
         const selected = result.recommendations.find(
           (item) => item.vehicleId === vehicleId,
         );
@@ -195,16 +206,24 @@ function VehicleDetailPage() {
 
   const backSearch = encodeSearch({ ...search, vehicle: undefined });
   const bookingSearch = encodeSearch({ ...search, vehicle: vehicleId });
-  const matchedRecommendation = finderResponse?.recommendations.find(
-    (item) => item.vehicleId === vehicleId,
-  );
-  const tripFitReasons =
-    matchedRecommendation?.reasons.filter(
-      (reason) => reason !== "Available for your selected dates",
-    ) ?? [];
+  const rentalEstimate = useMemo(() => {
+    if (!tripDates || !vehicle || vehicle.daily_rate == null) return null;
+    try {
+      const rentalDays = calculateRentalDays(
+        new Date(tripDates.requestedStart),
+        new Date(tripDates.requestedEnd),
+      );
+      return {
+        rentalDays,
+        total: rentalDays * vehicle.daily_rate,
+      };
+    } catch {
+      return null;
+    }
+  }, [tripDates, vehicle]);
 
   function continueWithVehicle() {
-    if (!vehicle) return;
+    if (!vehicle || !canContinue) return;
     const destination = getCustomerSession()
       ? `/booking${bookingSearch}`
       : `/sign-in${bookingSearch}`;
@@ -263,23 +282,28 @@ function VehicleDetailPage() {
               >
                 <div className="detail-gallery-main">
                   <VehicleImage
-                    src={vehicle.image_url}
+                    src={galleryImages[activeImage]?.public_url ?? vehicle.image_url}
                     alt={vehicle.name}
                     priority
                     sizes="(max-width: 767px) 100vw, 58vw"
                   />
                 </div>
-                <div className="detail-gallery-thumbs">
-                  <button
-                    className={`detail-gallery-thumb ${activeImage === 0 ? "is-active" : ""}`}
-                    type="button"
-                    aria-label={`Show ${vehicle.name} image`}
-                    aria-pressed={activeImage === 0}
-                    onClick={() => setActiveImage(0)}
-                  >
-                    <VehicleImage src={vehicle.image_url} alt="" sizes="5rem" />
-                  </button>
-                </div>
+                {galleryImages.length > 1 ? (
+                  <div className="detail-gallery-thumbs">
+                    {galleryImages.map((image, index) => (
+                      <button
+                        key={image.id}
+                        className={`detail-gallery-thumb ${activeImage === index ? "is-active" : ""}`}
+                        type="button"
+                        aria-label={`Show ${vehicle.name} image ${index + 1}`}
+                        aria-pressed={activeImage === index}
+                        onClick={() => setActiveImage(index)}
+                      >
+                        <VehicleImage src={image.public_url} alt="" sizes="5rem" />
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </section>
 
               <section className="detail-panel" aria-labelledby="vehicle-title">
@@ -289,10 +313,13 @@ function VehicleDetailPage() {
                   </p>
                   <h1 id="vehicle-title">{vehicle.name}</h1>
                   <Rate value={vehicle.daily_rate} />
+                  <p className="detail-intro">
+                    {vehicleFitSummary(vehicle)}
+                  </p>
                 </div>
 
                 {finderStatus === "checking" ? (
-                  <StatusCallout tone="info" title="Checking your trip fit">
+                  <StatusCallout tone="info" title="Checking your ride match">
                     The Finder context is being checked against the current
                     fleet.
                   </StatusCallout>
@@ -310,106 +337,99 @@ function VehicleDetailPage() {
                 {finderStatus === "error" ? (
                   <StatusCallout
                     tone="warning"
-                    title="Trip fit could not be refreshed"
+                    title="Your ride match could not be refreshed"
                   >
                     The vehicle details below are current fleet data. Finder
                     reasons are hidden until the trip evaluation can be checked
                     again.
                   </StatusCallout>
                 ) : null}
-                <VehicleFacts vehicle={vehicle} />
+                <section
+                  className="detail-trip-fit"
+                  aria-labelledby="detail-trip-fit-title"
+                >
+                  <h2 id="detail-trip-fit-title">A good fit for your trip</h2>
+                  <VehicleFacts vehicle={vehicle} showBranch={false} />
+                </section>
 
-                <div className="detail-context">
-                  <h2>
-                    <CalendarDays size={17} aria-hidden="true" /> Your trip
+                <section
+                  className="detail-rental"
+                  aria-labelledby="detail-rental-title"
+                >
+                  <h2 id="detail-rental-title">
+                    <CalendarDays size={18} aria-hidden="true" /> Plan your rental
                   </h2>
                   {tripDates ? (
                     <>
-                      <div
-                        className="detail-trip-dates"
-                        aria-label={`Trip dates: ${formatDateRange(
-                          tripDates.requestedStart,
-                          tripDates.requestedEnd,
-                        )}`}
-                      >
+                      <p className="detail-rental-dates">
                         <time dateTime={tripDates.requestedStart}>
-                          <span>Pick-up</span>
-                          <strong>
-                            {formatTripDate(tripDates.requestedStart)}
-                            <span>
-                              at {formatTripTime(tripDates.requestedStart)}
-                            </span>
-                          </strong>
+                          {formatTripDate(tripDates.requestedStart)} at{" "}
+                          {formatTripTime(tripDates.requestedStart)}
                         </time>
-                        <span
-                          className="detail-trip-dates-divider"
-                          aria-hidden="true"
-                        />
+                        <span aria-hidden="true"> to </span>
                         <time dateTime={tripDates.requestedEnd}>
-                          <span>Return</span>
-                          <strong>
-                            {formatTripDate(tripDates.requestedEnd)}
-                            <span>
-                              at {formatTripTime(tripDates.requestedEnd)}
-                            </span>
-                          </strong>
+                          {formatTripDate(tripDates.requestedEnd)} at{" "}
+                          {formatTripTime(tripDates.requestedEnd)}
                         </time>
-                      </div>
-                      {handoff ? (
-                        <p className="detail-trip-meta">
-                          {handoff.passengerCount}{" "}
-                          {handoff.passengerCount === 1
-                            ? "passenger"
-                            : "passengers"}
-                        </p>
+                      </p>
+                      {rentalEstimate ? (
+                        <div className="detail-rental-estimate">
+                          <span>
+                            {rentalEstimate.rentalDays} {rentalEstimate.rentalDays === 1 ? "day" : "days"}
+                          </span>
+                          <p>Estimated vehicle rental</p>
+                          <strong>{formatMoney(rentalEstimate.total)}</strong>
+                        </div>
                       ) : null}
                     </>
                   ) : (
-                    <p>
-                      No trip dates selected yet. You can continue with this car
-                      and add the request details next.
+                    <p className="detail-rental-empty">
+                      Choose dates to see the estimated vehicle rental and request this car.
                     </p>
                   )}
-                </div>
-
-                {tripFitReasons.length ? (
-                  <FinderRationale reasons={tripFitReasons} />
-                ) : null}
-
-                <div className="detail-action-panel detail-action-panel-desktop">
                   <button
                     className="customer-primary-button"
                     type="button"
                     onClick={continueWithVehicle}
+                    disabled={!canContinue}
                   >
-                    Continue with this car
+                    Request this car
                   </button>
+                  {!canContinue ? (
+                    <Link
+                      className="customer-secondary-button detail-choose-dates"
+                      to="/vehicles"
+                      search={
+                        {
+                          ...search,
+                          vehicle: undefined,
+                          finderOpenDates: "true",
+                        } as never
+                      }
+                    >
+                      <CalendarDays size={16} aria-hidden="true" /> Choose dates
+                    </Link>
+                  ) : null}
                   <p className="detail-action-note">
-                    Your selection is not a reservation until you send a rental
-                    request.
+                    Delivery details are confirmed after your request is approved.
                   </p>
-                </div>
+                </section>
               </section>
             </div>
           )}
-          {vehicle ? (
-            <div className="detail-action-panel detail-action-panel-mobile">
-              <button
-                className="customer-primary-button"
-                type="button"
-                onClick={continueWithVehicle}
-              >
-                Continue with this car
-              </button>
-              <p className="detail-action-note">
-                Your selection is not a reservation until you send a rental
-                request.
-              </p>
-            </div>
-          ) : null}
         </div>
       </main>
       <Footer />
     </CustomerPage>
   );
+}
+
+function vehicleFitSummary(vehicle: CustomerVehicle) {
+  const seats = vehicle.seat_capacity;
+  const bags = vehicle.large_luggage_capacity;
+  if (seats && bags != null) {
+    return `Comfortably carries up to ${seats} travellers with room for ${bags} large ${bags === 1 ? "suitcase" : "suitcases"}.`;
+  }
+  if (seats) return `Comfortably carries up to ${seats} travellers.`;
+  return "Review the rental plan to see whether this car suits your trip.";
 }

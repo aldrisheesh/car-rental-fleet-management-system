@@ -21,8 +21,10 @@ export type CustomerPaymentMethod = {
   id: string;
   code?: string | null;
   label: string;
-  instructions?: string | null;
-  is_demo?: boolean | null;
+  recipient_name?: string | null;
+  account_number?: string | null;
+  qr_image_path?: string | null;
+  qr_image_url?: string | null;
 };
 
 export type CustomerPayment = {
@@ -37,6 +39,16 @@ export type CustomerPayment = {
   resubmission_reason?: string | null;
   submitted_at?: string | null;
   updated_at?: string | null;
+  payment_quote?: {
+    daily_rate?: number | string | null;
+    billable_days?: number | null;
+    rental_subtotal?: number | string | null;
+    delivery_fee?: number | string | null;
+    total_amount?: number | string | null;
+    down_payment_amount?: number | string | null;
+    remaining_balance_amount?: number | string | null;
+    security_deposit_amount?: number | string | null;
+  } | null;
   payment_methods?: CustomerPaymentMethod | null;
   payment_proofs?: CustomerPaymentProof[];
 };

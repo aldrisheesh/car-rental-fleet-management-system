@@ -26,7 +26,7 @@ export async function getCanonicalAdminFleet(
     client
       .from("vehicles")
       .select(
-        "id,name,license_plate,transmission,seat_capacity,daily_rate,image_url,is_active,branch:branches(id,name),category:vehicle_categories(id,name)",
+        "id,name,license_plate,transmission,seat_capacity,large_luggage_capacity,daily_rate,image_url,is_active,branch:branches(id,name),category:vehicle_categories(id,name)",
       )
       .order("name"),
     client.from("branches").select("id,name").order("name"),
@@ -49,6 +49,7 @@ export async function getCanonicalAdminFleet(
     categoriesResult,
     bookingsResult,
     rentalsResult,
+    inspectionResult,
   ].find((result) => result.error);
   if (failed?.error) throw failed.error;
 

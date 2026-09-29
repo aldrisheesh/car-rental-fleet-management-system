@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Dynamic Supabase joins are normalized before entering allocation-domain functions. */
 import { createFileRoute } from "@tanstack/react-router";
 import {
+  buildAllocationSummary,
   generateAllocationDrafts,
   revalidateSourceCandidates,
   selectLatestEvaluations,
@@ -20,6 +22,16 @@ const authStatus = (error: unknown) =>
       ? 403
       : 401
     : 503;
+
+class AllocationContextError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "AllocationContextError";
+  }
+}
 
 async function loadRecommendationView(client: any, batchId?: string) {
   let batchQuery = client
@@ -125,14 +137,139 @@ async function loadRecommendationView(client: any, batchId?: string) {
   };
 }
 
+async function loadCurrentAllocationContext(client: any) {
+  const latestRun = await client
+    .from("forecast_runs")
+    .select("id")
+    .order("generated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (latestRun.error)
+    throw new AllocationContextError(
+      "Unable to load the latest forecast run.",
+      503,
+    );
+  if (!latestRun.data)
+    throw new AllocationContextError(
+      "A demand forecast is required before recommendations can be generated.",
+      409,
+    );
+
+  const forecasts = await client
+    .from("forecasts")
+    .select(
+      "id,branch_id,vehicle_category_id,horizon,target_week_start,target_week_end",
+    )
+    .eq("run_id", latestRun.data.id);
+  if (forecasts.error)
+    throw new AllocationContextError(
+      "Unable to load the current forecast positions.",
+      503,
+    );
+  const forecastIds = (forecasts.data ?? []).map(
+    (forecast: any) => forecast.id,
+  );
+  if (!forecastIds.length)
+    throw new AllocationContextError(
+      "The latest forecast run has no positions to evaluate.",
+      409,
+    );
+
+  const evaluationRows = await client
+    .from("supply_evaluations")
+    .select(
+      "id,forecast_id,evaluated_at,required_units_snapshot,projected_supply,shortage_units,surplus_units",
+    )
+    .in("forecast_id", forecastIds);
+  if (evaluationRows.error)
+    throw new AllocationContextError(
+      "Unable to load current supply evaluations.",
+      503,
+    );
+  const forecastById = new Map(
+    (forecasts.data ?? []).map((forecast: any) => [forecast.id, forecast]),
+  );
+  const allEvaluations: AllocationEvaluation[] = (
+    evaluationRows.data ?? []
+  ).flatMap((row: any) => {
+    const forecast: any = forecastById.get(row.forecast_id);
+    return forecast
+      ? [
+          {
+            id: row.id,
+            evaluatedAt: row.evaluated_at,
+            forecastId: row.forecast_id,
+            branchId: forecast.branch_id,
+            categoryId: forecast.vehicle_category_id,
+            horizon: Number(forecast.horizon),
+            targetWeekStart: forecast.target_week_start,
+            targetWeekEnd: forecast.target_week_end,
+            requiredUnits: Number(row.required_units_snapshot),
+            projectedSupply: Number(row.projected_supply),
+            shortageUnits: Number(row.shortage_units),
+            surplusUnits: Number(row.surplus_units),
+          },
+        ]
+      : [];
+  });
+  const latest = selectLatestEvaluations(allEvaluations);
+  if (latest.length !== forecastIds.length)
+    throw new AllocationContextError(
+      "Supply analysis is still being prepared for the latest forecast run.",
+      409,
+    );
+
+  const sourceEvaluations = latest.filter(
+    (evaluation) => evaluation.surplusUnits > 0,
+  );
+  const sourceIds = sourceEvaluations.map((evaluation) => evaluation.id);
+  const snapshotItems = sourceIds.length
+    ? await client
+        .from("supply_evaluation_vehicles")
+        .select("evaluation_id,vehicle_id,eligible")
+        .in("evaluation_id", sourceIds)
+        .eq("eligible", true)
+    : { data: [], error: null };
+  if (snapshotItems.error)
+    throw new AllocationContextError(
+      "Unable to load VS015 vehicle snapshots.",
+      503,
+    );
+  const candidatesBySource = new Map<string, AllocationCandidate[]>();
+  await Promise.all(
+    sourceEvaluations.map(async (evaluation) => {
+      const ids = (snapshotItems.data ?? [])
+        .filter((item: any) => item.evaluation_id === evaluation.id)
+        .map((item: any) => item.vehicle_id);
+      candidatesBySource.set(
+        evaluation.id,
+        await revalidateSourceCandidates(evaluation, ids),
+      );
+    }),
+  );
+  const drafts = generateAllocationDrafts(latest, candidatesBySource);
+  return {
+    latest,
+    drafts,
+    summary: buildAllocationSummary(latest, candidatesBySource, drafts),
+  };
+}
+
 async function read() {
   try {
     const principal = await requirePrincipal();
     if (!internal(principal.role))
       return fail("Allocation recommendation access is restricted.", 403);
-    return Response.json(
-      await loadRecommendationView(getSupabaseServerClient() as any),
-    );
+    const client = getSupabaseServerClient() as any;
+    const view = await loadRecommendationView(client);
+    let summary = null;
+    try {
+      summary = (await loadCurrentAllocationContext(client)).summary;
+    } catch (error) {
+      if (!(error instanceof AllocationContextError && error.status === 409))
+        throw error;
+    }
+    return Response.json({ ...view, summary });
   } catch (error) {
     return fail(
       error instanceof AuthBoundaryError
@@ -156,98 +293,15 @@ async function generate({ request }: { request: Request }) {
     if (!idempotencyKey || idempotencyKey.length > 200)
       return fail("A valid idempotencyKey is required.");
     const client = getSupabaseServerClient() as any;
-    const latestRun = await client
-      .from("forecast_runs")
-      .select("id")
-      .order("generated_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (latestRun.error)
-      return fail("Unable to load the latest forecast run.", 503);
-    if (!latestRun.data)
-      return fail(
-        "A demand forecast is required before recommendations can be generated.",
-        409,
-      );
-
-    const forecasts = await client
-      .from("forecasts")
-      .select(
-        "id,branch_id,vehicle_category_id,horizon,target_week_start,target_week_end",
-      )
-      .eq("run_id", latestRun.data.id);
-    if (forecasts.error)
-      return fail("Unable to load the current forecast positions.", 503);
-    const forecastIds = (forecasts.data ?? []).map(
-      (forecast: any) => forecast.id,
-    );
-    if (!forecastIds.length)
-      return fail("The latest forecast run has no positions to evaluate.", 409);
-
-    const evaluationRows = await client
-      .from("supply_evaluations")
-      .select(
-        "id,forecast_id,evaluated_at,required_units_snapshot,projected_supply,shortage_units,surplus_units",
-      )
-      .in("forecast_id", forecastIds);
-    if (evaluationRows.error)
-      return fail("Unable to load current supply evaluations.", 503);
-    const forecastById = new Map(
-      (forecasts.data ?? []).map((f: any) => [f.id, f]),
-    );
-    const allEvaluations: AllocationEvaluation[] = (
-      evaluationRows.data ?? []
-    ).flatMap((row: any) => {
-      const forecast: any = forecastById.get(row.forecast_id);
-      return forecast
-        ? [
-            {
-              id: row.id,
-              evaluatedAt: row.evaluated_at,
-              forecastId: row.forecast_id,
-              branchId: forecast.branch_id,
-              categoryId: forecast.vehicle_category_id,
-              horizon: Number(forecast.horizon),
-              targetWeekStart: forecast.target_week_start,
-              targetWeekEnd: forecast.target_week_end,
-              requiredUnits: Number(row.required_units_snapshot),
-              projectedSupply: Number(row.projected_supply),
-              shortageUnits: Number(row.shortage_units),
-              surplusUnits: Number(row.surplus_units),
-            },
-          ]
-        : [];
-    });
-    const latest = selectLatestEvaluations(allEvaluations);
-    if (latest.length !== forecastIds.length)
-      return fail(
-        "Supply analysis is still being prepared for the latest forecast run.",
-        409,
-      );
-    const sourceEvaluations = latest.filter((e) => e.surplusUnits > 0);
-    const sourceIds = sourceEvaluations.map((e) => e.id);
-    const snapshotItems = sourceIds.length
-      ? await client
-          .from("supply_evaluation_vehicles")
-          .select("evaluation_id,vehicle_id,eligible")
-          .in("evaluation_id", sourceIds)
-          .eq("eligible", true)
-      : { data: [], error: null };
-    if (snapshotItems.error)
-      return fail("Unable to load VS015 vehicle snapshots.", 503);
-    const candidatesBySource = new Map<string, AllocationCandidate[]>();
-    await Promise.all(
-      sourceEvaluations.map(async (evaluation) => {
-        const ids = (snapshotItems.data ?? [])
-          .filter((x: any) => x.evaluation_id === evaluation.id)
-          .map((x: any) => x.vehicle_id);
-        candidatesBySource.set(
-          evaluation.id,
-          await revalidateSourceCandidates(evaluation, ids),
-        );
-      }),
-    );
-    const drafts = generateAllocationDrafts(latest, candidatesBySource);
+    let currentContext;
+    try {
+      currentContext = await loadCurrentAllocationContext(client);
+    } catch (error) {
+      if (error instanceof AllocationContextError)
+        return fail(error.message, error.status);
+      throw error;
+    }
+    const { latest, drafts, summary } = currentContext;
     const payload = drafts.map(
       ({ source, destination, recommendedUnits, candidates }) => ({
         source_supply_evaluation_id: source.id,
@@ -303,16 +357,7 @@ async function generate({ request }: { request: Request }) {
     return Response.json(
       {
         ...(await loadRecommendationView(client, persisted.data.id)),
-        summary: {
-          evaluatedPositions: latest.length,
-          shortagePositions: latest.filter(
-            (evaluation) => evaluation.shortageUnits > 0,
-          ).length,
-          surplusPositions: latest.filter(
-            (evaluation) => evaluation.surplusUnits > 0,
-          ).length,
-          generatedRecommendations: drafts.length,
-        },
+        summary,
       },
       { status: 201 },
     );

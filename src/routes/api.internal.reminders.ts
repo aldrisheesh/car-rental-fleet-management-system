@@ -4,7 +4,12 @@ import { isTrustedReminderInvocation } from "@/lib/reminder-invocation.server";
 import { processScheduledNotificationCycle } from "@/lib/reminders.server";
 
 export const Route = createFileRoute("/api/internal/reminders")({
-  server: { handlers: { POST: invokeReminderProcessor } },
+  server: {
+    handlers: {
+      GET: invokeReminderProcessor,
+      POST: invokeReminderProcessor,
+    },
+  },
 });
 
 async function invokeReminderProcessor({ request }: { request: Request }) {

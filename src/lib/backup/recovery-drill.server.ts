@@ -12,6 +12,7 @@ import type {
 } from "./backup-config.server.ts";
 import {
   BackupError,
+  bucketMustBePublic,
   normalizeBackupError,
   parseStorageManifest,
   PROTECTED_STORAGE_BUCKETS,
@@ -272,7 +273,11 @@ async function restoreAndValidateStorage(
 ) {
   for (const manifest of manifests) {
     const bucket = await targetClient.storage.getBucket(manifest.bucket);
-    if (bucket.error || !bucket.data || bucket.data.public)
+    if (
+      bucket.error ||
+      !bucket.data ||
+      bucket.data.public !== bucketMustBePublic(manifest.bucket)
+    )
       throw new BackupError("RestoreFailed");
     for (const object of manifest.objects) {
       const bytes = downloaded.get(object.artifactKey)!;

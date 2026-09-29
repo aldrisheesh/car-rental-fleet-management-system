@@ -121,3 +121,20 @@ test("cancelled blocking records do not block readiness", () => {
   );
   assert.deepEqual(readiness, { maintenanceReady: true, reasons: [] });
 });
+
+test("a returned vehicle stays unavailable while its inspection is pending", () => {
+  const readiness = evaluateMaintenanceReadiness(
+    {
+      is_active: true,
+      current_odometer_km: 10_000,
+      condition_blocks_rental_use: false,
+    },
+    [],
+    "2026-09-02",
+    true,
+  );
+  assert.deepEqual(readiness, {
+    maintenanceReady: false,
+    reasons: ["Return inspection pending"],
+  });
+});

@@ -1,29 +1,38 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import type { DateRange } from "react-day-picker";
 import {
   ArrowLeft,
   ArrowRight,
+  BadgeCheck,
   CalendarDays,
+  CarFront,
+  CircleAlert,
+  ClipboardCheck,
+  FileCheck2,
+  Fuel,
+  Luggage,
   MapPin,
   RefreshCw,
+  Settings2,
+  Users,
 } from "lucide-react";
 
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { AddressAutocomplete } from "@/components/customer/AddressAutocomplete";
-import { DateRangePicker } from "@/components/site/DateRangePicker";
-import { RentalDateTrigger } from "@/components/site/RentalDateTrigger";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   CustomerPage,
   FieldError,
   Rate,
-  RequestProgress,
+  RentalJourney,
   StatusCallout,
   VehicleImage,
 } from "@/components/customer/CustomerPrimitives";
@@ -33,8 +42,8 @@ import {
   encodeSearch,
   fetchJson,
   formatDateRange,
-  formatInputDateTime,
   type BookingMasterData,
+  type CustomerBooking,
   type CustomerVehicle,
 } from "@/lib/customer-data";
 import { getClientPrincipal, getSession } from "@/lib/auth-client";
@@ -51,7 +60,10 @@ import {
   manilaDateTimeLocalToInstant,
 } from "@/lib/business-time";
 import { resolvedReturnLocation } from "@/lib/customer-handoff";
-import { calculateRentalDays } from "@/lib/rental-duration";
+import {
+  calculateRentalDays,
+  formatRentalDuration,
+} from "@/lib/rental-duration";
 
 export const Route = createFileRoute("/booking")({
   validateSearch: (search) => validateFinderBookingSearch(search),
@@ -60,7 +72,8 @@ export const Route = createFileRoute("/booking")({
       { title: "Rental request | Briah's Car Rental" },
       {
         name: "description",
-        content: "Save trip details, complete requirements, then submit one rental request for review.",
+        content:
+          "Save trip details, complete requirements, then submit one rental request for review.",
       },
     ],
   }),
@@ -83,43 +96,74 @@ type BookingDraft = {
 
 type BookingErrors = Partial<Record<keyof BookingDraft | "vehicle", string>>;
 
-const timeOptions = [
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-];
-
-function dateFromDateTimeLocal(value: string) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})T/.exec(value);
-  if (!match) return undefined;
-  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+function sameBookingDetails(left: BookingDraft, right: BookingDraft) {
+  const normalize = (draft: BookingDraft) => ({
+    pickupBranchId: draft.pickupBranchId,
+    returnBranchId: draft.returnBranchId,
+    pickupAt: draft.pickupAt,
+    returnAt: draft.returnAt,
+    purposeOfUse: draft.purposeOfUse.trim(),
+    pickupLocation: draft.pickupLocation.trim(),
+    dropoffLocation: resolvedReturnLocation({
+      deliveryAddress: draft.pickupLocation,
+      alternateReturnAddress: draft.dropoffLocation,
+      sameReturnLocation: draft.sameReturnLocation,
+    }).trim(),
+    destination: draft.destination.trim(),
+    preferredSeatCount: draft.preferredSeatCount,
+  });
+  return JSON.stringify(normalize(left)) === JSON.stringify(normalize(right));
 }
 
-function timeFromDateTimeLocal(value: string, fallback: string) {
-  return /^\d{4}-\d{2}-\d{2}T(\d{2}:\d{2})/.exec(value)?.[1] ?? fallback;
+function tripMoment(value: string) {
+  const instant = manilaDateTimeLocalToInstant(value);
+  if (!instant) return { date: "Choose dates in Find a Car", time: "—" };
+  return {
+    date: new Intl.DateTimeFormat("en-PH", {
+      timeZone: "Asia/Manila",
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(instant),
+    time: new Intl.DateTimeFormat("en-PH", {
+      timeZone: "Asia/Manila",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(instant),
+  };
 }
 
-function dateTimeLocalForDate(date: Date, time: string) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}T${time}`;
-}
-
-function formatTime(value: string) {
-  const [hour, minute] = value.split(":").map(Number);
+function tripShortDate(value: string) {
+  const instant = manilaDateTimeLocalToInstant(value);
+  if (!instant) return "—";
   return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    month: "short",
+    day: "numeric",
+  }).format(instant);
+}
+
+function tripSidebarMoment(value: string) {
+  const instant = manilaDateTimeLocalToInstant(value);
+  if (!instant) return "Choose dates in Find a Car";
+  return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
     hour: "numeric",
     minute: "2-digit",
-  }).format(new Date(2000, 0, 1, hour, minute));
+  }).format(instant);
+}
+
+function formatPhp(amount: number | null) {
+  if (amount === null || !Number.isFinite(amount)) return "Rate pending";
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 function initialDraft(
@@ -162,10 +206,20 @@ function RentalRequestPage() {
   const [sessionChecked, setSessionChecked] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [reviewAcknowledged, setReviewAcknowledged] = useState(false);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(Boolean(search.editBooking));
+  const [editError, setEditError] = useState("");
+  const [initialEditDraft, setInitialEditDraft] = useState<BookingDraft | null>(
+    null,
+  );
+  const [noChangesOpen, setNoChangesOpen] = useState(false);
   const idempotency = useRef<{ fingerprint: string; key: string } | null>(null);
   const draftHydrated = useRef(false);
 
   const vehicleId = search.vehicle ?? "";
+  const editBookingId = search.editBooking;
+  const isEditing = Boolean(editBookingId);
   const selectedVehicle =
     vehicles.find((vehicle) => vehicle.id === vehicleId) ?? null;
   const storageKey = `briahs-rental-request-draft:${vehicleId}:${search.finderStart ?? ""}:${search.finderEnd ?? ""}`;
@@ -196,6 +250,67 @@ function RentalRequestPage() {
   }, []);
 
   useEffect(() => {
+    if (!editBookingId || !sessionChecked) {
+      if (!editBookingId) setEditLoading(false);
+      return;
+    }
+    if (!principal || principal.role !== "Customer/Renter") {
+      window.location.assign(
+        `/sign-in${encodeSearch({ ...search, returnTo: "/booking" })}`,
+      );
+      return;
+    }
+    let cancelled = false;
+    setEditLoading(true);
+    setEditError("");
+    void fetchJson<CustomerBooking[]>("/api/bookings")
+      .then((bookings) => {
+        if (cancelled) return;
+        const booking = bookings.find((item) => item.id === editBookingId);
+        if (!booking || booking.booking_status !== "Draft") {
+          setEditError("This request is no longer available to edit online.");
+          return;
+        }
+        if (booking.requested_vehicle?.id !== vehicleId) {
+          setEditError("The selected car does not match this rental request.");
+          return;
+        }
+        const pickupLocation = booking.pickup_location ?? "";
+        const dropoffLocation = booking.dropoff_location ?? "";
+        const initialDraft: BookingDraft = {
+          pickupBranchId: booking.pickup_branch?.id ?? "",
+          returnBranchId: booking.return_branch?.id ?? "",
+          pickupAt: dateTimeInputFromIso(booking.pickup_at),
+          returnAt: dateTimeInputFromIso(booking.return_at),
+          purposeOfUse: booking.purpose_of_use ?? "",
+          pickupDeliveryOption: "delivery",
+          pickupLocation,
+          dropoffLocation:
+            pickupLocation === dropoffLocation ? "" : dropoffLocation,
+          sameReturnLocation: pickupLocation === dropoffLocation,
+          destination: booking.destination ?? "",
+          preferredSeatCount: booking.preferred_seat_count?.toString() ?? "",
+        };
+        setDraft(initialDraft);
+        setInitialEditDraft(initialDraft);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setEditError(
+          error instanceof ApiRequestError
+            ? error.message
+            : "Your request could not be loaded for editing.",
+        );
+      })
+      .finally(() => {
+        if (!cancelled) setEditLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [editBookingId, principal, sessionChecked, vehicleId]);
+
+  useEffect(() => {
     let cancelled = false;
     void getSession().then((result) => {
       if (cancelled) return;
@@ -224,7 +339,8 @@ function RentalRequestPage() {
   }, [masterData, selectedVehicle, vehicleId]);
 
   useEffect(() => {
-    if (draftHydrated.current || typeof window === "undefined") return;
+    if (isEditing || draftHydrated.current || typeof window === "undefined")
+      return;
     draftHydrated.current = true;
     const stored = window.sessionStorage.getItem(storageKey);
     if (!stored) return;
@@ -239,7 +355,7 @@ function RentalRequestPage() {
     } catch {
       window.sessionStorage.removeItem(storageKey);
     }
-  }, [storageKey]);
+  }, [isEditing, storageKey]);
 
   function updateDraft<K extends keyof BookingDraft>(
     field: K,
@@ -284,10 +400,23 @@ function RentalRequestPage() {
     if (Object.keys(nextErrors).length) {
       return;
     }
+    if (
+      isEditing &&
+      initialEditDraft &&
+      sameBookingDetails(draft, initialEditDraft)
+    ) {
+      setNoChangesOpen(true);
+      return;
+    }
     if (typeof window !== "undefined")
       window.sessionStorage.setItem(storageKey, JSON.stringify(draft));
-    setStep(2);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setReviewAcknowledged(false);
+    setReviewLoading(true);
+    window.setTimeout(() => {
+      setStep(2);
+      setReviewLoading(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 260);
   }
 
   function finderContextIsStillValid() {
@@ -306,6 +435,12 @@ function RentalRequestPage() {
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       setStep(1);
+      return;
+    }
+    if (!reviewAcknowledged) {
+      setSubmitError(
+        "Read the rental guidelines and tick the acknowledgement before sending your request.",
+      );
       return;
     }
     if (!selectedVehicle || !draft.pickupBranchId || !draft.returnBranchId)
@@ -338,16 +473,18 @@ function RentalRequestPage() {
       // customer form no longer asks for a seat preference.
       preferredSeatCount: null,
       finderContext:
-        finderContextIsStillValid() && handoff
+        !isEditing && finderContextIsStillValid() && handoff
           ? finderContextForSubmission(handoff)
           : undefined,
     };
-    const fingerprint = JSON.stringify(payload);
-    if (
-      !idempotency.current ||
-      idempotency.current.fingerprint !== fingerprint
-    ) {
-      idempotency.current = { fingerprint, key: crypto.randomUUID() };
+    if (!isEditing) {
+      const fingerprint = JSON.stringify(payload);
+      if (
+        !idempotency.current ||
+        idempotency.current.fingerprint !== fingerprint
+      ) {
+        idempotency.current = { fingerprint, key: crypto.randomUUID() };
+      }
     }
 
     setSubmitting(true);
@@ -361,7 +498,9 @@ function RentalRequestPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...payload,
-          idempotencyKey: idempotency.current.key,
+          ...(isEditing
+            ? { action: "edit", bookingId: editBookingId }
+            : { idempotencyKey: idempotency.current?.key }),
         }),
       });
       const bookingId = result.id ?? result.booking?.id;
@@ -401,55 +540,47 @@ function RentalRequestPage() {
   return (
     <CustomerPage>
       <Header />
+      <RentalJourney current="Request" />
       <main id="main-content" className="request-main">
         <div className="customer-container">
-          <div className="request-breadcrumb">
-            <a
-              href={
-                selectedVehicle
-                  ? `/vehicles/${encodeURIComponent(selectedVehicle.id)}${encodeSearch(search)}`
-                  : "/vehicles"
-              }
-            >
-              <ArrowLeft size={15} aria-hidden="true" /> Find a Car
-            </a>
-            <span aria-hidden="true">/</span>
-            <span>Rental request</span>
-          </div>
-
-          <div className="request-heading">
-            <div>
-              <p className="eyebrow">Your rental request</p>
-              <h1>
-                {step === 1
-                  ? "Tell us about your rental"
-                  : "Review your rental request"}
-              </h1>
-              <p>
-                {step === 1
-                  ? "Add the trip details the team needs to review your request."
-                  : "Check the details below before sending your request to Briah's team."}
-              </p>
+          {step === 1 ? (
+            <div className="request-breadcrumb">
+              <a
+                href={
+                  isEditing
+                    ? `/bookings/${encodeURIComponent(editBookingId!)}`
+                    : `/vehicles${encodeSearch({ ...search, vehicle: undefined })}`
+                }
+              >
+                <ArrowLeft size={15} aria-hidden="true" />{" "}
+                {isEditing ? "Requirements" : "Find a Car"}
+              </a>
+              <span aria-hidden="true">/</span>
+              <span>Rental request</span>
             </div>
-          </div>
-          <RequestProgress current={step} />
+          ) : null}
 
-          {masterLoading ? (
-            <div
-              className="finder-empty-state"
-              role="status"
-              aria-live="polite"
-            >
-              <h2>Loading request options</h2>
-              <p>
-                Branches and vehicle details are coming from the current booking
-                service.
-              </p>
+          {masterError || (!masterLoading && !selectedVehicle) ? (
+            <div className="request-heading">
+              <div>
+                <h1>Your trip, at a glance</h1>
+                <p>
+                  Add the trip details the team needs to review your request.
+                </p>
+              </div>
             </div>
-          ) : masterError ? (
+          ) : null}
+
+          {masterLoading || editLoading ? (
+            <TripOverviewSkeleton />
+          ) : masterError || editError ? (
             <StatusCallout
               tone="error"
-              title="Request options unavailable"
+              title={
+                editError
+                  ? "Request unavailable"
+                  : "Request options unavailable"
+              }
               action={
                 <button
                   className="customer-secondary-button"
@@ -460,7 +591,7 @@ function RentalRequestPage() {
                 </button>
               }
             >
-              {masterError}
+              {editError || masterError}
             </StatusCallout>
           ) : !vehicleId ? (
             <StatusCallout
@@ -488,50 +619,230 @@ function RentalRequestPage() {
               The active fleet no longer contains this vehicle. No request has
               been created.
             </StatusCallout>
+          ) : reviewLoading ? (
+            <ReviewRequestSkeleton />
+          ) : step === 1 ? (
+            <TripOverview
+              draft={draft}
+              errors={errors}
+              vehicle={selectedVehicle}
+              principal={principal}
+              sessionChecked={sessionChecked}
+              updateDraft={updateDraft}
+              onSubmit={continueToReview}
+              isEditing={isEditing}
+            />
           ) : (
-            <div className="request-layout">
-              {step === 1 ? (
-                <DetailsForm
-                  draft={draft}
-                  errors={errors}
-                  principal={principal}
-                  sessionChecked={sessionChecked}
-                  updateDraft={updateDraft}
-                  onSubmit={continueToReview}
-                />
-              ) : (
-                <ReviewPanel
-                  draft={draft}
-                  branches={masterData?.branches ?? []}
-                  vehicle={selectedVehicle}
-                  handoff={handoff}
-                  principal={principal}
-                  submitError={submitError}
-                  submitting={submitting}
-                  onEdit={() => setStep(1)}
-                  onSend={() => void sendRentalRequest()}
-                />
-              )}
-              <SelectedCarSummary vehicle={selectedVehicle} handoff={handoff} />
+            <div className="request-layout request-review-layout">
+              <ReviewTripSidebar draft={draft} vehicle={selectedVehicle} />
+              <ReviewPanel
+                draft={draft}
+                acknowledged={reviewAcknowledged}
+                submitError={submitError}
+                submitting={submitting}
+                onAcknowledgementChange={(checked) => {
+                  setReviewAcknowledged(checked);
+                  setSubmitError("");
+                }}
+                onEdit={() => {
+                  setReviewAcknowledged(false);
+                  setStep(1);
+                }}
+                onSend={() => void sendRentalRequest()}
+                isEditing={isEditing}
+              />
             </div>
           )}
         </div>
       </main>
       <Footer />
+      <Dialog open={noChangesOpen} onOpenChange={setNoChangesOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>No changes to review</DialogTitle>
+            <DialogDescription>
+              Your rental request is unchanged. Would you like to upload your
+              requirements now?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              className="customer-secondary-button"
+              type="button"
+              onClick={() => setNoChangesOpen(false)}
+            >
+              Keep editing
+            </button>
+            <button
+              className="customer-primary-button"
+              type="button"
+              onClick={() => {
+                if (editBookingId)
+                  window.location.assign(
+                    `/bookings/${encodeURIComponent(editBookingId)}`,
+                  );
+              }}
+            >
+              Upload requirements <ArrowRight size={17} aria-hidden="true" />
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </CustomerPage>
   );
 }
 
-function DetailsForm({
+function TripOverviewSkeleton() {
+  return (
+    <div
+      className="request-overview request-overview--loading"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading rental request"
+    >
+      <span className="sr-only">Loading rental request</span>
+      <div className="request-overview-story" aria-hidden="true">
+        <header className="request-overview-intro request-overview-skeleton__intro">
+          <i />
+          <i />
+        </header>
+        <section className="request-overview-vehicle request-overview-skeleton__vehicle">
+          <i className="request-overview-skeleton__photo" />
+          <div className="request-overview-vehicle-info">
+            <i className="request-overview-skeleton__category" />
+            <i className="request-overview-skeleton__name" />
+            <i className="request-overview-skeleton__rate" />
+            <div className="request-overview-skeleton__specs">
+              <i />
+              <i />
+              <i />
+            </div>
+          </div>
+        </section>
+        <section className="request-overview-schedule request-overview-skeleton__schedule">
+          <div className="request-overview-skeleton__timeline">
+            <span>
+              <i />
+              <i />
+              <i />
+            </span>
+            <i className="request-overview-skeleton__journey" />
+            <span>
+              <i />
+              <i />
+              <i />
+            </span>
+          </div>
+        </section>
+      </div>
+      <div
+        className="request-overview-form request-overview-skeleton__form"
+        aria-hidden="true"
+      >
+        <i className="request-overview-skeleton__form-title" />
+        <i className="request-overview-skeleton__form-copy" />
+        <i className="request-overview-skeleton__label" />
+        <i className="request-overview-skeleton__input" />
+        <i className="request-overview-skeleton__checkbox" />
+        <i className="request-overview-skeleton__label" />
+        <i className="request-overview-skeleton__textarea" />
+        <i className="request-overview-skeleton__label" />
+        <i className="request-overview-skeleton__input" />
+        <i className="request-overview-skeleton__button" />
+      </div>
+      <section
+        className="request-overview-next request-overview-skeleton__next"
+        aria-hidden="true"
+      >
+        <i className="request-overview-skeleton__next-title" />
+        <div>
+          <span>
+            <i />
+            <i />
+          </span>
+          <span>
+            <i />
+            <i />
+          </span>
+          <span>
+            <i />
+            <i />
+          </span>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ReviewRequestSkeleton() {
+  return (
+    <div
+      className="request-layout request-review-layout review-request-skeleton"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading rental request review"
+    >
+      <span className="sr-only">Loading rental request review</span>
+      <aside className="review-request-skeleton-sidebar" aria-hidden="true">
+        <i className="review-request-skeleton-eyebrow" />
+        <i className="review-request-skeleton-image" />
+        <i className="review-request-skeleton-category" />
+        <i className="review-request-skeleton-name" />
+        <i className="review-request-skeleton-rate" />
+        <div className="review-request-skeleton-specs">
+          <i />
+          <i />
+          <i />
+        </div>
+        <div className="review-request-skeleton-dates">
+          <i />
+          <i />
+        </div>
+        <div className="review-request-skeleton-total">
+          <i />
+          <i />
+          <i />
+        </div>
+      </aside>
+      <section className="review-request-skeleton-content" aria-hidden="true">
+        <i className="review-request-skeleton-kicker" />
+        <i className="review-request-skeleton-title" />
+        <i className="review-request-skeleton-copy" />
+        <div className="review-request-skeleton-records">
+          <i />
+          <i />
+          <i />
+        </div>
+        <div className="review-request-skeleton-guidelines">
+          <i />
+          <div>
+            <i />
+            <i />
+          </div>
+        </div>
+        <i className="review-request-skeleton-acknowledgement" />
+        <div className="review-request-skeleton-actions">
+          <i />
+          <i />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function TripOverview({
   draft,
   errors,
+  vehicle,
   principal,
   sessionChecked,
   updateDraft,
   onSubmit,
+  isEditing,
 }: {
   draft: BookingDraft;
   errors: BookingErrors;
+  vehicle: CustomerVehicle;
   principal: ReturnType<typeof getClientPrincipal>;
   sessionChecked: boolean;
   updateDraft: <K extends keyof BookingDraft>(
@@ -539,125 +850,154 @@ function DetailsForm({
     value: BookingDraft[K],
   ) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  isEditing: boolean;
 }) {
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [draftRange, setDraftRange] = useState<DateRange>();
-  const [pickupTime, setPickupTime] = useState(() =>
-    timeFromDateTimeLocal(draft.pickupAt, ""),
-  );
-  const [returnTime, setReturnTime] = useState(() =>
-    timeFromDateTimeLocal(draft.returnAt, ""),
-  );
-  const firstAvailableDate = useMemo(() => {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() + 1);
-    return date;
-  }, []);
-
-  function openDatePicker() {
-    const pickupDate = dateFromDateTimeLocal(draft.pickupAt);
-    const returnDate = dateFromDateTimeLocal(draft.returnAt);
-    const hasBookableRange =
-      pickupDate &&
-      returnDate &&
-      pickupDate >= firstAvailableDate &&
-      returnDate >= firstAvailableDate;
-
-    setDraftRange(
-      hasBookableRange ? { from: pickupDate, to: returnDate } : undefined,
-    );
-    setPickupTime(
-      hasBookableRange ? timeFromDateTimeLocal(draft.pickupAt, "") : "",
-    );
-    setReturnTime(
-      hasBookableRange ? timeFromDateTimeLocal(draft.returnAt, "") : "",
-    );
-    setDatePickerOpen(true);
-  }
-
-  function applyDates() {
-    if (!draftRange?.from || !draftRange.to) return;
-    updateDraft("pickupAt", dateTimeLocalForDate(draftRange.from, pickupTime));
-    updateDraft("returnAt", dateTimeLocalForDate(draftRange.to, returnTime));
-    setDatePickerOpen(false);
-  }
+  const pickup = tripMoment(draft.pickupAt);
+  const returned = tripMoment(draft.returnAt);
+  const pickupInstant = manilaDateTimeLocalToInstant(draft.pickupAt);
+  const returnInstant = manilaDateTimeLocalToInstant(draft.returnAt);
+  const duration =
+    pickupInstant && returnInstant
+      ? formatRentalDuration(pickupInstant, returnInstant)
+      : null;
+  const returnAddress = resolvedReturnLocation({
+    deliveryAddress: draft.pickupLocation,
+    alternateReturnAddress: draft.dropoffLocation,
+    sameReturnLocation: draft.sameReturnLocation,
+  });
 
   return (
-    <form className="request-form" onSubmit={onSubmit} noValidate>
-      <fieldset className="customer-fieldset">
-        <legend>
-          <CalendarDays size={19} aria-hidden="true" /> Trip schedule
-        </legend>
-        <Popover
-          open={datePickerOpen}
-          onOpenChange={(open) => {
-            if (open) openDatePicker();
-            else setDatePickerOpen(false);
-          }}
-        >
-          <PopoverTrigger asChild>
-            <RentalDateTrigger
-              id="pickup-at"
-              className="request-rental-date-trigger"
-              pickupValue={
-                draft.pickupAt
-                  ? formatInputDateTime(draft.pickupAt)
-                  : "Select a date"
-              }
-              returnValue={
-                draft.returnAt
-                  ? formatInputDateTime(draft.returnAt)
-                  : "Select a date"
-              }
-              invalid={Boolean(errors.pickupAt || errors.returnAt)}
-              describedBy={
-                errors.pickupAt || errors.returnAt
-                  ? "pickup-at-error"
-                  : undefined
-              }
-              onClick={openDatePicker}
-            />
-          </PopoverTrigger>
-          <PopoverContent
-            className="home-date-picker-popover"
-            align="start"
-            sideOffset={12}
-            onOpenAutoFocus={(event) => event.preventDefault()}
-          >
-            <DateRangePicker
-              selected={draftRange}
-              onSelect={setDraftRange}
-              firstAvailableDate={firstAvailableDate}
-              pickupTime={pickupTime}
-              returnTime={returnTime}
-              onPickupTimeChange={setPickupTime}
-              onReturnTimeChange={setReturnTime}
-              timeOptions={timeOptions}
-              formatTime={formatTime}
-              pickupTimeId="booking-pickup-time"
-              returnTimeId="booking-return-time"
-              onApply={applyDates}
-            />
-          </PopoverContent>
-        </Popover>
-        <FieldError
-          id="pickup-at"
-          message={errors.pickupAt ?? errors.returnAt}
-        />
-      </fieldset>
+    <div className="request-overview">
+      <div className="request-overview-story">
+        <header className="request-overview-intro">
+          <h1>
+            {isEditing ? "Edit your rental request" : "Your trip, at a glance"}
+          </h1>
+          <p>
+            {isEditing
+              ? "Update your trip details before submitting your requirements."
+              : "Review your car and dates, then add the details for your rental request."}
+          </p>
+        </header>
 
-      <fieldset className="customer-fieldset">
-        <legend>
-          <MapPin size={19} aria-hidden="true" /> Delivery &amp; return
-        </legend>
+        <section
+          className="request-overview-vehicle"
+          aria-label="Selected vehicle"
+        >
+          <div className="request-overview-photo">
+            <VehicleImage
+              src={vehicle.image_url}
+              alt={vehicle.name}
+              priority
+              sizes="(max-width: 800px) 100vw, 38vw"
+            />
+          </div>
+          <div className="request-overview-vehicle-info">
+            <p className="request-overview-category">
+              {vehicle.category?.name || "Vehicle"}
+            </p>
+            <h2>{vehicle.name}</h2>
+            <Rate value={vehicle.daily_rate} />
+            <dl className="request-overview-specs">
+              <div>
+                <Users size={19} aria-hidden="true" />
+                <dt>Seats</dt>
+                <dd>
+                  {vehicle.seat_capacity
+                    ? `${vehicle.seat_capacity} seats`
+                    : "Not listed"}
+                </dd>
+              </div>
+              <div>
+                <Luggage size={19} aria-hidden="true" />
+                <dt>Luggage</dt>
+                <dd>
+                  {vehicle.large_luggage_capacity
+                    ? `${vehicle.large_luggage_capacity} large bag${vehicle.large_luggage_capacity === 1 ? "" : "s"}`
+                    : "Not listed"}
+                </dd>
+              </div>
+              <div>
+                <Settings2 size={19} aria-hidden="true" />
+                <dt>Transmission</dt>
+                <dd>{vehicle.transmission || "Not listed"}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section
+          className="request-overview-schedule"
+          aria-labelledby="trip-schedule-title"
+        >
+          <h2 id="trip-schedule-title" className="sr-only">
+            Trip schedule
+          </h2>
+          <div className="request-overview-timeline">
+            <div className="request-overview-stop">
+              <span className="request-overview-stop-label">Pickup</span>
+              <span className="request-overview-stop-icon" aria-hidden="true">
+                <CarFront size={21} strokeWidth={2} />
+              </span>
+              <div className="request-overview-stop-details">
+                <strong>{pickup.date}</strong>
+                <span className="request-overview-stop-time">
+                  {pickup.time}
+                </span>
+                <span className="request-overview-stop-address">
+                  {draft.pickupLocation.trim() || "Add a delivery address"}
+                </span>
+              </div>
+            </div>
+            <div className="request-overview-journey-line" aria-hidden="true">
+              <span>{duration ?? "Trip"}</span>
+              <span className="request-overview-journey-rule" />
+              <small>
+                {tripShortDate(draft.pickupAt)} –{" "}
+                {tripShortDate(draft.returnAt)}
+              </small>
+            </div>
+            <div className="request-overview-stop">
+              <span className="request-overview-stop-label">Return</span>
+              <span className="request-overview-stop-icon" aria-hidden="true">
+                <CarFront size={21} strokeWidth={2} />
+              </span>
+              <div className="request-overview-stop-details">
+                <strong>{returned.date}</strong>
+                <span className="request-overview-stop-time">
+                  {returned.time}
+                </span>
+                <span className="request-overview-stop-address">
+                  {returnAddress.trim()
+                    ? `Collection at ${returnAddress.trim()}`
+                    : draft.sameReturnLocation
+                      ? "Same as delivery address"
+                      : "Add a collection address"}
+                </span>
+              </div>
+            </div>
+          </div>
+          {errors.pickupAt || errors.returnAt ? (
+            <p className="request-overview-date-error" role="alert">
+              {errors.pickupAt ?? errors.returnAt}{" "}
+              <a href="/vehicles">Choose new dates in Find a Car</a>.
+            </p>
+          ) : null}
+        </section>
+      </div>
+
+      <form className="request-overview-form" onSubmit={onSubmit} noValidate>
+        <div className="request-overview-form-heading">
+          <h2>{isEditing ? "Update your trip" : "Complete your request"}</h2>
+          <p>Tell us where to deliver the car and how you plan to use it.</p>
+        </div>
         <div className="customer-field">
           <label className="customer-label" htmlFor="pickup-location">
-            Where should we deliver the vehicle?
+            Delivery address
           </label>
           <AddressAutocomplete
             id="pickup-location"
-            label="Where should we deliver the vehicle?"
+            label="Delivery address"
             value={draft.pickupLocation}
             onChange={(value) => updateDraft("pickupLocation", value)}
             error={errors.pickupLocation}
@@ -673,18 +1013,18 @@ function DetailsForm({
             }
           />
           <span>
-            <strong>Return the vehicle to the same address</strong>
-            <small>We’ll use your delivery address for collection.</small>
+            <strong>Return to the same address</strong>
+            <small>We’ll collect the car at your delivery address.</small>
           </span>
         </label>
         {!draft.sameReturnLocation ? (
           <div className="customer-field">
             <label className="customer-label" htmlFor="dropoff-location">
-              Where should we collect the vehicle?
+              Collection address
             </label>
             <AddressAutocomplete
               id="dropoff-location"
-              label="Where should we collect the vehicle?"
+              label="Collection address"
               value={draft.dropoffLocation}
               onChange={(value) => updateDraft("dropoffLocation", value)}
               error={errors.dropoffLocation}
@@ -695,251 +1035,356 @@ function DetailsForm({
             />
           </div>
         ) : null}
-      </fieldset>
-
-      <fieldset className="customer-fieldset">
-        <legend>Tell us about the trip</legend>
-        <div className="request-form-grid">
-          <div className="customer-field full-span">
-            <label className="customer-label" htmlFor="purpose">
-              Purpose of use
-            </label>
-            <textarea
-              id="purpose"
-              className="customer-textarea"
-              value={draft.purposeOfUse}
-              aria-invalid={Boolean(errors.purposeOfUse)}
-              aria-describedby={
-                errors.purposeOfUse ? "purpose-error" : undefined
-              }
-              onChange={(event) =>
-                updateDraft("purposeOfUse", event.target.value)
-              }
-              required
-            />
-            <FieldError id="purpose" message={errors.purposeOfUse} />
-          </div>
-          <div className="customer-field">
-            <label className="customer-label" htmlFor="destination">
-              Destination <span className="customer-helper">(optional)</span>
-            </label>
-            <input
-              id="destination"
-              className="customer-input"
-              type="text"
-              maxLength={200}
-              value={draft.destination}
-              aria-invalid={Boolean(errors.destination)}
-              aria-describedby={
-                errors.destination ? "destination-error" : undefined
-              }
-              onChange={(event) =>
-                updateDraft("destination", event.target.value)
-              }
-            />
-            <FieldError id="destination" message={errors.destination} />
-          </div>
+        <div className="customer-field">
+          <label className="customer-label" htmlFor="purpose">
+            Purpose of use
+          </label>
+          <textarea
+            id="purpose"
+            name="purpose"
+            className="customer-textarea"
+            value={draft.purposeOfUse}
+            onChange={(event) =>
+              updateDraft("purposeOfUse", event.target.value)
+            }
+            aria-invalid={Boolean(errors.purposeOfUse)}
+            aria-describedby={errors.purposeOfUse ? "purpose-error" : undefined}
+            placeholder="For example, a family trip…"
+            required
+          />
+          <FieldError id="purpose" message={errors.purposeOfUse} />
         </div>
-      </fieldset>
-
-      <fieldset className="customer-fieldset">
-        <legend>Your contact</legend>
+        <div className="customer-field">
+          <label className="customer-label" htmlFor="destination">
+            Destination <span className="customer-helper">(optional)</span>
+          </label>
+          <input
+            id="destination"
+            name="destination"
+            className="customer-input"
+            type="text"
+            maxLength={200}
+            value={draft.destination}
+            onChange={(event) => updateDraft("destination", event.target.value)}
+            aria-invalid={Boolean(errors.destination)}
+            aria-describedby={
+              errors.destination ? "destination-error" : undefined
+            }
+            placeholder="For example, Tagaytay…"
+          />
+          <FieldError id="destination" message={errors.destination} />
+        </div>
         {sessionChecked && !principal ? (
-          <StatusCallout tone="info" title="Sign in before you send">
-            Your contact details will come from your authenticated customer
-            profile. You can complete the form first.
-          </StatusCallout>
-        ) : null}
-        <div className="request-contact">
-          <div className="customer-field">
-            <span className="customer-label">Name</span>
-            <div className="request-readonly-value">
-              {principal?.fullName ?? "Sign in to load"}
-            </div>
-          </div>
-          <div className="customer-field">
-            <span className="customer-label">Email</span>
-            <div className="request-readonly-value">
-              {principal?.email ?? "Sign in to load"}
-            </div>
-          </div>
-          <div className="customer-field">
-            <span className="customer-label">Phone</span>
-            <div className="request-readonly-value">
-              {principal?.phoneNumber ?? "Sign in to load"}
-            </div>
-          </div>
-        </div>
-      </fieldset>
-
-      <aside className="request-review-note" role="status">
-        <div>
-          <strong>Review before confirmation</strong>
-          <p>
-            Briah&apos;s team will review this rental request. Sending it does
-            not confirm the booking.
+          <p className="request-overview-signin">
+            You can fill in the details now. Sign in before saving your request.
           </p>
+        ) : null}
+        <div className="request-overview-form-action">
+          <button className="customer-primary-button" type="submit">
+            {isEditing ? "Review changes" : "Review rental request"}{" "}
+            <ArrowRight size={18} aria-hidden="true" />
+          </button>
         </div>
-      </aside>
-
-      <div className="request-actions">
-        <button className="customer-primary-button" type="submit">
-          Review rental request <ArrowRight size={17} aria-hidden="true" />
-        </button>
-      </div>
-    </form>
+      </form>
+      <section
+        className="request-overview-next"
+        aria-labelledby="request-next-title"
+      >
+        <h2 id="request-next-title">What happens next?</h2>
+        <ol>
+          <li>
+            <ClipboardCheck size={27} aria-hidden="true" />
+            <div>
+              <strong>Review your request</strong>
+              <p>Check these details before saving.</p>
+            </div>
+          </li>
+          <li>
+            <FileCheck2 size={27} aria-hidden="true" />
+            <div>
+              <strong>Complete requirements</strong>
+              <p>Submit the required documents for review.</p>
+            </div>
+          </li>
+          <li>
+            <CalendarDays size={27} aria-hidden="true" />
+            <div>
+              <strong>Track its status</strong>
+              <p>Check My Bookings for updates and next steps.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+    </div>
   );
 }
 
-function ReviewPanel({
+function ReviewTripSidebar({
   draft,
-  branches,
   vehicle,
-  handoff,
-  principal,
-  submitError,
-  submitting,
-  onEdit,
-  onSend,
 }: {
   draft: BookingDraft;
-  branches: BookingMasterData["branches"];
   vehicle: CustomerVehicle;
-  handoff: ReturnType<typeof parseFinderBookingHandoff>;
-  principal: ReturnType<typeof getClientPrincipal>;
-  submitError: string;
-  submitting: boolean;
-  onEdit: () => void;
-  onSend: () => void;
 }) {
-  const pickupBranchName =
-    branches.find((branch) => branch.id === draft.pickupBranchId)?.name ??
-    "Branch not recorded";
-  const returnBranchName =
-    branches.find((branch) => branch.id === draft.returnBranchId)?.name ??
-    "Branch not recorded";
-  const handoffDetails = [
-    `Pickup branch · ${pickupBranchName}`,
-    `Return branch · ${returnBranchName}`,
-    `Service · ${
-      draft.pickupDeliveryOption === "delivery"
-        ? "Delivery"
-        : "Pickup at branch"
-    }`,
-    ...(draft.pickupDeliveryOption === "delivery"
-      ? [
-          `Pickup address · ${draft.pickupLocation}`,
-          `Drop-off address · ${draft.dropoffLocation}`,
-        ]
-      : []),
-    ...(draft.destination ? [`Destination · ${draft.destination}`] : []),
-  ].join("\n");
   const pickup = manilaDateTimeLocalToInstant(draft.pickupAt);
   const returned = manilaDateTimeLocalToInstant(draft.returnAt);
   const rentalDays =
     pickup && returned ? calculateRentalDays(pickup, returned) : null;
   const dailyRate =
-    typeof vehicle.daily_rate === "number" && vehicle.daily_rate >= 0
+    typeof vehicle.daily_rate === "number" &&
+    Number.isFinite(vehicle.daily_rate) &&
+    vehicle.daily_rate >= 0
       ? vehicle.daily_rate
       : null;
   const baseRentalTotal =
     rentalDays !== null && dailyRate !== null ? rentalDays * dailyRate : null;
-  const formatCurrency = (amount: number | null) =>
-    amount === null
-      ? "Rate pending"
-      : new Intl.NumberFormat("en-PH", {
-          style: "currency",
-          currency: "PHP",
-          maximumFractionDigits: 2,
-        }).format(amount);
+  const returnLocation = resolvedReturnLocation({
+    deliveryAddress: draft.pickupLocation,
+    alternateReturnAddress: draft.dropoffLocation,
+    sameReturnLocation: draft.sameReturnLocation,
+  });
 
   return (
-    <section className="request-form" aria-labelledby="review-title">
-      <h2 id="review-title" className="sr-only">
-        Review rental request details
-      </h2>
-      <div className="review-groups">
-        <div className="review-group">
-          <div className="review-group-heading">
-            <h2>Trip schedule</h2>
-            <button className="review-edit-link" type="button" onClick={onEdit}>
-              Edit
-            </button>
-          </div>
-          <p>
-            {formatInputDateTime(draft.pickupAt)} →{" "}
-            {formatInputDateTime(draft.returnAt)}
-          </p>
+    <aside className="review-trip-sidebar" aria-labelledby="review-trip-title">
+      <p className="review-trip-sidebar-eyebrow">Your rental</p>
+      <div className="review-trip-sidebar-image">
+        <VehicleImage
+          src={vehicle.image_url}
+          alt={vehicle.name}
+          sizes="(max-width: 900px) 100vw, 26vw"
+        />
+      </div>
+      <div className="review-trip-sidebar-identity">
+        <p>{vehicle.category?.name || "Vehicle"}</p>
+        <h2 id="review-trip-title">{vehicle.name}</h2>
+        <strong>
+          {formatPhp(dailyRate)} <small>/ day</small>
+        </strong>
+      </div>
+      <dl className="review-trip-sidebar-specs">
+        <div>
+          <dt>Seats</dt>
+          <dd>
+            {vehicle.seat_capacity ? `${vehicle.seat_capacity} seats` : "—"}
+          </dd>
         </div>
-        <div className="review-group">
-          <div className="review-group-heading">
-            <h2>Branches and handoff</h2>
-            <button className="review-edit-link" type="button" onClick={onEdit}>
-              Edit
-            </button>
-          </div>
-          <p>{handoffDetails}</p>
+        <div>
+          <dt>Luggage</dt>
+          <dd>
+            {vehicle.large_luggage_capacity
+              ? `${vehicle.large_luggage_capacity} large bag${vehicle.large_luggage_capacity === 1 ? "" : "s"}`
+              : "—"}
+          </dd>
         </div>
-        <div className="review-group">
-          <div className="review-group-heading">
-            <h2>Purpose</h2>
-            <button className="review-edit-link" type="button" onClick={onEdit}>
-              Edit
-            </button>
-          </div>
-          <p>{draft.purposeOfUse}</p>
+        <div>
+          <dt>Transmission</dt>
+          <dd>{vehicle.transmission || "—"}</dd>
         </div>
-        <div className="review-group">
-          <h2>Rental estimate</h2>
-          <p>
-            Vehicle · {vehicle.name}
-            {`\nDaily rate · ${formatCurrency(dailyRate)}`}
-            {`\nRental duration · ${rentalDays ?? "Pending"} ${rentalDays === 1 ? "day" : "days"}`}
-            {`\nBase rental total · ${formatCurrency(baseRentalTotal)}`}
-          </p>
-          <p className="customer-helper">
-            This is the base rental estimate. No additional charges are added
-            at request stage; payment is reviewed before confirmation.
-          </p>
+      </dl>
+      <div className="review-trip-sidebar-dates">
+        <div>
+          <span>Delivery</span>
+          <strong>{tripSidebarMoment(draft.pickupAt)}</strong>
+          <small>{draft.pickupLocation}</small>
         </div>
-        <div className="review-group">
-          <h2>Rental do's and don'ts</h2>
-          <p>
-            Do present your verified requirements and keep the vehicle in safe
-            operating condition. Don't use the vehicle outside the agreed
-            rental period or for an unapproved purpose.
-          </p>
-        </div>
-        <div className="review-group">
-          <div className="review-group-heading">
-            <h2>Contact</h2>
-            <button className="review-edit-link" type="button" onClick={onEdit}>
-              Edit
-            </button>
-          </div>
-          <p>
-            {principal?.fullName ?? "Sign in required"}
-            {principal?.email ? `\n${principal.email}` : ""}
-            {principal?.phoneNumber ? `\n${principal.phoneNumber}` : ""}
-          </p>
+        <div>
+          <span>Return</span>
+          <strong>{tripSidebarMoment(draft.returnAt)}</strong>
+          <small>{returnLocation}</small>
         </div>
       </div>
+      <div className="review-trip-sidebar-total">
+        <span>Estimated vehicle rental</span>
+        <strong>{formatPhp(baseRentalTotal)}</strong>
+        <small>
+          {rentalDays === null
+            ? "Rental period pending"
+            : `${rentalDays} day${rentalDays === 1 ? "" : "s"}`}{" "}
+          · listed daily rate
+        </small>
+      </div>
+      <p className="review-trip-sidebar-note">
+        Delivery and other charges are confirmed before payment.
+      </p>
+    </aside>
+  );
+}
 
-      {handoff ? (
-        <p className="customer-helper">
-          This request came from evaluated Finder results. The same trip context
-          will be rechecked before submission.
-        </p>
-      ) : null}
+function ReviewPanel({
+  draft,
+  acknowledged,
+  submitError,
+  submitting,
+  onAcknowledgementChange,
+  onEdit,
+  onSend,
+  isEditing,
+}: {
+  draft: BookingDraft;
+  acknowledged: boolean;
+  submitError: string;
+  submitting: boolean;
+  onAcknowledgementChange: (checked: boolean) => void;
+  onEdit: () => void;
+  onSend: () => void;
+  isEditing: boolean;
+}) {
+  const returnLocation = resolvedReturnLocation({
+    deliveryAddress: draft.pickupLocation,
+    alternateReturnAddress: draft.dropoffLocation,
+    sameReturnLocation: draft.sameReturnLocation,
+  });
+
+  return (
+    <section
+      className="request-form request-review"
+      aria-labelledby="review-title"
+    >
+      <header className="request-review-header">
+        <p>One last check</p>
+        <h2 id="review-title">
+          {isEditing ? "Review your changes" : "Review your rental request"}
+        </h2>
+        <span>
+          Confirm your trip details, then acknowledge the rental guidelines
+          before {isEditing ? "saving your changes." : "sending your request."}
+        </span>
+      </header>
+
+      <div className="request-review-records">
+        <section className="request-review-record">
+          <div className="request-review-record-icon">
+            <CarFront size={19} aria-hidden="true" />
+          </div>
+          <div>
+            <h3>Delivery</h3>
+            <p>
+              {tripMoment(draft.pickupAt).date} at{" "}
+              {tripMoment(draft.pickupAt).time}
+            </p>
+            <small>{draft.pickupLocation}</small>
+          </div>
+          <button className="review-edit-link" type="button" onClick={onEdit}>
+            Edit
+          </button>
+        </section>
+        <section className="request-review-record">
+          <div className="request-review-record-icon">
+            <RefreshCw size={18} aria-hidden="true" />
+          </div>
+          <div>
+            <h3>Return</h3>
+            <p>
+              {tripMoment(draft.returnAt).date} at{" "}
+              {tripMoment(draft.returnAt).time}
+            </p>
+            <small>{returnLocation}</small>
+          </div>
+          <button className="review-edit-link" type="button" onClick={onEdit}>
+            Edit
+          </button>
+        </section>
+        <section className="request-review-record request-review-record--purpose">
+          <div className="request-review-record-icon">
+            <ClipboardCheck size={19} aria-hidden="true" />
+          </div>
+          <div>
+            <h3>Purpose of use</h3>
+            <p>{draft.purposeOfUse}</p>
+            {draft.destination ? (
+              <small>Destination: {draft.destination}</small>
+            ) : null}
+          </div>
+          <button className="review-edit-link" type="button" onClick={onEdit}>
+            Edit
+          </button>
+        </section>
+      </div>
+
+      <section
+        className="request-review-guidelines"
+        aria-labelledby="rental-guidelines-title"
+      >
+        <div className="request-review-guidelines-heading">
+          <div>
+            <p>Before you send</p>
+            <h3 id="rental-guidelines-title">Rental guidelines</h3>
+          </div>
+          <span>For a smooth rental</span>
+        </div>
+        <div className="request-review-guidelines-grid">
+          <section className="request-review-guideline request-review-guideline--do">
+            <div>
+              <BadgeCheck size={20} aria-hidden="true" />
+              <h4>Please do</h4>
+            </div>
+            <ul>
+              <li>
+                <BadgeCheck size={16} aria-hidden="true" />
+                Bring your valid IDs and driver’s license.
+              </li>
+              <li>
+                <BadgeCheck size={16} aria-hidden="true" />
+                Use the vehicle only for lawful personal travel.
+              </li>
+              <li>
+                <BadgeCheck size={16} aria-hidden="true" />
+                Report any accident or damage right away.
+              </li>
+              <li>
+                <BadgeCheck size={16} aria-hidden="true" />
+                Return it clean and at the agreed fuel level.
+              </li>
+            </ul>
+          </section>
+          <section className="request-review-guideline request-review-guideline--avoid">
+            <div>
+              <CircleAlert size={20} aria-hidden="true" />
+              <h4>Please avoid</h4>
+            </div>
+            <ul>
+              <li>
+                <CircleAlert size={16} aria-hidden="true" />
+                Smoking, racing, towing, or off-road driving.
+              </li>
+              <li>
+                <CircleAlert size={16} aria-hidden="true" />
+                Subleasing or letting unregistered drivers use it.
+              </li>
+              <li>
+                <CircleAlert size={16} aria-hidden="true" />
+                Returning late without contacting Briah.
+              </li>
+              <li>
+                <CircleAlert size={16} aria-hidden="true" />
+                Removing or altering vehicle accessories.
+              </li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
       {submitError ? (
         <StatusCallout tone="error" title="Rental request not saved">
           {submitError}
         </StatusCallout>
       ) : null}
-      <StatusCallout tone="info" title="Continue to requirements">
-        This saves your trip details as a draft. Your rental request reaches Briah only after you submit all required documents.
-      </StatusCallout>
-      <div className="request-actions">
+      <label className="request-review-acknowledgement">
+        <input
+          type="checkbox"
+          checked={acknowledged}
+          onChange={(event) => onAcknowledgementChange(event.target.checked)}
+        />
+        <span>
+          <strong>I have read and understand the rental guidelines.</strong>
+        </span>
+      </label>
+      <p className="request-review-next-step">
+        {isEditing
+          ? "Saving keeps this request in draft so you can continue with your requirements."
+          : "After sending, you can complete your requirements. Briah reviews the request once the required documents are received."}
+      </p>
+      <div className="request-actions request-review-actions">
         <button
           className="customer-tertiary-button"
           type="button"
@@ -951,12 +1396,18 @@ function ReviewPanel({
           className="customer-primary-button"
           type="button"
           onClick={onSend}
-          disabled={submitting}
+          disabled={submitting || !acknowledged}
         >
           {submitting ? (
             <RefreshCw className="animate-spin" size={17} aria-hidden="true" />
           ) : null}
-          {submitting ? "Saving request…" : "Save and continue to requirements"}
+          {submitting
+            ? isEditing
+              ? "Saving changes…"
+              : "Sending request…"
+            : isEditing
+              ? "Save changes"
+              : "Send rental request"}
         </button>
       </div>
     </section>

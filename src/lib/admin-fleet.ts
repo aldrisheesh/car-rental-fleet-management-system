@@ -21,6 +21,7 @@ export type FleetCanonicalVehicle = {
   license_plate: string | null;
   transmission: string | null;
   seat_capacity: number | null;
+  large_luggage_capacity?: number | null;
   daily_rate: number | null;
   image_url: string | null;
   is_active: boolean;
@@ -73,6 +74,7 @@ export type FleetVehicleRow = {
   categoryId: string | null;
   transmission: string | null;
   seats: number | null;
+  largeBagCapacity: number | null;
   branch: string | null;
   branchId: string | null;
   pricePerDay: number | null;
@@ -174,6 +176,7 @@ export function buildAdminFleet(
       categoryId: vehicle.category?.id ?? null,
       transmission: vehicle.transmission,
       seats: vehicle.seat_capacity,
+      largeBagCapacity: vehicle.large_luggage_capacity ?? null,
       branch: vehicle.branch?.name ?? null,
       branchId: vehicle.branch?.id ?? null,
       pricePerDay: vehicle.daily_rate,

@@ -33,10 +33,16 @@ export function AddressAutocomplete({
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [status, setStatus] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [focused, setFocused] = useState(false);
   const requestId = useRef(0);
   const selectedAddress = useRef<string | null>(null);
 
   useEffect(() => {
+    if (!focused) {
+      setSuggestions([]);
+      setActiveIndex(-1);
+      return;
+    }
     const query = value.trim();
     const apiKey = configuredKey();
     if (
@@ -89,7 +95,7 @@ export function AddressAutocomplete({
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [value]);
+  }, [focused, value]);
 
   function selectSuggestion(suggestion: AddressSuggestion) {
     selectedAddress.current = suggestion.formatted;
@@ -121,6 +127,7 @@ export function AddressAutocomplete({
     <div className="address-autocomplete">
       <input
         id={id}
+        name={id}
         className="customer-input"
         type="text"
         value={value}
@@ -129,7 +136,14 @@ export function AddressAutocomplete({
           onChange(event.target.value);
         }}
         onFocus={() => {
+          setFocused(true);
           if (!configuredKey()) setStatus(FALLBACK_MESSAGE);
+        }}
+        onBlur={() => {
+          setFocused(false);
+          setSuggestions([]);
+          setActiveIndex(-1);
+          setStatus("");
         }}
         onKeyDown={onKeyDown}
         autoComplete="street-address"

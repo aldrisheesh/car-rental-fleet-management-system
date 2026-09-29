@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   createFileRoute,
+  Link,
   Outlet,
   redirect,
   useRouterState,
@@ -10,11 +11,13 @@ import {
   ChevronRight,
   CreditCard,
   FileText,
+  ImagePlus,
   Minus,
   Plus,
   Search,
 } from "lucide-react";
 import {
+  Btn,
   DomainStatus,
   EmptyState,
   ErrorState,
@@ -57,9 +60,35 @@ type LoadState =
   | { status: "ready"; payments: AdminPayment[] };
 
 type PaymentChecklist = {
+  amountMatches: boolean;
   referenceMatches: boolean;
   proofIsClear: boolean;
   paymentReceived: boolean;
+};
+
+type PaymentReviewConfirmation = {
+  status: "confirmed" | "review-needed";
+  message: string;
+};
+
+type AdminPaymentMethod = {
+  id: string;
+  code: string;
+  label: string;
+  recipient_name?: string | null;
+  account_number?: string | null;
+  qr_image_path?: string | null;
+  qr_image_url?: string | null;
+  is_active: boolean;
+};
+type PaymentMethodDraft = {
+  id?: string;
+  label: string;
+  recipientName: string;
+  accountNumber: string;
+  isActive: boolean;
+  qrImage: File | null;
+  existingQrImageUrl: string | null;
 };
 
 const paymentChecklistStoragePrefix = "briah-payment-review-checklist:";
@@ -73,16 +102,18 @@ function paymentChecklistStorageKey(
 
 function readPaymentChecklist(key: string): PaymentChecklist {
   const empty = {
+    amountMatches: false,
     referenceMatches: false,
     proofIsClear: false,
     paymentReceived: false,
   };
   if (typeof window === "undefined") return empty;
   try {
-    const stored = JSON.parse(window.localStorage.getItem(key) ?? "null") as
-      | Partial<PaymentChecklist>
-      | null;
+    const stored = JSON.parse(
+      window.localStorage.getItem(key) ?? "null",
+    ) as Partial<PaymentChecklist> | null;
     return {
+      amountMatches: stored?.amountMatches === true,
       referenceMatches: stored?.referenceMatches === true,
       proofIsClear: stored?.proofIsClear === true,
       paymentReceived: stored?.paymentReceived === true,
@@ -94,9 +125,13 @@ function readPaymentChecklist(key: string): PaymentChecklist {
 
 function resubmissionRemark(checklist: PaymentChecklist) {
   const reasons = [
-    !checklist.referenceMatches && "The payment reference does not match the booking.",
+    !checklist.amountMatches &&
+      "The amount shown does not match the amount due.",
+    !checklist.referenceMatches &&
+      "The payment reference does not match the booking.",
     !checklist.proofIsClear && "The payment proof is unclear or unreadable.",
-    !checklist.paymentReceived && "We could not confirm that the payment was received.",
+    !checklist.paymentReceived &&
+      "We could not confirm that the payment was received.",
   ].filter(Boolean);
   return reasons.length
     ? reasons.join(" ")
@@ -135,6 +170,12 @@ function PaymentsQueuePage() {
         ? null
         : new URLSearchParams(window.location.search).get("payment"),
   );
+  const [isFocusedReview] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      Boolean(new URLSearchParams(window.location.search).get("payment")),
+  );
+  const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false);
 
   const load = useCallback(async () => {
     setState({ status: "loading" });
@@ -204,7 +245,7 @@ function PaymentsQueuePage() {
       payment: AdminPayment,
       action: "verify" | "resubmit",
       reason = "",
-    ) => {
+    ): Promise<PaymentReviewConfirmation | undefined> => {
       const proof = currentPaymentProof(payment);
       if (!proof || proof.version == null)
         throw new Error("A current payment proof is required before review.");
@@ -223,25 +264,28 @@ function PaymentsQueuePage() {
       });
       const body = (await response.json().catch(() => null)) as {
         message?: string;
+        confirmation?: PaymentReviewConfirmation;
       } | null;
       if (!response.ok)
         throw new Error(body?.message ?? "Unable to save the payment review.");
       await load();
+      return body?.confirmation;
     },
     [load],
   );
 
-  const selectedPayment =
-    filtered.find((payment) => payment.id === selectedPaymentId) ??
-    filtered.find((payment) => payment.status === "Pending Verification") ??
-    filtered[0] ??
-    null;
+  const selectedPayment = isFocusedReview
+    ? payments.find((payment) => payment.id === selectedPaymentId) ?? null
+    : filtered.find((payment) => payment.id === selectedPaymentId) ??
+      filtered.find((payment) => payment.status === "Pending Verification") ??
+      filtered[0] ??
+      null;
   return (
     <div
-      className="admin-payments-workspace"
+      className={`admin-payments-workspace${isFocusedReview ? " admin-payments-workspace--focused" : ""}`}
       aria-busy={state.status === "loading" || undefined}
     >
-      <header className="admin-payments-heading">
+      {!isFocusedReview ? <header className="admin-payments-heading">
         <div>
           <span>Operations</span>
           <h1>Payment review</h1>
@@ -249,16 +293,44 @@ function PaymentsQueuePage() {
             Check the submitted proof, then verify or return it for correction.
           </p>
         </div>
-        <p className="admin-payments-heading__context">
-          Payment follows an approved rental request.
-        </p>
-      </header>
+        <div className="admin-payments-heading__actions">
+          <p className="admin-payments-heading__context">
+            Payment follows an approved rental request.
+          </p>
+          <Btn
+            variant="ghost"
+            className="border border-[#cbd8d4]"
+            onClick={() => setPaymentMethodsOpen(true)}
+          >
+            Manage payment methods
+          </Btn>
+        </div>
+      </header> : null}
+      {!isFocusedReview ? <PaymentMethodManager
+        open={paymentMethodsOpen}
+        onOpenChange={setPaymentMethodsOpen}
+      /> : null}
 
       {state.status === "loading" ? (
         <PaymentWorkspaceLoading />
       ) : state.status === "error" ? (
         <section className="admin-payments-message">
           <ErrorState message={state.message} onRetry={() => void load()} />
+        </section>
+      ) : isFocusedReview && !selectedPayment ? (
+        <section className="admin-payments-message">
+          <EmptyState
+            title="Payment record unavailable"
+            description="This payment may have been removed or is no longer available for review."
+            action={
+              <Link
+                to="/admin/payments"
+                className="touch-target text-sm font-semibold text-primary underline underline-offset-4"
+              >
+                Back to payment queue
+              </Link>
+            }
+          />
         </section>
       ) : filtered.length === 0 ? (
         <section className="admin-payments-message">
@@ -288,7 +360,14 @@ function PaymentsQueuePage() {
         </section>
       ) : (
         <>
-          {selectedPayment ? (
+          {selectedPayment && isFocusedReview ? (
+            <PaymentReviewPreview
+              key={selectedPayment.id}
+              payment={selectedPayment}
+              onReview={reviewPayment}
+              focused
+            />
+          ) : selectedPayment ? (
             <div className="admin-payments-layout">
               <PaymentQueue
                 rows={filtered}
@@ -311,6 +390,392 @@ function PaymentsQueuePage() {
         </>
       )}
     </div>
+  );
+}
+
+const emptyPaymentMethodDraft = (): PaymentMethodDraft => ({
+  label: "",
+  recipientName: "",
+  accountNumber: "",
+  isActive: true,
+  qrImage: null,
+  existingQrImageUrl: null,
+});
+
+function PaymentMethodManager({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [methods, setMethods] = useState<AdminPaymentMethod[]>([]);
+  const [draft, setDraft] = useState<PaymentMethodDraft>(
+    emptyPaymentMethodDraft,
+  );
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [localQrPreview, setLocalQrPreview] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/payment-methods", {
+        credentials: "same-origin",
+      });
+      const body = (await response.json().catch(() => null)) as {
+        paymentMethods?: AdminPaymentMethod[];
+        message?: string;
+      } | null;
+      if (!response.ok || !body || !Array.isArray(body.paymentMethods)) {
+        throw new Error(body?.message ?? "Unable to load payment methods.");
+      }
+      setMethods(body.paymentMethods);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to load payment methods.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (open) void load();
+  }, [load, open]);
+
+  useEffect(() => {
+    if (!draft.qrImage) {
+      setLocalQrPreview(null);
+      return;
+    }
+    const nextUrl = URL.createObjectURL(draft.qrImage);
+    setLocalQrPreview(nextUrl);
+    return () => URL.revokeObjectURL(nextUrl);
+  }, [draft.qrImage]);
+
+  const qrPreview = localQrPreview ?? draft.existingQrImageUrl;
+
+  function edit(method: AdminPaymentMethod) {
+    setMessage("");
+    setDraft({
+      id: method.id,
+      label: method.label,
+      recipientName: method.recipient_name ?? "",
+      accountNumber: method.account_number ?? "",
+      isActive: method.is_active,
+      qrImage: null,
+      existingQrImageUrl: method.qr_image_url ?? null,
+    });
+  }
+
+  async function save(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+    try {
+      const form = new FormData();
+      form.set("action", draft.id ? "update" : "create");
+      if (draft.id) form.set("id", draft.id);
+      form.set("label", draft.label);
+      form.set("recipientName", draft.recipientName);
+      form.set("accountNumber", draft.accountNumber);
+      form.set("isActive", String(draft.isActive));
+      if (draft.qrImage) form.set("qrImage", draft.qrImage);
+      const response = await fetch("/api/payment-methods", {
+        method: "POST",
+        credentials: "same-origin",
+        body: form,
+      });
+      const body = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
+      if (!response.ok) {
+        throw new Error(body?.message ?? "Unable to save payment method.");
+      }
+      await load();
+      setDraft(emptyPaymentMethodDraft());
+      setMessage(
+        "Payment method saved. Active methods appear in the customer payment form.",
+      );
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to save payment method.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="admin-payment-methods-dialog max-h-[90vh] max-w-5xl overflow-y-auto p-0">
+        <DialogHeader className="admin-payment-methods-dialog__header">
+          <DialogTitle>Payment methods</DialogTitle>
+          <DialogDescription>
+            Add payment options and upload the QR image customers scan when they
+            pay.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="admin-payment-methods-dialog__body">
+          <section
+            className="admin-payment-methods-dialog__list"
+            aria-labelledby="payment-method-list-title"
+          >
+            <header>
+              <h3 id="payment-method-list-title">Available methods</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setDraft(emptyPaymentMethodDraft());
+                  setMessage("");
+                }}
+              >
+                Add method
+              </button>
+            </header>
+            <div className="admin-payment-methods-dialog__list-items">
+              {loading ? <p>Loading methods…</p> : null}
+              {!loading && methods.length === 0 ? (
+                <p>No payment methods have been configured.</p>
+              ) : null}
+              {methods.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => edit(item)}
+                  aria-pressed={draft.id === item.id}
+                  className={draft.id === item.id ? "is-selected" : ""}
+                >
+                  <span>
+                    <strong>{item.label}</strong>
+                    <small>
+                      {item.qr_image_path
+                        ? "QR image ready"
+                        : "QR image needed"}
+                    </small>
+                  </span>
+                  <span className="admin-payment-methods-dialog__method-state">
+                    {item.is_active ? "Active" : "Hidden"}
+                    <ChevronRight size={16} aria-hidden="true" />
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <form
+            id="payment-method-editor"
+            className="admin-payment-methods-dialog__editor"
+            onSubmit={save}
+          >
+            <div className="admin-payment-methods-dialog__editor-heading">
+              <h3>{draft.id ? "Edit payment method" : "Add payment method"}</h3>
+              <p>
+                {draft.id
+                  ? "Update the label, QR image, or customer availability."
+                  : "Provide the customer-facing details for this payment method."}
+              </p>
+            </div>
+
+            <label className="admin-payment-methods-dialog__field">
+              <span>Payment method label</span>
+              <TInput
+                name="payment-method-label"
+                autoComplete="off"
+                value={draft.label}
+                disabled={saving}
+                required
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    label: event.target.value,
+                  }))
+                }
+                placeholder="e.g. GCash"
+              />
+              <small>
+                This is the name customers see when they choose how to pay.
+              </small>
+            </label>
+
+            <section
+              className="admin-payment-methods-dialog__recipient"
+              aria-labelledby="payment-method-recipient-title"
+            >
+              <div>
+                <h4 id="payment-method-recipient-title">
+                  Recipient details <span>Optional</span>
+                </h4>
+                <p>
+                  Shown beneath the QR code to help customers confirm the
+                  receiving account.
+                </p>
+              </div>
+              <div className="admin-payment-methods-dialog__recipient-fields">
+                <label className="admin-payment-methods-dialog__field">
+                  <span>Recipient name</span>
+                  <TInput
+                    name="recipient-name"
+                    autoComplete="off"
+                    value={draft.recipientName}
+                    disabled={saving}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        recipientName: event.target.value,
+                      }))
+                    }
+                    placeholder="e.g. Briah's Car Rental"
+                  />
+                </label>
+                <label className="admin-payment-methods-dialog__field">
+                  <span>Account number</span>
+                  <TInput
+                    name="account-number"
+                    autoComplete="off"
+                    spellCheck={false}
+                    value={draft.accountNumber}
+                    disabled={saving}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        accountNumber: event.target.value,
+                      }))
+                    }
+                    placeholder="e.g. 0917 123 4567"
+                  />
+                </label>
+              </div>
+            </section>
+
+            <section
+              className="admin-payment-methods-dialog__qr"
+              aria-labelledby="payment-method-qr-title"
+            >
+              <div>
+                <h4 id="payment-method-qr-title">Payment QR image</h4>
+                <p>Use the official QR image for this method.</p>
+              </div>
+              <div
+                className={
+                  qrPreview
+                    ? "admin-payment-methods-dialog__qr-grid has-preview"
+                    : "admin-payment-methods-dialog__qr-grid"
+                }
+              >
+                <label
+                  className="admin-payment-methods-dialog__upload"
+                  htmlFor="payment-method-qr-image"
+                >
+                  <ImagePlus size={22} strokeWidth={1.7} aria-hidden="true" />
+                  <span>
+                    <strong>
+                      {draft.qrImage ? "Replace image" : "Choose image"}
+                    </strong>
+                    <small>JPEG, PNG, or WebP · Up to 5 MiB</small>
+                  </span>
+                  <input
+                    id="payment-method-qr-image"
+                    name="qrImage"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={saving}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        qrImage: event.target.files?.[0] ?? null,
+                      }))
+                    }
+                  />
+                </label>
+                {qrPreview ? (
+                  <figure className="admin-payment-methods-dialog__qr-preview">
+                    <img
+                      src={qrPreview}
+                      alt="Current payment QR"
+                      width={196}
+                      height={196}
+                    />
+                    <figcaption>
+                      {draft.qrImage?.name ?? "Current QR image"}
+                    </figcaption>
+                  </figure>
+                ) : (
+                  <div
+                    className="admin-payment-methods-dialog__qr-placeholder"
+                    aria-hidden="true"
+                  >
+                    <ImagePlus size={30} strokeWidth={1.4} />
+                    <span>Image preview</span>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <label className="admin-payment-methods-dialog__availability">
+              <input
+                type="checkbox"
+                checked={draft.isActive}
+                disabled={saving}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    isActive: event.target.checked,
+                  }))
+                }
+              />
+              <span>
+                <strong>Show this method to customers</strong>
+                <small>
+                  You can hide it later without changing earlier payment
+                  records.
+                </small>
+              </span>
+            </label>
+
+            {message ? (
+              <p
+                className="admin-payment-methods-dialog__message"
+                role="status"
+              >
+                {message}
+              </p>
+            ) : null}
+          </form>
+        </div>
+
+        <DialogFooter className="admin-payment-methods-dialog__footer">
+          {draft.id ? (
+            <Btn
+              type="button"
+              onClick={() => setDraft(emptyPaymentMethodDraft())}
+            >
+              Cancel edit
+            </Btn>
+          ) : null}
+          <Btn
+            type="submit"
+            form="payment-method-editor"
+            variant="primary"
+            disabled={
+              saving ||
+              !draft.label.trim() ||
+              (!draft.qrImage && !draft.existingQrImageUrl)
+            }
+          >
+            {saving ? "Saving…" : "Save payment method"}
+          </Btn>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -454,13 +919,15 @@ function PaymentRow({
 function PaymentReviewPreview({
   payment,
   onReview,
+  focused = false,
 }: {
   payment: AdminPayment;
   onReview: (
     payment: AdminPayment,
     action: "verify" | "resubmit",
     reason?: string,
-  ) => Promise<void>;
+  ) => Promise<PaymentReviewConfirmation | undefined>;
+  focused?: boolean;
 }) {
   const proof = currentPaymentProof(payment);
   const method =
@@ -480,6 +947,7 @@ function PaymentReviewPreview({
     payment.status === "Pending Verification" && proof?.version != null;
   const canVerify =
     reviewable &&
+    checklist.amountMatches &&
     checklist.referenceMatches &&
     checklist.proofIsClear &&
     checklist.paymentReceived &&
@@ -508,13 +976,17 @@ function PaymentReviewPreview({
     setSaving(true);
     setFeedback("");
     try {
-      await onReview(payment, "verify");
+      const confirmation = await onReview(payment, "verify");
       if (typeof window !== "undefined")
         window.localStorage.removeItem(checklistKey);
-      setFeedback("Payment verified. The queue has been refreshed.");
+      setFeedback(
+        confirmation?.message ?? "Payment verified. The queue has been refreshed.",
+      );
     } catch (error) {
       setFeedback(
-        error instanceof Error ? error.message : "Unable to verify this payment.",
+        error instanceof Error
+          ? error.message
+          : "Unable to verify this payment.",
       );
     } finally {
       setSaving(false);
@@ -531,7 +1003,9 @@ function PaymentReviewPreview({
       setResubmissionOpen(false);
       if (typeof window !== "undefined")
         window.localStorage.removeItem(checklistKey);
-      setFeedback("Resubmission requested. The customer can now send a corrected proof.");
+      setFeedback(
+        "Resubmission requested. The customer can now send a corrected proof.",
+      );
     } catch (error) {
       setFeedback(
         error instanceof Error
@@ -550,31 +1024,30 @@ function PaymentReviewPreview({
 
   return (
     <aside
-      className="admin-payments-preview"
+      className={`admin-payments-preview${focused ? " admin-payments-preview--focused" : ""}`}
       aria-labelledby="payment-preview-heading"
     >
-      <header className="admin-payments-preview__heading">
-        <div>
-          <h2 id="payment-preview-heading">Review payment proof</h2>
-          <span>{bookingReference(payment.booking_id)}</span>
-        </div>
-        <span className="admin-payments-preview__sequence">
-          <ChevronLeft aria-hidden="true" />
-          <span className="admin-payments-preview__sequence-label">1 of 1</span>
-          <ChevronRight aria-hidden="true" />
-        </span>
-      </header>
-      {reviewContext.status === "loading" ? (
-        <PaymentReviewSelectionLoading />
-      ) : (
-        <div className="admin-payments-preview__body">
-          <PaymentProofViewer proof={proof} source={reviewContext.proof} />
-          <div className="admin-payments-preview__details">
-          <section>
-            <div className="admin-payments-preview__title">
+      {focused ? (
+        <header className="admin-payments-preview__focused-heading">
+          <Link
+            to="/admin/payments"
+            className="admin-payments-preview__back-link"
+          >
+            <ChevronLeft aria-hidden="true" /> Back to payment queue
+          </Link>
+          <div className="admin-payments-preview__focused-title">
+            <div>
+              <h1 id="payment-preview-heading">Review payment proof</h1>
+              <p>Check the submitted proof against this rental record.</p>
+            </div>
+            <div className="admin-payments-preview__focused-meta">
               <div>
-                <p>Booking reference</p>
-                <h3>{bookingReference(payment.booking_id)}</h3>
+                <span>Booking reference</span>
+                <strong>{bookingReference(payment.booking_id)}</strong>
+              </div>
+              <div>
+                <span>Submitted</span>
+                <strong>{formatAdminDateTime(payment.submitted_at)}</strong>
               </div>
               <DomainStatus
                 label={payment.status}
@@ -582,94 +1055,142 @@ function PaymentReviewPreview({
                 compact
               />
             </div>
-          </section>
-          <section>
-            <h4>Customer details</h4>
-            <p>
-              {payment.booking?.customer?.full_name ?? "Customer unavailable"}
-            </p>
-            <p>{payment.booking?.customer?.email ?? "Email unavailable"}</p>
-          </section>
-          <BookingDetails
-            booking={reviewContext.booking}
-            message={reviewContext.bookingMessage}
-          />
-          <section>
-            <h4>Payment details</h4>
-            <dl>
-              <div>
-                <dt>Submitted amount</dt>
-                <dd>
-                  {paymentAmountPresentation(payment.submitted_amount) ??
-                    "Amount not recorded"}
-                </dd>
+          </div>
+        </header>
+      ) : (
+        <header className="admin-payments-preview__heading">
+          <div>
+            <h2 id="payment-preview-heading">Review payment proof</h2>
+            <span>{bookingReference(payment.booking_id)}</span>
+          </div>
+          <span className="admin-payments-preview__sequence">
+            <ChevronLeft aria-hidden="true" />
+            <span className="admin-payments-preview__sequence-label">1 of 1</span>
+            <ChevronRight aria-hidden="true" />
+          </span>
+        </header>
+      )}
+      {reviewContext.status === "loading" ? (
+        <PaymentReviewSelectionLoading />
+      ) : (
+        <div className="admin-payments-preview__body">
+          <PaymentProofViewer proof={proof} source={reviewContext.proof} />
+          <div className="admin-payments-preview__details">
+            {!focused ? <section>
+              <div className="admin-payments-preview__title">
+                <div>
+                  <p>Booking reference</p>
+                  <h3>{bookingReference(payment.booking_id)}</h3>
+                </div>
+                <DomainStatus
+                  label={payment.status}
+                  tone={statusTone(payment.status)}
+                  compact
+                />
               </div>
-              <div>
-                <dt>Date & time</dt>
-                <dd>{formatAdminDateTime(payment.submitted_at)}</dd>
-              </div>
-              <div>
-                <dt>Reference no.</dt>
-                <dd className="font-mono">
-                  {payment.transaction_reference ?? "Not recorded"}
-                </dd>
-              </div>
-              <div>
-                <dt>Method</dt>
-                <dd>{method}</dd>
-              </div>
-            </dl>
-          </section>
-          <section className="admin-payments-preview__check">
-            <h4>Verification checklist</h4>
-            <label>
-              <input
-                type="checkbox"
-                checked={checklist.referenceMatches}
-                disabled={!reviewable || saving}
-                onChange={(event) =>
-                  setChecklist((current) => ({
-                    ...current,
-                    referenceMatches: event.target.checked,
-                  }))
-                }
-              />
-              <span>Reference matches the booking.</span>
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={checklist.proofIsClear}
-                disabled={!reviewable || saving}
-                onChange={(event) =>
-                  setChecklist((current) => ({
-                    ...current,
-                    proofIsClear: event.target.checked,
-                  }))
-                }
-              />
-              <span>Proof is clear and readable.</span>
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={checklist.paymentReceived}
-                disabled={!reviewable || saving}
-                onChange={(event) =>
-                  setChecklist((current) => ({
-                    ...current,
-                    paymentReceived: event.target.checked,
-                  }))
-                }
-              />
-              <span>Payment received.</span>
-            </label>
-            {!reviewable ? (
-              <p className="admin-payments-preview__check-note">
-                This payment is not currently eligible for verification.
+            </section> : null}
+            <section>
+              <h4>Customer details</h4>
+              <p>
+                {payment.booking?.customer?.full_name ?? "Customer unavailable"}
               </p>
-            ) : null}
-          </section>
+              <p>{payment.booking?.customer?.email ?? "Email unavailable"}</p>
+            </section>
+            <BookingDetails
+              booking={reviewContext.booking}
+              message={reviewContext.bookingMessage}
+            />
+            <section>
+              <h4>Payment details</h4>
+              <dl>
+                <div>
+                  <dt>Submitted amount</dt>
+                  <dd>
+                    {paymentAmountPresentation(payment.submitted_amount) ??
+                      "Amount not recorded"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Date & time</dt>
+                  <dd>{formatAdminDateTime(payment.submitted_at)}</dd>
+                </div>
+                <div>
+                  <dt>Reference no.</dt>
+                  <dd className="font-mono">
+                    {payment.transaction_reference ?? "Not recorded"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Method</dt>
+                  <dd>{method}</dd>
+                </div>
+              </dl>
+            </section>
+            {focused ? <QuoteComputation payment={payment} /> : null}
+            <section className="admin-payments-preview__check">
+              <h4>Verification checklist</h4>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={checklist.amountMatches}
+                  disabled={!reviewable || saving}
+                  onChange={(event) =>
+                    setChecklist((current) => ({
+                      ...current,
+                      amountMatches: event.target.checked,
+                    }))
+                  }
+                />
+                <span>Amount shown matches the amount due.</span>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={checklist.referenceMatches}
+                  disabled={!reviewable || saving}
+                  onChange={(event) =>
+                    setChecklist((current) => ({
+                      ...current,
+                      referenceMatches: event.target.checked,
+                    }))
+                  }
+                />
+                <span>Reference matches the booking.</span>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={checklist.proofIsClear}
+                  disabled={!reviewable || saving}
+                  onChange={(event) =>
+                    setChecklist((current) => ({
+                      ...current,
+                      proofIsClear: event.target.checked,
+                    }))
+                  }
+                />
+                <span>Proof is clear and readable.</span>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={checklist.paymentReceived}
+                  disabled={!reviewable || saving}
+                  onChange={(event) =>
+                    setChecklist((current) => ({
+                      ...current,
+                      paymentReceived: event.target.checked,
+                    }))
+                  }
+                />
+                <span>Payment received.</span>
+              </label>
+              {!reviewable ? (
+                <p className="admin-payments-preview__check-note">
+                  This payment is not currently eligible for verification.
+                </p>
+              ) : null}
+            </section>
           </div>
         </div>
       )}
@@ -692,7 +1213,8 @@ function PaymentReviewPreview({
           disabled={!canVerify}
           onClick={() => void verify()}
         >
-          <CreditCard className="h-4 w-4" aria-hidden="true" /> {saving ? "Verifying…" : "Verify payment"}
+          <CreditCard className="h-4 w-4" aria-hidden="true" />{" "}
+          {saving ? "Verifying…" : "Verify payment"}
         </button>
         {feedback ? (
           <p className="admin-payments-preview__feedback" role="status">
@@ -723,7 +1245,8 @@ function PaymentReviewPreview({
               aria-describedby="payment-resubmission-remark-help"
             />
             <p id="payment-resubmission-remark-help">
-              Suggested from the unchecked review items. You can adjust it before sending.
+              Suggested from the unchecked review items. You can adjust it
+              before sending.
             </p>
           </div>
           <DialogFooter>
@@ -834,7 +1357,8 @@ function PaymentProofViewer({
 }) {
   const [zoom, setZoom] = useState(1);
   const increaseZoom = () => setZoom((current) => Math.min(2, current + 0.25));
-  const decreaseZoom = () => setZoom((current) => Math.max(0.75, current - 0.25));
+  const decreaseZoom = () =>
+    setZoom((current) => Math.max(0.75, current - 0.25));
   useEffect(() => {
     setZoom(1);
   }, [proof?.id]);
@@ -856,12 +1380,25 @@ function PaymentProofViewer({
     <div
       className={`admin-payments-proof-viewer ${proof?.mime_type === "application/pdf" ? "is-pdf" : "is-image"}`}
     >
-      <div className="admin-payments-proof-viewer__zoom" aria-label="Proof zoom controls">
-        <button type="button" onClick={decreaseZoom} disabled={zoom <= 0.75} aria-label="Zoom out">
+      <div
+        className="admin-payments-proof-viewer__zoom"
+        aria-label="Proof zoom controls"
+      >
+        <button
+          type="button"
+          onClick={decreaseZoom}
+          disabled={zoom <= 0.75}
+          aria-label="Zoom out"
+        >
           <Minus aria-hidden="true" />
         </button>
         <output aria-live="polite">{Math.round(zoom * 100)}%</output>
-        <button type="button" onClick={increaseZoom} disabled={zoom >= 2} aria-label="Zoom in">
+        <button
+          type="button"
+          onClick={increaseZoom}
+          disabled={zoom >= 2}
+          aria-label="Zoom in"
+        >
           <Plus aria-hidden="true" />
         </button>
       </div>
@@ -875,7 +1412,12 @@ function PaymentProofViewer({
         <img
           src={source.url}
           alt={`Preview of ${proof?.original_filename ?? "payment proof"}`}
-          style={{ width: `${zoom * 100}%`, maxWidth: "none", maxHeight: "none" }}
+          style={{
+            width: "auto",
+            height: `${30 * zoom}rem`,
+            maxWidth: `${zoom * 100}%`,
+            maxHeight: "none",
+          }}
         />
       )}
     </div>
@@ -964,15 +1506,17 @@ function usePaymentReviewContext(
                 : "This proof is unavailable for preview.",
           }));
 
-    void Promise.all([bookingRequest, proofRequest]).then(([booking, preview]) => {
-      if (!active) return;
-      setState({
-        status: "ready",
-        booking: booking.booking,
-        bookingMessage: booking.message,
-        proof: preview,
-      });
-    });
+    void Promise.all([bookingRequest, proofRequest]).then(
+      ([booking, preview]) => {
+        if (!active) return;
+        setState({
+          status: "ready",
+          booking: booking.booking,
+          bookingMessage: booking.message,
+          proof: preview,
+        });
+      },
+    );
     return () => {
       active = false;
     };
@@ -1009,8 +1553,7 @@ function BookingDetails({
           <div>
             <dt>Pickup</dt>
             <dd>
-              {booking.pickup_delivery_option ??
-                "Pickup option unavailable"}
+              {booking.pickup_delivery_option ?? "Pickup option unavailable"}
             </dd>
           </div>
           <div>
@@ -1027,6 +1570,51 @@ function BookingDetails({
           {message ?? "Exact booking details are unavailable."}
         </p>
       )}
+    </section>
+  );
+}
+
+function QuoteComputation({ payment }: { payment: AdminPayment }) {
+  const quote = payment.payment_quote;
+  const amountDue =
+    quote?.down_payment_amount ?? payment.required_amount ?? null;
+  const amountSubmitted = payment.submitted_amount ?? null;
+
+  return (
+    <section className="admin-payments-preview__quote">
+      <h4>Quote computation</h4>
+      {quote ? (
+        <dl>
+          <div>
+            <dt>
+              Rental charge
+              {quote.billable_days ? ` (${quote.billable_days} days)` : ""}
+            </dt>
+            <dd>{paymentAmountPresentation(quote.rental_subtotal)}</dd>
+          </div>
+          <div>
+            <dt>Delivery fee</dt>
+            <dd>{paymentAmountPresentation(quote.delivery_fee)}</dd>
+          </div>
+          <div className="admin-payments-preview__quote-total">
+            <dt>Total rental price</dt>
+            <dd>{paymentAmountPresentation(quote.total_amount)}</dd>
+          </div>
+          <div>
+            <dt>Down payment due</dt>
+            <dd>{paymentAmountPresentation(amountDue)}</dd>
+          </div>
+        </dl>
+      ) : (
+        <p className="admin-payments-preview__loading">
+          The saved quote is unavailable. Review the submitted amount against
+          the recorded amount due.
+        </p>
+      )}
+      <div className="admin-payments-preview__submitted-amount">
+        <span>Amount submitted</span>
+        <strong>{paymentAmountPresentation(amountSubmitted)}</strong>
+      </div>
     </section>
   );
 }

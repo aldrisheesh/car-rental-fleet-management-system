@@ -37,6 +37,13 @@ export function validateMasterDataInput(
   )
     return "Seat capacity must be positive.";
   if (
+    input.largeLuggageCapacity != null &&
+    input.largeLuggageCapacity !== "" &&
+    (!Number.isInteger(Number(input.largeLuggageCapacity)) ||
+      Number(input.largeLuggageCapacity) < 0)
+  )
+    return "Large-bag capacity must be zero or greater.";
+  if (
     input.dailyRate != null &&
     input.dailyRate !== "" &&
     (!Number.isFinite(Number(input.dailyRate)) || Number(input.dailyRate) < 0)

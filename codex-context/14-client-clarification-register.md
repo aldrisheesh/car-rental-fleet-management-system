@@ -2,6 +2,10 @@
 **Status:** Active
 **Last updated:** 2026-09-02
 
+## Policy-evidence boundary
+
+Items that need a commercial-policy decision remain unresolved unless supported by recorded client evidence. For capstone demonstration and controlled tests, use the [researcher-designed policy baseline](2026-09-26-researcher-designed-policy-baseline.md). It is deliberately separate from client evidence and is not a substitute for production approval.
+
 ## CQ-031 — Pickup / Return Reminder Lead Time
 **Status:** Open — researcher-designed baseline awaiting client validation
 

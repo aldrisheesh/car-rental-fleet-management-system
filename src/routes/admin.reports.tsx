@@ -1,59 +1,978 @@
-import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, RotateCcw, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  createFileRoute,
+  Link,
+  redirect,
+  useNavigate,
+} from "@tanstack/react-router";
+import {
+  CalendarDays,
+  RotateCcw,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Btn, TInput, TSelect } from "@/components/admin/ui";
-import { ALL_BRANCHES, defaultReportRange, type AdminReportsResponse } from "@/lib/admin-reports";
+import {
+  ALL_BRANCHES,
+  defaultReportRange,
+  type AdminReportsResponse,
+} from "@/lib/admin-reports";
 import { getAdminSession } from "@/lib/admin-auth";
 
 type ReportSearch = { from?: string; to?: string; branch?: string };
 export const Route = createFileRoute("/admin/reports")({
-  beforeLoad: () => { if (typeof window !== "undefined" && !getAdminSession()) throw redirect({ to: "/sign-in" }); },
-  validateSearch: (search: Record<string, unknown>): ReportSearch => ({ from: typeof search.from === "string" ? search.from : undefined, to: typeof search.to === "string" ? search.to : undefined, branch: typeof search.branch === "string" ? search.branch : undefined }),
+  beforeLoad: () => {
+    if (typeof window !== "undefined" && !getAdminSession())
+      throw redirect({ to: "/sign-in" });
+  },
+  validateSearch: (search: Record<string, unknown>): ReportSearch => ({
+    from: typeof search.from === "string" ? search.from : undefined,
+    to: typeof search.to === "string" ? search.to : undefined,
+    branch: typeof search.branch === "string" ? search.branch : undefined,
+  }),
   component: ReportsPage,
 });
 
 function ReportsPage() {
-  const navigate = useNavigate(); const search = Route.useSearch(); const defaults = useMemo(() => defaultReportRange(), []);
-  const start = search.from ?? defaults.start, end = search.to ?? defaults.end, branch = search.branch ?? ALL_BRANCHES;
-  const [draftStart, setDraftStart] = useState(start), [draftEnd, setDraftEnd] = useState(end), [draftBranch, setDraftBranch] = useState(branch);
-  const [filterError, setFilterError] = useState(""), [report, setReport] = useState<AdminReportsResponse | null>(null), [loading, setLoading] = useState(true), [error, setError] = useState(""), [attempt, setAttempt] = useState(0);
-  useEffect(() => { setDraftStart(start); setDraftEnd(end); setDraftBranch(branch); }, [branch, end, start]);
+  const navigate = useNavigate();
+  const search = Route.useSearch();
+  const defaults = useMemo(() => defaultReportRange(), []);
+  const start = search.from ?? defaults.start,
+    end = search.to ?? defaults.end,
+    branch = search.branch ?? ALL_BRANCHES;
+  const [draftStart, setDraftStart] = useState(start),
+    [draftEnd, setDraftEnd] = useState(end),
+    [draftBranch, setDraftBranch] = useState(branch);
+  const [filterError, setFilterError] = useState(""),
+    [report, setReport] = useState<AdminReportsResponse | null>(null),
+    [loading, setLoading] = useState(true),
+    [error, setError] = useState(""),
+    [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    const controller = new AbortController(); setLoading(true); setError("");
-    fetch(`/api/admin-reports?${new URLSearchParams({ start, end, branch })}`, { credentials: "same-origin", signal: controller.signal })
-      .then(async (response) => { const body = (await response.json().catch(() => null)) as AdminReportsResponse | { message?: string } | null; if (!response.ok) throw new Error(body && "message" in body && body.message ? body.message : "Unable to load reports."); return body as AdminReportsResponse; })
-      .then(setReport).catch((cause) => { if (cause instanceof DOMException && cause.name === "AbortError") return; setReport(null); setError(cause instanceof Error ? cause.message : "Unable to load reports."); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    setDraftStart(start);
+    setDraftEnd(end);
+    setDraftBranch(branch);
+  }, [branch, end, start]);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+    fetch(`/api/admin-reports?${new URLSearchParams({ start, end, branch })}`, {
+      credentials: "same-origin",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const body = (await response.json().catch(() => null)) as
+          | AdminReportsResponse
+          | { message?: string }
+          | null;
+        if (!response.ok)
+          throw new Error(
+            body && "message" in body && body.message
+              ? body.message
+              : "Unable to load reports.",
+          );
+        return body as AdminReportsResponse;
+      })
+      .then(setReport)
+      .catch((cause) => {
+        if (cause instanceof DOMException && cause.name === "AbortError")
+          return;
+        setReport(null);
+        setError(
+          cause instanceof Error ? cause.message : "Unable to load reports.",
+        );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
     return () => controller.abort();
   }, [attempt, branch, end, start]);
-  function applyFilters(event: React.FormEvent) { event.preventDefault(); setFilterError(""); if (!draftStart || !draftEnd) return setFilterError("Choose both a start and end date."); if (draftStart > draftEnd) return setFilterError("Start date must be on or before end date."); void navigate({ to: "/admin/reports", search: { from: draftStart, to: draftEnd, branch: draftBranch } }); }
-  function reset() { const range = defaultReportRange(); void navigate({ to: "/admin/reports", search: { from: range.start, to: range.end, branch: ALL_BRANCHES } }); }
-  const branches = report?.branches ?? []; const branchLabel = branch === ALL_BRANCHES ? "All branches" : (branches.find((row) => row.id === branch)?.name ?? "Selected branch");
-  return <main className="admin-reports-workspace" aria-busy={loading || undefined}>
-    <header className="admin-reports-heading"><div><h1>Reports &amp; analytics</h1><p>Track rental demand and fleet activity across the selected period.</p></div><div className="admin-reports-heading__date"><CalendarDays aria-hidden="true" /><span><strong>{formatDate(start)} – {formatDate(end)}</strong><small>Generated from operational records · {branchLabel}</small></span></div></header>
-    <form className="admin-reports-filters" onSubmit={applyFilters}><Field label="From" id="report-from"><TInput id="report-from" name="from" autoComplete="off" type="date" value={draftStart} onChange={(event) => setDraftStart(event.target.value)} /></Field><Field label="To" id="report-to"><TInput id="report-to" name="to" autoComplete="off" type="date" value={draftEnd} onChange={(event) => setDraftEnd(event.target.value)} /></Field><Field label="Branch" id="report-branch"><TSelect id="report-branch" name="branch" value={draftBranch} onChange={(event) => setDraftBranch(event.target.value)}><option value={ALL_BRANCHES}>All branches</option>{branches.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</TSelect></Field><Btn type="submit" variant="primary">Apply</Btn><Btn type="button" variant="ghost" onClick={reset} className="border border-border"><RotateCcw className="h-4 w-4" /> Reset</Btn></form>
-    {filterError ? <p className="admin-reports-alert" role="alert">{filterError}</p> : null}
-    {loading ? <ReportsLoading /> : error || !report ? <section className="admin-reports-error"><p>{error || "Unable to load reports."}</p><Btn type="button" onClick={() => setAttempt((value) => value + 1)}>Retry</Btn></section> : <ReportSections report={report} />}
-  </main>;
+  function applyFilters(event: React.FormEvent) {
+    event.preventDefault();
+    setFilterError("");
+    if (!draftStart || !draftEnd)
+      return setFilterError("Choose both a start and end date.");
+    if (draftStart > draftEnd)
+      return setFilterError("Start date must be on or before end date.");
+    void navigate({
+      to: "/admin/reports",
+      search: { from: draftStart, to: draftEnd, branch: draftBranch },
+    });
+  }
+  function reset() {
+    const range = defaultReportRange();
+    void navigate({
+      to: "/admin/reports",
+      search: { from: range.start, to: range.end, branch: ALL_BRANCHES },
+    });
+  }
+  const branches = report?.branches ?? [];
+  const branchLabel =
+    branch === ALL_BRANCHES
+      ? "All branches"
+      : (branches.find((row) => row.id === branch)?.name ?? "Selected branch");
+  return (
+    <main className="admin-reports-workspace" aria-busy={loading || undefined}>
+      <header className="admin-reports-heading">
+        <div>
+          <h1>Reports &amp; analytics</h1>
+          <p>
+            Track rental demand and fleet activity across the selected period.
+          </p>
+        </div>
+        <div className="admin-reports-heading__date">
+          <CalendarDays aria-hidden="true" />
+          <span>
+            <strong>
+              {formatDate(start)} – {formatDate(end)}
+            </strong>
+            <small>Generated from operational records · {branchLabel}</small>
+          </span>
+        </div>
+      </header>
+      <form className="admin-reports-filters" onSubmit={applyFilters}>
+        <Field label="From" id="report-from">
+          <TInput
+            id="report-from"
+            name="from"
+            autoComplete="off"
+            type="date"
+            value={draftStart}
+            onChange={(event) => setDraftStart(event.target.value)}
+          />
+        </Field>
+        <Field label="To" id="report-to">
+          <TInput
+            id="report-to"
+            name="to"
+            autoComplete="off"
+            type="date"
+            value={draftEnd}
+            onChange={(event) => setDraftEnd(event.target.value)}
+          />
+        </Field>
+        <Field label="Branch" id="report-branch">
+          <TSelect
+            id="report-branch"
+            name="branch"
+            value={draftBranch}
+            onChange={(event) => setDraftBranch(event.target.value)}
+          >
+            <option value={ALL_BRANCHES}>All branches</option>
+            {branches.map((row) => (
+              <option key={row.id} value={row.id}>
+                {row.name}
+              </option>
+            ))}
+          </TSelect>
+        </Field>
+        <Btn type="submit" variant="primary">
+          Apply
+        </Btn>
+        <Btn
+          type="button"
+          variant="ghost"
+          onClick={reset}
+          className="border border-border"
+        >
+          <RotateCcw className="h-4 w-4" /> Reset
+        </Btn>
+      </form>
+      {filterError ? (
+        <p className="admin-reports-alert" role="alert">
+          {filterError}
+        </p>
+      ) : null}
+      {loading ? (
+        <ReportsLoading />
+      ) : error || !report ? (
+        <section className="admin-reports-error">
+          <p>{error || "Unable to load reports."}</p>
+          <Btn type="button" onClick={() => setAttempt((value) => value + 1)}>
+            Retry
+          </Btn>
+        </section>
+      ) : (
+        <ReportSections report={report} />
+      )}
+    </main>
+  );
 }
 
 function ReportSections({ report }: { report: AdminReportsResponse }) {
-  const historical = report.historical ?? { previous: { bookingRequests: 0, rentalsStarted: 0, rentalsCompleted: 0, fleetCount: 0 }, change: { bookingRequests: null, rentalsStarted: null, rentalsCompleted: null, fleetCount: null }, trend: [] };
-  const metrics = [["Booking requests", report.summary.bookingRequests, historical.previous.bookingRequests, historical.change.bookingRequests, "New rental requests received"], ["Rentals started", report.summary.rentalsStarted, historical.previous.rentalsStarted, historical.change.rentalsStarted, "Vehicles released to customers"], ["Rentals completed", report.summary.rentalsCompleted, historical.previous.rentalsCompleted, historical.change.rentalsCompleted, "Vehicles returned and closed"], ["Fleet recorded", report.summary.fleetCount, historical.previous.fleetCount, historical.change.fleetCount, "Vehicles recorded at period end"]] as const;
-  const branchTotal = report.branchesPerformance.reduce((total, row) => total + row.rentalStarts, 0);
-  const fleet = [...report.utilization.vehicles].filter((row) => row.utilizationPercent != null).sort((a, b) => (b.utilizationPercent ?? 0) - (a.utilizationPercent ?? 0)).slice(0, 4);
-  return <div className="admin-reports-content">
-    <section className="admin-reports-comparison" aria-labelledby="report-comparison-title"><h2 id="report-comparison-title">This period compared with the previous period</h2><div className="admin-reports-comparison__metrics">{metrics.map(([label, value, previous, change, hint]) => <ComparisonMetric key={label} label={label} value={value} previous={previous} change={change} hint={hint} />)}</div></section>
-    <section className="admin-reports-trend" aria-labelledby="report-trend-title"><div className="admin-reports-section-heading"><div><h2 id="report-trend-title">Business performance over time</h2><p>Actual booking and rental events, grouped by week.</p></div><Link to="/admin/bookings">See booking activity <span aria-hidden="true">→</span></Link></div><TrendChart trend={historical.trend} /></section>
-    <div className="admin-reports-insights"><section aria-labelledby="report-change-title"><h2 id="report-change-title">What changed from the previous period?</h2><div className="admin-reports-change-list">{metrics.slice(0, 3).map(([label, value, previous, change, hint]) => <ChangeRow key={label} label={label} value={value} previous={previous} change={change} hint={hint} />)}</div></section><section aria-labelledby="report-branch-title"><h2 id="report-branch-title">Where performance came from</h2><p>Share of rental starts by branch.</p><div className="admin-reports-branch-list">{report.branchesPerformance.length ? report.branchesPerformance.map((row) => { const share = branchTotal ? Math.round((row.rentalStarts / branchTotal) * 100) : 0; return <div className="admin-reports-branch-row" key={row.branchId ?? "unknown"}><span>{row.name}</span><div><i style={{ width: `${share}%` }} /></div><strong>{share}%</strong></div>; }) : <p className="admin-reports-empty">No branch activity in this period.</p>}</div></section></div>
-    <section className="admin-reports-fleet-use" aria-labelledby="report-fleet-title"><div className="admin-reports-section-heading"><div><h2 id="report-fleet-title">Fleet use this period</h2><p>Top vehicles by utilization, based on eligible operational days.</p></div></div>{fleet.length ? <div className="admin-reports-fleet-use__grid">{fleet.map((row, index) => <div className="admin-reports-fleet-use__item" key={row.vehicleId}><strong>{index + 1}. {row.name}</strong><b>{formatPercent(row.utilizationPercent ?? 0)}</b><div><i style={{ width: `${row.utilizationPercent ?? 0}%` }} /></div><small>{row.rentalDays} rental days · {row.eligibleOperationalDays ?? 0} eligible days</small></div>)}</div> : <p className="admin-reports-empty">No eligible vehicle utilization data for this period.</p>}</section>
-  </div>;
+  const historical = report.historical ?? {
+    previous: {
+      bookingRequests: 0,
+      rentalsStarted: 0,
+      rentalsCompleted: 0,
+      fleetCount: 0,
+    },
+    change: {
+      bookingRequests: null,
+      rentalsStarted: null,
+      rentalsCompleted: null,
+      fleetCount: null,
+    },
+    trend: [],
+  };
+  const metrics = [
+    [
+      "Booking requests",
+      report.summary.bookingRequests,
+      historical.previous.bookingRequests,
+      historical.change.bookingRequests,
+      "New rental requests received",
+    ],
+    [
+      "Rentals started",
+      report.summary.rentalsStarted,
+      historical.previous.rentalsStarted,
+      historical.change.rentalsStarted,
+      "Vehicles released to customers",
+    ],
+    [
+      "Rentals completed",
+      report.summary.rentalsCompleted,
+      historical.previous.rentalsCompleted,
+      historical.change.rentalsCompleted,
+      "Vehicles returned and closed",
+    ],
+    [
+      "Fleet recorded",
+      report.summary.fleetCount,
+      historical.previous.fleetCount,
+      historical.change.fleetCount,
+      "Vehicles recorded at period end",
+    ],
+  ] as const;
+  const branchTotal = report.branchesPerformance.reduce(
+    (total, row) => total + row.rentalStarts,
+    0,
+  );
+  const fleet = [...report.utilization.vehicles]
+    .filter((row) => row.utilizationPercent != null)
+    .sort((a, b) => (b.utilizationPercent ?? 0) - (a.utilizationPercent ?? 0))
+    .slice(0, 4);
+  return (
+    <div className="admin-reports-content">
+      <section
+        className="admin-reports-comparison"
+        aria-labelledby="report-comparison-title"
+      >
+        <h2 id="report-comparison-title">
+          This period compared with the previous period
+        </h2>
+        <div className="admin-reports-comparison__metrics">
+          {metrics.map(([label, value, previous, change, hint]) => (
+            <ComparisonMetric
+              key={label}
+              label={label}
+              value={value}
+              previous={previous}
+              change={change}
+              hint={hint}
+            />
+          ))}
+        </div>
+      </section>
+      {report.decisionSupport ? (
+        <DecisionSupportSection report={report} />
+      ) : null}
+      <SupportingRecordsSection report={report} />
+      <section
+        className="admin-reports-trend"
+        aria-labelledby="report-trend-title"
+      >
+        <div className="admin-reports-section-heading">
+          <div>
+            <h2 id="report-trend-title">Business performance over time</h2>
+            <p>Actual booking and rental events, grouped by week.</p>
+          </div>
+          <Link to="/admin/bookings">
+            See booking activity <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+        <TrendChart trend={historical.trend} />
+      </section>
+      <div className="admin-reports-insights">
+        <section aria-labelledby="report-change-title">
+          <h2 id="report-change-title">
+            What changed from the previous period?
+          </h2>
+          <div className="admin-reports-change-list">
+            {metrics
+              .slice(0, 3)
+              .map(([label, value, previous, change, hint]) => (
+                <ChangeRow
+                  key={label}
+                  label={label}
+                  value={value}
+                  previous={previous}
+                  change={change}
+                  hint={hint}
+                />
+              ))}
+          </div>
+        </section>
+        <section aria-labelledby="report-branch-title">
+          <h2 id="report-branch-title">Where performance came from</h2>
+          <p>Share of rental starts by branch.</p>
+          <div className="admin-reports-branch-list">
+            {report.branchesPerformance.length ? (
+              report.branchesPerformance.map((row) => {
+                const share = branchTotal
+                  ? Math.round((row.rentalStarts / branchTotal) * 100)
+                  : 0;
+                return (
+                  <div
+                    className="admin-reports-branch-row"
+                    key={row.branchId ?? "unknown"}
+                  >
+                    <span>{row.name}</span>
+                    <div>
+                      <i style={{ width: `${share}%` }} />
+                    </div>
+                    <strong>{share}%</strong>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="admin-reports-empty">
+                No branch activity in this period.
+              </p>
+            )}
+          </div>
+        </section>
+      </div>
+      <section
+        className="admin-reports-fleet-use"
+        aria-labelledby="report-fleet-title"
+      >
+        <div className="admin-reports-section-heading">
+          <div>
+            <h2 id="report-fleet-title">Fleet use this period</h2>
+            <p>
+              Top vehicles by utilization, based on eligible operational days.
+            </p>
+          </div>
+        </div>
+        {fleet.length ? (
+          <div className="admin-reports-fleet-use__grid">
+            {fleet.map((row, index) => (
+              <div
+                className="admin-reports-fleet-use__item"
+                key={row.vehicleId}
+              >
+                <strong>
+                  {index + 1}. {row.name}
+                </strong>
+                <b>{formatPercent(row.utilizationPercent ?? 0)}</b>
+                <div>
+                  <i style={{ width: `${row.utilizationPercent ?? 0}%` }} />
+                </div>
+                <small>
+                  {row.rentalDays} rental days ·{" "}
+                  {row.eligibleOperationalDays ?? 0} eligible days
+                </small>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="admin-reports-empty">
+            No eligible vehicle utilization data for this period.
+          </p>
+        )}
+      </section>
+    </div>
+  );
 }
-function ComparisonMetric({ label, value, previous, change, hint }: { label: string; value: number; previous: number; change: number | null; hint: string }) { const improved = change != null && change > 0; return <div className="admin-reports-comparison__metric"><span>{label}</span><strong>{value}</strong><em className={change == null ? "steady" : improved ? "up" : change === 0 ? "steady" : "down"}>{change == null ? "—" : change === 0 ? "— steady" : <>{improved ? <TrendingUp /> : <TrendingDown />}{formatChange(change)}</>}</em><small>vs. {previous} previously · {hint}</small></div>; }
-function ChangeRow({ label, value, previous, change, hint }: { label: string; value: number; previous: number; change: number | null; hint: string }) { const max = Math.max(value, previous, 1); return <div className="admin-reports-change-row"><div><strong>{label}</strong><span>{value}</span></div><div className="admin-reports-bar"><i style={{ width: `${(value / max) * 100}%` }} /></div><em className={change != null && change < 0 ? "down" : "up"}>{formatChange(change)}</em><p>{hint} {change == null ? "has no comparable prior period." : change === 0 ? "held steady." : `${change > 0 ? "increased" : "decreased"} from the previous period.`}</p></div>; }
-function TrendChart({ trend }: { trend: AdminReportsResponse["historical"]["trend"] }) { const values = trend.flatMap((row) => [row.bookingRequests, row.rentalsStarted, row.rentalsCompleted]), max = Math.max(...values, 1), width = 960, height = 270, pad = { l: 48, r: 22, t: 26, b: 52 }; const x = (index: number) => pad.l + (trend.length <= 1 ? (width - pad.l - pad.r) / 2 : index * ((width - pad.l - pad.r) / (trend.length - 1))), y = (value: number) => pad.t + (1 - value / max) * (height - pad.t - pad.b); const points = (key: "bookingRequests" | "rentalsStarted" | "rentalsCompleted") => trend.map((row, index) => `${x(index)},${y(row[key])}`).join(" "); const series = [["bookingRequests", "#0c5a4f", "Booking requests"], ["rentalsStarted", "#76a978", "Rentals started"], ["rentalsCompleted", "#5f8fc9", "Rentals completed"]] as const; return <div className="admin-reports-chart"><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Weekly business performance chart">{[0, .25, .5, .75, 1].map((tick) => <g key={tick}><line x1={pad.l} x2={width - pad.r} y1={y(Math.round(max * tick))} y2={y(Math.round(max * tick))} /><text x={pad.l - 10} y={y(Math.round(max * tick)) + 4}>{Math.round(max * tick)}</text></g>)}{series.map(([key, color]) => <polyline key={key} points={points(key)} fill="none" stroke={color} strokeWidth="2.5" />)}{series.flatMap(([key, color]) => trend.map((row, index) => <circle key={`${key}-${index}`} cx={x(index)} cy={y(row[key])} r="4" fill={color} />))}{trend.map((row, index) => <text key={row.start} className="admin-reports-chart__label" x={x(index)} y={height - 15} textAnchor="middle">{formatRange(row.start, row.end)}</text>)}</svg><div className="admin-reports-chart__legend">{series.map(([, color, label]) => <span key={label}><i style={{ background: color }} />{label}</span>)}</div></div>; }
-function ReportsLoading() { return <div className="admin-reports-skeleton" aria-label="Loading reports"><div className="admin-reports-skeleton__comparison"><i /><i /><i /><i /></div><div className="admin-reports-skeleton__chart"><i /><i /><i /><i /></div><div className="admin-reports-skeleton__split"><i /><i /></div><div className="admin-reports-skeleton__fleet"><i /><i /><i /><i /></div></div>; }
-function Field({ label, id, children }: { label: string; id: string; children: React.ReactNode }) { return <label className="admin-reports-field" htmlFor={id}><span>{label}</span>{children}</label>; }
-function formatPercent(value: number) { return `${Math.round(value)}%`; }
-function formatChange(value: number | null) { return value == null ? "—" : `${value > 0 ? "+" : ""}${Math.round(value)}%`; }
-function formatDate(value: string) { return new Intl.DateTimeFormat("en-PH", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" }).format(new Date(`${value}T00:00:00+08:00`)); }
-function formatRange(start: string, end: string) { const f = new Intl.DateTimeFormat("en-PH", { month: "short", day: "numeric", timeZone: "Asia/Manila" }); return `${f.format(new Date(`${start}T00:00:00+08:00`))}–${f.format(new Date(`${end}T00:00:00+08:00`))}`; }
+function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
+  const decision = report.decisionSupport!;
+  return (
+    <section
+      className="admin-reports-decision"
+      aria-labelledby="report-decision-title"
+    >
+      <div className="admin-reports-section-heading">
+        <div>
+          <h2 id="report-decision-title">Decision-support evidence</h2>
+          <p>
+            Latest WMA run generated in the selected period, with its current
+            supply snapshot and exact matching allocation batch.
+          </p>
+        </div>
+        <Link to="/admin/decisions">
+          Open decision support <span aria-hidden="true">→</span>
+        </Link>
+      </div>
+      {decision.latestRun ? (
+        <>
+          <div className="admin-reports-decision__meta">
+            <span>
+              <strong>{decision.latestRun.method}</strong> forecast generated{" "}
+              {formatDateTime(decision.latestRun.generatedAt)}
+            </span>
+            <span>
+              Accuracy uses finalized horizon-1 target weeks from{" "}
+              {formatDate(report.range.start)} to {formatDate(report.range.end)}
+              .
+            </span>
+          </div>
+          <div className="admin-reports-decision__metrics">
+            <ReportMetric
+              label="Forecast positions"
+              value={decision.forecastPositions}
+              detail={`${decision.horizonOnePositions} next-week positions`}
+            />
+            <ReportMetric
+              label="MAPE"
+              value={
+                decision.accuracy.overallMape == null
+                  ? "Unavailable"
+                  : `${formatNumber(decision.accuracy.overallMape)}%`
+              }
+              detail={`${decision.accuracy.eligibleForecasts} eligible samples · ${decision.accuracy.excludedZeroActuals} zero-actual exclusions`}
+            />
+            <ReportMetric
+              label="Supply gaps"
+              value={decision.supply.shortagePositions}
+              detail={`${decision.supply.shortageUnits} shortage units · ${decision.supply.surplusUnits} surplus units`}
+            />
+            <ReportMetric
+              label="Allocation decisions"
+              value={decision.allocation.recommendations}
+              detail={`${decision.allocation.pending} pending · ${decision.allocation.approved} approved · ${decision.allocation.rejected} rejected`}
+            />
+          </div>
+          <div className="admin-reports-decision__definitions">
+            <span>
+              <strong>Supply:</strong> {decision.supply.evaluatedPositions}{" "}
+              evaluated; {decision.supply.shortagePositions} shortage,{" "}
+              {decision.supply.surplusPositions} surplus and{" "}
+              {decision.supply.balancedPositions} balanced positions.
+            </span>
+            <span>
+              <strong>Allocation:</strong>{" "}
+              {decision.allocation.recommendedUnits} units recommended and{" "}
+              {decision.allocation.approvedUnits} approved
+              {decision.allocation.latestBatchGeneratedAt
+                ? ` in the batch generated ${formatDateTime(decision.allocation.latestBatchGeneratedAt)}`
+                : "; no exact matching batch in this period"}
+              .
+            </span>
+          </div>
+          <div className="admin-reports-decision__table-wrap">
+            <table>
+              <caption>
+                Next-week demand and supply by branch and vehicle category
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Target week</th>
+                  <th scope="col">Branch</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Forecast demand</th>
+                  <th scope="col">Required</th>
+                  <th scope="col">Projected supply</th>
+                  <th scope="col">Gap</th>
+                </tr>
+              </thead>
+              <tbody>
+                {decision.horizonOne.map((row) => (
+                  <tr key={row.forecastId}>
+                    <td>{formatDate(row.targetWeekStart)}</td>
+                    <td>{row.branchName}</td>
+                    <td>{row.categoryName}</td>
+                    <td>{formatNumber(row.forecastedDemand)}</td>
+                    <td>{row.requiredUnits}</td>
+                    <td>{row.projectedSupply ?? "Unavailable"}</td>
+                    <td>
+                      {row.shortageUnits == null || row.surplusUnits == null
+                        ? "Unavailable"
+                        : row.shortageUnits > 0
+                          ? `${row.shortageUnits} short`
+                          : row.surplusUnits > 0
+                            ? `${row.surplusUnits} surplus`
+                            : "Balanced"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="admin-reports-decision__note">
+            MAPE excludes zero actual demand from percentage division but keeps
+            the excluded count visible. Allocation remains advisory and does not
+            move vehicles automatically.
+          </p>
+        </>
+      ) : (
+        <div className="admin-reports-decision__empty">
+          <strong>
+            No forecast run was generated in this selected period.
+          </strong>
+          <p>
+            Choose a period containing a forecast run or generate one from
+            Decision Support. Accuracy may still contain finalized target-week
+            samples: {decision.accuracy.eligibleForecasts} eligible,{" "}
+            {decision.accuracy.excludedZeroActuals} zero-actual exclusions.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+function SupportingRecordsSection({
+  report,
+}: {
+  report: AdminReportsResponse;
+}) {
+  return (
+    <section
+      className="admin-reports-supporting"
+      aria-labelledby="report-supporting-title"
+    >
+      <div className="admin-reports-section-heading">
+        <div>
+          <h2 id="report-supporting-title">Supporting operational records</h2>
+          <p>
+            Maintenance, utilization, branch demand and category activity for
+            the same selected period and branch filter.
+          </p>
+        </div>
+      </div>
+      <div className="admin-reports-supporting__metrics">
+        <ReportMetric
+          label="Average utilization"
+          value={
+            report.utilization.averagePercent == null
+              ? "Unavailable"
+              : formatPercent(report.utilization.averagePercent)
+          }
+          detail={`${report.utilization.availableVehicleCount} vehicles measured · ${report.utilization.unavailableVehicleCount} unavailable`}
+        />
+        <ReportMetric
+          label="Rental days"
+          value={report.utilization.rentalDays}
+          detail={`${report.utilization.idle} idle · ${report.utilization.notIdle} not idle · ${report.utilization.unableToDetermineIdle} unknown`}
+        />
+        <ReportMetric
+          label="Blocking maintenance"
+          value={report.maintenance.blockingWorkload}
+          detail={`${report.maintenance.started} started · ${report.maintenance.completed} completed`}
+        />
+        <ReportMetric
+          label="Cancelled maintenance"
+          value={report.maintenance.cancelled}
+          detail="Cancellation uses the recorded status-transition time"
+        />
+      </div>
+      {report.payments ? (
+        <div className="admin-reports-payments">
+          <div>
+            <strong>Initial payment records</strong>
+            <span>
+              Latest proof submissions and Owner/Admin verification events in
+              this period.
+            </span>
+          </div>
+          <ReportMetric
+            label="Latest submissions"
+            value={report.payments.latestSubmissions}
+            detail={formatPeso(report.payments.latestSubmittedAmount)}
+          />
+          <ReportMetric
+            label="Verified"
+            value={report.payments.verified}
+            detail={formatPeso(report.payments.verifiedAmount)}
+          />
+          <ReportMetric
+            label="Needs resubmission"
+            value={report.payments.needsResubmission}
+            detail="Reviewed in this period"
+          />
+          <p>
+            Amounts are submitted or verified initial-payment evidence. They do
+            not represent business income, profit or final settlement.
+          </p>
+        </div>
+      ) : (
+        <p className="admin-reports-supporting__restricted">
+          Payment reporting is restricted to Owner/Admin.
+        </p>
+      )}
+      <div className="admin-reports-supporting__tables">
+        <ReportTable
+          title="Branch demand and fleet activity"
+          columns={[
+            "Branch",
+            "Requests",
+            "Rental starts",
+            "Fleet",
+            "Utilization",
+            "Blocking maintenance",
+          ]}
+          rows={report.branchesPerformance.map((row) => [
+            row.name,
+            row.bookingRequests,
+            row.rentalStarts,
+            row.fleetCount,
+            row.utilization.averagePercent == null
+              ? "Unavailable"
+              : formatPercent(row.utilization.averagePercent),
+            row.blockingMaintenance,
+          ])}
+          empty="No branch records are available."
+        />
+        <ReportTable
+          title="Vehicle-category activity"
+          columns={[
+            "Category",
+            "Fleet",
+            "Rental days",
+            "Utilization",
+            "Idle",
+            "Idle unknown",
+          ]}
+          rows={report.categoriesPerformance.map((row) => [
+            row.name,
+            row.fleetCount,
+            row.rentalDays,
+            row.utilization.averagePercent == null
+              ? "Unavailable"
+              : formatPercent(row.utilization.averagePercent),
+            row.idleVehicles,
+            row.unableToDetermineIdle,
+          ])}
+          empty="No category records are available."
+        />
+      </div>
+      <p className="admin-reports-decision__note">
+        Utilization excludes vehicles without enough historical eligibility
+        evidence; unavailable values are not converted to zero.
+      </p>
+    </section>
+  );
+}
+function ReportTable({
+  title,
+  columns,
+  rows,
+  empty,
+}: {
+  title: string;
+  columns: string[];
+  rows: Array<Array<string | number>>;
+  empty: string;
+}) {
+  return (
+    <div className="admin-reports-supporting__table-wrap">
+      <table>
+        <caption>{title}</caption>
+        <thead>
+          <tr>
+            {columns.map((column) => (
+              <th scope="col" key={column}>
+                {column}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length ? (
+            rows.map((row, index) => (
+              <tr key={`${row[0]}-${index}`}>
+                {row.map((value, cell) => (
+                  <td key={`${columns[cell]}-${cell}`}>{value}</td>
+                ))}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={columns.length}>{empty}</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+function ReportMetric({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: number | string;
+  detail: string;
+}) {
+  return (
+    <div className="admin-reports-decision__metric">
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{detail}</small>
+    </div>
+  );
+}
+function ComparisonMetric({
+  label,
+  value,
+  previous,
+  change,
+  hint,
+}: {
+  label: string;
+  value: number;
+  previous: number;
+  change: number | null;
+  hint: string;
+}) {
+  const improved = change != null && change > 0;
+  return (
+    <div className="admin-reports-comparison__metric">
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <em
+        className={
+          change == null
+            ? "steady"
+            : improved
+              ? "up"
+              : change === 0
+                ? "steady"
+                : "down"
+        }
+      >
+        {change == null ? (
+          "—"
+        ) : change === 0 ? (
+          "— steady"
+        ) : (
+          <>
+            {improved ? <TrendingUp /> : <TrendingDown />}
+            {formatChange(change)}
+          </>
+        )}
+      </em>
+      <small>
+        vs. {previous} previously · {hint}
+      </small>
+    </div>
+  );
+}
+function ChangeRow({
+  label,
+  value,
+  previous,
+  change,
+  hint,
+}: {
+  label: string;
+  value: number;
+  previous: number;
+  change: number | null;
+  hint: string;
+}) {
+  const max = Math.max(value, previous, 1);
+  return (
+    <div className="admin-reports-change-row">
+      <div>
+        <strong>{label}</strong>
+        <span>{value}</span>
+      </div>
+      <div className="admin-reports-bar">
+        <i style={{ width: `${(value / max) * 100}%` }} />
+      </div>
+      <em className={change != null && change < 0 ? "down" : "up"}>
+        {formatChange(change)}
+      </em>
+      <p>
+        {hint}{" "}
+        {change == null
+          ? "has no comparable prior period."
+          : change === 0
+            ? "held steady."
+            : `${change > 0 ? "increased" : "decreased"} from the previous period.`}
+      </p>
+    </div>
+  );
+}
+function TrendChart({
+  trend,
+}: {
+  trend: AdminReportsResponse["historical"]["trend"];
+}) {
+  const values = trend.flatMap((row) => [
+      row.bookingRequests,
+      row.rentalsStarted,
+      row.rentalsCompleted,
+    ]),
+    max = Math.max(...values, 1),
+    width = 960,
+    height = 270,
+    pad = { l: 48, r: 22, t: 26, b: 52 };
+  const x = (index: number) =>
+      pad.l +
+      (trend.length <= 1
+        ? (width - pad.l - pad.r) / 2
+        : index * ((width - pad.l - pad.r) / (trend.length - 1))),
+    y = (value: number) => pad.t + (1 - value / max) * (height - pad.t - pad.b);
+  const points = (
+    key: "bookingRequests" | "rentalsStarted" | "rentalsCompleted",
+  ) => trend.map((row, index) => `${x(index)},${y(row[key])}`).join(" ");
+  const series = [
+    ["bookingRequests", "#0c5a4f", "Booking requests"],
+    ["rentalsStarted", "#76a978", "Rentals started"],
+    ["rentalsCompleted", "#5f8fc9", "Rentals completed"],
+  ] as const;
+  return (
+    <div className="admin-reports-chart">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Weekly business performance chart"
+      >
+        {[0, 0.25, 0.5, 0.75, 1].map((tick) => (
+          <g key={tick}>
+            <line
+              x1={pad.l}
+              x2={width - pad.r}
+              y1={y(Math.round(max * tick))}
+              y2={y(Math.round(max * tick))}
+            />
+            <text x={pad.l - 10} y={y(Math.round(max * tick)) + 4}>
+              {Math.round(max * tick)}
+            </text>
+          </g>
+        ))}
+        {series.map(([key, color]) => (
+          <polyline
+            key={key}
+            points={points(key)}
+            fill="none"
+            stroke={color}
+            strokeWidth="2.5"
+          />
+        ))}
+        {series.flatMap(([key, color]) =>
+          trend.map((row, index) => (
+            <circle
+              key={`${key}-${index}`}
+              cx={x(index)}
+              cy={y(row[key])}
+              r="4"
+              fill={color}
+            />
+          )),
+        )}
+        {trend.map((row, index) => (
+          <text
+            key={row.start}
+            className="admin-reports-chart__label"
+            x={x(index)}
+            y={height - 15}
+            textAnchor="middle"
+          >
+            {formatRange(row.start, row.end)}
+          </text>
+        ))}
+      </svg>
+      <div className="admin-reports-chart__legend">
+        {series.map(([, color, label]) => (
+          <span key={label}>
+            <i style={{ background: color }} />
+            {label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+function ReportsLoading() {
+  return (
+    <div className="admin-reports-skeleton" aria-label="Loading reports">
+      <div className="admin-reports-skeleton__comparison">
+        <i />
+        <i />
+        <i />
+        <i />
+      </div>
+      <div className="admin-reports-skeleton__chart">
+        <i />
+        <i />
+        <i />
+        <i />
+      </div>
+      <div className="admin-reports-skeleton__split">
+        <i />
+        <i />
+      </div>
+      <div className="admin-reports-skeleton__fleet">
+        <i />
+        <i />
+        <i />
+        <i />
+      </div>
+    </div>
+  );
+}
+function Field({
+  label,
+  id,
+  children,
+}: {
+  label: string;
+  id: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="admin-reports-field" htmlFor={id}>
+      <span>{label}</span>
+      {children}
+    </label>
+  );
+}
+function formatPercent(value: number) {
+  return `${Math.round(value)}%`;
+}
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-PH", { maximumFractionDigits: 2 }).format(
+    value,
+  );
+}
+function formatPeso(value: number) {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+  }).format(value);
+}
+function formatChange(value: number | null) {
+  return value == null ? "—" : `${value > 0 ? "+" : ""}${Math.round(value)}%`;
+}
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-PH", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "Asia/Manila",
+  }).format(new Date(`${value}T00:00:00+08:00`));
+}
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("en-PH", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "Asia/Manila",
+  }).format(new Date(value));
+}
+function formatRange(start: string, end: string) {
+  const f = new Intl.DateTimeFormat("en-PH", {
+    month: "short",
+    day: "numeric",
+    timeZone: "Asia/Manila",
+  });
+  return `${f.format(new Date(`${start}T00:00:00+08:00`))}–${f.format(new Date(`${end}T00:00:00+08:00`))}`;
+}

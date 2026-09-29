@@ -122,6 +122,8 @@ export type OperationalContextDependencies = {
 };
 
 const PROVIDERS: Record<ProviderName, string> = {
+  geoapify: "Geoapify",
+  locationiq: "LocationIQ",
   open_meteo: "Open-Meteo",
   openweather: "OpenWeather",
   tomtom: "TomTom",

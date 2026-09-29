@@ -19,14 +19,26 @@ const trip = (vehicleId?: string): TripContext => ({
     fallbackUsed: false,
     fetchedAt: checkedAt,
     providerUsed: "tomtom",
-    data: { label: "Baguio", latitude: 16.4, longitude: 120.6 },
+    data: {
+      originalQuery: "Baguio",
+      providerMetadata: {},
+      label: "Baguio",
+      latitude: 16.4,
+      longitude: 120.6,
+    },
   },
   originGeocode: {
     status: "available",
     fallbackUsed: false,
     fetchedAt: checkedAt,
     providerUsed: "tomtom",
-    data: { label: "Taft", latitude: 14.6, longitude: 121 },
+    data: {
+      originalQuery: "Taft",
+      providerMetadata: {},
+      label: "Taft",
+      latitude: 14.6,
+      longitude: 121,
+    },
   },
   route: {
     status: "available",
@@ -383,18 +395,16 @@ test("Admin UI exposes exact booking detail links and staff-safe detail context"
     bookingDetail,
     /role: ownerView \? "Owner\/Admin" : "Operations Staff"/,
   );
-  assert.match(bookingDetail, /ownerView \? \(\s*<OwnerActionArea/s);
+  assert.match(bookingDetail, /\{ownerView &&[\s\S]*<OwnerActionArea/);
   assert.match(bookingDetail, /<StaffReadOnlyCard \/>/);
   assert.match(
     bookingDetail,
     /Lifecycle mutations, requirement proofs, payment proofs, and[\s\S]*Owner\/Admin review controls are not shown/,
   );
   assert.doesNotMatch(bookingDetail, /OperationalContextPanel/);
-  assert.match(decisions, /Current route context for transfer review/);
-  assert.match(
-    decisions,
-    /not part of the original allocation score\/snapshot/,
-  );
+  assert.match(decisions, /title="Current route context"/);
+  assert.match(decisions, /do not change the WMA demand forecast/);
+  assert.match(decisions, /do not .*approve a transfer automatically/);
   assert.doesNotMatch(decisions, /Vehicle recommendation/);
   assert.doesNotMatch(decisions, /RadarChart/);
   assert.match(

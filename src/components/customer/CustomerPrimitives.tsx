@@ -6,11 +6,11 @@ import {
   CheckCircle2,
   ChevronDown,
   CircleDollarSign,
-  Circle,
   FileCheck2,
   Fuel,
   Info,
   LockKeyhole,
+  Luggage,
   MapPin,
   Settings2,
   Upload,
@@ -87,12 +87,20 @@ export function VehicleImage({
 export function VehicleFacts({
   vehicle,
   className = "",
+  showBranch = true,
+  showFuel = true,
 }: {
   vehicle: Pick<
     CustomerVehicle,
-    "seat_capacity" | "transmission" | "fuel_type" | "branch"
+    | "seat_capacity"
+    | "large_luggage_capacity"
+    | "transmission"
+    | "fuel_type"
+    | "branch"
   >;
   className?: string;
+  showBranch?: boolean;
+  showFuel?: boolean;
 }) {
   const facts = [
     {
@@ -103,21 +111,35 @@ export function VehicleFacts({
       icon: Users,
     },
     {
+      label: "Luggage capacity",
+      value:
+        vehicle.large_luggage_capacity == null
+          ? "Luggage capacity not listed"
+          : `${vehicle.large_luggage_capacity} large bag${vehicle.large_luggage_capacity === 1 ? "" : "s"}`,
+      icon: Luggage,
+    },
+    {
       label: "Transmission",
       value: vehicle.transmission || "Transmission not listed",
       icon: Settings2,
     },
-    {
+  ];
+
+  if (showFuel) {
+    facts.push({
       label: "Fuel",
       value: vehicle.fuel_type || "Fuel not listed",
       icon: Fuel,
-    },
-    {
+    });
+  }
+
+  if (showBranch) {
+    facts.push({
       label: "Branch",
       value: vehicle.branch?.name || "Branch not recorded",
       icon: MapPin,
-    },
-  ];
+    });
+  }
 
   return (
     <dl className={`customer-facts ${className}`}>
@@ -231,6 +253,7 @@ function rationaleIcon(reason: string) {
   const normalized = reason.toLowerCase();
   if (normalized.includes("date")) return CalendarDays;
   if (normalized.includes("seat") || normalized.includes("group")) return Users;
+  if (normalized.includes("bag") || normalized.includes("luggage")) return Luggage;
   if (normalized.includes("budget")) return CircleDollarSign;
   if (normalized.includes("maintenance") || normalized.includes("ready"))
     return Wrench;
@@ -316,47 +339,24 @@ const JOURNEY_STAGES = [
 ] as const;
 
 export function RentalJourney({
-  current = "Requirements",
+  current = "Request",
 }: {
   current: (typeof JOURNEY_STAGES)[number];
 }) {
   const currentIndex = JOURNEY_STAGES.indexOf(current);
   return (
-    <section className="journey" aria-labelledby="journey-title">
-      <div className="customer-container">
-        <h2 id="journey-title" className="journey-title">
-          Rental journey
-        </h2>
-        <ol className="journey-list">
-          {JOURNEY_STAGES.map((stage, index) => {
-            const complete = index < currentIndex;
-            const active = index === currentIndex;
-            const locked = index > currentIndex;
-            return (
-              <li
-                className={`journey-item ${complete ? "is-complete" : ""} ${active ? "is-current" : ""} ${locked ? "is-locked" : ""}`}
-                key={stage}
-                aria-current={active ? "step" : undefined}
-              >
-                <span className="journey-marker" aria-hidden="true">
-                  {complete ? (
-                    <Check size={16} strokeWidth={2.5} />
-                  ) : locked ? (
-                    <LockKeyhole size={15} />
-                  ) : (
-                    <Circle size={17} />
-                  )}
-                </span>
-                <span>
-                  {stage}
-                  {stage === "Payment" && locked ? <small>Locked</small> : null}
-                </span>
-              </li>
-            );
-          })}
-        </ol>
-      </div>
-    </section>
+    <LifecycleJourney
+      steps={JOURNEY_STAGES.map((key, index) => ({
+        key,
+        label: key,
+        state:
+          index < currentIndex
+            ? "complete"
+            : index === currentIndex
+              ? "current"
+              : "locked",
+      }))}
+    />
   );
 }
 
@@ -367,9 +367,9 @@ export function LifecycleJourney({ steps }: { steps: LifecycleJourneyStep[] }) {
       aria-labelledby="booking-journey-title"
     >
       <div className="customer-container booking-journey-inner">
-        <h2 id="booking-journey-title" className="booking-journey-title">
-          Rental journey
-        </h2>
+        <div className="booking-journey-intro">
+          <h2 id="booking-journey-title">Your rental journey</h2>
+        </div>
         <ol className="booking-journey-list">
           {steps.map((step) => (
             <li
@@ -380,11 +380,7 @@ export function LifecycleJourney({ steps }: { steps: LifecycleJourneyStep[] }) {
               <span className="booking-journey-marker" aria-hidden="true">
                 {step.state === "complete" ? (
                   <Check size={16} strokeWidth={2.5} />
-                ) : step.state === "locked" ? (
-                  <LockKeyhole size={15} />
-                ) : (
-                  <Circle size={17} />
-                )}
+                ) : null}
               </span>
               <span className="booking-journey-copy">
                 <strong>{step.label}</strong>

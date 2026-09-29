@@ -18,6 +18,7 @@ export type CustomerLifecycleState =
   | "requirements-needed"
   | "requirements-review"
   | "requirements-resubmission"
+  | "payment-waiting"
   | "payment-action"
   | "payment-review"
   | "payment-resubmission"
@@ -98,7 +99,7 @@ export function deriveCustomerLifecycle(
       statusLabel: "Request rejected",
       statusTone: "error",
       message: "This request cannot continue in the current booking workflow.",
-      reason: null,
+      reason: booking.resolution_reason?.trim() || null,
     });
   }
 
@@ -108,7 +109,7 @@ export function deriveCustomerLifecycle(
       statusLabel: "Request cancelled",
       statusTone: "info",
       message: "This request is no longer active.",
-      reason: null,
+      reason: booking.resolution_reason?.trim() || null,
     });
   }
 
@@ -214,18 +215,36 @@ export function deriveCustomerLifecycle(
   }
 
   if (paymentState === "Verified") {
+    const confirmationException =
+      booking.confirmation_exception_message?.trim() || null;
     return present("confirmation-waiting", "Confirmation", {
-      title: "Payment verified — booking confirmation is next",
-      statusLabel: "Waiting for booking confirmation",
+      title: confirmationException
+        ? "Payment verified — scheduling review is needed"
+        : "Payment verified — booking confirmation is next",
+      statusLabel: confirmationException
+        ? "Scheduling review needed"
+        : "Waiting for booking confirmation",
+      statusTone: confirmationException ? "warning" : "info",
+      message: confirmationException
+        ? "Your payment is verified. The team is reviewing the booking details before confirmation."
+        : "No action needed — your payment is verified and Briah will confirm the booking separately.",
+      reason: confirmationException,
+    });
+  }
+
+  if (!hasRequiredPaymentAmount(payment)) {
+    return present("payment-waiting", "Payment", {
+      title: "Payment amount pending",
+      statusLabel: "Awaiting payment amount",
       statusTone: "info",
       message:
-        "No action needed — your payment is verified and Briah will confirm the booking separately.",
+        "Your requirements are verified. Briah will record the required payment amount before you can submit payment proof.",
       reason: null,
     });
   }
 
   return present("payment-action", "Payment", {
-    title: "Submit your down payment",
+    title: "Submit your payment",
     statusLabel: "Payment action required",
     statusTone: "warning",
     message:
@@ -235,11 +254,18 @@ export function deriveCustomerLifecycle(
   });
 }
 
+function hasRequiredPaymentAmount(payment: CustomerPayment | null) {
+  const amount = Number(payment?.required_amount);
+  return Number.isFinite(amount) && amount > 0;
+}
+
 function requirementReason(requirements: RequirementsResponse | null) {
   const review = requirements?.review;
   const reasons = [
     review?.governmentIdReason,
     review?.driversLicenseReason,
+    review?.proofOfBillingReason,
+    review?.selfieWithIdReason,
   ].filter((reason): reason is string => Boolean(reason?.trim()));
   return reasons.length ? reasons.join(" ") : null;
 }
@@ -298,7 +324,12 @@ function journeyFor(
   ].includes(state);
   const requirementsVerified =
     paymentVerified ||
-    ["payment-action", "payment-review", "payment-resubmission"].includes(
+    [
+      "payment-waiting",
+      "payment-action",
+      "payment-review",
+      "payment-resubmission",
+    ].includes(
       state,
     );
 
@@ -336,6 +367,9 @@ function journeyFor(
     if (key === "Payment" && current && state === "payment-action") {
       note = "Action required";
     }
+    if (key === "Payment" && current && state === "payment-waiting") {
+      note = "Awaiting amount";
+    }
     if (
       key === "Confirmation" &&
       ["confirmed", "active-rental", "returned"].includes(state)
@@ -348,9 +382,6 @@ function journeyFor(
     if (key === "Rental" && state === "active-rental") label = "Active rental";
     if (key === "Rental" && state === "returned") label = "Rental ended";
     if (key === "Return" && state === "returned") label = "Return recorded";
-    if (locked && key === "Confirmation") note = "Locked";
-    if (locked && key === "Payment") note = "Locked";
-
     return {
       key,
       label,

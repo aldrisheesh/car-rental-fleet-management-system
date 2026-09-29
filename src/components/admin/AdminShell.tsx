@@ -15,6 +15,7 @@ import {
   Car,
   ChevronDown,
   CreditCard,
+  ExternalLink,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -495,6 +496,16 @@ export function AdminShell() {
             </nav>
 
             <div className="ml-auto flex items-center gap-3">
+              <a
+                href="/vehicles"
+                target="_blank"
+                rel="noreferrer"
+                className="touch-target inline-flex items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+                aria-label="View customer site in a new tab"
+              >
+                <ExternalLink aria-hidden="true" className="h-4 w-4" />
+                <span className="hidden lg:inline">View customer site</span>
+              </a>
               <Link
                 to="/admin/notifications"
                 className="touch-target relative inline-flex items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"

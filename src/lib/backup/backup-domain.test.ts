@@ -95,13 +95,14 @@ test("retention removes expired runs but preserves the latest Completed recovery
   );
 });
 
-test("only canonical private application buckets are selected", () => {
+test("only canonical application buckets are selected", () => {
   assert.deepEqual(
     selectCanonicalStorageBuckets([
       "public-images",
       "payment-proofs",
       "test-fixtures",
       "renter-requirements",
+      "vehicle-images",
     ]),
     [...PROTECTED_STORAGE_BUCKETS],
   );

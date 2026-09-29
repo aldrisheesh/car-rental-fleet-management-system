@@ -93,10 +93,19 @@ test("customer lifecycle distinguishes action-required and waiting states", () =
   assert.equal(requirementsWaiting.actionRequired, false);
   assert.equal(requirementsWaiting.waiting, true);
 
-  const paymentAction = deriveCustomerLifecycle(
+  const paymentWaitingForAmount = deriveCustomerLifecycle(
     composition({
       requirements: requirements("Verified"),
       payment: null,
+    }),
+  );
+  assert.equal(paymentWaitingForAmount.state, "payment-waiting");
+  assert.equal(paymentWaitingForAmount.waiting, true);
+
+  const paymentAction = deriveCustomerLifecycle(
+    composition({
+      requirements: requirements("Verified"),
+      payment: { ...payment("Not Submitted"), required_amount: 5000 },
     }),
   );
   assert.equal(paymentAction.state, "payment-action");
@@ -124,6 +133,27 @@ test("customer lifecycle distinguishes action-required and waiting states", () =
   assert.equal(paymentResubmission.state, "payment-resubmission");
   assert.equal(paymentResubmission.actionRequired, true);
   assert.equal(paymentResubmission.reason, "The proof is not readable.");
+});
+
+test("terminal booking states preserve a recorded customer-facing reason", () => {
+  const rejected = deriveCustomerLifecycle(
+    composition({
+      booking: booking({
+        booking_status: "Rejected",
+        resolution_reason: "The selected vehicle is unavailable for the requested schedule.",
+      }),
+    }),
+  );
+  assert.equal(rejected.state, "rejected");
+  assert.equal(rejected.reason, "The selected vehicle is unavailable for the requested schedule.");
+
+  const withdrawn = deriveCustomerLifecycle(
+    composition({
+      booking: booking({ booking_status: "Cancelled", resolution_reason: "Trip plans changed." }),
+    }),
+  );
+  assert.equal(withdrawn.state, "cancelled");
+  assert.equal(withdrawn.reason, "Trip plans changed.");
 });
 
 test("payment composition is bound to the exact booking", () => {

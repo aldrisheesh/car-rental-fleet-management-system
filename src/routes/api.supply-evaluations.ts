@@ -4,6 +4,7 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import {
   evaluateSupplyVehicles,
   calculateBalance,
+  hasFutureMaintenanceConflict,
   overlaps,
   manilaDateBoundaryToInstant,
 } from "@/lib/supply-evaluation.server";
@@ -99,10 +100,9 @@ async function evaluateForecastSupply({
       const targets = selectAuthoritativePreventiveTargets(
         maintenanceByVehicle.get(vehicle.id) ?? [],
       );
-      const futureMaintenanceConflict = targets.some(
-        (record: any) =>
-          record.next_service_date &&
-          record.next_service_date < forecast.target_week_end,
+      const futureMaintenanceConflict = hasFutureMaintenanceConflict(
+        targets,
+        forecast.target_week_end,
       );
       const bookingConflict = (bookings.data ?? [])
         .filter((booking: any) => booking.assigned_vehicle_id === vehicle.id)
@@ -188,7 +188,8 @@ async function generate({ request }: { request: Request }) {
       ? [
           ...new Set(
             body.forecastIds.filter(
-              (id): id is string => typeof id === "string" && id.length > 0,
+              (id: unknown): id is string =>
+                typeof id === "string" && id.length > 0,
             ),
           ),
         ]

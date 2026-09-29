@@ -19,8 +19,8 @@ const search = {
   finderStart: "2026-09-10T02:00:00.000Z",
   finderEnd: "2026-09-12T02:00:00.000Z",
   finderPassengers: "5",
+  finderBags: "2",
   finderBudget: "5000",
-  finderCategory: "SUV",
   finderDestination: "Baguio City",
   finderRank: "99",
 };
@@ -29,6 +29,7 @@ const canonicalInput: VehicleFinderInput = {
   requestedStart: "2026-09-10T02:00:00.000Z",
   requestedEnd: "2026-09-12T02:00:00.000Z",
   passengerCount: 5,
+  largeBagCount: 2,
   maximumBudget: 5_000,
   preferredCategory: "SUV",
   destination: "Baguio City",
@@ -39,6 +40,8 @@ const recommendation: VehicleRecommendation = {
   name: "Alpha",
   category: "SUV",
   passengerCapacity: 5,
+  largeLuggageCapacity: 2,
+  largeBagCount: 2,
   baseRentalRate: 1_000,
   estimatedTotalBaseRental: 2_000,
   imageUrl: null,
@@ -64,9 +67,8 @@ test("Finder handoff prefills the existing Booking fields in Manila time", () =>
     requestedStart: "2026-09-10T10:00",
     requestedEnd: "2026-09-12T10:00",
     passengerCount: 5,
+    largeBagCount: 2,
     maximumBudget: 5_000,
-    preferredCategory: "SUV",
-    destination: "Baguio City",
     displayedRank: 99,
   });
 });
@@ -131,7 +133,7 @@ test("only material Finder basis changes invalidate client provenance", () => {
       ...booking,
       destination: "Tagaytay",
     }),
-    false,
+    true,
   );
 
   const withoutDestination = parseFinderBookingHandoff({
@@ -342,8 +344,8 @@ test("trusted fingerprint binds the material manual and Finder request", async (
     "requestedStart",
     "requestedEnd",
     "passengerCount",
+    "largeBagCount",
     "maximumBudget",
-    "preferredCategory",
   ])
     assert.match(fingerprintInput, new RegExp(`\\b${field}\\b`));
   assert.match(source, /createHash\("sha256"\)/);
@@ -415,6 +417,6 @@ test("booking review presents an honest editable base-rental estimate", async ()
 
   assert.match(source, /<h2>Rental estimate<\/h2>/);
   assert.match(source, /calculateRentalDays\(pickup, returned\)/);
-  assert.match(source, /Base rental total/);
-  assert.match(source, /No additional charges are added/);
+  assert.match(source, /Daily-rate reference estimate/);
+  assert.match(source, /not a final quotation or the amount due/);
 });

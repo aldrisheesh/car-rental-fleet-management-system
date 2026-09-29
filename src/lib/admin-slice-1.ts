@@ -33,7 +33,14 @@ export type BookingActionFacts = {
 
 export function bookingActionAvailability(facts: BookingActionFacts) {
   if (facts.role !== "Owner/Admin") {
-    return { assign: false, confirm: false, release: false, return: false };
+    return {
+      assign: false,
+      confirm: false,
+      cancel: false,
+      reject: false,
+      release: false,
+      return: false,
+    };
   }
   return {
     assign:
@@ -48,6 +55,13 @@ export function bookingActionAvailability(facts: BookingActionFacts) {
       facts.assignedAt &&
       facts.requirementsStatus === "Verified" &&
       facts.paymentStatus === "Verified",
+    cancel:
+      facts.bookingStatus === "Confirmed" &&
+      facts.confirmedAt &&
+      !facts.hasRental,
+    reject:
+      (facts.bookingStatus === "Draft" || facts.bookingStatus === "Submitted") &&
+      !facts.hasRental,
     release:
       facts.bookingStatus === "Confirmed" &&
       facts.assignedVehicle &&

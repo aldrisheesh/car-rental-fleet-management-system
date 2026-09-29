@@ -30,6 +30,7 @@ export function SignInDialog({
   customerSuccessSearch,
   adminSuccessTo,
   onAuthenticated,
+  contextual = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -37,6 +38,8 @@ export function SignInDialog({
   customerSuccessSearch?: Record<string, unknown>;
   adminSuccessTo?: string;
   onAuthenticated?: () => void;
+  /** Renders the same auth flow inside a selected-car sign-in page. */
+  contextual?: boolean;
 }) {
   const emailRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -64,9 +67,9 @@ export function SignInDialog({
     setNotice("");
     const timer = window.setTimeout(() => emailRef.current?.focus(), 0);
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    if (!contextual) document.body.style.overflow = "hidden";
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onOpenChange(false);
+      if (event.key === "Escape" && !contextual) onOpenChange(false);
       if (event.key !== "Tab") return;
       const controls = dialogRef.current?.querySelectorAll<HTMLElement>(
         "button:not([disabled]), input:not([disabled]), a[href]",
@@ -85,10 +88,10 @@ export function SignInDialog({
     document.addEventListener("keydown", onKeyDown);
     return () => {
       window.clearTimeout(timer);
-      document.body.style.overflow = previousOverflow;
+      if (!contextual) document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [onOpenChange, open]);
+  }, [contextual, onOpenChange, open]);
 
   if (!open) return null;
 
@@ -170,6 +173,10 @@ export function SignInDialog({
       window.location.assign(`${destination}?${search.toString()}`);
       return;
     }
+    if (customerSuccessTo) {
+      window.location.assign(destination);
+      return;
+    }
     if (destination === customerDestination()) return;
     window.location.assign(destination);
   }
@@ -218,6 +225,10 @@ export function SignInDialog({
     const destination = customerDestination();
     onAuthenticated?.();
     onOpenChange(false);
+    if (customerSuccessTo) {
+      window.location.assign(destination);
+      return;
+    }
     if (destination === customerDestination()) return;
     window.location.assign(destination);
   }
@@ -228,7 +239,7 @@ export function SignInDialog({
     setSubmitting(true);
     const result = await continueWithProvider("google", customerDestination());
     if (!result.ok) {
-      setError(result.message);
+      setError(result.message ?? "Unable to continue with Google. Please try again.");
       setSubmitting(false);
     }
   }
@@ -240,39 +251,47 @@ export function SignInDialog({
 
   const title =
     stage === "email"
-      ? "Your next drive starts here."
+      ? contextual
+        ? "Keep your trip moving."
+        : "Your next drive starts here."
       : stage === "password"
         ? "Welcome back."
         : "Create your account.";
   const description =
     stage === "email"
-      ? "Enter your email to continue."
+      ? contextual
+        ? "Sign in or create an account to continue your rental request."
+        : "Enter your email to continue."
       : stage === "password"
         ? `Sign in as ${email.trim()}.`
         : "A few details and you’re ready to request a car.";
 
   return (
     <div
-      className="harbor-auth-backdrop"
-      role="presentation"
-      onMouseDown={() => onOpenChange(false)}
+      className={`harbor-auth-backdrop${contextual ? " harbor-auth-backdrop--embedded" : ""}`}
+      role={contextual ? undefined : "presentation"}
+      onMouseDown={() => {
+        if (!contextual) onOpenChange(false);
+      }}
     >
       <div
         ref={dialogRef}
-        className="harbor-auth-dialog"
-        role="dialog"
-        aria-modal="true"
+        className={`harbor-auth-dialog${contextual ? " harbor-auth-dialog--embedded" : ""}${stage === "create" ? " is-registration" : ""}`}
+        role={contextual ? undefined : "dialog"}
+        aria-modal={contextual ? undefined : true}
         aria-labelledby="harbor-auth-title"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <button
-          className="harbor-auth-close"
-          type="button"
-          aria-label="Close sign-in dialog"
-          onClick={() => onOpenChange(false)}
-        >
-          <X aria-hidden="true" size={24} />
-        </button>
+        {!contextual ? (
+          <button
+            className="harbor-auth-close"
+            type="button"
+            aria-label="Close sign-in dialog"
+            onClick={() => onOpenChange(false)}
+          >
+            <X aria-hidden="true" size={24} />
+          </button>
+        ) : null}
         <div className="harbor-auth-brand" translate="no">
           <span>Briah&apos;s</span>
           <small>Car Rental</small>

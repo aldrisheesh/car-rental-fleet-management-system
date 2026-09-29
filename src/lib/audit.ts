@@ -52,6 +52,12 @@ export function summarizeAuditEvent(
       return transition
         ? `Booking status changed: ${transition}.`
         : "Booking confirmed.";
+    case "booking.rejected":
+      return "Unfinished booking request rejected.";
+    case "booking.withdrawn":
+      return "Unfinished booking request withdrawn by customer.";
+    case "booking.location_reconciled":
+      return "Vehicle allocation location reconciled for this request.";
     case "requirements.submitted":
       return "Requirements submitted for review.";
     case "requirements.resubmitted":
@@ -65,6 +71,12 @@ export function summarizeAuditEvent(
       return "Payment proof submitted for review.";
     case "payment.resubmitted":
       return "Corrected payment proof resubmitted for review.";
+    case "payment.requirement_set": {
+      const amount = Number(metadata.required_amount);
+      return Number.isFinite(amount) && amount > 0
+        ? `Required payment amount recorded: ₱${amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`
+        : "Required payment amount recorded.";
+    }
     case "payment.needs_resubmission":
     case "payment.verified":
       return transition

@@ -5,6 +5,7 @@ import {
   ALL_BRANCHES,
   assertCanonicalBranch,
   buildAdminReport,
+  buildDecisionSupportReport,
   handleAdminReportsRequest,
   previousReportRange,
   ReportSourceError,
@@ -306,6 +307,58 @@ test("maintenance uses started/completed/cancelled transitions and overlapping b
   assert.equal("overdue" in report.maintenance, false);
 });
 
+test("Owner/Admin payment report separates latest submissions from verified snapshots", () => {
+  const data = sources();
+  data.payments = [
+    {
+      id: "p1",
+      branchId: "b1",
+      status: "Verified",
+      submittedAt: "2026-09-01T01:00:00.000Z",
+      reviewedAt: "2026-09-01T02:00:00.000Z",
+      submittedAmount: 2500,
+      reviewedSubmittedAmount: 2500,
+    },
+    {
+      id: "p2",
+      branchId: "b2",
+      status: "Needs Resubmission",
+      submittedAt: "2026-09-01T03:00:00.000Z",
+      reviewedAt: "2026-09-01T04:00:00.000Z",
+      submittedAmount: 1800,
+      reviewedSubmittedAmount: 1800,
+    },
+    {
+      id: "p3",
+      branchId: "b1",
+      status: "Verified",
+      submittedAt: "2026-08-30T01:00:00.000Z",
+      reviewedAt: "2026-09-01T05:00:00.000Z",
+      submittedAmount: 3000,
+      reviewedSubmittedAmount: 3000,
+    },
+  ];
+  const range = validateReportRange("2026-09-01", "2026-09-01");
+  const owner = buildAdminReport("Owner/Admin", range, ALL_BRANCHES, data);
+  assert.deepEqual(owner.payments, {
+    latestSubmissions: 2,
+    latestSubmittedAmount: 4300,
+    verified: 2,
+    verifiedAmount: 5500,
+    needsResubmission: 1,
+  });
+  const north = buildAdminReport("Owner/Admin", range, "b1", data);
+  assert.deepEqual(north.payments, {
+    latestSubmissions: 1,
+    latestSubmittedAmount: 2500,
+    verified: 2,
+    verifiedAmount: 5500,
+    needsResubmission: 0,
+  });
+  const staff = buildAdminReport("Operations Staff", range, ALL_BRANCHES, data);
+  assert.equal(staff.payments, undefined);
+});
+
 test("specific branch and unknown category grouping use canonical identifiers", () => {
   const all = buildAdminReport(
     "Owner/Admin",
@@ -400,6 +453,166 @@ test("fleet counts only canonical vehicle records created by the period end", ()
   );
   assert.equal(report.summary.fleetCount, 3);
   assert.equal(report.utilization.vehicles.length, 3);
+});
+
+test("decision-support report binds current supply and decisions to the latest exact evidence", () => {
+  const run = {
+    id: "run-1",
+    generatedAt: "2026-09-29T01:00:00.000Z",
+    method: "WMA",
+  };
+  const forecasts = [
+    {
+      id: "f1",
+      branchId: "b1",
+      branchName: "North",
+      categoryId: "c1",
+      categoryName: "Sedan",
+      horizon: 1,
+      targetWeekStart: "2026-10-05",
+      forecastedDemand: 2.4,
+      requiredUnits: 3,
+    },
+    {
+      id: "f2",
+      branchId: "b2",
+      branchName: "South",
+      categoryId: "c1",
+      categoryName: "Sedan",
+      horizon: 1,
+      targetWeekStart: "2026-10-05",
+      forecastedDemand: 0.8,
+      requiredUnits: 1,
+    },
+    {
+      id: "f3",
+      branchId: "b1",
+      branchName: "North",
+      categoryId: "c1",
+      categoryName: "Sedan",
+      horizon: 2,
+      targetWeekStart: "2026-10-12",
+      forecastedDemand: 2.1,
+      requiredUnits: 3,
+    },
+  ];
+  const evaluations = [
+    {
+      id: "e1-old",
+      forecastId: "f1",
+      evaluatedAt: "2026-09-29T01:05:00.000Z",
+      projectedSupply: 3,
+      shortageUnits: 0,
+      surplusUnits: 0,
+    },
+    {
+      id: "e1",
+      forecastId: "f1",
+      evaluatedAt: "2026-09-29T01:10:00.000Z",
+      projectedSupply: 1,
+      shortageUnits: 2,
+      surplusUnits: 0,
+    },
+    {
+      id: "e2",
+      forecastId: "f2",
+      evaluatedAt: "2026-09-29T01:10:00.000Z",
+      projectedSupply: 3,
+      shortageUnits: 0,
+      surplusUnits: 2,
+    },
+  ];
+  const batches = [
+    { id: "batch-old", generatedAt: "2026-09-29T01:11:00.000Z" },
+    { id: "batch-new", generatedAt: "2026-09-29T01:12:00.000Z" },
+  ];
+  const recommendations = [
+    {
+      batchId: "batch-old",
+      sourceSupplyEvaluationId: "e2",
+      destinationSupplyEvaluationId: "e1-old",
+      sourceBranchId: "b2",
+      destinationBranchId: "b1",
+      decisionState: "Rejected" as const,
+      recommendedUnits: 1,
+      approvedUnits: null,
+    },
+    {
+      batchId: "batch-new",
+      sourceSupplyEvaluationId: "e2",
+      destinationSupplyEvaluationId: "e1",
+      sourceBranchId: "b2",
+      destinationBranchId: "b1",
+      decisionState: "Approved" as const,
+      recommendedUnits: 2,
+      approvedUnits: 1,
+    },
+  ];
+  const accuracy = {
+    overallMape: 12.5,
+    eligibleForecasts: 8,
+    excludedZeroActuals: 3,
+  };
+
+  const report = buildDecisionSupportReport(
+    run,
+    ALL_BRANCHES,
+    forecasts,
+    evaluations,
+    batches,
+    recommendations,
+    accuracy,
+  );
+  assert.equal(report.forecastPositions, 3);
+  assert.equal(report.horizonOnePositions, 2);
+  assert.deepEqual(report.supply, {
+    evaluatedPositions: 2,
+    shortagePositions: 1,
+    surplusPositions: 1,
+    balancedPositions: 0,
+    shortageUnits: 2,
+    surplusUnits: 2,
+  });
+  assert.deepEqual(report.allocation, {
+    latestBatchGeneratedAt: "2026-09-29T01:12:00.000Z",
+    recommendations: 1,
+    pending: 0,
+    approved: 1,
+    rejected: 0,
+    recommendedUnits: 2,
+    approvedUnits: 1,
+  });
+  assert.equal(report.horizonOne[0]?.requiredUnits, 3);
+  assert.equal(report.horizonOne[0]?.projectedSupply, 1);
+
+  const north = buildDecisionSupportReport(
+    run,
+    "b1",
+    forecasts,
+    evaluations,
+    batches,
+    recommendations,
+    accuracy,
+  );
+  assert.equal(north.forecastPositions, 2);
+  assert.equal(north.supply.shortagePositions, 1);
+  assert.equal(north.allocation.recommendations, 1);
+});
+
+test("decision-support report exposes an honest no-run state", () => {
+  const report = buildDecisionSupportReport(
+    null,
+    ALL_BRANCHES,
+    [],
+    [],
+    [],
+    [],
+    { overallMape: null, eligibleForecasts: 0, excludedZeroActuals: 2 },
+  );
+  assert.equal(report.availability, "No forecast run in selected period");
+  assert.equal(report.latestRun, null);
+  assert.equal(report.forecastPositions, 0);
+  assert.equal(report.accuracy.excludedZeroActuals, 2);
 });
 
 test("report handler allows Owner/Admin and Staff, forbids Customer, and exposes no finance fields", async () => {

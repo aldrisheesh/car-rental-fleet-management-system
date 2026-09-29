@@ -29,8 +29,14 @@ export const Route = createFileRoute("/api/bookings")({
           .clone()
           .json()
           .catch(() => null)) as Record<string, unknown> | null;
-        return body?.action === "assign" ||
+        return body?.action === "withdraw"
+          ? withdrawBooking({ request })
+          : body?.action === "edit"
+            ? editDraftBooking({ request })
+          : body?.action === "assign" ||
           body?.action === "confirm" ||
+          body?.action === "cancel" ||
+          body?.action === "reject" ||
           body?.action === "release" ||
           body?.action === "return"
           ? mutateBooking({ request })
@@ -96,7 +102,7 @@ async function readBookings({ request }: { request: Request }) {
       ? await (client as any)
           .from("booking_finder_context")
           .select(
-            "booking_id,selected_vehicle_id,requested_start,requested_end,passenger_count,maximum_budget,preferred_category_id,destination,recommendation_rank,finder_baseline,created_at,preferred_category:vehicle_categories(id,name),selected_vehicle:vehicles(id,name)",
+            "booking_id,selected_vehicle_id,requested_start,requested_end,passenger_count,large_bag_count,maximum_budget,preferred_category_id,destination,recommendation_rank,finder_baseline,created_at,preferred_category:vehicle_categories(id,name),selected_vehicle:vehicles(id,name)",
           )
           .in("booking_id", bookingIds)
       : { data: [], error: null };
@@ -240,7 +246,7 @@ async function mutateBooking({ request }: { request: Request }) {
     const bookingId = text(body?.bookingId);
     if (
       !bookingId ||
-      !["assign", "confirm", "release", "return"].includes(action)
+      !["assign", "confirm", "cancel", "reject", "release", "return"].includes(action)
     )
       return errorResponse("Invalid booking action.");
     let expectedVehicleId = text(body?.expectedAssignedVehicleId);
@@ -259,6 +265,14 @@ async function mutateBooking({ request }: { request: Request }) {
       )
         return errorResponse("Release odometer must be a non-negative number.");
     }
+    if (action === "cancel") {
+      if (!text(body?.expectedConfirmedAt))
+        return errorResponse("Reload the confirmed booking before cancelling.", 409);
+      if (!text(body?.cancellationReason))
+        return errorResponse("A cancellation reason is required.");
+    }
+    if (action === "reject" && !text(body?.resolutionReason))
+      return errorResponse("A rejection reason is required.");
     if (
       action === "return" &&
       (!text(body?.rentalId) ||
@@ -286,7 +300,7 @@ async function mutateBooking({ request }: { request: Request }) {
             .eq("id", bookingId)
             .maybeSingle()
         : null;
-    if (current?.error || !current?.data)
+    if (current && (current.error || !current.data))
       return errorResponse("Booking not found.", 404);
 
     // A booking is for the vehicle the customer selected. Assignment is therefore
@@ -339,6 +353,19 @@ async function mutateBooking({ request }: { request: Request }) {
               p_expected_vehicle_id: expectedVehicleId,
               p_expected_assigned_at: expectedAssignedAt,
             })
+          : action === "cancel"
+            ? await client.rpc("cancel_confirmed_booking_atomic", {
+                p_booking_id: bookingId,
+                p_actor_id: principal.userId,
+                p_expected_confirmed_at: text(body?.expectedConfirmedAt),
+                p_cancellation_reason: text(body?.cancellationReason),
+              })
+          : action === "reject"
+            ? await client.rpc("reject_unconfirmed_booking_atomic", {
+                p_booking_id: bookingId,
+                p_actor_id: principal.userId,
+                p_reason: text(body?.resolutionReason),
+              })
           : action === "release"
             ? await client.rpc("release_vehicle_start_rental", {
                 p_booking_id: bookingId,
@@ -384,6 +411,12 @@ async function mutateBooking({ request }: { request: Request }) {
         booking_not_submitted: "Booking is no longer submitted.",
         booking_not_confirmed:
           "Booking must be Confirmed before release or return.",
+        stale_cancellation:
+          "Booking confirmation changed; reload before cancelling.",
+        cancellation_reason_required: "A cancellation reason is required.",
+        resolution_reason_required: "A rejection reason is required.",
+        booking_not_unconfirmed:
+          "Only unfinished requests can be rejected.",
         vehicle_unavailable: "Assigned vehicle is unavailable.",
         vehicle_maintenance_unready:
           "Assigned vehicle is blocked by maintenance or a due service requirement.",
@@ -405,6 +438,8 @@ async function mutateBooking({ request }: { request: Request }) {
         requirements_not_verified:
           "Requirements must be Verified before confirmation.",
         payment_not_verified: "Payment must be Verified before confirmation.",
+        pickup_window_elapsed:
+          "The pickup time has passed. Review the schedule with the customer.",
         assignment_required: "Assign an active vehicle before confirmation.",
         assignment_expectation_required:
           "Reload the current assignment before confirming.",
@@ -429,6 +464,141 @@ async function mutateBooking({ request }: { request: Request }) {
         ? "Forbidden."
         : "Authentication required.",
       e instanceof Error && e.message === "forbidden" ? 403 : 401,
+    );
+  }
+}
+
+async function withdrawBooking({ request }: { request: Request }) {
+  try {
+    const principal = await requirePrincipal();
+    if (principal.role !== "Customer/Renter")
+      return errorResponse("Customer access is required.", 403);
+    const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+    const bookingId = text(body?.bookingId);
+    const reason = text(body?.resolutionReason);
+    if (!bookingId || !reason) return errorResponse("A withdrawal reason is required.");
+    const client = getSupabaseServerClient() as any;
+    const result = await client.rpc("withdraw_customer_booking_atomic", {
+      p_booking_id: bookingId,
+      p_customer_id: principal.userId,
+      p_reason: reason,
+    });
+    if (result.error) {
+      const messages: Record<string, string> = {
+        booking_not_found: "Booking not found.",
+        booking_not_withdrawable: "This request can no longer be withdrawn online.",
+        payment_resolution_required:
+          "Contact Briah to resolve a payment before withdrawing this request.",
+        booking_already_released: "This rental has already started.",
+        resolution_reason_required: "A withdrawal reason is required.",
+      };
+      return errorResponse(messages[result.error.message] ?? "Unable to withdraw this request.", 409);
+    }
+    return Response.json({ booking: result.data });
+  } catch (error) {
+    return errorResponse(
+      error instanceof Error && error.message === "forbidden" ? "Forbidden." : "Authentication required.",
+      error instanceof Error && error.message === "forbidden" ? 403 : 401,
+    );
+  }
+}
+
+async function editDraftBooking({ request }: { request: Request }) {
+  try {
+    const principal = await requirePrincipal();
+    if (principal.role !== "Customer/Renter")
+      return errorResponse("Customer access is required.", 403);
+    const body = (await request.json().catch(() => null)) as Record<
+      string,
+      unknown
+    > | null;
+    const bookingId = text(body?.bookingId);
+    const requestedVehicleId = text(body?.requestedVehicleId);
+    const pickupBranchId = text(body?.pickupBranchId);
+    const returnBranchId = text(body?.returnBranchId);
+    const pickupAt = text(body?.pickupAt);
+    const returnAt = text(body?.returnAt);
+    const purpose = text(body?.purposeOfUse);
+    const option = text(body?.pickupDeliveryOption);
+    const pickupLocation = optionalText(body?.pickupLocation);
+    const dropoffLocation = optionalText(body?.dropoffLocation);
+    const destination = optionalText(body?.destination);
+    const seats =
+      body?.preferredSeatCount == null || body?.preferredSeatCount === ""
+        ? null
+        : Number(body.preferredSeatCount);
+    if (
+      !bookingId ||
+      !requestedVehicleId ||
+      !pickupBranchId ||
+      !returnBranchId ||
+      !pickupAt ||
+      !returnAt ||
+      !purpose ||
+      !option
+    )
+      return errorResponse("Required booking fields are missing.");
+    const pickupDate = parseBookingInstant(pickupAt);
+    const returnDate = parseBookingInstant(returnAt);
+    if (!pickupDate || !returnDate || returnDate <= pickupDate)
+      return errorResponse("Return must be after pickup.");
+    if (!isAtLeastNextManilaCalendarDay(pickupDate))
+      return errorResponse(
+        "Bookings must be made at least one calendar day ahead. Same-day booking is not available.",
+      );
+    if (option !== "pickup" && option !== "delivery")
+      return errorResponse("Invalid pickup or delivery option.");
+    if (option === "delivery" && (!pickupLocation || !dropoffLocation))
+      return errorResponse(
+        "Pickup and drop-off locations are required for delivery.",
+      );
+    if (seats !== null && (!Number.isInteger(seats) || seats <= 0))
+      return errorResponse("Preferred seat count must be positive.");
+
+    const client = getSupabaseServerClient() as any;
+    const result = await client.rpc("edit_customer_draft_booking_atomic", {
+      p_booking_id: bookingId,
+      p_customer_id: principal.userId,
+      p_requested_vehicle_id: requestedVehicleId,
+      p_pickup_branch_id: pickupBranchId,
+      p_return_branch_id: returnBranchId,
+      p_pickup_at: pickupDate.toISOString(),
+      p_return_at: returnDate.toISOString(),
+      p_destination: destination,
+      p_purpose_of_use: purpose,
+      p_pickup_delivery_option: option,
+      p_pickup_location: option === "delivery" ? pickupLocation : null,
+      p_dropoff_location: option === "delivery" ? dropoffLocation : null,
+      p_preferred_seat_count: seats,
+    });
+    if (result.error) {
+      const messages: Record<string, string> = {
+        booking_not_found: "Booking not found.",
+        booking_not_editable:
+          "This request is already under review and can no longer be edited online.",
+        booking_already_released: "This rental has already started.",
+        vehicle_change_not_supported:
+          "Choose a different car by starting a new rental request.",
+        vehicle_not_available: "The selected car is no longer available.",
+        branch_not_available: "One of the selected branches is no longer available.",
+        invalid_dates: "Return must be after pickup.",
+        invalid_pickup_option: "Invalid pickup or delivery option.",
+        delivery_locations_required:
+          "Pickup and drop-off locations are required for delivery.",
+        invalid_preferred_seat_count: "Preferred seat count must be positive.",
+      };
+      return errorResponse(
+        messages[result.error.message] ?? "Unable to save request changes.",
+        409,
+      );
+    }
+    return Response.json(result.data);
+  } catch (error) {
+    return errorResponse(
+      error instanceof Error && error.message === "forbidden"
+        ? "Forbidden."
+        : "Authentication required.",
+      error instanceof Error && error.message === "forbidden" ? 403 : 401,
     );
   }
 }
@@ -511,9 +681,8 @@ async function createBooking({ request }: { request: Request }) {
             requestedStart: text(finderContext.requestedStart),
             requestedEnd: text(finderContext.requestedEnd),
             passengerCount: Number(finderContext.passengerCount),
+            largeBagCount: Number(finderContext.largeBagCount),
             maximumBudget: Number(finderContext.maximumBudget),
-            preferredCategory: optionalText(finderContext.preferredCategory),
-            destination: optionalText(finderContext.destination),
           }
         : null,
     });
@@ -566,8 +735,7 @@ async function createBooking({ request }: { request: Request }) {
     )
       return errorResponse("Selected branch is not available.", 400);
     let finderMaximumBudget: number | null = null;
-    let finderPreferredCategoryId: string | null = null;
-    let finderDestination: string | null = null;
+    let finderLargeBagCount: number | null = null;
     let finderRecommendationRank: number | null = null;
     if (finderContext) {
       const evaluation = await evaluateCanonicalVehicleFinder(
@@ -582,7 +750,6 @@ async function createBooking({ request }: { request: Request }) {
         bookingPickupAt: pickupDate.toISOString(),
         bookingReturnAt: returnDate.toISOString(),
         bookingPassengerCount: seats,
-        bookingDestination: destination,
         canonicalInput: evaluation.input,
         recommendations: evaluation.result.recommendations,
       });
@@ -597,8 +764,7 @@ async function createBooking({ request }: { request: Request }) {
           409,
         );
       finderMaximumBudget = evaluation.input.maximumBudget;
-      finderPreferredCategoryId = evaluation.preferredCategoryId;
-      finderDestination = evaluation.input.destination;
+      finderLargeBagCount = evaluation.input.largeBagCount ?? 0;
       finderRecommendationRank = revalidation.recommendationRank;
     }
     const result = await (client as any).rpc("create_booking_idempotent", {
@@ -619,8 +785,9 @@ async function createBooking({ request }: { request: Request }) {
       p_customer_contact_number: principal.phoneNumber,
       p_has_finder_context: finderContext !== null,
       p_finder_maximum_budget: finderMaximumBudget,
-      p_finder_preferred_category_id: finderPreferredCategoryId,
-      p_finder_destination: finderDestination,
+      p_finder_large_bag_count: finderLargeBagCount,
+      p_finder_preferred_category_id: null,
+      p_finder_destination: null,
       p_finder_recommendation_rank: finderRecommendationRank,
       p_finder_baseline: finderContext ? FINDER_BASELINE : null,
     });

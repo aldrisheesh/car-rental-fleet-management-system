@@ -45,7 +45,7 @@ export async function listCatalogVehiclesForAvailability(
     client
       .from("vehicles")
       .select(
-        "id,name,license_plate,transmission,fuel_type,seat_capacity,daily_rate,image_url,is_active,branch:branches(id,name),category:vehicle_categories(id,name)",
+        "id,name,license_plate,transmission,fuel_type,seat_capacity,large_luggage_capacity,daily_rate,image_url,is_active,branch:branches(id,name),category:vehicle_categories(id,name)",
       )
       .eq("is_active", true)
       .order("name"),
@@ -121,7 +121,6 @@ export async function evaluateCanonicalVehicleFinder(
       status: 503,
       message: "Unable to load Finder options.",
     };
-
   const categories = categoryResult.data ?? [];
   const validation = validateFinderInput(
     body,
@@ -139,7 +138,7 @@ export async function evaluateCanonicalVehicleFinder(
     client
       .from("vehicles")
       .select(
-        "id,name,transmission,fuel_type,seat_capacity,daily_rate,image_url,is_active,branch:branches(name),category:vehicle_categories(name)",
+        "id,name,transmission,fuel_type,seat_capacity,large_luggage_capacity,daily_rate,image_url,is_active,branch:branches(name),category:vehicle_categories(name)",
       )
       .order("name"),
     client
@@ -168,6 +167,7 @@ export async function evaluateCanonicalVehicleFinder(
     name: vehicle.name,
     category: vehicle.category?.name ?? "",
     passengerCapacity: vehicle.seat_capacity,
+    largeLuggageCapacity: vehicle.large_luggage_capacity,
     baseRentalRate:
       vehicle.daily_rate === null ? null : Number(vehicle.daily_rate),
     imageUrl: vehicle.image_url,

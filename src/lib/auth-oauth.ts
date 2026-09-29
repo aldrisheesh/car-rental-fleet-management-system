@@ -14,7 +14,9 @@ export function safeOAuthDestination(value: unknown, fallback: string) {
   return `${destination.pathname}${destination.search}${destination.hash}`;
 }
 
-export function canEstablishOAuthSession(principal: AppPrincipal | null) {
+export function canEstablishOAuthSession(
+  principal: AppPrincipal | null,
+): principal is AppPrincipal {
   return principal?.accountStatus === "Active";
 }
 

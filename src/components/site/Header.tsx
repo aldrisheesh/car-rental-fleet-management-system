@@ -38,6 +38,8 @@ export function Header({
   const accountPanelRef = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [accountOpenedWithKeyboard, setAccountOpenedWithKeyboard] =
+    useState(false);
   const [principal, setPrincipal] = useState<AppPrincipal | null>(null);
   const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
   const [signingOut, setSigningOut] = useState(false);
@@ -216,7 +218,10 @@ export function Header({
                       className="customer-account-trigger"
                       aria-expanded={accountOpen}
                       aria-controls="customer-account-menu"
-                      onClick={() => setAccountOpen((open) => !open)}
+                      onClick={(event) => {
+                        setAccountOpenedWithKeyboard(event.detail === 0);
+                        setAccountOpen((open) => !open);
+                      }}
                     >
                       <UserRound
                         size={22}
@@ -235,7 +240,7 @@ export function Header({
                       <div
                         ref={accountPanelRef}
                         id="customer-account-menu"
-                        className="customer-account-panel"
+                        className={`customer-account-panel${accountOpenedWithKeyboard ? " is-instant" : ""}`}
                       >
                         <div className="customer-account-summary">
                           <span

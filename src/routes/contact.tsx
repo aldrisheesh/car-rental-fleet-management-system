@@ -10,10 +10,16 @@ import {
   Phone,
   type LucideIcon,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
+import {
+  defaultPublicContact,
+  fetchPublicContact,
+  phoneHref,
+  type PublicContactLocation,
+} from "@/lib/public-contact";
 
 type ContactErrors = Partial<Record<"name" | "email" | "subject" | "message", string>>;
 
@@ -32,31 +38,6 @@ export const Route = createFileRoute("/contact")({
   component: ContactPage,
 });
 
-const cards = [
-  { icon: Phone, label: "Call us", value: "+63 917 555 0142", href: "tel:+639175550142" },
-  {
-    icon: Mail,
-    label: "Email",
-    value: "hello@briahsrental.ph",
-    href: "mailto:hello@briahsrental.ph",
-  },
-  { icon: MapPin, label: "Visit us", value: "Taft, Manila / Antipolo, Rizal" },
-  { icon: Clock, label: "Office hours", value: "Mon-Sun / 7:00 AM - 9:00 PM" },
-];
-
-const branches = [
-  {
-    name: "Taft, Manila",
-    address: "2/F Briah Building, Taft Avenue, Manila 1004",
-    note: "Main pickup hub for Metro Manila rentals.",
-  },
-  {
-    name: "Antipolo, Rizal",
-    address: "Sumulong Highway, Antipolo, Rizal 1870",
-    note: "Convenient for Rizal and eastern Luzon trips.",
-  },
-];
-
 function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -65,8 +46,24 @@ function ContactPage() {
   const [errors, setErrors] = useState<ContactErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [contact, setContact] = useState(defaultPublicContact);
+  const [locations, setLocations] = useState<PublicContactLocation[]>([]);
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    let active = true;
+    void fetchPublicContact()
+      .then((result) => {
+        if (!active) return;
+        setContact(result.settings);
+        setLocations(result.locations);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSent(false);
 
@@ -78,15 +75,34 @@ function ContactPage() {
       return;
     }
 
-    setSubmitting(true);
-    window.setTimeout(() => {
-      setSubmitting(false);
-      setSent(true);
-      toast.success("Message sent", {
-        description: "We'll reply within a few hours.",
+    try {
+      setSubmitting(true);
+      const response = await fetch("/api/contact-inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, subject, message }),
       });
-    }, 650);
+      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+      if (!response.ok) throw new Error(payload?.message ?? "Your message could not be saved.");
+      setSent(true);
+      setSubject("");
+      setMessage("");
+      toast.success("Message received", {
+        description: contact.reply_commitment,
+      });
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : "Your message could not be saved.");
+    } finally {
+      setSubmitting(false);
+    }
   }
+
+  const cards = [
+    { icon: Phone, label: "Call us", value: contact.phone, href: phoneHref(contact.phone) },
+    { icon: Mail, label: "Email", value: contact.email, href: `mailto:${contact.email}` },
+    { icon: MapPin, label: "Public locations", value: contact.location_summary },
+    { icon: Clock, label: "Office hours", value: contact.office_hours },
+  ];
 
   return (
     <div>
@@ -102,8 +118,7 @@ function ContactPage() {
               Talk to Briah's
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground">
-              Questions about availability, branch pickup, or long-distance Luzon trips? Send a note
-              and our team will get back to you within a few hours.
+              Questions about availability, pickup, or your rental plan? Send a note and the rental team can review it.
             </p>
           </div>
 
@@ -225,7 +240,7 @@ function ContactPage() {
           <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <h2 className="font-display text-lg font-semibold">Branches</h2>
             <div className="mt-4 space-y-4">
-              {branches.map((branch) => (
+              {locations.map((branch) => (
                 <div
                   key={branch.name}
                   className="border-t border-border pt-4 first:border-t-0 first:pt-0"
@@ -250,8 +265,7 @@ function ContactPage() {
           <div className="rounded-xl border border-border bg-secondary p-5">
             <h2 className="font-display text-lg font-semibold">Service area</h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              We deliver and serve anywhere in Luzon, from Baguio and Vigan in the north to Bicol in
-              the south.
+              {contact.service_area}
             </p>
           </div>
         </aside>

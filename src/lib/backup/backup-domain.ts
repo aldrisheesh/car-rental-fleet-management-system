@@ -3,7 +3,10 @@ import { createHash } from "node:crypto";
 export const PROTECTED_STORAGE_BUCKETS = [
   "renter-requirements",
   "payment-proofs",
+  "vehicle-images",
 ] as const;
+
+export const PUBLIC_RECOVERY_BUCKETS = ["vehicle-images"] as const;
 export const DEFAULT_BACKUP_RETENTION_DAYS = 14;
 export const RPO_TARGET_HOURS = 24;
 export const RTO_TARGET_HOURS = 4;
@@ -154,6 +157,10 @@ export function isSafeStorageObjectPath(path: string) {
 export function selectCanonicalStorageBuckets(bucketIds: readonly string[]) {
   const available = new Set(bucketIds);
   return PROTECTED_STORAGE_BUCKETS.filter((bucket) => available.has(bucket));
+}
+
+export function bucketMustBePublic(bucket: string) {
+  return (PUBLIC_RECOVERY_BUCKETS as readonly string[]).includes(bucket);
 }
 
 export function parseStorageManifest(bytes: Uint8Array): StorageManifest {

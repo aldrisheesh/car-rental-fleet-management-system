@@ -26,9 +26,12 @@ import {
 } from "@/components/admin/operational-context-panel";
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 import {
+  buildWmaCalculation,
   forecastLabel,
+  selectActionableForecasts,
   selectLatestForecasts,
   selectLatestSupplyEvaluations,
+  selectCurrentRecommendations,
   supplyBalanceState,
   type CanonicalForecast,
   type CanonicalForecastRun,
@@ -55,6 +58,18 @@ type ForecastResponse = {
   runs: CanonicalForecastRun[];
   forecasts: CanonicalForecast[];
   mape: number | null;
+  accuracy?: {
+    overallMape: number | null;
+    eligibleForecasts: number;
+    excludedZeroActuals: number;
+    series: Array<{
+      branchId: string;
+      categoryId: string;
+      mape: number;
+      sampleSize: number;
+    }>;
+  };
+  finalizableForecasts?: number;
 };
 
 type VehicleAnalyticsRow = {
@@ -79,6 +94,24 @@ type AllocationSummary = {
   shortagePositions: number;
   surplusPositions: number;
   generatedRecommendations: number;
+  unresolvedShortages: Array<{
+    evaluationId: string;
+    branchId: string;
+    categoryId: string;
+    horizon: number;
+    targetWeekStart: string;
+    targetWeekEnd: string;
+    shortageUnits: number;
+    recommendedUnits: number;
+    unresolvedUnits: number;
+    compatibleSourceCount: number;
+    eligibleCandidateCount: number;
+    reason:
+      | "NoCompatibleSurplus"
+      | "NoEligibleCandidates"
+      | "InsufficientEligibleCandidates"
+      | "NoRemainingCapacity";
+  }>;
 };
 type AllocationResponse = {
   recommendations?: AllocationRow[];
@@ -94,6 +127,10 @@ type AllocationCandidateRow = {
 };
 type AllocationRow = {
   id: string;
+  batch_id: string;
+  created_at: string;
+  source_supply_evaluation_id: string;
+  destination_supply_evaluation_id: string;
   destination_branch_name: string;
   source_branch_name: string;
   vehicle_category_name: string;
@@ -145,6 +182,25 @@ function formatPercent(value: number | null) {
   return value == null || !Number.isFinite(value)
     ? "Unavailable"
     : `${value.toFixed(1)}%`;
+}
+
+function formatDecimal(value: number) {
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+}
+
+function unresolvedShortageCopy(
+  reason: AllocationSummary["unresolvedShortages"][number]["reason"],
+) {
+  if (reason === "NoCompatibleSurplus")
+    return "No other branch has surplus in the same category, week, and forecast horizon.";
+  if (reason === "NoEligibleCandidates")
+    return "A compatible surplus exists, but every candidate is blocked by a booking, rental, maintenance, or inactive state.";
+  if (reason === "InsufficientEligibleCandidates")
+    return "Some units can be covered, but too few eligible vehicles remain for the full shortage.";
+  return "Compatible capacity was already committed to a higher-priority shortage in this recommendation batch.";
 }
 
 function formatDay(value: string | null | undefined) {
@@ -217,26 +273,23 @@ function buildFocusedForecastChart(rows: CanonicalForecast[]) {
   const points = new Map<string, ForecastChartPoint>();
   const branches = [
     ...new Map(
-      rows.map((row) => [
-        row.branch_id,
-        row.branch?.name ?? row.branch_id,
-      ]),
+      rows.map((row) => [row.branch_id, row.branch?.name ?? row.branch_id]),
     ),
   ];
   const isMultiBranch = branches.length > 1;
   // Teal and violet remain distinct for common color-vision differences and
   // make branch comparisons legible at a glance.
   const palette = ["#007c70", "#6650a4", "#b54708", "#0f6cbd"];
-  const series: ForecastChartSeries[] = branches.map(([branchId, label], index) => ({
-    branchId,
-    label,
-    actualKey: isMultiBranch ? `actual-${branchId}` : "actual",
-    forecastKey: isMultiBranch ? `forecast-${branchId}` : "forecast",
-    color: palette[index % palette.length],
-  }));
-  const seriesByBranchId = new Map(
-    series.map((item) => [item.branchId, item]),
+  const series: ForecastChartSeries[] = branches.map(
+    ([branchId, label], index) => ({
+      branchId,
+      label,
+      actualKey: isMultiBranch ? `actual-${branchId}` : "actual",
+      forecastKey: isMultiBranch ? `forecast-${branchId}` : "forecast",
+      color: palette[index % palette.length],
+    }),
   );
+  const seriesByBranchId = new Map(series.map((item) => [item.branchId, item]));
   const actualsByWeek = new Map<string, Map<string, number>>();
 
   for (const forecast of rows) {
@@ -244,7 +297,8 @@ function buildFocusedForecastChart(rows: CanonicalForecast[]) {
       if (input.source_type === "Forecast") continue;
       const numeric = Number(input.source_value);
       if (!Number.isFinite(numeric)) continue;
-      const weeklyActuals = actualsByWeek.get(input.source_week_start) ?? new Map();
+      const weeklyActuals =
+        actualsByWeek.get(input.source_week_start) ?? new Map();
       weeklyActuals.set(forecast.branch_id, numeric);
       actualsByWeek.set(input.source_week_start, weeklyActuals);
     }
@@ -284,8 +338,8 @@ function buildFocusedForecastChart(rows: CanonicalForecast[]) {
     left.d.localeCompare(right.d),
   );
   for (const branchSeries of series) {
-    const firstForecastIndex = sortedPoints.findIndex(
-      (point) => Number.isFinite(point[branchSeries.forecastKey]),
+    const firstForecastIndex = sortedPoints.findIndex((point) =>
+      Number.isFinite(point[branchSeries.forecastKey]),
     );
     if (firstForecastIndex < 1) continue;
     for (let index = firstForecastIndex - 1; index >= 0; index -= 1) {
@@ -370,6 +424,7 @@ function DecisionPage() {
   const [allocationRows, setAllocationRows] = useState<AllocationRow[]>([]);
   const [allocationSummary, setAllocationSummary] =
     useState<AllocationSummary | null>(null);
+  const [allocationLoading, setAllocationLoading] = useState(true);
   const [allocationError, setAllocationError] = useState("");
   const [allocationBusy, setAllocationBusy] = useState(false);
   const [contextRecommendationId, setContextRecommendationId] = useState("");
@@ -481,6 +536,9 @@ function DecisionPage() {
           setAllocationError(
             errorMessage(error, "Unable to load recommendations."),
           );
+      })
+      .finally(() => {
+        if (active) setAllocationLoading(false);
       });
     return () => {
       active = false;
@@ -549,9 +607,34 @@ function DecisionPage() {
     }
   }
 
+  async function finalizeForecasts() {
+    setForecastBusy(true);
+    setForecastError("");
+    setForecastNotice("");
+    try {
+      const body = await readApi<{ finalized: number }>("/api/forecasts", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "finalize" }),
+      });
+      setForecastNotice(
+        body.finalized
+          ? `${body.finalized} completed forecast${body.finalized === 1 ? " was" : "s were"} finalized against actual demand.`
+          : "No completed forecasts were waiting for finalization.",
+      );
+      setSupportVersion((version) => version + 1);
+    } catch (error) {
+      setForecastError(
+        errorMessage(error, "Unable to finalize completed forecasts."),
+      );
+    } finally {
+      setForecastBusy(false);
+    }
+  }
+
   async function evaluateSupply(
     forecastIds: string[],
-    idempotencyKey = crypto.randomUUID(),
+    idempotencyKey: string = crypto.randomUUID(),
   ): Promise<boolean> {
     if (!forecastIds.length) return true;
     setSupplyBusy(true);
@@ -578,7 +661,7 @@ function DecisionPage() {
   }
 
   async function generateAllocations(
-    idempotencyKey = crypto.randomUUID(),
+    idempotencyKey: string = crypto.randomUUID(),
   ): Promise<boolean> {
     setAllocationBusy(true);
     try {
@@ -648,6 +731,10 @@ function DecisionPage() {
     forecastData?.runs ?? [],
     forecastData?.forecasts ?? [],
   );
+  const actionableForecastRows = selectActionableForecasts(
+    forecastRows,
+    dayKey(new Date()),
+  );
   const forecastById = new Map(
     (forecastData?.forecasts ?? []).map((forecast) => [forecast.id, forecast]),
   );
@@ -655,14 +742,16 @@ function DecisionPage() {
   const supplyByForecastId = new Map(
     supplyRows.map((evaluation) => [evaluation.forecast_id, evaluation]),
   );
-  const latestForecastIds = new Set(forecastRows.map((row) => row.id));
+  const latestForecastIds = new Set(
+    actionableForecastRows.map((row) => row.id),
+  );
   const currentSupplyRows = supplyRows.filter((evaluation) =>
     latestForecastIds.has(evaluation.forecast_id),
   );
   const evaluatedForecastIds = new Set(
     supplyRows.map((evaluation) => evaluation.forecast_id),
   );
-  const unevaluatedForecasts = forecastRows.filter(
+  const unevaluatedForecasts = actionableForecastRows.filter(
     (forecast) => !evaluatedForecastIds.has(forecast.id),
   );
   const utilizationRows = [...vehicleAnalytics].sort((left, right) =>
@@ -678,14 +767,9 @@ function DecisionPage() {
     )
     .find((run) => forecastRows.some((forecast) => forecast.run_id === run.id));
 
-  const currentAllocationRows = allocationRows.filter((row) =>
-    forecastRows.some(
-      (forecast) =>
-        forecast.branch?.name === row.destination_branch_name &&
-        forecast.category?.name === row.vehicle_category_name &&
-        forecast.target_week_start === row.target_week_start &&
-        Number(forecast.horizon) === Number(row.forecast_horizon),
-    ),
+  const currentAllocationRows = selectCurrentRecommendations(
+    allocationRows,
+    currentSupplyRows,
   );
   const pendingAllocations = currentAllocationRows.filter(
     (row) => row.decision_state === "Pending",
@@ -725,7 +809,7 @@ function DecisionPage() {
     ),
   ].map(([id, name]) => ({ id, name }));
   const weekOptions = [
-    ...new Set(forecastRows.map((row) => row.target_week_start)),
+    ...new Set(actionableForecastRows.map((row) => row.target_week_start)),
   ];
   const focusedForecastRows = forecastRows.filter(
     (row) =>
@@ -747,11 +831,19 @@ function DecisionPage() {
         right.target_week_end.localeCompare(left.target_week_end),
       )[0]?.target_week_end
     : null;
-  const visibleSupplyForecasts = forecastRows.filter(
+  const focusedWmaForecast = focusedForecastRows.find(
+    (row) => Number(row.horizon) === 1,
+  );
+  const focusedWmaCalculation = focusedWmaForecast
+    ? buildWmaCalculation(focusedWmaForecast)
+    : null;
+  const visibleSupplyForecasts = actionableForecastRows.filter(
     (row) => !balanceWeek || row.target_week_start === balanceWeek,
   );
   const supplyWeekSummaries = weekOptions.map((week) => {
-    const rows = forecastRows.filter((row) => row.target_week_start === week);
+    const rows = actionableForecastRows.filter(
+      (row) => row.target_week_start === week,
+    );
     const evaluations = rows.flatMap((row) => {
       const evaluation = supplyByForecastId.get(row.id);
       return evaluation ? [evaluation] : [];
@@ -812,11 +904,7 @@ function DecisionPage() {
         : "all",
     );
     setSelectedCategoryId((current) =>
-      current &&
-      forecastRows.some(
-        (row) =>
-          row.vehicle_category_id === current,
-      )
+      current && forecastRows.some((row) => row.vehicle_category_id === current)
         ? current
         : preferred.vehicle_category_id,
     );
@@ -856,13 +944,13 @@ function DecisionPage() {
       staffView ||
       forecastLoading ||
       forecastBusy ||
-      forecastRows.length ||
+      actionableForecastRows.length ||
       requestedForecast.current
     )
       return;
     requestedForecast.current = true;
     void generateForecast();
-  }, [forecastBusy, forecastLoading, forecastRows.length, staffView]);
+  }, [actionableForecastRows.length, forecastBusy, forecastLoading, staffView]);
 
   useEffect(() => {
     if (
@@ -896,11 +984,13 @@ function DecisionPage() {
       staffView ||
       supplyLoading ||
       supplyBusy ||
+      allocationLoading ||
       allocationBusy ||
       !latestRun ||
       unevaluatedForecasts.length ||
       !shortageEvaluations.length ||
       !surplusEvaluations.length ||
+      currentAllocationRows.length ||
       pendingAllocations.length ||
       generatedAllocationRuns.current.has(latestRun.id)
     )
@@ -913,6 +1003,8 @@ function DecisionPage() {
     );
   }, [
     allocationBusy,
+    allocationLoading,
+    currentAllocationRows.length,
     latestRun?.id,
     pendingAllocations.length,
     shortageEvaluations.length,
@@ -944,6 +1036,48 @@ function DecisionPage() {
       ]),
     ),
   ].map(([id, name]) => ({ id, name }));
+  const decisionTrace = [
+    {
+      label: "Demand history",
+      detail: focusedWmaCalculation
+        ? `${focusedWmaCalculation.terms.length} complete weekly observations loaded`
+        : "Select a forecast series to inspect its history",
+    },
+    {
+      label: "WMA forecast",
+      detail: focusedWmaCalculation
+        ? `0.20 / 0.30 / 0.50 → ${formatDecimal(focusedWmaCalculation.forecastDemand)} demand, ${focusedWmaCalculation.requiredVehicles} required`
+        : "Waiting for a current forecast",
+    },
+    {
+      label: "Supply readiness",
+      detail: currentSupplyRows.length
+        ? `${currentSupplyRows.length} current branch/category snapshots`
+        : "Waiting for current supply snapshots",
+    },
+    {
+      label: "Fleet matching",
+      detail: allocationSummary
+        ? `${allocationSummary.generatedRecommendations} recommendation${allocationSummary.generatedRecommendations === 1 ? "" : "s"}; ${allocationSummary.unresolvedShortages.length} unresolved position${allocationSummary.unresolvedShortages.length === 1 ? "" : "s"}`
+        : "Waiting for allocation evidence",
+    },
+    {
+      label: "External context",
+      detail: selectedRecommendation
+        ? allocationContextLoading
+          ? "Checking current weather, road, route, and fuel context"
+          : allocationContext
+            ? `${allocationContext.status.replaceAll("_", " ")} review-time context`
+            : "Select or refresh the recommendation context"
+        : "Available when a transfer recommendation is reviewed",
+    },
+    {
+      label: "Human decision",
+      detail: selectedRecommendation
+        ? `${selectedRecommendation.decision_state}; no vehicle branch changes automatically`
+        : "No recommendation currently requires a decision",
+    },
+  ];
 
   return (
     <div className="admin-decision-workspace">
@@ -961,6 +1095,30 @@ function DecisionPage() {
         </div>
       </header>
 
+      <section
+        className="admin-decision-trace"
+        aria-labelledby="decision-trace-heading"
+      >
+        <header>
+          <strong id="decision-trace-heading">Auditable decision trace</strong>
+          <span>
+            Each recommendation connects recorded demand to a human-reviewed
+            operational decision.
+          </span>
+        </header>
+        <ol>
+          {decisionTrace.map((stage, index) => (
+            <li key={stage.label}>
+              <span aria-hidden="true">{index + 1}</span>
+              <div>
+                <strong>{stage.label}</strong>
+                <small>{stage.detail}</small>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       <div className="admin-decision-overview">
         <section
           className="admin-decision-panel admin-decision-forecast"
@@ -977,6 +1135,15 @@ function DecisionPage() {
               </p>
             </div>
             <div className="admin-decision-forecast-filters">
+              {!staffView ? (
+                <Btn
+                  variant="default"
+                  disabled={forecastBusy}
+                  onClick={() => void generateForecast()}
+                >
+                  {forecastBusy ? "Working…" : "Refresh forecast"}
+                </Btn>
+              ) : null}
               <label>
                 <span>Branch</span>
                 <select
@@ -1114,6 +1281,77 @@ function DecisionPage() {
               </ResponsiveContainer>
             )}
           </div>
+          {focusedWmaForecast && focusedWmaCalculation ? (
+            <section
+              className="admin-decision-calculation"
+              aria-labelledby="forecast-calculation-heading"
+            >
+              <header>
+                <div>
+                  <span>Auditable WMA example</span>
+                  <h3 id="forecast-calculation-heading">
+                    {forecastLabel(focusedWmaForecast)}
+                  </h3>
+                </div>
+                <small>
+                  Horizon 1 · target week{" "}
+                  {formatWeekRange(
+                    focusedWmaForecast.target_week_start,
+                    focusedWmaForecast.target_week_end,
+                  )}
+                </small>
+              </header>
+              <div className="admin-decision-calculation-table" role="table">
+                <div className="is-heading" role="row">
+                  <span role="columnheader">Input week</span>
+                  <span role="columnheader">Demand</span>
+                  <span role="columnheader">Weight</span>
+                  <span role="columnheader">Contribution</span>
+                </div>
+                {focusedWmaCalculation.terms.map((term) => (
+                  <div
+                    role="row"
+                    key={`${term.sourceType}-${term.sourceWeekStart}-${term.weight}`}
+                  >
+                    <span role="cell">
+                      {formatDay(term.sourceWeekStart)} · {term.sourceType}
+                    </span>
+                    <strong role="cell">
+                      {formatDecimal(term.sourceValue)}
+                    </strong>
+                    <strong role="cell">{formatDecimal(term.weight)}</strong>
+                    <strong role="cell">
+                      {formatDecimal(term.weightedContribution)}
+                    </strong>
+                  </div>
+                ))}
+              </div>
+              <div className="admin-decision-calculation-result">
+                <code>
+                  {focusedWmaCalculation.terms
+                    .map(
+                      (term) =>
+                        `${formatDecimal(term.weight)} × ${formatDecimal(term.sourceValue)}`,
+                    )
+                    .join(" + ")}
+                  {` = ${formatDecimal(focusedWmaCalculation.forecastDemand)}`}
+                </code>
+                <p>
+                  Forecast demand:{" "}
+                  {formatDecimal(focusedWmaCalculation.forecastDemand)}. The
+                  planning requirement rounds up to{" "}
+                  <strong>
+                    {focusedWmaCalculation.requiredVehicles} vehicles
+                  </strong>
+                  .
+                </p>
+                <small>
+                  This estimates weekly booking demand. Fleet movement remains
+                  an advisory decision reviewed by the Owner/Admin.
+                </small>
+              </div>
+            </section>
+          ) : null}
           <footer className="admin-decision-chart-footer">
             <strong>{focusedForecastLabel}</strong>
             {focusedForecastSeries.map((series) => (
@@ -1124,10 +1362,8 @@ function DecisionPage() {
             ))}
             {focusedForecastStart && focusedForecastEnd ? (
               <small>
-                Forecast horizon: {formatWeekRange(
-                  focusedForecastStart,
-                  focusedForecastEnd,
-                )}
+                Forecast horizon:{" "}
+                {formatWeekRange(focusedForecastStart, focusedForecastEnd)}
               </small>
             ) : null}
             {forecastData?.mape == null ? (
@@ -1136,9 +1372,21 @@ function DecisionPage() {
               </small>
             ) : (
               <small>
-                Latest finalized MAPE: {formatPercent(forecastData.mape)}
+                Finalized horizon-1 MAPE: {formatPercent(forecastData.mape)} ·{" "}
+                {forecastData.accuracy?.eligibleForecasts ?? 0} eligible
+                observation
+                {forecastData.accuracy?.eligibleForecasts === 1 ? "" : "s"}
               </small>
             )}
+            {!staffView && (forecastData?.finalizableForecasts ?? 0) > 0 ? (
+              <Btn
+                variant="default"
+                disabled={forecastBusy}
+                onClick={() => void finalizeForecasts()}
+              >
+                Finalize {forecastData?.finalizableForecasts} completed
+              </Btn>
+            ) : null}
           </footer>
         </section>
 
@@ -1242,13 +1490,13 @@ function DecisionPage() {
               />
             ) : null}
           </ol>
-          {forecastNotice || allocationError ? (
+          {forecastNotice || forecastError || allocationError ? (
             <div
-              className={`admin-decision-brief-feedback ${allocationError ? "is-error" : ""}`}
-              role={allocationError ? "alert" : "status"}
+              className={`admin-decision-brief-feedback ${forecastError || allocationError ? "is-error" : ""}`}
+              role={forecastError || allocationError ? "alert" : "status"}
               aria-live="polite"
             >
-              {allocationError || forecastNotice}
+              {forecastError || allocationError || forecastNotice}
             </div>
           ) : null}
         </aside>
@@ -1448,11 +1696,26 @@ function DecisionPage() {
               confirmed bookings, rentals, and maintenance.
             </p>
           </div>
-          <Badge>
-            {supplyLoading || supplyBusy
-              ? "Synchronizing…"
-              : `${currentSupplyRows.length}/${forecastRows.length} ready`}
-          </Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge>
+              {supplyLoading || supplyBusy
+                ? "Synchronizing…"
+                : `${currentSupplyRows.length}/${actionableForecastRows.length} ready`}
+            </Badge>
+            {!staffView && actionableForecastRows.length ? (
+              <Btn
+                variant="default"
+                disabled={supplyBusy || forecastBusy}
+                onClick={() =>
+                  void evaluateSupply(
+                    actionableForecastRows.map((forecast) => forecast.id),
+                  )
+                }
+              >
+                {supplyBusy ? "Evaluating…" : "Refresh supply"}
+              </Btn>
+            ) : null}
+          </div>
         </header>
         {supplyError ? (
           <p className="admin-decision-feedback is-error" role="alert">
@@ -1543,6 +1806,52 @@ function DecisionPage() {
             {allocationError}
           </p>
         ) : null}
+        {allocationSummary?.unresolvedShortages.length ? (
+          <div
+            className="admin-decision-unresolved"
+            aria-label="Unresolved shortage explanations"
+          >
+            <header>
+              <strong>Unresolved shortage evidence</strong>
+              <span>
+                {allocationSummary.unresolvedShortages.length} position
+                {allocationSummary.unresolvedShortages.length === 1
+                  ? ""
+                  : "s"}{" "}
+                still need an operational response
+              </span>
+            </header>
+            <ul>
+              {allocationSummary.unresolvedShortages.map((gap) => {
+                const evaluation = supplyRows.find(
+                  (row) => row.id === gap.evaluationId,
+                );
+                const forecast = evaluation
+                  ? forecastById.get(evaluation.forecast_id)
+                  : undefined;
+                return (
+                  <li key={gap.evaluationId}>
+                    <div>
+                      <strong>
+                        {forecast?.branch?.name ?? gap.branchId} ·{" "}
+                        {forecast?.category?.name ?? gap.categoryId}
+                      </strong>
+                      <span>
+                        {formatWeekRange(
+                          gap.targetWeekStart,
+                          gap.targetWeekEnd,
+                        )}{" "}
+                        · {gap.unresolvedUnits} of {gap.shortageUnits} unit
+                        {gap.shortageUnits === 1 ? "" : "s"} unresolved
+                      </span>
+                    </div>
+                    <p>{unresolvedShortageCopy(gap.reason)}</p>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : null}
         <div className="admin-decision-transfer-layout">
           <nav
             aria-label="Transfer recommendations"
@@ -1558,9 +1867,13 @@ function DecisionPage() {
                       ? "No matching surplus is available"
                       : surplusEvaluations.length && !shortageEvaluations.length
                         ? "No branch needs a transfer"
-                        : allocationSummary?.generatedRecommendations === 0
-                          ? "No eligible transfer match was found"
-                          : "No transfer is needed"}
+                        : allocationSummary?.unresolvedShortages.some(
+                              (gap) => gap.reason === "NoCompatibleSurplus",
+                            )
+                          ? "No compatible donor is available"
+                          : allocationSummary?.generatedRecommendations === 0
+                            ? "No eligible transfer match was found"
+                            : "No transfer is needed"}
                 </strong>
                 <span>
                   {supplyBusy || unevaluatedForecasts.length
@@ -1569,9 +1882,13 @@ function DecisionPage() {
                       ? "The current run has a shortage, but no matching branch/category surplus to move."
                       : surplusEvaluations.length && !shortageEvaluations.length
                         ? "The current run has spare capacity, but no matching shortage to resolve."
-                        : allocationSummary?.generatedRecommendations === 0
-                          ? "Current supply snapshots found no eligible vehicles that can be safely transferred."
-                          : "The current supply snapshots have no unresolved branch imbalance."}
+                        : allocationSummary?.unresolvedShortages.some(
+                              (gap) => gap.reason === "NoCompatibleSurplus",
+                            )
+                          ? "Available surpluses do not match this shortage's category, target week, and forecast horizon."
+                          : allocationSummary?.generatedRecommendations === 0
+                            ? "Compatible surplus exists, but current bookings, rentals, maintenance, or inactive state leave no eligible vehicle to transfer."
+                            : "The current supply snapshots have no unresolved branch imbalance."}
                 </span>
               </div>
             ) : (
@@ -1684,7 +2001,7 @@ function DecisionPage() {
                     loading={allocationContextLoading}
                     error={allocationContextError}
                     embedded
-                    advisoryNote="Current review-time context is supplementary and is not part of the original allocation score."
+                    advisoryNote="The Owner/Admin considers current weather, road, route, distance, travel-time, and fuel evidence before approving or rejecting. These factors do not change the WMA demand forecast or approve a transfer automatically."
                   />
                 ) : null}
 

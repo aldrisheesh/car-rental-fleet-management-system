@@ -57,9 +57,7 @@ export const Route = createFileRoute("/api/maintenance")({
           const now = Date.now();
           return Response.json(
             (result.data ?? []).map((record) =>
-              record.status === "Open"
-                ? { ...record, status: "In Progress" }
-                : record.status === "Scheduled" &&
+              record.status === "Scheduled" &&
               record.scheduled_for &&
               new Date(record.scheduled_for).getTime() < now
                 ? { ...record, status: "Overdue" }
@@ -100,6 +98,18 @@ export const Route = createFileRoute("/api/maintenance")({
           return fail("Service type is required.");
         if (typeof body.description !== "string" || !body.description.trim())
           return fail("Description is required.");
+        const returnInspectionId =
+          typeof body.returnInspectionId === "string"
+            ? body.returnInspectionId
+            : null;
+        const inspectionRemarks =
+          typeof body.inspectionRemarks === "string"
+            ? body.inspectionRemarks.trim()
+            : null;
+        if (returnInspectionId && !inspectionRemarks)
+          return fail(
+            "Inspection remarks are required before maintenance can be scheduled.",
+          );
         const nextOdo = numberOrNull(
           body.nextServiceOdometer,
           "Next-service odometer",
@@ -108,20 +118,12 @@ export const Route = createFileRoute("/api/maintenance")({
         if (nextOdo.error || cost.error)
           return fail(nextOdo.error ?? cost.error!);
         const client = getSupabaseServerClient();
-        const vehicle = await client
-          .from("vehicles")
-          .select("id,is_active,current_odometer_km")
-          .eq("id", body.vehicleId)
-          .maybeSingle();
-        if (vehicle.error || !vehicle.data)
-          return fail("Vehicle not found.", 404);
         if (typeof body.scheduledFor !== "string" || !body.scheduledFor)
           return fail("Scheduled service date/time is required.");
-        const result = await client.rpc("create_maintenance_atomic", {
+        const baseArgs = {
           p_vehicle_id: body.vehicleId,
           p_maintenance_type: body.maintenanceType.trim(),
           p_description: body.description.trim(),
-          p_blocks: body.blocksRentalUse === true,
           p_scheduled_for: body.scheduledFor,
           p_next_odometer: nextOdo.value ?? null,
           p_next_date:
@@ -134,7 +136,25 @@ export const Route = createFileRoute("/api/maintenance")({
               ? body.remarks.trim() || null
               : null,
           p_actor: actor.userId,
-        });
+        };
+        const result = returnInspectionId
+          ? await client.rpc("schedule_return_maintenance", {
+              p_rental_id: returnInspectionId,
+              p_vehicle_id: baseArgs.p_vehicle_id,
+              p_maintenance_type: baseArgs.p_maintenance_type,
+              p_description: baseArgs.p_description,
+              p_scheduled_for: baseArgs.p_scheduled_for,
+              p_next_odometer: baseArgs.p_next_odometer,
+              p_next_date: baseArgs.p_next_date,
+              p_cost: baseArgs.p_cost,
+              p_maintenance_remarks: baseArgs.p_remarks,
+              p_inspection_remarks: inspectionRemarks!,
+              p_actor: baseArgs.p_actor,
+            })
+          : await client.rpc("create_maintenance_atomic", {
+              ...baseArgs,
+              p_blocks: body.blocksRentalUse === true,
+            });
         if (result.error)
           return fail("Unable to create maintenance record.", 400);
         const activeRental = await client

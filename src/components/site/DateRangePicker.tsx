@@ -1,6 +1,10 @@
 import type { DateRange } from "react-day-picker";
 
 import { Calendar } from "@/components/ui/calendar";
+import {
+  formatRentalDuration,
+  selectedRentalPeriod,
+} from "@/lib/rental-duration";
 
 type DateRangePickerProps = {
   selected: DateRange | undefined;
@@ -33,9 +37,13 @@ export function DateRangePicker({
 }: DateRangePickerProps) {
   const hasPickupDate = Boolean(selected?.from);
   const hasReturnDate = Boolean(selected?.to);
-  const canApply = Boolean(
-    selected?.from && selected.to && pickupTime && returnTime,
+  const period = selectedRentalPeriod(
+    selected?.from,
+    selected?.to,
+    pickupTime,
+    returnTime,
   );
+  const canApply = period !== null;
   const dateFormatter = new Intl.DateTimeFormat("en-PH", {
     weekday: "short",
     month: "short",
@@ -47,16 +55,9 @@ export function DateRangePicker({
   const returnLabel = selected?.to
     ? dateFormatter.format(selected.to)
     : "Select a date";
-  const rentalDays =
-    selected?.from && selected.to
-      ? Math.max(
-          1,
-          Math.round(
-            (selected.to.getTime() - selected.from.getTime()) /
-              (24 * 60 * 60 * 1000),
-          ),
-        )
-      : null;
+  const duration = period
+    ? formatRentalDuration(period.start, period.end)
+    : null;
 
   function clearDates() {
     onSelect(undefined);
@@ -77,7 +78,7 @@ export function DateRangePicker({
             selected={selected}
             onSelect={onSelect}
             numberOfMonths={2}
-            min={1}
+            min={0}
             disabled={{ before: firstAvailableDate }}
             classNames={{ today: "home-date-calendar-today" }}
           />
@@ -144,11 +145,13 @@ export function DateRangePicker({
         </div>
         <div className="home-date-selection-guide-journey">
           <span>
-            {rentalDays
-              ? `${rentalDays}-day rental`
-              : hasPickupDate
-                ? "Now choose a return date"
-                : "Choose your trip dates"}
+            {duration
+              ? `${duration} rental`
+              : hasReturnDate && pickupTime && returnTime
+                ? "Return must be after pickup"
+                : hasPickupDate
+                  ? "Now choose a return date"
+                  : "Choose your trip dates"}
           </span>
         </div>
         <div className="home-date-selection-guide-stop home-date-selection-guide-stop--return">

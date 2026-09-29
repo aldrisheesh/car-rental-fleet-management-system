@@ -18,12 +18,14 @@
     "test:backup": "node --experimental-strip-types --test src/lib/backup/*.test.ts",
     "backup:run": "node --experimental-strip-types scripts/backup-run.ts",
     "backup:restore-drill": "node --experimental-strip-types scripts/backup-restore-drill.ts",
-    "defense:verify": "node --experimental-strip-types scripts/defense/verifier.ts",
+    "defense:verify": "node --env-file=.env.local --experimental-strip-types scripts/defense/verifier.ts",
+    "defense:decision-support": "node --env-file=.env.local --experimental-strip-types scripts/defense/decision-support-acceptance.ts",
     "qa:fixtures": "node --experimental-strip-types scripts/qa/controlled-fixtures.ts",
     "test:defense": "node --experimental-strip-types --test scripts/defense/*.test.ts",
     "test:qa-fixtures": "node --experimental-strip-types --test scripts/qa/*.test.ts",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "defense:baseline": "node --env-file=.env.local --experimental-strip-types scripts/defense/baseline.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1124.0",

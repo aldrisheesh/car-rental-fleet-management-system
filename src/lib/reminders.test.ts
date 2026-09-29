@@ -24,9 +24,11 @@ const serverPath = fileURLToPath(
 const routePath = fileURLToPath(
   new URL("../routes/api.internal.reminders.ts", import.meta.url),
 );
+const vercelPath = fileURLToPath(new URL("../../vercel.json", import.meta.url));
 const migration = readFileSync(migrationPath, "utf8");
 const serverImplementation = readFileSync(serverPath, "utf8");
 const routeImplementation = readFileSync(routePath, "utf8");
+const vercel = JSON.parse(readFileSync(vercelPath, "utf8"));
 
 const NOW = new Date("2026-09-05T02:00:00.000Z"); // 10:00 Asia/Manila
 
@@ -331,6 +333,28 @@ test("normal browser authentication cannot authorize reminder processing", () =>
   );
   assert.doesNotMatch(routeImplementation, /requirePrincipal|requireRole/);
   assert.doesNotMatch(routeImplementation, /request\.json|searchParams/);
+});
+
+test("Vercel cron GET and trusted manual POST share the secret-protected processor", () => {
+  assert.match(routeImplementation, /GET: invokeReminderProcessor/);
+  assert.match(routeImplementation, /POST: invokeReminderProcessor/);
+  assert.deepEqual(vercel.crons, [
+    { path: "/api/internal/reminders", schedule: "0 0 * * *" },
+  ]);
+  assert.equal(vercel.framework, "tanstack-start");
+  assert.equal("rewrites" in vercel, false);
+  assert.equal("outputDirectory" in vercel, false);
+
+  const request = new Request("https://example.test/api/internal/reminders", {
+    headers: { authorization: "Bearer vercel-cron-secret" },
+  });
+  assert.equal(
+    isTrustedReminderInvocation(request, [
+      "vercel-cron-secret",
+      "manual-processor-secret",
+    ]),
+    true,
+  );
 });
 
 class MemoryNotificationStore implements ReminderNotificationStore {
