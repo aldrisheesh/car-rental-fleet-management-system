@@ -5,9 +5,9 @@ Branch: `stabilization/ui-refinement`
 
 ## Current result
 
-The scheduled-notification implementation is ready for a preview deployment and controlled delivery test. The repository now builds as a TanStack Start application with a Nitro server function, and the Vercel output routes application and API requests to that function.
+The scheduled-notification implementation has passed a preview deployment and a controlled processor test. The repository now builds as a TanStack Start application with a Nitro server function, and the Vercel output routes application and API requests to that function.
 
-The production Vercel alias is currently reachable and `/api/health` returns a connected Supabase health response. The custom domains `briahscarrental.site` and `www.briahscarrental.site` do not currently resolve in DNS. The production deployment also predates the cron-compatible GET handler: an unauthenticated GET to `/api/internal/reminders` currently falls through to application HTML. The prepared build corrects that behavior, but it has not been deployed.
+The production Vercel alias is currently reachable and `/api/health` returns a connected Supabase health response. The promoted production deployment uses the cron-compatible GET handler: an unauthenticated request to `/api/internal/reminders` returns a JSON 404 response. The custom domains `briahscarrental.site` and `www.briahscarrental.site` remain attached to the deployment but do not currently resolve in DNS.
 
 ## Prepared changes
 
@@ -28,6 +28,8 @@ The production Vercel alias is currently reachable and `/api/health` returns a c
 - Generated route map: assets remain static; all remaining routes fall through to `/__server`.
 - Generated cron: `/api/internal/reminders` with schedule `0 0 * * *`.
 - Production health observation: `https://briah-car-rental.vercel.app/api/health` returned HTTP 200 JSON with `database: "connected"` on 29 September 2026.
+- Preview and Production release: the Vercel project now uses TanStack Start auto-detection, with no forced output directory. The promoted production deployment is `dpl_36gnzgH6GfJ8bp1ACchu9r6b8DLv`.
+- Authorization: unauthenticated requests to the reminder route returned JSON `404 Not found` in Preview and Production. A secret-authorized Preview POST ran successfully and returned its processing summary. The defense baseline was immediately restored; the following dry run reported no differences.
 
 The local `.vercel` build output and downloaded environment files are ignored and are not evidence artifacts to commit.
 
@@ -37,11 +39,8 @@ The daily schedule is compatible with the Vercel Hobby plan. Vercel documents th
 
 The following items remain before Phase 4 reminders and Phase 5 deployment can be marked complete:
 
-1. Remove the Vercel project's old custom output/build overrides or confirm that the repository configuration takes precedence.
-2. Add a production `CRON_SECRET` without exposing it in repository files or evidence.
-3. Deploy to Preview and verify `/api/health`, unauthorized reminder handling, authentication, uploads and an authorized one-off reminder run.
-4. Promote the verified deployment to Production and confirm the cron appears in Vercel.
-5. Run a controlled notification cycle with test recipients and record in-app creation, email queue state, provider acceptance and recipient delivery separately.
-6. Repair the custom-domain DNS records, then verify HTTPS and route behavior on the actual defense domain.
+1. Confirm the first scheduled Vercel cron execution in the deployment logs. `CRON_SECRET` is configured for Preview and Production but remains undisclosed.
+2. Run a controlled notification cycle with test recipients and record in-app creation, email queue state, provider acceptance and recipient delivery separately.
+3. Repair the custom-domain DNS records, then verify HTTPS and route behavior on the actual defense domain or the replacement domain the team chooses.
 
 Payment reminders remain intentionally unresolved because the project has no approved payment due date, recipient rule or reminder frequency. That rule must be agreed and recorded before implementation; the system must not invent a cancellation deadline, penalty or fee.
