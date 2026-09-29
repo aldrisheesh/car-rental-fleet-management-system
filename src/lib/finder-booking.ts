@@ -14,14 +14,22 @@ export type FinderBookingHandoff = {
   requestedStart: string;
   requestedEnd: string;
   passengerCount: number;
+  largeBagCount: number;
   maximumBudget: number;
-  preferredCategory: string | null;
+  /** Kept for existing booking-form prefill links. */
   destination: string | null;
   displayedRank: number | null;
 };
 
+export type FinderDateSelection = Pick<
+  FinderBookingHandoff,
+  "requestedStart" | "requestedEnd"
+>;
+
 export type FinderBookingSearch = {
   vehicle?: string;
+  /** Existing draft booking to revise from the customer booking page. */
+  editBooking?: string;
   /** Legacy browse-link compatibility; current Finder evaluation ignores this value. */
   branch?: string;
   /** Legacy browse-link compatibility; current customer slice does not use these fields. */
@@ -30,10 +38,15 @@ export type FinderBookingSearch = {
   finderStart?: string;
   finderEnd?: string;
   finderPassengers?: string | number;
+  finderBags?: string | number;
   finderBudget?: string | number;
   finderCategory?: string;
   finderDestination?: string;
   finderRank?: string | number;
+  /** Preserves a date-only trip search while moving through the fleet catalog. */
+  finderIntent?: string;
+  /** One-time browse-page instruction to open the rental date picker. */
+  finderOpenDates?: string;
 };
 
 export type FinderMaterialBooking = {
@@ -63,16 +76,46 @@ export function validateFinderBookingSearch(
 ): FinderBookingSearch {
   return {
     vehicle: searchText(search.vehicle),
+    editBooking: searchText(search.editBooking),
     branch: searchText(search.branch),
     category: searchText(search.category),
     pickup: searchText(search.pickup),
     finderStart: searchText(search.finderStart),
     finderEnd: searchText(search.finderEnd),
     finderPassengers: searchNumber(search.finderPassengers),
+    finderBags: searchNumber(search.finderBags),
     finderBudget: searchNumber(search.finderBudget),
     finderCategory: searchText(search.finderCategory),
     finderDestination: searchText(search.finderDestination),
     finderRank: searchNumber(search.finderRank),
+    finderIntent: searchText(search.finderIntent),
+    finderOpenDates: searchText(search.finderOpenDates),
+  };
+}
+
+/**
+ * Dates selected while browsing the active fleet do not imply that the user
+ * ran a full Finder evaluation. Keep them available to downstream detail pages
+ * without manufacturing recommendation provenance.
+ */
+export function parseFinderDateSelection(
+  search: FinderBookingSearch,
+): FinderDateSelection | null {
+  if (!search.finderStart || !search.finderEnd) return null;
+
+  const parseDate = (value: string) => {
+    const localDate = manilaDateTimeLocalToInstant(value);
+    if (localDate) return localDate;
+    const instant = new Date(value);
+    return Number.isNaN(instant.getTime()) ? null : instant;
+  };
+  const start = parseDate(search.finderStart);
+  const end = parseDate(search.finderEnd);
+  if (!start || !end || end <= start) return null;
+
+  return {
+    requestedStart: start.toISOString(),
+    requestedEnd: end.toISOString(),
   };
 }
 
@@ -84,6 +127,7 @@ export function parseFinderBookingHandoff(
     !search.finderStart ||
     !search.finderEnd ||
     !search.finderPassengers ||
+    search.finderBags == null ||
     !search.finderBudget
   )
     return null;
@@ -91,6 +135,7 @@ export function parseFinderBookingHandoff(
   const start = new Date(search.finderStart);
   const end = new Date(search.finderEnd);
   const passengerCount = Number(search.finderPassengers);
+  const largeBagCount = Number(search.finderBags);
   const maximumBudget = Number(search.finderBudget);
   const displayedRankValue = search.finderRank
     ? Number(search.finderRank)
@@ -109,22 +154,21 @@ export function parseFinderBookingHandoff(
     end <= start ||
     !Number.isInteger(passengerCount) ||
     passengerCount <= 0 ||
+    !Number.isInteger(largeBagCount) ||
+    largeBagCount < 0 ||
     !Number.isFinite(maximumBudget) ||
     maximumBudget <= 0
   )
     return null;
-
-  const destination = search.finderDestination?.trim() || null;
-  if (destination && destination.length > 200) return null;
 
   return {
     selectedVehicleId: search.vehicle,
     requestedStart: start.toISOString(),
     requestedEnd: end.toISOString(),
     passengerCount,
+    largeBagCount,
     maximumBudget,
-    preferredCategory: search.finderCategory?.trim() || null,
-    destination,
+    destination: search.finderDestination?.trim() || null,
     displayedRank,
   };
 }
@@ -149,9 +193,7 @@ export function finderProvenanceMatchesBooking(
     booking.vehicleId === handoff.selectedVehicleId &&
     pickup.toISOString() === handoff.requestedStart &&
     dropoff.toISOString() === handoff.requestedEnd &&
-    Number(booking.passengerCount) === handoff.passengerCount &&
-    (handoff.destination === null ||
-      booking.destination.trim() === handoff.destination)
+    Number(booking.passengerCount) === handoff.passengerCount
   );
 }
 
@@ -163,9 +205,8 @@ export function finderContextForSubmission(handoff: FinderBookingHandoff) {
     ),
     requestedEnd: instantToManilaDateTimeLocal(new Date(handoff.requestedEnd)),
     passengerCount: handoff.passengerCount,
+    largeBagCount: handoff.largeBagCount,
     maximumBudget: handoff.maximumBudget,
-    preferredCategory: handoff.preferredCategory,
-    destination: handoff.destination,
     displayedRank: handoff.displayedRank,
   };
 }
@@ -176,7 +217,7 @@ export function revalidateFinderBookingBasis({
   bookingPickupAt,
   bookingReturnAt,
   bookingPassengerCount,
-  bookingDestination,
+  bookingDestination: _bookingDestination,
   canonicalInput,
   recommendations,
 }: {
@@ -185,7 +226,7 @@ export function revalidateFinderBookingBasis({
   bookingPickupAt: string;
   bookingReturnAt: string;
   bookingPassengerCount: number | null;
-  bookingDestination: string | null;
+  bookingDestination?: string | null;
   canonicalInput: VehicleFinderInput;
   recommendations: VehicleRecommendation[];
 }):
@@ -195,9 +236,7 @@ export function revalidateFinderBookingBasis({
     selectedVehicleId !== bookingVehicleId ||
     canonicalInput.requestedStart !== bookingPickupAt ||
     canonicalInput.requestedEnd !== bookingReturnAt ||
-    canonicalInput.passengerCount !== bookingPassengerCount ||
-    (canonicalInput.destination !== null &&
-      canonicalInput.destination !== bookingDestination)
+    canonicalInput.passengerCount !== bookingPassengerCount
   )
     return { ok: false, reason: "MISMATCH" };
 

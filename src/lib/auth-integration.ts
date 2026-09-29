@@ -1,4 +1,5 @@
 import type { AppPrincipal } from "./auth";
+import { getSupabaseBrowserClient } from "./supabase/client";
 
 export type AuthProvider = "google" | "facebook" | "apple";
 export type CredentialLoginInput = { identifier: string; password: string };
@@ -21,6 +22,9 @@ export type SignupResult = {
   principal?: AppPrincipal | null;
   requiresEmailConfirmation?: boolean;
 };
+export type AccountDiscoveryResult =
+  | { ok: true; next: "sign-in" | "sign-up" | "unavailable" }
+  | { ok: false; message: string };
 
 export function hasApiCredentialLogin() {
   return true;
@@ -28,6 +32,37 @@ export function hasApiCredentialLogin() {
 
 export function hasApiSignup() {
   return true;
+}
+
+export async function discoverAccountByEmail(
+  email: string,
+): Promise<AccountDiscoveryResult> {
+  try {
+    const response = await fetch("/api/auth/account-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ email }),
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      next?: "sign-in" | "sign-up" | "unavailable";
+      message?: string;
+    } | null;
+    if (!response.ok || !payload?.next) {
+      return {
+        ok: false,
+        message:
+          payload?.message ??
+          "We could not check this email. Please try again.",
+      };
+    }
+    return { ok: true, next: payload.next };
+  } catch {
+    return {
+      ok: false,
+      message: "We could not check this email. Please try again.",
+    };
+  }
 }
 
 export async function signInWithCredentialsApi({
@@ -109,10 +144,36 @@ export async function signOutWithCredentialsApi() {
   }).catch(() => undefined);
 }
 
-export function getProviderStartUrl(_provider: AuthProvider) {
-  return "/sign-in";
+export function getProviderStartUrl(provider: AuthProvider, next?: string) {
+  if (provider !== "google" || typeof window === "undefined") return "/sign-in";
+
+  const callback = new URL("/auth/callback", window.location.origin);
+  if (next?.startsWith("/") && !next.startsWith("//")) {
+    callback.searchParams.set("next", next);
+  }
+  return callback.toString();
 }
 
-export function continueWithProvider(_provider: AuthProvider) {
-  // Social/OAuth authentication is intentionally out of scope for VS002.
+export async function continueWithProvider(
+  provider: AuthProvider,
+  next?: string,
+) {
+  if (provider !== "google") {
+    return { ok: false, message: "This sign-in provider is not available." };
+  }
+
+  const { error } = await getSupabaseBrowserClient().auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: getProviderStartUrl(provider, next),
+      queryParams: { prompt: "select_account" },
+    },
+  });
+
+  return error
+    ? {
+        ok: false,
+        message: "Unable to start Google sign-in. Please try again.",
+      }
+    : { ok: true };
 }

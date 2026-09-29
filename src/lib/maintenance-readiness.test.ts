@@ -72,7 +72,8 @@ test("canonical readiness reports every deterministic blocking reason", () => {
       condition_blocks_rental_use: true,
     },
     [
-      record({ status: "Open", blocks_rental_use: true }),
+      record({ status: "Open" }),
+      record({ status: "Scheduled", blocks_rental_use: true }),
       record({
         next_service_date: "2026-08-31",
         next_service_odometer: 59_000,
@@ -83,9 +84,10 @@ test("canonical readiness reports every deterministic blocking reason", () => {
 
   assert.equal(readiness.maintenanceReady, false);
   assert.deepEqual(readiness.reasons, [
-    "Vehicle inactive",
-    "Active blocking maintenance",
-    "Preventive maintenance due by date",
+      "Vehicle inactive",
+      "Unresolved maintenance concern prevents rental use",
+      "Active maintenance in progress",
+      "Preventive maintenance due by date",
     "Preventive maintenance due by odometer",
     "Vehicle condition blocks rental use",
   ]);
@@ -118,4 +120,21 @@ test("cancelled blocking records do not block readiness", () => {
     "2026-09-02",
   );
   assert.deepEqual(readiness, { maintenanceReady: true, reasons: [] });
+});
+
+test("a returned vehicle stays unavailable while its inspection is pending", () => {
+  const readiness = evaluateMaintenanceReadiness(
+    {
+      is_active: true,
+      current_odometer_km: 10_000,
+      condition_blocks_rental_use: false,
+    },
+    [],
+    "2026-09-02",
+    true,
+  );
+  assert.deepEqual(readiness, {
+    maintenanceReady: false,
+    reasons: ["Return inspection pending"],
+  });
 });

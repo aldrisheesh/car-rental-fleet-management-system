@@ -2,7 +2,10 @@ import { getSupabaseServerClient } from "./supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./supabase/database.types";
 import { instantToManilaCalendarDate } from "./business-time";
-import { evaluateMaintenanceReadiness } from "./maintenance-readiness";
+import {
+  evaluateMaintenanceReadiness,
+  type MaintenanceReadiness,
+} from "./maintenance-readiness";
 export {
   evaluateMaintenanceReadiness,
   selectAuthoritativePreventiveTargets,
@@ -14,11 +17,12 @@ export type {
 
 export async function calculateMaintenanceReadiness(
   vehicleId: string,
+  client: SupabaseClient<Database> = getSupabaseServerClient(),
 ): Promise<MaintenanceReadiness> {
-  const client = getSupabaseServerClient();
   const [
     { data: vehicle, error: vehicleError },
     { data: records, error: recordsError },
+    { data: inspections, error: inspectionsError },
   ] = await Promise.all([
     client
       .from("vehicles")
@@ -31,10 +35,23 @@ export async function calculateMaintenanceReadiness(
         "status,maintenance_type,blocks_rental_use,next_service_odometer,next_service_date,completed_at,created_at",
       )
       .eq("vehicle_id", vehicleId),
+    client
+      .from("rental_transactions")
+      .select("id")
+      .eq("vehicle_id", vehicleId)
+      .not("ended_at", "is", null)
+      .eq("inspection_status", "Pending")
+      .limit(1),
   ]);
   if (vehicleError) throw vehicleError;
   if (recordsError) throw recordsError;
-  return evaluateMaintenanceReadiness(vehicle, records ?? []);
+  if (inspectionsError) throw inspectionsError;
+  return evaluateMaintenanceReadiness(
+    vehicle,
+    records ?? [],
+    instantToManilaCalendarDate(new Date()),
+    Boolean(inspections?.length),
+  );
 }
 
 export async function getVehicleMaintenanceReadiness(vehicleId: string) {
@@ -64,7 +81,7 @@ export async function calculateFleetMaintenanceSnapshot(
   client: SupabaseClient<Database> = getSupabaseServerClient(),
   now = new Date(),
 ): Promise<FleetMaintenanceReadiness> {
-  const [vehiclesResult, recordsResult] = await Promise.all([
+  const [vehiclesResult, recordsResult, inspectionsResult] = await Promise.all([
     client
       .from("vehicles")
       .select(
@@ -76,9 +93,15 @@ export async function calculateFleetMaintenanceSnapshot(
       .select(
         "vehicle_id,status,maintenance_type,blocks_rental_use,next_service_odometer,next_service_date,completed_at,created_at",
       ),
+    client
+      .from("rental_transactions")
+      .select("vehicle_id")
+      .not("ended_at", "is", null)
+      .eq("inspection_status", "Pending"),
   ]);
   if (vehiclesResult.error) throw vehiclesResult.error;
   if (recordsResult.error) throw recordsResult.error;
+  if (inspectionsResult.error) throw inspectionsResult.error;
 
   const recordsByVehicle = new Map<string, typeof recordsResult.data>();
   for (const record of recordsResult.data ?? []) {
@@ -88,14 +111,18 @@ export async function calculateFleetMaintenanceSnapshot(
   }
 
   const today = instantToManilaCalendarDate(now);
+  const inspectionVehicleIds = new Set(
+    (inspectionsResult.data ?? []).map((inspection) => inspection.vehicle_id),
+  );
   const readiness = (vehiclesResult.data ?? []).map((vehicle) => ({
     vehicleId: vehicle.id,
     vehicleName: vehicle.name,
-    licensePlate: vehicle.license_plate,
+    licensePlate: vehicle.license_plate ?? "Plate unavailable",
     ...evaluateMaintenanceReadiness(
       vehicle,
       recordsByVehicle.get(vehicle.id) ?? [],
       today,
+      inspectionVehicleIds.has(vehicle.id),
     ),
   }));
   return {

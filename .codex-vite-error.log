@@ -1,0 +1,122 @@
+(!) Failed to run dependency scan. Skipping dependency pre-bundling. Error: The following dependencies are imported but could not be resolved:
+
+  pdfjs-dist (imported by C:/Users/email/source/repos/car-rental-fleet-management-system/src/routes/bookings.$bookingId.tsx)
+
+Are they installed?
+    at file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:31923:33
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:34131:15
+SupabaseEnvError: Supabase server environment is incomplete. Missing: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+    at parseSupabaseServerEnv (C:/Users/email/source/repos/car-rental-fleet-management-system/src/lib/supabase/env.server.ts:32:33)
+    at getSupabaseServerEnv (C:/Users/email/source/repos/car-rental-fleet-management-system/src/lib/supabase/env.server.ts:38:10)
+    at getSupabaseServerClient (C:/Users/email/source/repos/car-rental-fleet-management-system/src/lib/supabase/server.ts:11:35)
+    at listCatalogVehiclesForAvailability (C:/Users/email/source/repos/car-rental-fleet-management-system/src/lib/vehicle-finder.server.ts:33:26)
+    at GET (C:/Users/email/source/repos/car-rental-fleet-management-system/src/routes/api.vehicles.ts:14:38)
+    at C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:265:28
+    at next (C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:229:22)
+    at executeMiddleware (C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:251:10)
+    at handleServerRoutes (C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:735:21)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  missing: [ 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY' ]
+}
+SupabaseEnvError: Supabase server environment is incomplete. Missing: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+    at parseSupabaseServerEnv (C:/Users/email/source/repos/car-rental-fleet-management-system/src/lib/supabase/env.server.ts:32:33)
+    at getSupabaseServerEnv (C:/Users/email/source/repos/car-rental-fleet-management-system/src/lib/supabase/env.server.ts:38:10)
+    at getSupabaseServerClient (C:/Users/email/source/repos/car-rental-fleet-management-system/src/lib/supabase/server.ts:11:35)
+    at POST (C:/Users/email/source/repos/car-rental-fleet-management-system/src/routes/api.auth.account-status.ts:26:48)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:265:22
+    at next (C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:229:16)
+    at handleServerRoutes (C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:735:15)
+    at C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:543:22
+    at next (C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:229:16) {
+  missing: [ 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY' ]
+}
+SupabaseEnvError: Supabase server environment is incomplete. Missing: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+    at parseSupabaseServerEnv (C:/Users/email/source/repos/car-rental-fleet-management-system/src/lib/supabase/env.server.ts:32:33)
+    at getSupabaseServerEnv (C:/Users/email/source/repos/car-rental-fleet-management-system/src/lib/supabase/env.server.ts:38:10)
+    at getSupabaseServerClient (C:/Users/email/source/repos/car-rental-fleet-management-system/src/lib/supabase/server.ts:11:35)
+    at listCatalogVehiclesForAvailability (C:/Users/email/source/repos/car-rental-fleet-management-system/src/lib/vehicle-finder.server.ts:33:26)
+    at GET (C:/Users/email/source/repos/car-rental-fleet-management-system/src/routes/api.vehicles.ts:14:38)
+    at C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:265:28
+    at next (C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:229:22)
+    at executeMiddleware (C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:251:10)
+    at handleServerRoutes (C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/@tanstack/start-server-core/src/createStartHandler.ts:735:21)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  missing: [ 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY' ]
+}
+7:32:32 PM [vite] Internal server error: Failed to resolve import "pdfjs-dist" from "src/routes/bookings.$bookingId.tsx?tsr-split=component". Does the file exist?
+  Plugin: vite:import-analysis
+  File: C:/Users/email/source/repos/car-rental-fleet-management-system/src/routes/bookings.$bookingId.tsx?tsr-split=component:959:19
+  989 |            GlobalWorkerOptions,
+  990 |            getDocument
+  991 |          }, response] = await Promise.all([import("pdfjs-dist"), fetch(source, {
+      |                                                   ^
+  992 |            credentials: "omit"
+  993 |          })]);
+      at TransformPluginContext._formatLog (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:29019:43)
+      at TransformPluginContext.error (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:29016:14)
+      at normalizeUrl (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27139:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27197:32
+      at async Promise.all (index 12)
+      at async TransformPluginContext.transform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27165:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:28817:14)
+      at async loadAndTransform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:22686:26)
+7:32:40 PM [vite] Internal server error: Failed to resolve import "pdfjs-dist" from "src/routes/bookings.$bookingId.tsx?tsr-split=component". Does the file exist?
+  Plugin: vite:import-analysis
+  File: C:/Users/email/source/repos/car-rental-fleet-management-system/src/routes/bookings.$bookingId.tsx?tsr-split=component:959:19
+  989 |            GlobalWorkerOptions,
+  990 |            getDocument
+  991 |          }, response] = await Promise.all([import("pdfjs-dist"), fetch(source, {
+      |                                                   ^
+  992 |            credentials: "omit"
+  993 |          })]);
+      at TransformPluginContext._formatLog (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:29019:43)
+      at TransformPluginContext.error (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:29016:14)
+      at normalizeUrl (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27139:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27197:32
+      at async Promise.all (index 12)
+      at async TransformPluginContext.transform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27165:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:28817:14)
+      at async loadAndTransform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:22686:26)
+      at async viteTransformMiddleware (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:24562:20)
+7:33:45 PM [vite] Internal server error: Failed to resolve import "pdfjs-dist" from "src/routes/bookings.$bookingId.tsx?tsr-split=component". Does the file exist?
+  Plugin: vite:import-analysis
+  File: C:/Users/email/source/repos/car-rental-fleet-management-system/src/routes/bookings.$bookingId.tsx?tsr-split=component:959:19
+  989 |            GlobalWorkerOptions,
+  990 |            getDocument
+  991 |          }, response] = await Promise.all([import("pdfjs-dist"), fetch(source, {
+      |                                                   ^
+  992 |            credentials: "omit"
+  993 |          })]);
+      at TransformPluginContext._formatLog (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:29019:43)
+      at TransformPluginContext.error (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:29016:14)
+      at normalizeUrl (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27139:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27197:32
+      at async Promise.all (index 12)
+      at async TransformPluginContext.transform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27165:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:28817:14)
+      at async loadAndTransform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:22686:26)
+      at async viteTransformMiddleware (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:24562:20)
+7:34:33 PM [vite] Internal server error: Failed to resolve import "pdfjs-dist" from "src/routes/bookings.$bookingId.tsx?tsr-split=component". Does the file exist?
+  Plugin: vite:import-analysis
+  File: C:/Users/email/source/repos/car-rental-fleet-management-system/src/routes/bookings.$bookingId.tsx?tsr-split=component:959:19
+  989 |            GlobalWorkerOptions,
+  990 |            getDocument
+  991 |          }, response] = await Promise.all([import("pdfjs-dist"), fetch(source, {
+      |                                                   ^
+  992 |            credentials: "omit"
+  993 |          })]);
+      at TransformPluginContext._formatLog (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:29019:43)
+      at TransformPluginContext.error (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:29016:14)
+      at normalizeUrl (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27139:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27197:32
+      at async Promise.all (index 12)
+      at async TransformPluginContext.transform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:27165:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:28817:14)
+      at async loadAndTransform (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:22686:26)
+      at async viteTransformMiddleware (file:///C:/Users/email/source/repos/car-rental-fleet-management-system/node_modules/vite/dist/node/chunks/config.js:24562:20)

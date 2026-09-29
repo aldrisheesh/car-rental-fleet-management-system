@@ -9,16 +9,15 @@ import {
 import {
   createFileRoute,
   Outlet,
+  useNavigate,
   useRouterState,
 } from "@tanstack/react-router";
 import {
-  ArrowRight,
-  CalendarDays,
   CarFront,
   ChevronDown,
   CircleDollarSign,
   Filter,
-  MapPin,
+  Luggage,
   RefreshCw,
   Search,
   SlidersHorizontal,
@@ -30,7 +29,8 @@ import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { VehicleCard } from "@/components/site/VehicleCard";
 import finderHero from "@/assets/destinations/elyu.jpg";
-import { Calendar } from "@/components/ui/calendar";
+import { DateRangePicker } from "@/components/site/DateRangePicker";
+import { RentalDateTrigger } from "@/components/site/RentalDateTrigger";
 import {
   Popover,
   PopoverContent,
@@ -50,16 +50,16 @@ import {
   type CustomerVehicle,
   type FinderResponse,
 } from "@/lib/customer-data";
-import { manilaDateTimeLocalToInstant } from "@/lib/business-time";
+import {
+  isAtLeastNextManilaCalendarDay,
+  manilaDateTimeLocalToInstant,
+} from "@/lib/business-time";
 import {
   validateFinderBookingSearch,
   type FinderBookingSearch,
 } from "@/lib/finder-booking";
-import {
-  filterFinderRecommendations,
-  finderCriteriaSummary,
-  finderEvaluationState,
-} from "@/lib/finder-presentation";
+import { finderEvaluationState } from "@/lib/finder-presentation";
+import { getCustomerSession } from "@/lib/customer-auth";
 
 export const Route = createFileRoute("/vehicles")({
   validateSearch: (search) => validateFinderBookingSearch(search),
@@ -80,9 +80,8 @@ type FinderFormState = {
   requestedStart: string;
   requestedEnd: string;
   passengerCount: string;
+  largeBagCount: string;
   maximumBudget: string;
-  preferredCategory: string;
-  destination: string;
 };
 
 type FinderFormErrors = Partial<Record<keyof FinderFormState, string>>;
@@ -104,10 +103,18 @@ const finderFormFromSearch = (
   requestedStart: dateTimeInputFromIso(search.finderStart),
   requestedEnd: dateTimeInputFromIso(search.finderEnd),
   passengerCount: String(search.finderPassengers ?? ""),
+  largeBagCount: String(search.finderBags ?? ""),
   maximumBudget: String(search.finderBudget ?? ""),
-  preferredCategory: search.finderCategory ?? "",
-  destination: search.finderDestination ?? "",
 });
+
+function availabilityDateTimeFromSearch(value: string | undefined) {
+  if (!value) return undefined;
+  // Catalog availability accepts Manila datetime-local values. Preserve those
+  // values verbatim, while translating older links that carried UTC ISO time.
+  return manilaDateTimeLocalToInstant(value)
+    ? value
+    : dateTimeInputFromIso(value) || undefined;
+}
 
 const finderTimeOptions = [
   "08:00",
@@ -130,8 +137,9 @@ function finderDateFromDateTimeLocal(value: string) {
   return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
 }
 
-function finderTimeFromDateTimeLocal(value: string, fallback: string) {
-  return /^\d{4}-\d{2}-\d{2}T(\d{2}:\d{2})/.exec(value)?.[1] ?? fallback;
+function finderTimeFromDateTimeLocal(value: string) {
+  const match = /^\d{4}-\d{2}-\d{2}T(\d{2}:\d{2})/.exec(value);
+  return match?.[1] ?? "";
 }
 
 function finderDateTimeLocalForDate(date: Date, time: string) {
@@ -161,6 +169,7 @@ function formatFinderTime(value: string) {
 
 function FindCarPage() {
   const search = Route.useSearch();
+  const navigate = useNavigate();
   const finderForm = finderFormFromSearch(search);
   const [vehicles, setVehicles] = useState<CustomerVehicle[]>([]);
   const [vehiclesLoading, setVehiclesLoading] = useState(true);
@@ -176,8 +185,8 @@ function FindCarPage() {
   const [browseCategory, setBrowseCategory] = useState("");
   const [finderDatePickerOpen, setFinderDatePickerOpen] = useState(false);
   const [finderDraftRange, setFinderDraftRange] = useState<DateRange>();
-  const [finderPickupTime, setFinderPickupTime] = useState("10:00");
-  const [finderReturnTime, setFinderReturnTime] = useState("18:00");
+  const [finderPickupTime, setFinderPickupTime] = useState("");
+  const [finderReturnTime, setFinderReturnTime] = useState("");
   const [finderPreferencesOpen, setFinderPreferencesOpen] = useState(false);
   const finderValuesRef = useRef<FinderFormState | null>(null);
   const evaluatedKey = useRef("");
@@ -185,6 +194,7 @@ function FindCarPage() {
   const finderFirstAvailableDate = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() + 1);
     return date;
   }, []);
 
@@ -204,22 +214,35 @@ function FindCarPage() {
     search.finderStart &&
     search.finderEnd &&
     search.finderPassengers &&
+    search.finderBags != null &&
     search.finderBudget,
   );
   const finderKey = [
     search.finderStart,
     search.finderEnd,
     search.finderPassengers,
+    search.finderBags,
     search.finderBudget,
-    search.finderCategory,
-    search.finderDestination,
   ].join("|");
 
   const loadVehicles = useCallback(async () => {
     setVehiclesLoading(true);
     setVehiclesError("");
     try {
-      const rows = await fetchJson<CustomerVehicle[]>("/api/vehicles");
+      const availabilityStart = availabilityDateTimeFromSearch(
+        search.finderStart,
+      );
+      const availabilityEnd = availabilityDateTimeFromSearch(search.finderEnd);
+      const availabilitySearch =
+        availabilityStart || availabilityEnd
+          ? encodeSearch({
+              finderStart: availabilityStart,
+              finderEnd: availabilityEnd,
+            })
+          : "";
+      const rows = await fetchJson<CustomerVehicle[]>(
+        `/api/vehicles${availabilitySearch}`,
+      );
       setVehicles(rows);
     } catch (error) {
       setVehiclesError(
@@ -230,11 +253,25 @@ function FindCarPage() {
     } finally {
       setVehiclesLoading(false);
     }
-  }, []);
+  }, [search.finderEnd, search.finderStart]);
 
   useEffect(() => {
     void loadVehicles();
   }, [loadVehicles]);
+
+  useEffect(() => {
+    if (!search.finderOpenDates) return;
+    setRefinementOpen(true);
+    setFinderDraftRange(undefined);
+    setFinderPickupTime("");
+    setFinderReturnTime("");
+    setFinderDatePickerOpen(true);
+    void navigate({
+      to: "/vehicles",
+      search: { ...search, finderOpenDates: undefined } as never,
+      replace: true,
+    });
+  }, [navigate, search]);
 
   const evaluateFinder = useCallback(
     async (values: FinderFormState, updateUrl: boolean) => {
@@ -243,12 +280,16 @@ function FindCarPage() {
       const start = manilaDateTimeLocalToInstant(values.requestedStart);
       const end = manilaDateTimeLocalToInstant(values.requestedEnd);
       const passengerCount = Number(values.passengerCount);
+      const largeBagCount = Number(values.largeBagCount);
       const maximumBudget = Number(values.maximumBudget);
 
       if (!start) nextErrors.requestedStart = "Enter a valid rental start.";
       if (!end) nextErrors.requestedEnd = "Enter a valid rental end.";
       if (start && start.getTime() < Date.now() - 60_000) {
         nextErrors.requestedStart = "Rental start cannot be in the past.";
+      } else if (start && !isAtLeastNextManilaCalendarDay(start)) {
+        nextErrors.requestedStart =
+          "Choose a rental start date at least one calendar day ahead. Same-day booking is not available.";
       }
       if (start && end && start >= end) {
         nextErrors.requestedEnd = "Rental end must be after the start.";
@@ -258,18 +299,26 @@ function FindCarPage() {
         passengerCount <= 0 ||
         passengerCount > 100
       ) {
-        nextErrors.passengerCount =
-          "Passenger count must be a whole number from 1 to 100.";
+        nextErrors.passengerCount = "Enter 1–100 passengers.";
+      }
+      if (
+        values.largeBagCount.trim().length === 0 ||
+        !Number.isInteger(largeBagCount) ||
+        largeBagCount < 0 ||
+        largeBagCount > 100
+      ) {
+        nextErrors.largeBagCount = "Enter 0–100 bags.";
       }
       if (!Number.isFinite(maximumBudget) || maximumBudget <= 0) {
-        nextErrors.maximumBudget = "Enter a positive maximum total budget.";
-      }
-      if (values.destination.trim().length > 200) {
-        nextErrors.destination = "Destination must be 200 characters or fewer.";
+        nextErrors.maximumBudget = "Enter a total budget.";
       }
       if (Object.keys(nextErrors).length) {
         setFinderErrors(nextErrors);
-        if (nextErrors.passengerCount || nextErrors.maximumBudget) {
+        if (
+          nextErrors.passengerCount ||
+          nextErrors.largeBagCount ||
+          nextErrors.maximumBudget
+        ) {
           setFinderPreferencesOpen(true);
         }
         setRefinementOpen(true);
@@ -289,23 +338,33 @@ function FindCarPage() {
             requestedStart: values.requestedStart,
             requestedEnd: values.requestedEnd,
             passengerCount,
+            largeBagCount,
             maximumBudget,
-            preferredCategory: values.preferredCategory.trim() || null,
-            destination: values.destination.trim() || null,
           }),
         });
         setFinderResponse(result);
         if (updateUrl) {
-          window.location.assign(
-            `/vehicles${encodeSearch({
+          // This request already evaluated the criteria we are about to place
+          // in the URL. Mark it before navigating so the search effect does
+          // not issue a second request and temporarily clear the first result.
+          evaluatedKey.current = [
+            result.criteria.requestedStart,
+            result.criteria.requestedEnd,
+            result.criteria.passengerCount,
+            result.criteria.largeBagCount,
+            result.criteria.maximumBudget,
+          ].join("|");
+          void navigate({
+            to: "/vehicles",
+            search: {
               finderStart: result.criteria.requestedStart,
               finderEnd: result.criteria.requestedEnd,
               finderPassengers: result.criteria.passengerCount,
+              finderBags: result.criteria.largeBagCount,
               finderBudget: result.criteria.maximumBudget,
-              finderCategory: result.criteria.preferredCategory,
-              finderDestination: result.criteria.destination,
-            })}`,
-          );
+              finderIntent: "trip",
+            } as never,
+          });
         }
       } catch (error) {
         if (error instanceof ApiRequestError) {
@@ -321,7 +380,7 @@ function FindCarPage() {
         setFinderLoading(false);
       }
     },
-    [],
+    [navigate],
   );
 
   useEffect(() => {
@@ -342,52 +401,52 @@ function FindCarPage() {
       requestedStart: String(form.get("requestedStart") ?? ""),
       requestedEnd: String(form.get("requestedEnd") ?? ""),
       passengerCount: String(form.get("passengerCount") ?? ""),
+      largeBagCount: String(form.get("largeBagCount") ?? ""),
       maximumBudget: String(form.get("maximumBudget") ?? ""),
-      preferredCategory: String(form.get("preferredCategory") ?? ""),
-      destination: String(form.get("destination") ?? ""),
     };
-    // Dates are sufficient for browsing. The optional smart finder criteria
-    // are only required when ranking recommendations through the API.
-    if (
-      values.requestedStart &&
-      values.requestedEnd &&
-      !values.passengerCount &&
-      !values.maximumBudget
-    ) {
-      setFinderErrors({});
+
+    // The date picker is the only supported way to set a rental period here.
+    // Treat an incomplete period as a request to choose dates, rather than an
+    // inline form error that leaves the customer at a dead end.
+    if (!values.requestedStart || !values.requestedEnd) {
+      setFinderErrors((current) => ({
+        ...current,
+        requestedStart: undefined,
+        requestedEnd: undefined,
+      }));
       setFinderError("");
-      setFinderResponse(null);
-      finderValuesRef.current = values;
-      window.location.assign(
-        `/vehicles${encodeSearch({
-          finderStart: values.requestedStart,
-          finderEnd: values.requestedEnd,
-          finderDestination: values.destination.trim() || null,
-        })}`,
-      );
+      openFinderDatePicker();
       return;
     }
+
     void evaluateFinder(values, true);
   }
 
   function openFinderDatePicker() {
-    setFinderDraftRange({
-      from: finderDateFromDateTimeLocal(activeFinderForm.requestedStart),
-      to: finderDateFromDateTimeLocal(activeFinderForm.requestedEnd),
-    });
-    setFinderPickupTime(
-      finderTimeFromDateTimeLocal(activeFinderForm.requestedStart, "10:00"),
+    const pickupDate = finderDateFromDateTimeLocal(
+      activeFinderForm.requestedStart,
     );
-    setFinderReturnTime(
-      finderTimeFromDateTimeLocal(activeFinderForm.requestedEnd, "18:00"),
+    const returnDate = finderDateFromDateTimeLocal(
+      activeFinderForm.requestedEnd,
     );
+    const hasBookableRange =
+      pickupDate &&
+      returnDate &&
+      pickupDate >= finderFirstAvailableDate &&
+      returnDate >= finderFirstAvailableDate;
+
+    setFinderDraftRange(
+      hasBookableRange ? { from: pickupDate, to: returnDate } : undefined,
+    );
+    setFinderPickupTime("");
+    setFinderReturnTime("");
     setFinderDatePickerOpen(true);
   }
 
   function applyFinderDates() {
     if (!finderDraftRange?.from || !finderDraftRange.to) return;
 
-    finderValuesRef.current = {
+    const nextValues = {
       ...activeFinderForm,
       requestedStart: finderDateTimeLocalForDate(
         finderDraftRange.from,
@@ -398,20 +457,25 @@ function FindCarPage() {
         finderReturnTime,
       ),
     };
+    finderValuesRef.current = nextValues;
     setFinderErrors((current) => ({
       ...current,
       requestedStart: undefined,
       requestedEnd: undefined,
     }));
     setFinderDatePickerOpen(false);
+    setFinderError("");
+    setFinderResponse(null);
+    void navigate({
+      to: "/vehicles",
+      search: {
+        finderStart: nextValues.requestedStart,
+        finderEnd: nextValues.requestedEnd,
+        finderIntent: "trip",
+      } as never,
+    });
   }
 
-  const directVehicles = browseCategory
-    ? vehicles.filter((vehicle) => vehicle.category?.name === browseCategory)
-    : vehicles;
-  const summaryText = hasDates
-    ? `${formatDateForSummary(search.finderStart)} – ${formatDateForSummary(search.finderEnd)}`
-    : "No dates selected";
   const activeFinderForm = finderValuesRef.current ?? finderForm;
   const finderState = finderEvaluationState({
     hasCompleteCriteria: hasFullFinderCriteria,
@@ -419,16 +483,11 @@ function FindCarPage() {
     hasError: Boolean(finderError),
     hasValidationErrors: Object.keys(finderErrors).length > 0,
   });
+  // The Trip Desk catalog is the canonical browse surface for both date-only
+  // availability and the optional preference-based Finder result. The Finder
+  // response narrows the same catalog rather than swapping in an older page.
+  const finderViewState = "direct-browse";
   const finderRetryValues = finderValuesRef.current ?? finderForm;
-  const compactCriteria: FinderResponse["criteria"] =
-    finderResponse?.criteria ?? {
-      requestedStart: search.finderStart ?? "",
-      requestedEnd: search.finderEnd ?? "",
-      passengerCount: Number(search.finderPassengers),
-      maximumBudget: Number(search.finderBudget),
-      preferredCategory: search.finderCategory ?? null,
-      destination: search.finderDestination ?? null,
-    };
   const finderSummaryErrors = [
     finderErrors.requestedStart || finderErrors.requestedEnd
       ? {
@@ -445,25 +504,18 @@ function FindCarPage() {
           message: finderErrors.passengerCount,
         }
       : null,
+    finderErrors.largeBagCount
+      ? {
+          id: "finder-large-bags",
+          label: "Large bags",
+          message: finderErrors.largeBagCount,
+        }
+      : null,
     finderErrors.maximumBudget
       ? {
           id: "finder-budget",
           label: "Maximum budget",
           message: finderErrors.maximumBudget,
-        }
-      : null,
-    finderErrors.preferredCategory
-      ? {
-          id: "finder-category",
-          label: "Vehicle preference",
-          message: finderErrors.preferredCategory,
-        }
-      : null,
-    finderErrors.destination
-      ? {
-          id: "finder-destination",
-          label: "Destination",
-          message: finderErrors.destination,
         }
       : null,
   ].filter((error): error is { id: string; label: string; message: string } =>
@@ -475,84 +527,31 @@ function FindCarPage() {
       <Header />
       <main
         id="main-content"
-        className={`finder-main finder-main--catalog${finderState === "direct-browse" ? "" : " finder-main--evaluated"}`}
+        className={`finder-main finder-main--catalog${finderViewState === "direct-browse" ? "" : " finder-main--evaluated"}`}
       >
         <div className="customer-container">
-          {finderState === "direct-browse" ? (
+          {finderViewState === "direct-browse" ? (
             <div className="finder-catalog-visual" aria-hidden="true">
               <img src={finderHero} alt="" width={1672} height={941} />
             </div>
           ) : null}
-          {hasFullFinderCriteria ? (
-            <div
-              className="trip-summary trip-summary--evaluated"
-              aria-label="Current Finder criteria"
-            >
-              <dl className="finder-criteria-summary">
-                {finderCriteriaSummary(compactCriteria).map((item) => {
-                  const Icon = {
-                    dates: CalendarDays,
-                    passengers: Users,
-                    budget: CircleDollarSign,
-                    category: CarFront,
-                  }[item.id];
-                  return (
-                    <div className="finder-criteria-item" key={item.id}>
-                      <dt>
-                        <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
-                        <span>{item.label}</span>
-                      </dt>
-                      <dd>{item.value}</dd>
-                    </div>
-                  );
-                })}
-              </dl>
-              <button
-                className="customer-primary-button trip-summary-action"
-                type="button"
-                aria-controls="finder-refinement"
-                aria-expanded={refinementOpen}
-                onClick={() => setRefinementOpen((open) => !open)}
-              >
-                {refinementOpen ? "Close filters" : "Change trip"}
-              </button>
-            </div>
-          ) : null}
-
-          {finderState === "direct-browse" ? (
+          {finderViewState === "direct-browse" ? (
             <div className="finder-heading finder-catalog-heading">
               <div>
-                <p className="eyebrow">The trip desk</p>
-                <h1>Where are you headed?</h1>
+                <p className="eyebrow">Find Your Ride</p>
+                <h1>Find the right car for your trip.</h1>
                 <p>
-                  Good trips start with the right ride. Search a destination,
-                  set your dates, and we&apos;ll find the best cars for your
-                  journey.
+                  Tell us who and what you&apos;re bringing. We&apos;ll match you
+                  with available cars that fit your group, luggage, and budget.
                 </p>
               </div>
             </div>
           ) : null}
 
-          {!hasFullFinderCriteria && finderState !== "direct-browse" ? (
-            <div className="trip-summary" aria-label="Current trip dates">
-              <div className="trip-summary-copy">
-                <span className="trip-summary-label">Trip dates</span>
-                <span className="trip-summary-value">{summaryText}</span>
-              </div>
-              <button
-                className="customer-tertiary-button"
-                type="button"
-                onClick={() => setRefinementOpen(true)}
-              >
-                {hasDates ? "Refine this search" : "Add trip details"}
-              </button>
-            </div>
-          ) : null}
-
           <details
             id="finder-refinement"
-            className={`finder-refinement${hasFullFinderCriteria && finderResponse ? " finder-refinement--evaluated" : ""}${finderState === "direct-browse" ? " finder-refinement--catalog" : ""}`}
-            open={refinementOpen || finderState === "direct-browse"}
+            className={`finder-refinement${hasFullFinderCriteria && finderResponse ? " finder-refinement--evaluated" : ""}${finderViewState === "direct-browse" ? " finder-refinement--catalog" : ""}`}
+            open={refinementOpen || finderViewState === "direct-browse"}
             onToggle={(event) => setRefinementOpen(event.currentTarget.open)}
           >
             <summary
@@ -567,8 +566,8 @@ function FindCarPage() {
               aria-hidden={hasFullFinderCriteria && Boolean(finderResponse)}
             >
               <span>
-                <SlidersHorizontal size={17} aria-hidden="true" /> Narrow by
-                trip details
+                    <SlidersHorizontal size={17} aria-hidden="true" /> Find your
+                    ride
               </span>
             </summary>
             <form
@@ -588,36 +587,45 @@ function FindCarPage() {
                   }}
                 >
                   <PopoverTrigger asChild>
-                    <button
+                    <RentalDateTrigger
                       id="finder-dates"
-                      className="finder-date-trigger"
-                      type="button"
-                      aria-invalid={Boolean(
+                      pickupValue={`${formatFinderSingleDate(
+                        activeFinderForm.requestedStart,
+                      )}${
+                        finderTimeFromDateTimeLocal(
+                          activeFinderForm.requestedStart,
+                        )
+                          ? ` at ${formatFinderTime(
+                              finderTimeFromDateTimeLocal(
+                                activeFinderForm.requestedStart,
+                              ),
+                            )}`
+                          : ""
+                      }`}
+                      returnValue={`${formatFinderSingleDate(
+                        activeFinderForm.requestedEnd,
+                      )}${
+                        finderTimeFromDateTimeLocal(
+                          activeFinderForm.requestedEnd,
+                        )
+                          ? ` at ${formatFinderTime(
+                              finderTimeFromDateTimeLocal(
+                                activeFinderForm.requestedEnd,
+                              ),
+                            )}`
+                          : ""
+                      }`}
+                      invalid={Boolean(
                         finderErrors.requestedStart ||
                         finderErrors.requestedEnd,
                       )}
-                      aria-describedby={
+                      describedBy={
                         finderErrors.requestedStart || finderErrors.requestedEnd
                           ? "finder-dates-error"
                           : undefined
                       }
                       onClick={openFinderDatePicker}
-                    >
-                      <span className="finder-date-part">
-                        <CalendarDays size={20} aria-hidden="true" />
-                        <span>
-                          <small>Pick-up date</small>
-                          <strong>{formatFinderSingleDate(activeFinderForm.requestedStart)}</strong>
-                        </span>
-                      </span>
-                      <span className="finder-date-part finder-date-part--return">
-                        <CalendarDays size={20} aria-hidden="true" />
-                        <span>
-                          <small>Drop-off date</small>
-                          <strong>{formatFinderSingleDate(activeFinderForm.requestedEnd)}</strong>
-                        </span>
-                      </span>
-                    </button>
+                    />
                   </PopoverTrigger>
                   <PopoverContent
                     className="home-date-picker-popover"
@@ -625,57 +633,20 @@ function FindCarPage() {
                     sideOffset={12}
                     onOpenAutoFocus={(event) => event.preventDefault()}
                   >
-                    <div className="home-date-picker-layout">
-                      <Calendar
-                        className="home-date-calendar"
-                        mode="range"
-                        selected={finderDraftRange}
-                        onSelect={setFinderDraftRange}
-                        numberOfMonths={2}
-                        disabled={{ before: finderFirstAvailableDate }}
-                      />
-                      <div className="home-date-times">
-                        <p>Set your times</p>
-                        <label htmlFor="finder-pickup-time">Pickup time</label>
-                        <select
-                          id="finder-pickup-time"
-                          value={finderPickupTime}
-                          onChange={(event) =>
-                            setFinderPickupTime(event.target.value)
-                          }
-                        >
-                          {finderTimeOptions.map((time) => (
-                            <option key={time} value={time}>
-                              {formatFinderTime(time)}
-                            </option>
-                          ))}
-                        </select>
-                        <label htmlFor="finder-return-time">Return time</label>
-                        <select
-                          id="finder-return-time"
-                          value={finderReturnTime}
-                          onChange={(event) =>
-                            setFinderReturnTime(event.target.value)
-                          }
-                        >
-                          {finderTimeOptions.map((time) => (
-                            <option key={time} value={time}>
-                              {formatFinderTime(time)}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          className="customer-primary-button"
-                          type="button"
-                          onClick={applyFinderDates}
-                          disabled={
-                            !finderDraftRange?.from || !finderDraftRange.to
-                          }
-                        >
-                          Apply dates
-                        </button>
-                      </div>
-                    </div>
+                    <DateRangePicker
+                      selected={finderDraftRange}
+                      onSelect={setFinderDraftRange}
+                      firstAvailableDate={finderFirstAvailableDate}
+                      pickupTime={finderPickupTime}
+                      returnTime={finderReturnTime}
+                      onPickupTimeChange={setFinderPickupTime}
+                      onReturnTimeChange={setFinderReturnTime}
+                      timeOptions={finderTimeOptions}
+                      formatTime={formatFinderTime}
+                      pickupTimeId="finder-pickup-time"
+                      returnTimeId="finder-return-time"
+                      onApply={applyFinderDates}
+                    />
                   </PopoverContent>
                 </Popover>
                 <input
@@ -688,78 +659,37 @@ function FindCarPage() {
                   type="hidden"
                   value={activeFinderForm.requestedEnd}
                 />
-                <FieldError
-                  id="finder-dates"
-                  message={
-                    finderErrors.requestedStart ?? finderErrors.requestedEnd
-                  }
-                />
               </div>
-                <div
-                  className={`finder-smart-preferences${finderPreferencesOpen ? " is-open" : ""}`}
+              <div
+                className={`finder-smart-preferences${finderPreferencesOpen ? " is-open" : ""}`}
+              >
+                <button
+                  className="finder-smart-preferences-trigger"
+                  type="button"
+                  aria-controls="finder-smart-preferences-panel"
+                  aria-expanded={finderPreferencesOpen}
+                  onClick={() => setFinderPreferencesOpen((open) => !open)}
                 >
-                  <button
-                    className="finder-smart-preferences-trigger"
-                    type="button"
-                    aria-controls="finder-smart-preferences-panel"
-                    aria-expanded={finderPreferencesOpen}
-                    onClick={() => setFinderPreferencesOpen((open) => !open)}
-                  >
-                    <span className="finder-preferences-summary-copy">
-                      <SlidersHorizontal size={18} aria-hidden="true" />
-                      <span>
-                        <strong>Tailor this trip</strong>
-                        <small>
-                          Passengers, budget, vehicle preference
-                        </small>
-                      </span>
+                  <span className="finder-preferences-summary-copy">
+                    <SlidersHorizontal size={18} aria-hidden="true" />
+                    <span>
+                      <strong>Refine your results</strong>
+                      <small>Add your group, bags &amp; total budget</small>
                     </span>
-                    <ChevronDown
-                      className="finder-preferences-summary-chevron"
-                      size={18}
-                      aria-hidden="true"
-                    />
-                  </button>
+                  </span>
+                  <ChevronDown
+                    className="finder-preferences-summary-chevron"
+                    size={18}
+                    aria-hidden="true"
+                  />
+                </button>
 
-                  <div
-                    id="finder-smart-preferences-panel"
-                    className="finder-smart-preferences-panel"
-                    hidden={!finderPreferencesOpen}
-                  >
-                    <div className="customer-field finder-destination finder-preference-field">
-                    <label
-                      className="finder-preference-label"
-                      htmlFor="finder-destination"
-                    >
-                      <MapPin size={16} aria-hidden="true" />
-                      <span>
-                        <strong>Destination</strong>
-                        <small>Where are you headed?</small>
-                      </span>
-                    </label>
-                    <input
-                      id="finder-destination"
-                      className="customer-input"
-                      name="destination"
-                      type="text"
-                      maxLength={200}
-                      defaultValue={finderForm.destination}
-                      placeholder="Enter destination"
-                      autoComplete="off"
-                      aria-invalid={Boolean(finderErrors.destination)}
-                      aria-describedby={
-                        finderErrors.destination
-                          ? "finder-destination-error"
-                          : undefined
-                      }
-                    />
-                    <FieldError
-                      id="finder-destination"
-                      message={finderErrors.destination}
-                    />
-                    </div>
-
-                    <div className="finder-smart-preferences-grid">
+                <div
+                  id="finder-smart-preferences-panel"
+                  className="finder-smart-preferences-panel"
+                  hidden={!finderPreferencesOpen}
+                >
+                  <div className="finder-smart-preferences-grid">
                     <div className="customer-field finder-preference-field">
                       <label
                         className="finder-preference-label"
@@ -768,7 +698,7 @@ function FindCarPage() {
                         <Users size={16} aria-hidden="true" />
                         <span>
                           <strong>Passengers</strong>
-                          <small>Number of travellers</small>
+                          <small>People travelling</small>
                         </span>
                       </label>
                       <input
@@ -780,7 +710,7 @@ function FindCarPage() {
                         max="100"
                         step="1"
                         inputMode="numeric"
-                        placeholder="Passenger count"
+                        placeholder="e.g. 4"
                         autoComplete="off"
                         defaultValue={finderForm.passengerCount}
                         aria-invalid={Boolean(finderErrors.passengerCount)}
@@ -799,12 +729,48 @@ function FindCarPage() {
                     <div className="customer-field finder-preference-field">
                       <label
                         className="finder-preference-label"
+                        htmlFor="finder-large-bags"
+                      >
+                        <Luggage size={16} aria-hidden="true" />
+                        <span>
+                          <strong>Large bags</strong>
+                          <small>Enter 0 if none</small>
+                        </span>
+                      </label>
+                      <input
+                        id="finder-large-bags"
+                        className="customer-input"
+                        name="largeBagCount"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="1"
+                        inputMode="numeric"
+                        placeholder="e.g. 2"
+                        autoComplete="off"
+                        defaultValue={finderForm.largeBagCount}
+                        aria-invalid={Boolean(finderErrors.largeBagCount)}
+                        aria-describedby={
+                          finderErrors.largeBagCount
+                            ? "finder-large-bags-error"
+                            : undefined
+                        }
+                      />
+                      <FieldError
+                        id="finder-large-bags"
+                        message={finderErrors.largeBagCount}
+                      />
+                    </div>
+
+                    <div className="customer-field finder-preference-field">
+                      <label
+                        className="finder-preference-label"
                         htmlFor="finder-budget"
                       >
                         <CircleDollarSign size={16} aria-hidden="true" />
                         <span>
-                          <strong>Total rental budget</strong>
-                          <small>Maximum budget in PHP</small>
+                          <strong>Budget (₱)</strong>
+                          <small>Whole rental</small>
                         </span>
                       </label>
                       <input
@@ -815,7 +781,7 @@ function FindCarPage() {
                         min="1"
                         step="1"
                         inputMode="numeric"
-                        placeholder="Budget in PHP"
+                        placeholder="e.g. 5000"
                         autoComplete="off"
                         defaultValue={finderForm.maximumBudget}
                         aria-invalid={Boolean(finderErrors.maximumBudget)}
@@ -831,48 +797,10 @@ function FindCarPage() {
                       />
                     </div>
 
-                    <div className="customer-field finder-preference-field">
-                      <label
-                        className="finder-preference-label"
-                        htmlFor="finder-category"
-                      >
-                        <CarFront size={16} aria-hidden="true" />
-                        <span>
-                          <strong>Vehicle preference</strong>
-                          <small>Optional category</small>
-                        </span>
-                      </label>
-                      <span className="finder-preference-select">
-                        <select
-                          id="finder-category"
-                          className="customer-select"
-                          name="preferredCategory"
-                          defaultValue={finderForm.preferredCategory}
-                          aria-invalid={Boolean(finderErrors.preferredCategory)}
-                          aria-describedby={
-                            finderErrors.preferredCategory
-                              ? "finder-category-error"
-                              : undefined
-                          }
-                        >
-                          <option value="">Any category</option>
-                          {categories.map((category) => (
-                            <option key={category} value={category}>
-                              {category}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown size={17} aria-hidden="true" />
-                      </span>
-                      <FieldError
-                        id="finder-category"
-                        message={finderErrors.preferredCategory}
-                      />
-                    </div>
-                    </div>
                   </div>
                 </div>
-              {finderState !== "direct-browse" ? (
+              </div>
+              {finderViewState !== "direct-browse" ? (
                 <ErrorSummary
                   errors={finderSummaryErrors}
                   focusKey={finderFocusKey}
@@ -886,7 +814,7 @@ function FindCarPage() {
                   aria-label={
                     finderLoading
                       ? "Finding matching cars"
-                      : "See available cars"
+                      : "Find my ride"
                   }
                 >
                   {finderLoading ? (
@@ -898,7 +826,7 @@ function FindCarPage() {
                   ) : (
                     <Search size={17} aria-hidden="true" />
                   )}
-                  {finderLoading ? "Checking cars…" : "See available cars"}
+                  {finderLoading ? "Checking cars…" : "Find my ride"}
                 </button>
                 <a className="customer-tertiary-button" href="/vehicles">
                   Clear trip criteria
@@ -906,20 +834,6 @@ function FindCarPage() {
               </div>
             </form>
           </details>
-
-          {finderState === "evaluating" ? (
-            <div
-              className="finder-empty-state"
-              role="status"
-              aria-live="polite"
-            >
-              <h2>Checking the fleet</h2>
-              <p>
-                We&apos;re evaluating the current Finder criteria. This can take
-                a moment.
-              </p>
-            </div>
-          ) : null}
 
           {finderState === "failed" ? (
             <div className="finder-empty-state">
@@ -956,29 +870,23 @@ function FindCarPage() {
             </div>
           ) : null}
 
-          {finderState === "evaluated" && finderResponse ? (
-            <FinderResults
-              response={finderResponse}
-              search={search}
+          {finderViewState === "direct-browse" ? (
+            <FleetBrowseSection
               categories={categories}
-              browseCategory={browseCategory}
-              onBrowseCategory={setBrowseCategory}
-              refinementOpen={refinementOpen}
-              onToggleRefinement={() => setRefinementOpen((open) => !open)}
-              onOpenRefinement={() => setRefinementOpen(true)}
+              selectedCategory={browseCategory}
+              onCategoryChange={setBrowseCategory}
+              vehicles={vehicles}
+              vehiclesLoading={
+                vehiclesLoading ||
+                (hasFullFinderCriteria && !finderResponse && !finderError)
+              }
+              vehiclesError={vehiclesError}
+              onRetry={() => void loadVehicles()}
+              search={search}
+              finderResponse={finderResponse}
+              hasDates={hasDates}
             />
           ) : null}
-
-          <FleetBrowseSection
-            categories={categories}
-            selectedCategory={browseCategory}
-            onCategoryChange={setBrowseCategory}
-            vehicles={vehicles}
-            vehiclesLoading={vehiclesLoading}
-            vehiclesError={vehiclesError}
-            onRetry={() => void loadVehicles()}
-            search={search}
-          />
         </div>
       </main>
       <Footer />
@@ -995,6 +903,8 @@ function FleetBrowseSection({
   vehiclesError,
   onRetry,
   search,
+  finderResponse,
+  hasDates,
 }: {
   categories: string[];
   selectedCategory: string;
@@ -1004,10 +914,28 @@ function FleetBrowseSection({
   vehiclesError: string;
   onRetry: () => void;
   search: FinderBookingSearch;
+  finderResponse: FinderResponse | null;
+  hasDates: boolean;
 }) {
+  const matchedVehicleIds = finderResponse
+    ? new Set(finderResponse.recommendations.map((item) => item.vehicleId))
+    : null;
+  const finderHasNoMatches = Boolean(
+    finderResponse && finderResponse.recommendations.length === 0,
+  );
+  const finderVehicles = [...vehicles].sort((left, right) => {
+    const rank = (vehicle: CustomerVehicle) => {
+      if (vehicle.is_available === false) return 2;
+      if (matchedVehicleIds && !matchedVehicleIds.has(vehicle.id)) return 1;
+      return 0;
+    };
+    return rank(left) - rank(right);
+  });
   const visibleVehicles = selectedCategory
-    ? vehicles.filter((vehicle) => vehicle.category?.name === selectedCategory)
-    : vehicles;
+    ? finderVehicles.filter(
+        (vehicle) => vehicle.category?.name === selectedCategory,
+      )
+    : finderVehicles;
   return (
     <section
       className="finder-results-section finder-all-fleet"
@@ -1017,159 +945,98 @@ function FleetBrowseSection({
         Available vehicles
       </h2>
       {vehiclesLoading ? <LoadingFleet /> : null}
-      {vehiclesError ? <StatusCallout tone="error" title="Fleet unavailable" action={<button className="customer-secondary-button" type="button" onClick={onRetry}><RefreshCw size={16} aria-hidden="true" /> Try again</button>}>{vehiclesError}</StatusCallout> : null}
-      {!vehiclesLoading && !vehiclesError && vehicles.length === 0 ? <StatusCallout tone="info" title="No active cars to show">The active fleet is empty right now.</StatusCallout> : null}
-      {!vehiclesLoading && !vehiclesError && vehicles.length > 0 ? <>
-        <CategoryFilterRail categories={categories} selectedCategory={selectedCategory} onCategoryChange={onCategoryChange} />
-        {visibleVehicles.length ? <div className="vehicle-grid">{visibleVehicles.map((vehicle) => <VehicleCard key={vehicle.id} vehicle={vehicle} href={`/vehicles/${encodeURIComponent(vehicle.id)}${encodeSearch({ ...search, vehicle: vehicle.id })}`} />)}</div> : <div className="finder-empty-state"><h2>No cars match this filter</h2><p>Clear the category filter to see every active vehicle.</p><button className="customer-secondary-button" type="button" onClick={() => onCategoryChange("")}>Show all cars</button></div>}
-      </> : null}
-    </section>
-  );
-}
-
-function FinderResults({
-  response,
-  search,
-  categories,
-  browseCategory,
-  onBrowseCategory,
-  refinementOpen,
-  onToggleRefinement,
-  onOpenRefinement,
-}: {
-  response: FinderResponse;
-  search: FinderBookingSearch;
-  categories: string[];
-  browseCategory: string;
-  onBrowseCategory: (category: string) => void;
-  refinementOpen: boolean;
-  onToggleRefinement: () => void;
-  onOpenRefinement: () => void;
-}) {
-  const noMatch =
-    Boolean(response.noMatch) || response.recommendations.length === 0;
-  const visibleRecommendations = filterFinderRecommendations(
-    response.recommendations,
-    browseCategory,
-  );
-
-  return (
-    <section
-      className="finder-results-section"
-      aria-labelledby={noMatch ? "no-match-title" : "finder-results-title"}
-    >
-      {noMatch ? (
-        <>
-          <h2 id="no-match-title">No cars match these trip details</h2>
-          <p className="finder-results-meta">
-            {response.noMatch?.message ??
-              "No eligible vehicles were returned for these criteria."}
-          </p>
-        </>
-      ) : (
-        <>
-          <h2 id="finder-results-title">Cars that fit your trip</h2>
-          <p className="finder-results-meta">
-            {visibleRecommendations.length}{" "}
-            {visibleRecommendations.length === 1 ? "car" : "cars"} shown for{" "}
-            {response.rentalDays} rental{" "}
-            {response.rentalDays === 1 ? "day" : "days"}.
-          </p>
-        </>
-      )}
-
-      <CategoryFilterRail
-        categories={categories}
-        selectedCategory={browseCategory}
-        onCategoryChange={onBrowseCategory}
-        showCategories={!noMatch}
-        onOpenRefinement={onToggleRefinement}
-        refinementOpen={refinementOpen}
-      />
-
-      {noMatch ? (
-        <div className="finder-empty-state">
-          {response.noMatch?.factors?.length ? (
-            <p className="customer-helper">
-              Try adjusting:{" "}
-              {response.noMatch.factors
-                .map((factor) => factor.toLowerCase().replaceAll("_", " "))
-                .join(", ")}
-              .
-            </p>
-          ) : null}
-          <button
-            className="customer-secondary-button"
-            type="button"
-            onClick={onOpenRefinement}
-          >
-            <SlidersHorizontal size={17} aria-hidden="true" /> Edit trip
-            criteria
-          </button>
-        </div>
-      ) : visibleRecommendations.length === 0 ? (
-        <div className="finder-empty-state">
-          <h2>No evaluated cars in this category</h2>
+      {vehiclesError ? (
+        <StatusCallout
+          tone="error"
+          title="Fleet unavailable"
+          action={
+            <button
+              className="customer-secondary-button"
+              type="button"
+              onClick={onRetry}
+            >
+              <RefreshCw size={16} aria-hidden="true" /> Try again
+            </button>
+          }
+        >
+          {vehiclesError}
+        </StatusCallout>
+      ) : null}
+      {!vehiclesLoading &&
+      !vehiclesError &&
+      (finderVehicles.length === 0 || finderHasNoMatches) ? (
+        <div className="finder-empty-state" role="status">
+          <h2>No cars fit these details</h2>
           <p>
-            Show all evaluated cars to compare the complete Finder result set.
+            Try a higher total budget, fewer passengers, or different rental
+            dates.
           </p>
-          <button
-            className="customer-secondary-button"
-            type="button"
-            onClick={() => onBrowseCategory("")}
-          >
-            Show all cars
-          </button>
         </div>
-      ) : (
+      ) : null}
+      {!vehiclesLoading &&
+      !vehiclesError &&
+      finderVehicles.length > 0 &&
+      !finderHasNoMatches ? (
         <>
-          <div className="vehicle-grid">
-            {visibleRecommendations.map((recommendation) => {
-              const vehicle: CustomerVehicle = {
-                id: recommendation.vehicleId,
-                name: recommendation.name,
-                license_plate: null,
-                transmission: recommendation.transmission,
-                fuel_type: recommendation.fuelType,
-                seat_capacity: recommendation.passengerCapacity,
-                daily_rate: recommendation.baseRentalRate,
-                image_url: recommendation.imageUrl,
-                branch: recommendation.branchName
-                  ? { name: recommendation.branchName }
-                  : null,
-                category: recommendation.category
-                  ? { name: recommendation.category }
-                  : null,
-              };
-              return (
+          <CategoryFilterRail
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={onCategoryChange}
+          />
+          {visibleVehicles.length ? (
+            <div className="vehicle-grid">
+              {visibleVehicles.map((vehicle) => {
+                const vehicleDoesNotMatch = Boolean(
+                  matchedVehicleIds && !matchedVehicleIds.has(vehicle.id),
+                );
+                return (
                 <VehicleCard
-                  key={recommendation.vehicleId}
+                  key={vehicle.id}
                   vehicle={vehicle}
-                  reason={recommendation.reasons[0]}
-                  href={`/vehicles/${encodeURIComponent(recommendation.vehicleId)}${encodeSearch(
-                    {
-                      vehicle: recommendation.vehicleId,
-                      finderStart: search.finderStart,
-                      finderEnd: search.finderEnd,
-                      finderPassengers: search.finderPassengers,
-                      finderBudget: search.finderBudget,
-                      finderCategory: search.finderCategory,
-                      finderDestination: search.finderDestination,
-                      finderRank: recommendation.rank,
-                    },
-                  )}`}
+                  href={`${getCustomerSession() ? "/booking" : "/sign-in"}${encodeSearch({ ...search, vehicle: vehicle.id })}`}
+                  detailHref={`/vehicles/${encodeURIComponent(vehicle.id)}${encodeSearch({ ...search, vehicle: vehicle.id })}`}
+                  detailDisabled={
+                    vehicle.is_available === false || vehicleDoesNotMatch
+                  }
+                  bookingLabel="Request this car"
+                  actionDisabled={
+                    !hasDates ||
+                    vehicle.is_available === false ||
+                    Boolean(
+                      vehicleDoesNotMatch,
+                    )
+                  }
+                  disabledActionLabel={
+                    !hasDates
+                      ? "Choose dates to check availability"
+                      : vehicle.is_available === false
+                        ? "Unavailable for your dates"
+                        : "Does not match your trip"
+                  }
+                  availabilityUnavailable={vehicle.is_available === false}
+                  tripMismatch={Boolean(
+                    vehicle.is_available !== false &&
+                    vehicleDoesNotMatch,
+                  )}
                 />
-              );
-            })}
-          </div>
-          <div className="finder-results-meta finder-results-browse-link">
-            <a className="customer-link" href="/vehicles">
-              Browse the active fleet without trip evaluation{" "}
-              <ArrowRight size={16} aria-hidden="true" />
-            </a>
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="finder-empty-state">
+              <h2>No cars match this filter</h2>
+              <p>Clear the category filter to see every active vehicle.</p>
+              <button
+                className="customer-secondary-button"
+                type="button"
+                onClick={() => onCategoryChange("")}
+              >
+                Show all cars
+              </button>
+            </div>
+          )}
         </>
-      )}
+      ) : null}
     </section>
   );
 }
@@ -1243,23 +1110,36 @@ function CategoryFilterRail({
 
 function LoadingFleet() {
   return (
-    <div className="finder-empty-state" role="status" aria-live="polite">
-      <h2>Loading active cars</h2>
-      <p>Vehicle details are coming from the current fleet service.</p>
+    <div
+      className="finder-fleet-skeleton"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading available cars"
+    >
+      <span className="sr-only">Loading available cars</span>
+      <div className="finder-fleet-skeleton__filters" aria-hidden="true">
+        <i className="finder-fleet-skeleton__filter-label" />
+        <i />
+        <i />
+        <i />
+        <i />
+      </div>
+      <div className="vehicle-grid" aria-hidden="true">
+        {Array.from({ length: 6 }, (_, index) => (
+          <article className="finder-fleet-skeleton__card" key={index}>
+            <i className="finder-fleet-skeleton__image" />
+            <div className="finder-fleet-skeleton__body">
+              <i className="finder-fleet-skeleton__title" />
+              <i className="finder-fleet-skeleton__detail" />
+              <i className="finder-fleet-skeleton__detail is-short" />
+              <span>
+                <i />
+                <i />
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
     </div>
   );
-}
-
-function formatDateForSummary(value: string | undefined) {
-  if (!value) return "Not selected";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Not selected";
-  return new Intl.DateTimeFormat("en-PH", {
-    timeZone: "Asia/Manila",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
 }

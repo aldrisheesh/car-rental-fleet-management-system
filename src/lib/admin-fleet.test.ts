@@ -62,6 +62,7 @@ function rental(
   overrides: Partial<FleetCanonicalRental> = {},
 ): FleetCanonicalRental {
   return {
+    id: `${vehicle_id}-rental`,
     vehicle_id,
     started_at: "2026-09-10T03:00:00.000Z",
     ended_at: null,
@@ -91,6 +92,19 @@ test("maintenance readiness attention is never presented as Available", () => {
       }),
       new Set(),
       new Set(),
+    ),
+    "Maintenance",
+  );
+});
+
+test("a returned vehicle awaiting review is grouped under Maintenance", () => {
+  assert.equal(
+    getFleetVehicleStatus(
+      vehicle("inspection"),
+      readiness("inspection"),
+      new Set(),
+      new Set(),
+      new Set(["inspection"]),
     ),
     "Maintenance",
   );
@@ -136,6 +150,11 @@ test("Fleet totals, readiness, and completed rentals use canonical sources", () 
           started_at: "2026-09-01T03:00:00.000Z",
           ended_at: "2026-09-02T08:00:00.000Z",
         }),
+        rental("inspection", {
+          started_at: "2026-09-01T03:00:00.000Z",
+          ended_at: "2026-09-02T08:00:00.000Z",
+          inspection_status: "Pending",
+        }),
       ],
       readiness: [
         readiness("available"),
@@ -149,6 +168,7 @@ test("Fleet totals, readiness, and completed rentals use canonical sources", () 
           maintenanceReady: false,
           reasons: ["Vehicle inactive"],
         }),
+        readiness("inspection"),
       ],
     },
     now.toISOString(),
@@ -160,7 +180,7 @@ test("Fleet totals, readiness, and completed rentals use canonical sources", () 
   assert.equal(result.operational.reservedVehicles, 1);
   assert.equal(result.operational.ongoingRentals, 1);
   assert.equal(result.operational.readinessAttention, 2);
-  assert.equal(result.operational.completedRentals, 1);
+  assert.equal(result.operational.completedRentals, 2);
   assert.equal(
     result.vehicles.find((item) => item.id === "maintenance")?.status,
     "Maintenance",
@@ -180,7 +200,8 @@ test("Fleet page does not use prototype fleet, booking, or unsupported fields", 
     page,
     /@\/data\/admin|56 total vehicles|condition: "Good"/,
   );
-  assert.doesNotMatch(page, /chassisNumber|Color|Chassis No\.|Condition/);
+  assert.doesNotMatch(page, /chassisNumber|Color|Chassis No\./);
   assert.match(page, /fetch\("\/api\/admin-fleet"/);
-  assert.match(page, /Canonical returns/);
+  assert.match(page, /Fleet Management/);
+  assert.doesNotMatch(page, /For inspection/);
 });

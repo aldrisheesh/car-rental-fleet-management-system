@@ -27,11 +27,11 @@ const unavailable = <T>(): ProviderResult<T> => ({
 function context(overrides: Partial<TripContext> = {}): TripContext {
   return {
     destinationGeocode: available(
-      { latitude: 14.6, longitude: 120.9, label: "Destination" },
+      { originalQuery: "Destination", providerMetadata: {}, latitude: 14.6, longitude: 120.9, label: "Destination" },
       "tomtom",
     ),
     originGeocode: available(
-      { latitude: 14.5, longitude: 121, label: "Origin" },
+      { originalQuery: "Origin", providerMetadata: {}, latitude: 14.5, longitude: 121, label: "Origin" },
       "tomtom",
     ),
     route: available(

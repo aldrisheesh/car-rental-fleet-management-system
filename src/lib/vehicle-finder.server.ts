@@ -5,6 +5,7 @@ import {
   hasScheduledRentalConflict,
   intervalsOverlap,
   validateFinderInput,
+  validateVehicleAvailabilityInput,
   type FinderCandidate,
   type VehicleFinderInput,
 } from "./vehicle-finder.ts";
@@ -27,6 +28,84 @@ export type CanonicalFinderEvaluation =
       errors?: Record<string, string>;
     };
 
+export async function listCatalogVehiclesForAvailability(
+  input: Record<string, unknown>,
+  client: FinderClient = getSupabaseServerClient(),
+) {
+  const validation = validateVehicleAvailabilityInput(input);
+  if (!validation.ok)
+    return {
+      ok: false as const,
+      status: 400 as const,
+      message: "Please review your trip dates and times.",
+      errors: validation.errors,
+    };
+
+  const [vehicleResult, bookingResult, rentalResult] = await Promise.all([
+    client
+      .from("vehicles")
+      .select(
+        "id,name,license_plate,transmission,fuel_type,seat_capacity,large_luggage_capacity,daily_rate,image_url,is_active,branch:branches(id,name),category:vehicle_categories(id,name)",
+      )
+      .eq("is_active", true)
+      .order("name"),
+    client
+      .from("booking_requests")
+      .select("assigned_vehicle_id,pickup_at,return_at,booking_status")
+      .eq("booking_status", "Confirmed"),
+    client
+      .from("rental_transactions")
+      .select("vehicle_id,scheduled_pickup_at,scheduled_return_at"),
+  ]);
+  if (vehicleResult.error || bookingResult.error || rentalResult.error)
+    return {
+      ok: false as const,
+      status: 503 as const,
+      message: "Unable to check vehicle availability right now.",
+    };
+
+  const vehicles = vehicleResult.data ?? [];
+  try {
+    const readiness = await Promise.all(
+      vehicles.map((vehicle) =>
+        calculateMaintenanceReadiness(vehicle.id, client),
+      ),
+    );
+    const catalogVehicles = vehicles.map((vehicle, index) => {
+      const hasBookingConflict = (bookingResult.data ?? []).some(
+        (booking) =>
+          booking.assigned_vehicle_id === vehicle.id &&
+          intervalsOverlap(
+            booking.pickup_at,
+            booking.return_at,
+            validation.value.requestedStart,
+            validation.value.requestedEnd,
+          ),
+      );
+      const hasRentalConflict = hasScheduledRentalConflict(
+        rentalResult.data ?? [],
+        vehicle.id,
+        validation.value.requestedStart,
+        validation.value.requestedEnd,
+      );
+      return {
+        ...vehicle,
+        is_available:
+          readiness[index]?.maintenanceReady === true &&
+          !hasBookingConflict &&
+          !hasRentalConflict,
+      };
+    });
+    return { ok: true as const, data: catalogVehicles };
+  } catch {
+    return {
+      ok: false as const,
+      status: 503 as const,
+      message: "Unable to check vehicle availability right now.",
+    };
+  }
+}
+
 export async function evaluateCanonicalVehicleFinder(
   body: Record<string, unknown>,
   client: FinderClient = getSupabaseServerClient(),
@@ -42,7 +121,6 @@ export async function evaluateCanonicalVehicleFinder(
       status: 503,
       message: "Unable to load Finder options.",
     };
-
   const categories = categoryResult.data ?? [];
   const validation = validateFinderInput(
     body,
@@ -60,7 +138,7 @@ export async function evaluateCanonicalVehicleFinder(
     client
       .from("vehicles")
       .select(
-        "id,name,transmission,fuel_type,seat_capacity,daily_rate,image_url,is_active,branch:branches(name),category:vehicle_categories(name)",
+        "id,name,transmission,fuel_type,seat_capacity,large_luggage_capacity,daily_rate,image_url,is_active,branch:branches(name),category:vehicle_categories(name)",
       )
       .order("name"),
     client
@@ -80,13 +158,16 @@ export async function evaluateCanonicalVehicleFinder(
 
   const vehicles = vehicleResult.data ?? [];
   const readiness = await Promise.all(
-    vehicles.map((vehicle) => calculateMaintenanceReadiness(vehicle.id)),
+    vehicles.map((vehicle) =>
+      calculateMaintenanceReadiness(vehicle.id, client),
+    ),
   );
   const candidates: FinderCandidate[] = vehicles.map((vehicle, index) => ({
     id: vehicle.id,
     name: vehicle.name,
     category: vehicle.category?.name ?? "",
     passengerCapacity: vehicle.seat_capacity,
+    largeLuggageCapacity: vehicle.large_luggage_capacity,
     baseRentalRate:
       vehicle.daily_rate === null ? null : Number(vehicle.daily_rate),
     imageUrl: vehicle.image_url,

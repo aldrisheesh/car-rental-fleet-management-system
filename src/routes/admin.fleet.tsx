@@ -1,22 +1,20 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Image, Plus, Wrench } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import {
+  CalendarDays,
+  CarFront,
+  CheckCircle2,
+  Image,
+  MapPin,
+  Plus,
+  Wrench,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   MaintenanceRecordDialog,
   type MaintenanceRecordDraft,
 } from "@/components/admin/MaintenanceRecordDialog";
+import { Btn, TInput, TSelect } from "@/components/admin/ui";
 import {
-  Badge,
-  Btn,
-  Card,
-  DomainStatus,
-  PageHeader,
-  TInput,
-  TSelect,
-  Toolbar,
-} from "@/components/admin/ui";
-import {
-  FLEET_STATUSES,
   type AdminFleetResponse,
   type FleetStatus,
   type FleetVehicleRow,
@@ -24,8 +22,6 @@ import {
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 import { createMaintenancePayload } from "@/lib/maintenance-admin";
 import {
-  buildVehicleBranchUpdateInput,
-  buildVehicleImageUpdateInput,
   fetchMasterData,
   saveMasterData,
   type ApiMasterVehicle,
@@ -48,19 +44,34 @@ export const Route = createFileRoute("/admin/fleet")({
   component: FleetPage,
 });
 
-const statuses: (FleetStatus | "All")[] = ["All", ...FLEET_STATUSES];
+const vehicleTabs: { label: string; status: FleetStatus | "All" }[] = [
+  { label: "All vehicles", status: "All" },
+  { label: "Available", status: "Available" },
+  { label: "Reserved", status: "Reserved" },
+  { label: "On rental", status: "Rented" },
+  { label: "For/Under Maintenance", status: "Maintenance" },
+];
+// Keep every fleet state on the same calm, non-scrolling canvas. More vehicles
+// are deliberately reached through the pager instead of extending the register.
+const pageSize = 4;
 const transmissionOptions = ["Automatic", "Manual"] as const;
+const fuelTypeOptions = ["Petrol", "Diesel", "Hybrid", "Electric", "Other"] as const;
 
 type AddVehicleDraft = {
   plate: string;
   make: string;
   model: string;
   seats: string;
+  largeBagCapacity: string;
   categoryId: string;
   branchId: string;
   transmission: (typeof transmissionOptions)[number];
   pricePerDay: string;
-  imageUrl: string;
+  fuelType: string;
+  referenceFuelEfficiency: string;
+  currentOdometerKm: string;
+  conditionBlocksRentalUse: boolean;
+  isActive: boolean;
 };
 
 function emptyAddVehicleDraft(): AddVehicleDraft {
@@ -69,11 +80,16 @@ function emptyAddVehicleDraft(): AddVehicleDraft {
     make: "",
     model: "",
     seats: "",
+    largeBagCapacity: "",
     categoryId: "",
     branchId: "",
     transmission: "Automatic",
     pricePerDay: "",
-    imageUrl: "",
+    fuelType: "Petrol",
+    referenceFuelEfficiency: "",
+    currentOdometerKm: "",
+    conditionBlocksRentalUse: false,
+    isActive: true,
   };
 }
 
@@ -87,8 +103,10 @@ function emptyMaintenanceDraft(
       ? `${vehicle.name} (${vehicle.plate ?? "No license plate"})`
       : "",
     blocksRentalUse: false,
-    serviceStartedAt: "",
-    odometerAtService: "",
+    scheduledFor: new Date(Date.now() - new Date().getTimezoneOffset() * 60_000)
+      .toISOString()
+      .slice(0, 16),
+    currentOdometer: "",
     nextServiceOdometer: "",
     nextServiceDate: "",
     costPhp: "",
@@ -110,15 +128,36 @@ function formatPeso(value: number | null) {
       }).format(value);
 }
 
+function matchesFleetSearch(vehicle: FleetVehicleRow, normalizedQuery: string) {
+  return [
+    vehicle.name,
+    vehicle.plate,
+    vehicle.category,
+    vehicle.branch,
+    vehicle.make,
+    vehicle.model,
+  ]
+    .map((value) => value ?? "")
+    .join(" ")
+    .toLowerCase()
+    .includes(normalizedQuery);
+}
+
 function FleetPage() {
   const [snapshot, setSnapshot] = useState<AdminFleetResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<(typeof statuses)[number]>("All");
+  const [status, setStatus] = useState<FleetStatus | "All">("All");
+  const [page, setPage] = useState(1);
   const [branch, setBranch] = useState("All");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [branchSavingId, setBranchSavingId] = useState<string | null>(null);
+  const [locationChange, setLocationChange] = useState<{
+    vehicle: FleetVehicleRow;
+    branchId: string;
+    impacts: Array<{ id: string; booking_status: string; pickup_at: string; customer?: { full_name?: string | null } | null }>;
+  } | null>(null);
   const [mutationFeedback, setMutationFeedback] = useState("");
   const [mutationError, setMutationError] = useState("");
   const [serviceOpen, setServiceOpen] = useState(false);
@@ -132,10 +171,20 @@ function FleetPage() {
   );
   const [addSaving, setAddSaving] = useState(false);
   const [addError, setAddError] = useState("");
+  const [editOpen, setEditOpen] = useState(false);
+  const [editDraft, setEditDraft] = useState<AddVehicleDraft>(() =>
+    emptyAddVehicleDraft(),
+  );
+  const [editingVehicle, setEditingVehicle] = useState<ApiMasterVehicle | null>(
+    null,
+  );
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
   const [imageOpen, setImageOpen] = useState(false);
-  const [imageUrl, setImageUrl] = useState("");
-  const [imageSaving, setImageSaving] = useState(false);
-  const [imageError, setImageError] = useState("");
+  const [inspectionRemarks, setInspectionRemarks] = useState("");
+  const [inspectionSaving, setInspectionSaving] = useState(false);
+  const [returnInspectionForMaintenance, setReturnInspectionForMaintenance] =
+    useState<{ rentalId: string; remarks: string } | null>(null);
 
   const loadFleet = useCallback(async () => {
     setLoading(true);
@@ -178,32 +227,69 @@ function FleetPage() {
 
   const rows = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    return (snapshot?.vehicles ?? []).filter((vehicle) => {
-      if (status !== "All" && vehicle.status !== status) return false;
-      if (branch !== "All" && vehicle.branchId !== branch) return false;
-      if (!normalized) return true;
-      return [
-        vehicle.name,
-        vehicle.plate,
-        vehicle.category,
-        vehicle.branch,
-        vehicle.make,
-        vehicle.model,
-      ]
-        .map((value) => value ?? "")
-        .join(" ")
-        .toLowerCase()
-        .includes(normalized);
+    const filtered = (snapshot?.vehicles ?? []).filter((vehicle) =>
+      normalized
+        ? matchesFleetSearch(vehicle, normalized)
+        : status === "All" || vehicle.status === status,
+    );
+    return [...filtered].sort((left, right) => {
+      if (branch !== "All") {
+        const leftPreferred = left.branchId === branch ? 0 : 1;
+        const rightPreferred = right.branchId === branch ? 0 : 1;
+        if (leftPreferred !== rightPreferred)
+          return leftPreferred - rightPreferred;
+      }
+      return (
+        (left.branch ?? "").localeCompare(right.branch ?? "") ||
+        left.name.localeCompare(right.name)
+      );
     });
   }, [branch, query, snapshot, status]);
 
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const pageRows = useMemo(
+    () => rows.slice((page - 1) * pageSize, page * pageSize),
+    [page, rows],
+  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [branch, query, status]);
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  useEffect(() => {
+    setSelectedId((current) =>
+      current && pageRows.some((vehicle) => vehicle.id === current)
+        ? current
+        : (pageRows[0]?.id ?? null),
+    );
+  }, [pageRows]);
+
   const selectedVehicle =
-    rows.find((vehicle) => vehicle.id === selectedId) ??
-    snapshot?.vehicles.find((vehicle) => vehicle.id === selectedId) ??
-    null;
+    pageRows.find((vehicle) => vehicle.id === selectedId) ?? null;
+
+  function handleSearchChange(value: string) {
+    setQuery(value);
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) {
+      setStatus("All");
+      return;
+    }
+
+    const matches = (snapshot?.vehicles ?? []).filter((vehicle) =>
+      matchesFleetSearch(vehicle, normalized),
+    );
+    const matchedStatuses = new Set(matches.map((vehicle) => vehicle.status));
+    setStatus(
+      matchedStatuses.size === 1 ? (matches[0]?.status ?? "All") : "All",
+    );
+  }
 
   function openService(vehicle?: FleetVehicleRow) {
     setMutationError("");
+    setReturnInspectionForMaintenance(null);
     setServiceDraft(emptyMaintenanceDraft(vehicle));
     setServiceOpen(true);
   }
@@ -213,11 +299,20 @@ function FleetPage() {
     setMutationError("");
     setMutationFeedback("");
     try {
+      const inspectionWorkflow = returnInspectionForMaintenance;
       const response = await fetch("/api/maintenance", {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(createMaintenancePayload(serviceDraft)),
+        body: JSON.stringify({
+          ...createMaintenancePayload(serviceDraft),
+          ...(inspectionWorkflow
+            ? {
+                returnInspectionId: inspectionWorkflow.rentalId,
+                inspectionRemarks: inspectionWorkflow.remarks,
+              }
+            : {}),
+        }),
       });
       const body = (await response.json().catch(() => null)) as {
         message?: string;
@@ -228,10 +323,14 @@ function FleetPage() {
           body?.message ?? "Unable to create maintenance record.",
         );
       setServiceOpen(false);
+      setReturnInspectionForMaintenance(null);
+      if (inspectionWorkflow) setInspectionRemarks("");
       setMutationFeedback(
-        body?.active_rental_conflict
-          ? "Maintenance was recorded. The server reported an active-rental conflict; review the vehicle before taking it out of service."
-          : "Maintenance record created.",
+        inspectionWorkflow
+          ? "Maintenance scheduled and the return inspection recorded. The vehicle remains unavailable until the maintenance work is completed."
+          : body?.active_rental_conflict
+            ? "Maintenance was recorded. The server reported an active-rental conflict; review the vehicle before taking it out of service."
+            : "Maintenance record created.",
       );
       await loadFleet();
     } catch (error) {
@@ -251,30 +350,40 @@ function FleetPage() {
     setMutationError("");
     setMutationFeedback("");
     try {
-      const canonicalVehicle = (
-        await fetchMasterData<ApiMasterVehicle>("vehicles")
-      ).find((candidate) => candidate.id === vehicle.id);
-      if (!canonicalVehicle) {
-        throw new Error(
-          "The selected vehicle is no longer available in canonical data. Reload the fleet before changing its branch.",
-        );
+      const response = await fetch(`/api/vehicle-location?vehicleId=${encodeURIComponent(vehicle.id)}`, { credentials: "same-origin" });
+      const payload = (await response.json().catch(() => null)) as { impactedBookings?: Array<{ id: string; booking_status: string; pickup_at: string; customer?: { full_name?: string | null } | null }>; message?: string } | null;
+      if (!response.ok) throw new Error(payload?.message ?? "Unable to check affected booking requests.");
+      const impacts = payload?.impactedBookings ?? [];
+      if (impacts.length) {
+        setLocationChange({ vehicle, branchId, impacts });
+        return;
       }
-      await saveMasterData({
-        resource: "vehicles",
-        id: vehicle.id,
-        input: buildVehicleBranchUpdateInput(canonicalVehicle, branchId),
-      });
-      setMutationFeedback(`${vehicle.name} branch assignment updated.`);
-      await loadFleet();
+      await commitBranchChange(vehicle, branchId, false);
     } catch (error) {
       setMutationError(
         error instanceof Error
           ? error.message
-          : "Unable to update the branch assignment.",
+          : "Unable to update the allocation location.",
       );
     } finally {
       setBranchSavingId(null);
     }
+  }
+
+  async function commitBranchChange(vehicle: FleetVehicleRow, branchId: string, acknowledgeImpacts: boolean) {
+    setBranchSavingId(vehicle.id); setMutationError(""); setMutationFeedback("");
+    try {
+      const response = await fetch("/api/vehicle-location", {
+        method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ vehicleId: vehicle.id, branchId, acknowledgeImpacts }),
+      });
+      const payload = (await response.json().catch(() => null)) as { impacted_bookings?: number; message?: string } | null;
+      if (!response.ok) throw new Error(payload?.message ?? "Unable to update the allocation location.");
+      setLocationChange(null);
+      setMutationFeedback(payload?.impacted_bookings ? `${vehicle.name} allocation location updated and ${payload.impacted_bookings} affected request${payload.impacted_bookings === 1 ? " was" : "s were"} recorded for reconciliation.` : `${vehicle.name} allocation location updated.`);
+      await loadFleet();
+    } catch (error) { setMutationError(error instanceof Error ? error.message : "Unable to update the allocation location."); }
+    finally { setBranchSavingId(null); }
   }
 
   function updateAddDraft<K extends keyof AddVehicleDraft>(
@@ -284,12 +393,20 @@ function FleetPage() {
     setAddDraft((current) => ({ ...current, [key]: value }));
   }
 
+  function updateEditDraft<K extends keyof AddVehicleDraft>(
+    key: K,
+    value: AddVehicleDraft[K],
+  ) {
+    setEditDraft((current) => ({ ...current, [key]: value }));
+  }
+
   async function addVehicle() {
     const required = [
       addDraft.plate,
       addDraft.make,
       addDraft.model,
       addDraft.seats,
+      addDraft.largeBagCapacity,
       addDraft.categoryId,
       addDraft.branchId,
       addDraft.pricePerDay,
@@ -299,13 +416,32 @@ function FleetPage() {
       return;
     }
     const seats = Number(addDraft.seats);
+    const largeBagCapacity = Number(addDraft.largeBagCapacity);
     const dailyRate = Number(addDraft.pricePerDay);
+    const referenceFuelEfficiency = addDraft.referenceFuelEfficiency.trim()
+      ? Number(addDraft.referenceFuelEfficiency)
+      : null;
+    const currentOdometerKm = addDraft.currentOdometerKm.trim()
+      ? Number(addDraft.currentOdometerKm)
+      : null;
     if (!Number.isInteger(seats) || seats <= 0) {
       setAddError("Seat capacity must be a positive whole number.");
       return;
     }
+    if (!Number.isInteger(largeBagCapacity) || largeBagCapacity < 0) {
+      setAddError("Large-bag capacity must be a whole number of zero or more.");
+      return;
+    }
     if (!Number.isFinite(dailyRate) || dailyRate <= 0) {
       setAddError("Daily rate must be greater than zero.");
+      return;
+    }
+    if (referenceFuelEfficiency !== null && (!Number.isFinite(referenceFuelEfficiency) || referenceFuelEfficiency <= 0)) {
+      setAddError("Reference fuel efficiency must be greater than zero.");
+      return;
+    }
+    if (currentOdometerKm !== null && (!Number.isFinite(currentOdometerKm) || currentOdometerKm < 0)) {
+      setAddError("Current odometer must be zero or greater.");
       return;
     }
     setAddSaving(true);
@@ -320,9 +456,14 @@ function FleetPage() {
           licensePlate: addDraft.plate.trim(),
           transmission: addDraft.transmission,
           seatCapacity: seats,
+          largeLuggageCapacity: largeBagCapacity,
           dailyRate,
           isActive: true,
-          imageUrl: addDraft.imageUrl.trim() || null,
+          fuelType: addDraft.fuelType.trim() || null,
+          referenceFuelEfficiency,
+          imageUrl: null,
+          currentOdometerKm,
+          conditionBlocksRentalUse: addDraft.conditionBlocksRentalUse,
         },
       });
       await loadFleet();
@@ -337,52 +478,238 @@ function FleetPage() {
     }
   }
 
-  function openImageEditor(vehicle: FleetVehicleRow) {
-    setImageError("");
-    setImageUrl(vehicle.imageUrl ?? "");
-    setImageOpen(true);
+  async function openVehicleEditor(vehicle: FleetVehicleRow) {
+    setEditError("");
+    setMutationError("");
+    try {
+      const canonical = (
+        await fetchMasterData<ApiMasterVehicle>("vehicles")
+      ).find((candidate) => candidate.id === vehicle.id);
+      if (!canonical)
+        throw new Error(
+          "The selected vehicle is no longer available. Reload the fleet and try again.",
+        );
+      const [make = "", ...modelParts] = canonical.name.trim().split(/\s+/);
+      setEditingVehicle(canonical);
+      setEditDraft({
+        plate: canonical.license_plate ?? "",
+        make,
+        model: modelParts.join(" "),
+        seats:
+          canonical.seat_capacity == null
+            ? ""
+            : String(canonical.seat_capacity),
+        largeBagCapacity:
+          canonical.large_luggage_capacity == null
+            ? ""
+            : String(canonical.large_luggage_capacity),
+        categoryId: canonical.category_id,
+        branchId: canonical.branch_id,
+        transmission:
+          canonical.transmission === "Manual" ? "Manual" : "Automatic",
+        pricePerDay:
+          canonical.daily_rate == null ? "" : String(canonical.daily_rate),
+        fuelType: canonical.fuel_type ?? "",
+        referenceFuelEfficiency:
+          canonical.reference_fuel_efficiency_km_per_liter == null
+            ? ""
+            : String(canonical.reference_fuel_efficiency_km_per_liter),
+        currentOdometerKm:
+          canonical.current_odometer_km == null
+            ? ""
+            : String(canonical.current_odometer_km),
+        conditionBlocksRentalUse: canonical.condition_blocks_rental_use,
+        isActive: canonical.is_active,
+      });
+      setEditOpen(true);
+    } catch (error) {
+      setMutationError(
+        error instanceof Error
+          ? error.message
+          : "Unable to open the vehicle editor.",
+      );
+    }
   }
 
-  async function saveVehicleImage() {
-    if (!selectedVehicle) return;
-    const normalizedUrl = imageUrl.trim();
-    if (normalizedUrl && !/^https?:\/\//i.test(normalizedUrl)) {
-      setImageError("Enter a complete public image URL, starting with https://.");
+  async function saveVehicle() {
+    if (!editingVehicle) return;
+    const required = [
+      editDraft.plate,
+      editDraft.make,
+      editDraft.model,
+      editDraft.seats,
+      editDraft.largeBagCapacity,
+      editDraft.categoryId,
+      editDraft.branchId,
+      editDraft.pricePerDay,
+    ];
+    if (required.some((value) => !String(value).trim())) {
+      setEditError("Complete the required vehicle fields before saving.");
       return;
     }
-    setImageSaving(true);
-    setImageError("");
+    const seats = Number(editDraft.seats);
+    const largeBagCapacity = Number(editDraft.largeBagCapacity);
+    const dailyRate = Number(editDraft.pricePerDay);
+    const referenceFuelEfficiency = editDraft.referenceFuelEfficiency.trim()
+      ? Number(editDraft.referenceFuelEfficiency)
+      : null;
+    const currentOdometerKm = editDraft.currentOdometerKm.trim()
+      ? Number(editDraft.currentOdometerKm)
+      : null;
+    if (!Number.isInteger(seats) || seats <= 0) {
+      setEditError("Seat capacity must be a positive whole number.");
+      return;
+    }
+    if (!Number.isInteger(largeBagCapacity) || largeBagCapacity < 0) {
+      setEditError("Large-bag capacity must be a whole number of zero or more.");
+      return;
+    }
+    if (!Number.isFinite(dailyRate) || dailyRate <= 0) {
+      setEditError("Daily rate must be greater than zero.");
+      return;
+    }
+    if (referenceFuelEfficiency !== null && (!Number.isFinite(referenceFuelEfficiency) || referenceFuelEfficiency <= 0)) {
+      setEditError("Reference fuel efficiency must be greater than zero.");
+      return;
+    }
+    if (currentOdometerKm !== null && (!Number.isFinite(currentOdometerKm) || currentOdometerKm < 0)) {
+      setEditError("Current odometer must be zero or greater.");
+      return;
+    }
+    setEditSaving(true);
+    setEditError("");
+    try {
+      await saveMasterData({
+        resource: "vehicles",
+        id: editingVehicle.id,
+        input: {
+          name: `${editDraft.make.trim()} ${editDraft.model.trim()}`.trim(),
+          branchId: editDraft.branchId,
+          categoryId: editDraft.categoryId,
+          licensePlate: editDraft.plate.trim(),
+          transmission: editDraft.transmission,
+          seatCapacity: seats,
+          largeLuggageCapacity: largeBagCapacity,
+          dailyRate,
+          isActive: editDraft.isActive,
+          fuelType: editDraft.fuelType.trim() || null,
+          referenceFuelEfficiency,
+          imageUrl: editingVehicle.image_url,
+          currentOdometerKm,
+          conditionBlocksRentalUse: editDraft.conditionBlocksRentalUse,
+        },
+      });
+      setEditOpen(false);
+      setMutationFeedback(`${editingVehicle.name} details updated.`);
+      await loadFleet();
+    } catch (error) {
+      setEditError(
+        error instanceof Error
+          ? error.message
+          : "Unable to update the vehicle.",
+      );
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+
+  async function resolveInspection(outcome: "Cleared") {
+    if (!selectedVehicle?.pendingInspection) return;
+    setInspectionSaving(true);
     setMutationError("");
     setMutationFeedback("");
     try {
-      const canonicalVehicle = (
-        await fetchMasterData<ApiMasterVehicle>("vehicles")
-      ).find((candidate) => candidate.id === selectedVehicle.id);
-      if (!canonicalVehicle) throw new Error("The selected vehicle is no longer available. Reload the fleet and try again.");
-      await saveMasterData({
-        resource: "vehicles",
-        id: selectedVehicle.id,
-        input: buildVehicleImageUpdateInput(canonicalVehicle, normalizedUrl || null),
+      const response = await fetch("/api/admin-fleet", {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "resolve-inspection",
+          rentalId: selectedVehicle.pendingInspection.rentalId,
+          outcome,
+          remarks: inspectionRemarks,
+        }),
       });
-      setImageOpen(false);
-      setMutationFeedback(`${selectedVehicle.name} image updated.`);
+      const body = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
+      if (!response.ok)
+        throw new Error(
+          body?.message ?? "Unable to update the return inspection.",
+        );
+      setMutationFeedback(
+        `${selectedVehicle.name} was cleared and is available when no other operational constraint applies.`,
+      );
+      setInspectionRemarks("");
       await loadFleet();
     } catch (error) {
-      setImageError(error instanceof Error ? error.message : "Unable to update the vehicle image.");
+      setMutationError(
+        error instanceof Error
+          ? error.message
+          : "Unable to update the return inspection.",
+      );
     } finally {
-      setImageSaving(false);
+      setInspectionSaving(false);
     }
+  }
+
+  function scheduleInspectionMaintenance() {
+    if (!selectedVehicle?.pendingInspection) return;
+    const remarks = inspectionRemarks.trim();
+    if (!remarks) {
+      setMutationError(
+        "Add inspection remarks before scheduling maintenance so the service record explains why the vehicle was held.",
+      );
+      return;
+    }
+    setMutationError("");
+    setMutationFeedback("");
+    setReturnInspectionForMaintenance({
+      rentalId: selectedVehicle.pendingInspection.rentalId,
+      remarks,
+    });
+    setServiceDraft({
+      ...emptyMaintenanceDraft(selectedVehicle),
+      blocksRentalUse: true,
+      remarks,
+    });
+    setServiceOpen(true);
   }
 
   const branches = snapshot?.branches ?? [];
   const categories = snapshot?.categories ?? [];
+  const showRentalReadiness = status !== "Reserved" && status !== "Rented";
+  const tabCount = (tabStatus: FleetStatus | "All") =>
+    tabStatus === "All"
+      ? (snapshot?.vehicles.length ?? 0)
+      : (snapshot?.vehicles.filter((vehicle) => vehicle.status === tabStatus)
+          .length ?? 0);
 
   return (
-    <div>
-      <PageHeader
-        title="Fleet"
-        subtitle="Scan canonical vehicle identity, current operational state, branch assignment, and derived readiness."
-        actions={
+    <div className="admin-fleet-workspace">
+      <header className="admin-fleet-heading">
+        <div>
+          <h1>Fleet Management</h1>
+        </div>
+        <div className="admin-fleet-heading__actions">
+          <label className="admin-fleet-search">
+            <span className="sr-only">Search fleet</span>
+            <TInput
+              value={query}
+              onChange={(event) => handleSearchChange(event.target.value)}
+              placeholder="Search vehicle or plate…"
+              aria-label="Search fleet"
+            />
+          </label>
+          {status === "Maintenance" ? (
+            <Link
+              to="/admin/maintenance"
+              className="admin-fleet-maintenance-link"
+            >
+              <Wrench className="h-4 w-4" /> Manage maintenance
+            </Link>
+          ) : null}
           <Btn
             variant="primary"
             onClick={() => {
@@ -393,8 +720,8 @@ function FleetPage() {
           >
             <Plus className="h-4 w-4" /> Add vehicle
           </Btn>
-        }
-      />
+        </div>
+      </header>
 
       {mutationFeedback ? (
         <p
@@ -414,158 +741,154 @@ function FleetPage() {
         </p>
       ) : null}
 
-      <Toolbar>
-        <label className="min-w-60 flex-1">
-          <span className="sr-only">Search fleet</span>
-          <TInput
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search vehicle, plate, category…"
-            aria-label="Search fleet"
-          />
-        </label>
-        <label>
-          <span className="sr-only">Filter by state</span>
-          <TSelect
-            value={status}
-            onChange={(event) =>
-              setStatus(event.target.value as (typeof statuses)[number])
-            }
-            aria-label="Filter fleet by state"
-          >
-            {statuses.map((item) => (
-              <option key={item} value={item}>
-                {item === "All" ? "All states" : item}
-              </option>
-            ))}
-          </TSelect>
-        </label>
-        <label>
-          <span className="sr-only">Filter by branch</span>
-          <TSelect
-            value={branch}
-            onChange={(event) => setBranch(event.target.value)}
-            aria-label="Filter fleet by branch"
-          >
-            <option value="All">All branches</option>
-            {branches.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </TSelect>
-        </label>
-        <span className="text-xs text-muted-foreground sm:ml-auto">
-          {snapshot
-            ? `${rows.length} of ${snapshot.vehicles.length} canonical vehicles`
-            : "Loading fleet…"}
-        </span>
-      </Toolbar>
-
       {loading && !snapshot ? (
-        <div role="status">
-          <Card className="p-8 text-center text-sm text-muted-foreground">
-            Loading canonical fleet data…
-          </Card>
-        </div>
+        <FleetLoading />
       ) : loadError ? (
-        <Card className="p-8 text-center">
+        <section className="admin-fleet-message">
           <p className="text-sm text-[#b43b3b]" role="alert">
             {loadError}
           </p>
           <Btn className="mt-4" onClick={() => void loadFleet()}>
             Retry loading fleet
           </Btn>
-        </Card>
-      ) : !rows.length ? (
-        <Card className="p-8 text-center text-sm text-muted-foreground">
-          {snapshot?.vehicles.length
-            ? "No vehicles match these filters."
-            : "No canonical vehicles are available."}
-        </Card>
+        </section>
       ) : (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
-          <Card className="overflow-hidden">
-            <div className="border-b border-border px-5 py-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <>
+          <section
+            className="admin-fleet-ledger"
+            aria-label="Vehicle status filters"
+          >
+            {vehicleTabs.map((tab) => (
+              <button
+                key={tab.status}
+                type="button"
+                className={`admin-fleet-status-tab ${status === tab.status ? "is-active" : ""}`}
+                onClick={() => setStatus(tab.status)}
+                aria-pressed={status === tab.status}
+              >
+                <span>{tab.label}</span>
+                <strong>{tabCount(tab.status)}</strong>
+              </button>
+            ))}
+          </section>
+
+          <div className="admin-fleet-layout">
+            <section
+              className="admin-fleet-register"
+              aria-labelledby="fleet-register-heading"
+            >
+              <header className="admin-fleet-register__heading">
                 <div>
-                  <h2 className="text-xl font-semibold">Operational fleet</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Current use is a coarse canonical state. Readiness is
-                    derived from supported maintenance data.
+                  <h2 id="fleet-register-heading">Vehicle register</h2>
+                  <p>
+                    {rows.length} matching vehicle{rows.length === 1 ? "" : "s"}{" "}
+                    · page {page} of {totalPages}
                   </p>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  Canonical returns:{" "}
-                  {snapshot?.operational.completedRentals ?? "Unavailable"}
-                  {snapshot?.generatedAt
-                    ? ` · Read ${formatTimestamp(snapshot.generatedAt)}`
-                    : ""}
-                </span>
-              </div>
-            </div>
-            <div className="hidden overflow-x-auto lg:block">
-              <table className="w-full text-sm">
-                <caption className="sr-only">Canonical fleet vehicles</caption>
-                <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                  <tr className="border-b border-border">
-                    <th className="px-5 py-3 text-left font-semibold">
-                      Vehicle / plate
-                    </th>
-                    <th className="px-5 py-3 text-left font-semibold">
-                      Category
-                    </th>
-                    <th className="px-5 py-3 text-left font-semibold">
-                      Branch
-                    </th>
-                    <th className="px-5 py-3 text-left font-semibold">State</th>
-                    <th className="px-5 py-3 text-left font-semibold">
-                      Readiness
-                    </th>
-                    <th className="px-5 py-3 text-right font-semibold">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((vehicle) => (
-                    <FleetRow
-                      key={vehicle.id}
-                      vehicle={vehicle}
-                      branches={branches}
-                      branchSaving={branchSavingId === vehicle.id}
-                      selected={selectedId === vehicle.id}
-                      onSelect={() => setSelectedId(vehicle.id)}
-                      onBranchChange={(value) =>
-                        void changeBranch(vehicle, value)
-                      }
-                      onService={() => openService(vehicle)}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="divide-y divide-border lg:hidden">
-              {rows.map((vehicle) => (
-                <FleetDisclosure
-                  key={vehicle.id}
-                  vehicle={vehicle}
-                  branches={branches}
-                  branchSaving={branchSavingId === vehicle.id}
-                  onSelect={() => setSelectedId(vehicle.id)}
-                  onBranchChange={(value) => void changeBranch(vehicle, value)}
-                  onService={() => openService(vehicle)}
+                <label className="admin-fleet-branch-sort">
+                  <span>Sort by branch</span>
+                  <TSelect
+                    value={branch}
+                    onChange={(event) => setBranch(event.target.value)}
+                    aria-label="Sort fleet by branch"
+                  >
+                    <option value="All">All branches</option>
+                    {branches.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </TSelect>
+                </label>
+              </header>
+              {rows.length ? (
+                <>
+                  <div className="admin-fleet-register__rows hidden overflow-hidden lg:block">
+                    <table className="w-full text-sm">
+                      <caption className="sr-only">
+                        Canonical fleet vehicles
+                      </caption>
+                      <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                        <tr className="border-b border-border">
+                          <th className="px-5 py-3 text-left font-semibold">
+                            Vehicle / plate
+                          </th>
+                          <th className="px-5 py-3 text-left font-semibold">
+                            Branch location
+                          </th>
+                          <th className="px-5 py-3 text-left font-semibold">
+                            State
+                          </th>
+                          {showRentalReadiness ? (
+                            <th className="px-5 py-3 text-left font-semibold">
+                              Rental readiness
+                            </th>
+                          ) : null}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pageRows.map((vehicle) => (
+                          <FleetRow
+                            key={vehicle.id}
+                            vehicle={vehicle}
+                            selected={selectedId === vehicle.id}
+                            showRentalReadiness={showRentalReadiness}
+                            onSelect={() => setSelectedId(vehicle.id)}
+                          />
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="divide-y divide-border lg:hidden">
+                    {pageRows.map((vehicle) => (
+                      <FleetDisclosure
+                        key={vehicle.id}
+                        vehicle={vehicle}
+                        branches={branches}
+                        branchSaving={branchSavingId === vehicle.id}
+                        onSelect={() => setSelectedId(vehicle.id)}
+                        onBranchChange={(value) =>
+                          void changeBranch(vehicle, value)
+                        }
+                        onService={() => openService(vehicle)}
+                      />
+                    ))}
+                  </div>
+                  <FleetPagination
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                  />
+                </>
+              ) : (
+                <FleetEmptyState
+                  hasVehicles={Boolean(snapshot?.vehicles.length)}
+                  status={status}
+                  onReset={() => {
+                    setQuery("");
+                    setStatus("All");
+                    setBranch("All");
+                  }}
                 />
-              ))}
-            </div>
-          </Card>
+              )}
+            </section>
 
-          <FleetDetail
-            vehicle={selectedVehicle}
-            onService={openService}
-            onEditImage={openImageEditor}
-          />
-        </div>
+            <FleetDetail
+              vehicle={rows.length ? selectedVehicle : null}
+              inspectionRemarks={inspectionRemarks}
+              inspectionSaving={inspectionSaving}
+              onInspectionRemarksChange={setInspectionRemarks}
+              onResolveInspection={resolveInspection}
+              onScheduleInspectionMaintenance={scheduleInspectionMaintenance}
+              onService={openService}
+              onEditImage={(vehicle) => {
+                setSelectedId(vehicle.id);
+                setImageOpen(true);
+              }}
+              onEditVehicle={(vehicle) => void openVehicleEditor(vehicle)}
+            />
+          </div>
+        </>
       )}
 
       <MaintenanceRecordDialog
@@ -580,7 +903,10 @@ function FleetPage() {
         saving={serviceSaving}
         error={serviceOpen ? mutationError : null}
         onDraftChange={setServiceDraft}
-        onOpenChange={setServiceOpen}
+        onOpenChange={(open) => {
+          setServiceOpen(open);
+          if (!open) setReturnInspectionForMaintenance(null);
+        }}
         onSave={() => void saveService()}
       />
 
@@ -596,90 +922,91 @@ function FleetPage() {
         onSave={() => void addVehicle()}
       />
 
-      <ImageUrlDialog
-        open={imageOpen}
-        vehicleName={selectedVehicle?.name ?? "vehicle"}
-        value={imageUrl}
-        saving={imageSaving}
-        error={imageError}
-        onChange={setImageUrl}
-        onOpenChange={setImageOpen}
-        onSave={() => void saveVehicleImage()}
+      <AddVehicleDialog
+        open={editOpen}
+        title="Edit vehicle"
+        saveLabel="Save vehicle"
+        draft={editDraft}
+        branches={branches}
+        categories={categories}
+        saving={editSaving}
+        error={editError}
+        showAvailability
+        onDraftChange={updateEditDraft}
+        onOpenChange={setEditOpen}
+        onSave={() => void saveVehicle()}
       />
+
+      <VehiclePhotoDialog
+        open={imageOpen}
+        vehicleId={selectedVehicle?.id ?? null}
+        vehicleName={selectedVehicle?.name ?? "vehicle"}
+        onOpenChange={setImageOpen}
+        onUpdated={() => void loadFleet()}
+      />
+      <Dialog open={Boolean(locationChange)} onOpenChange={(open) => { if (!open && !branchSavingId) setLocationChange(null); }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader><DialogTitle>Review affected requests</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Moving {locationChange?.vehicle.name} changes the allocation context for the requests below. Their customer trip details stay unchanged. Continue only after reviewing them.</p>
+          <ul className="max-h-52 space-y-2 overflow-y-auto rounded-md border border-border p-3 text-sm">
+            {locationChange?.impacts.map((impact) => <li key={impact.id} className="flex items-center justify-between gap-3"><span>{impact.customer?.full_name ?? "Customer"}</span><span className="text-muted-foreground">{impact.booking_status}</span></li>)}
+          </ul>
+          <DialogFooter><Btn disabled={Boolean(branchSavingId)} onClick={() => setLocationChange(null)}>Cancel</Btn><Btn variant="primary" disabled={Boolean(branchSavingId) || !locationChange} onClick={() => { if (locationChange) void commitBranchChange(locationChange.vehicle, locationChange.branchId, true); }}>{branchSavingId ? "Moving…" : "Acknowledge and move"}</Btn></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
 function FleetRow({
   vehicle,
-  branches,
-  branchSaving,
   selected,
+  showRentalReadiness,
   onSelect,
-  onBranchChange,
-  onService,
 }: {
   vehicle: FleetVehicleRow;
-  branches: AdminFleetResponse["branches"];
-  branchSaving: boolean;
   selected: boolean;
+  showRentalReadiness: boolean;
   onSelect: () => void;
-  onBranchChange: (branchId: string) => void;
-  onService: () => void;
 }) {
   return (
     <tr
-      className={`border-b border-border/60 align-top ${selected ? "bg-secondary/50" : "hover:bg-secondary/30"}`}
+      className={`admin-fleet-row ${selected ? "is-selected" : ""}`}
+      tabIndex={0}
+      aria-selected={selected}
+      aria-label={`View details for ${vehicle.name}`}
+      onClick={onSelect}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect();
+        }
+      }}
     >
       <td className="px-5 py-4">
-        <button
-          className="min-h-11 text-left"
-          onClick={onSelect}
-          aria-label={`View details for ${vehicle.name}`}
-        >
+        <div className="admin-fleet-row__vehicle">
           <span className="font-medium">{vehicle.name}</span>
           <span className="mt-1 block font-mono text-xs text-muted-foreground">
             {displayValue(vehicle.plate)}
           </span>
-        </button>
+        </div>
       </td>
       <td className="px-5 py-4 text-muted-foreground">
-        <span>{displayValue(vehicle.category)}</span>
-        <span className="mt-1 block text-xs">
-          {displayValue(vehicle.transmission)} · {displayValue(vehicle.seats)}{" "}
-          seats
+        <span className="admin-fleet-location">
+          <MapPin className="h-3.5 w-3.5" /> {displayValue(vehicle.branch)}
         </span>
       </td>
       <td className="px-5 py-4">
-        <TSelect
-          value={vehicle.branchId ?? ""}
-          disabled={branchSaving || !vehicle.categoryId}
-          onChange={(event) => onBranchChange(event.target.value)}
-          aria-label={`Branch for ${vehicle.name}`}
-          className="min-w-36 text-xs"
-        >
-          <option value="">Unassigned</option>
-          {branches.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </TSelect>
-      </td>
-      <td className="px-5 py-4">
-        <Badge>{vehicle.status}</Badge>
+        <FleetStatusMark status={vehicle.status} />
         <span className="mt-1 block text-xs text-muted-foreground">
           {currentUse(vehicle.status)}
         </span>
       </td>
-      <td className="max-w-56 px-5 py-4">
-        <Readiness vehicle={vehicle} />
-      </td>
-      <td className="px-5 py-4 text-right">
-        <Btn variant="ghost" onClick={onService}>
-          <Wrench className="h-4 w-4" /> Service
-        </Btn>
-      </td>
+      {showRentalReadiness ? (
+        <td className="max-w-56 px-5 py-4">
+          <Readiness vehicle={vehicle} />
+        </td>
+      ) : null}
     </tr>
   );
 }
@@ -691,22 +1018,28 @@ function FleetDisclosure({
   onSelect,
   onBranchChange,
   onService,
-}: Omit<Parameters<typeof FleetRow>[0], "selected">) {
+}: {
+  vehicle: FleetVehicleRow;
+  branches: AdminFleetResponse["branches"];
+  branchSaving: boolean;
+  onSelect: () => void;
+  onBranchChange: (branchId: string) => void;
+  onService: () => void;
+}) {
   return (
     <details className="group px-5 py-4">
-      <summary className="flex cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
-        <button
-          className="min-h-11 min-w-0 flex-1 text-left"
-          onClick={onSelect}
-          aria-label={`Select ${vehicle.name}`}
-        >
+      <summary
+        className="flex min-h-11 cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden"
+        onClick={onSelect}
+      >
+        <span className="min-w-0 flex-1 text-left">
           <span className="block font-medium">{vehicle.name}</span>
           <span className="mt-1 block font-mono text-xs text-muted-foreground">
             {displayValue(vehicle.plate)}
           </span>
-        </button>
+        </span>
         <span className="shrink-0">
-          <Badge>{vehicle.status}</Badge>
+          <FleetStatusMark status={vehicle.status} />
         </span>
       </summary>
       <div className="mt-4 grid gap-4 border-t border-border pt-4 text-sm">
@@ -720,14 +1053,14 @@ function FleetDisclosure({
           </strong>
         </div>
         <div className="grid gap-1">
-          <span className="text-muted-foreground">Branch</span>
+          <span className="text-muted-foreground">Allocation location</span>
           <TSelect
             value={vehicle.branchId ?? ""}
             disabled={branchSaving || !vehicle.categoryId}
             onChange={(event) => onBranchChange(event.target.value)}
-            aria-label={`Branch for ${vehicle.name}`}
+            aria-label={`Allocation location for ${vehicle.name}`}
           >
-            <option value="">Unassigned</option>
+            <option value="">Unassigned location</option>
             {branches.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
@@ -739,9 +1072,11 @@ function FleetDisclosure({
           <span className="text-xs text-muted-foreground">
             {currentUse(vehicle.status)}
           </span>
-          <Btn variant="ghost" onClick={onService}>
-            <Wrench className="h-4 w-4" /> Service
-          </Btn>
+          {vehicle.status === "Available" ? (
+            <Btn variant="ghost" onClick={onService}>
+              <Wrench className="h-4 w-4" /> Service
+            </Btn>
+          ) : null}
         </div>
       </div>
     </details>
@@ -749,78 +1084,329 @@ function FleetDisclosure({
 }
 
 function Readiness({ vehicle }: { vehicle: FleetVehicleRow }) {
-  if (vehicle.maintenanceReady)
-    return (
-      <DomainStatus
-        label="Ready — derived"
-        tone="success"
-        detail="Derived from canonical maintenance/readiness data; not persisted."
-      />
-    );
   return (
-    <DomainStatus
-      label="Not ready — derived"
-      tone="warning"
-      detail={vehicle.readinessReasons.join("; ")}
-    />
+    <span
+      className="admin-fleet-readiness-summary"
+      title={vehicle.readinessReasons.join("; ")}
+    >
+      <span
+        className={`admin-fleet-readiness ${vehicle.maintenanceReady ? "is-ready" : "is-not-ready"}`}
+      >
+        <i />{" "}
+        {vehicle.maintenanceReady
+          ? "Available for rental"
+          : "Unavailable for rental"}
+      </span>
+      {!vehicle.maintenanceReady ? (
+        <small>
+          {vehicle.readinessReasons[0] ??
+            "Maintenance conditions require review."}
+        </small>
+      ) : null}
+    </span>
+  );
+}
+
+function FleetStatusMark({ status }: { status: FleetStatus }) {
+  const tone =
+    status === "Available"
+      ? "is-available"
+      : status === "Rented"
+        ? "is-rented"
+        : status === "Reserved"
+          ? "is-reserved"
+          : "is-attention";
+  return (
+    <span className={`admin-fleet-status ${tone}`}>
+      <i /> {status}
+    </span>
+  );
+}
+
+function FleetPagination({
+  page,
+  totalPages,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  return (
+    <footer
+      className="admin-fleet-pagination"
+      aria-label="Vehicle register pages"
+    >
+      <span>
+        Page {page} of {totalPages}
+      </span>
+      <div>
+        <Btn
+          variant="ghost"
+          disabled={page === 1}
+          onClick={() => onPageChange(page - 1)}
+        >
+          Previous
+        </Btn>
+        {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+          (pageNumber) => (
+            <button
+              key={pageNumber}
+              type="button"
+              className={`admin-fleet-pagination__page ${pageNumber === page ? "is-current" : ""}`}
+              aria-label={`Go to page ${pageNumber}`}
+              aria-current={pageNumber === page ? "page" : undefined}
+              onClick={() => onPageChange(pageNumber)}
+            >
+              {pageNumber}
+            </button>
+          ),
+        )}
+        <Btn
+          variant="ghost"
+          disabled={page === totalPages}
+          onClick={() => onPageChange(page + 1)}
+        >
+          Next
+        </Btn>
+      </div>
+    </footer>
+  );
+}
+
+function FleetEmptyState({
+  hasVehicles,
+  status,
+  onReset,
+}: {
+  hasVehicles: boolean;
+  status: FleetStatus | "All";
+  onReset: () => void;
+}) {
+  return (
+    <div className="admin-fleet-empty-state" role="status">
+      <h3>{hasVehicles ? "No vehicles in this view" : "No vehicles yet"}</h3>
+      <p>
+        {hasVehicles
+          ? "Try another status, location, or search term to see matching vehicles."
+          : "Add the first vehicle to begin managing its availability and readiness."}
+      </p>
+      {hasVehicles ? (
+        <Btn variant="ghost" onClick={onReset}>
+          Show all vehicles
+        </Btn>
+      ) : null}
+    </div>
+  );
+}
+
+function FleetLoading() {
+  return (
+    <div
+      className="admin-fleet-loading"
+      role="status"
+      aria-label="Loading fleet data"
+    >
+      <div className="admin-fleet-loading__metrics">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div key={index}>
+            <i />
+            <span />
+            <strong />
+          </div>
+        ))}
+      </div>
+      <div className="admin-fleet-loading__workspace">
+        <section>
+          <header>
+            <i />
+            <span>
+              <i />
+              <i />
+              <i />
+            </span>
+          </header>
+          {Array.from({ length: 7 }, (_, index) => (
+            <div className="admin-fleet-loading__row" key={index}>
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+          ))}
+        </section>
+        <aside>
+          <i className="admin-fleet-loading__image" />
+          <i className="admin-fleet-loading__vehicle" />
+          <span>
+            <i />
+            <i />
+          </span>
+          <div>
+            {Array.from({ length: 6 }, (_, index) => (
+              <i key={index} />
+            ))}
+          </div>
+          <footer>
+            <i />
+            <i />
+          </footer>
+        </aside>
+      </div>
+    </div>
   );
 }
 
 function FleetDetail({
   vehicle,
+  inspectionRemarks,
+  inspectionSaving,
+  onInspectionRemarksChange,
+  onResolveInspection,
+  onScheduleInspectionMaintenance,
   onService,
   onEditImage,
+  onEditVehicle,
 }: {
   vehicle: FleetVehicleRow | null;
+  inspectionRemarks: string;
+  inspectionSaving: boolean;
+  onInspectionRemarksChange: (value: string) => void;
+  onResolveInspection: (outcome: "Cleared") => void;
+  onScheduleInspectionMaintenance: () => void;
   onService: (vehicle?: FleetVehicleRow) => void;
   onEditImage: (vehicle: FleetVehicleRow) => void;
+  onEditVehicle: (vehicle: FleetVehicleRow) => void;
 }) {
   return (
-    <Card as="aside" className="h-fit xl:sticky xl:top-6">
+    <aside className="admin-fleet-detail">
       {!vehicle ? (
         <p className="p-6 text-sm text-muted-foreground">
           Select a vehicle to inspect its canonical details.
         </p>
       ) : (
         <>
-          <div className="border-b border-border px-5 py-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Selected vehicle
-            </p>
-            <h2 className="mt-1 text-xl font-semibold">{vehicle.name}</h2>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">
-              {displayValue(vehicle.plate)} · {displayValue(vehicle.id)}
-            </p>
+          <div className="admin-fleet-detail__identity">
+            {vehicle.imageUrl ? (
+              <img src={vehicle.imageUrl} alt="" />
+            ) : (
+              <div className="admin-fleet-detail__image-fallback">
+                <CarFront />
+              </div>
+            )}
+            <div>
+              <h2>{vehicle.name}</h2>
+              <p>{displayValue(vehicle.plate)}</p>
+            </div>
           </div>
-          <dl className="grid gap-3 px-5 py-5 text-sm sm:grid-cols-2 xl:grid-cols-1">
-            <Detail label="Status">
-              <Badge>{vehicle.status}</Badge>
+          <div className="admin-fleet-detail__states">
+            <div>
+              <span>State</span>
+              <FleetStatusMark status={vehicle.status} />
+            </div>
+            <div>
+              <span>Rental readiness</span>
+              <Readiness vehicle={vehicle} />
+            </div>
+          </div>
+          <dl className="admin-fleet-detail__facts">
+            <Detail label="Allocation location">
+              <MapPin className="h-4 w-4" /> {displayValue(vehicle.branch)}
             </Detail>
-            <Detail label="Current allocation">
-              {currentUse(vehicle.status)}
-            </Detail>
-            <Detail label="Category">{displayValue(vehicle.category)}</Detail>
-            <Detail label="Branch">{displayValue(vehicle.branch)}</Detail>
             <Detail label="Daily rate">
               {formatPeso(vehicle.pricePerDay)}
             </Detail>
-            <Detail label="Readiness">
-              <Readiness vehicle={vehicle} />
+            <Detail label="Category">{displayValue(vehicle.category)}</Detail>
+            <Detail label="Seats">{displayValue(vehicle.seats)} seats</Detail>
+            <Detail label="Large bags">
+              {vehicle.largeBagCapacity == null
+                ? "Not set"
+                : `${vehicle.largeBagCapacity} large bags`}
             </Detail>
+            <Detail label="Transmission">
+              {displayValue(vehicle.transmission)}
+            </Detail>
+            <Detail label="Status note">{currentUse(vehicle.status)}</Detail>
           </dl>
-          <div className="border-t border-border px-5 py-4">
-            <div className="flex flex-wrap gap-2">
-              <Btn variant="primary" onClick={() => onService(vehicle)}>
-                <Wrench className="h-4 w-4" /> Add maintenance record
-              </Btn>
-              <Btn variant="ghost" onClick={() => onEditImage(vehicle)}>
-                <Image className="h-4 w-4" /> Change image
-              </Btn>
-            </div>
+          <div className="admin-fleet-detail__actions">
+            {vehicle.pendingInspection ? (
+              <section
+                className="admin-fleet-inspection"
+                aria-labelledby="return-inspection-heading"
+              >
+                <h3 id="return-inspection-heading">Return inspection</h3>
+                <p>
+                  This vehicle was returned and must be cleared or sent to
+                  maintenance before it can be allocated again.
+                </p>
+                <label>
+                  <span>Inspection remarks</span>
+                  <textarea
+                    value={inspectionRemarks}
+                    onChange={(event) =>
+                      onInspectionRemarksChange(event.target.value)
+                    }
+                    placeholder="Damage, cleaning, or service notes…"
+                  />
+                </label>
+                <div>
+                  <Btn
+                    variant="ghost"
+                    disabled={inspectionSaving}
+                    onClick={() => onResolveInspection("Cleared")}
+                  >
+                    <CheckCircle2 className="h-4 w-4" /> Clear vehicle
+                  </Btn>
+                  <Btn
+                    variant="primary"
+                    disabled={inspectionSaving}
+                    onClick={onScheduleInspectionMaintenance}
+                  >
+                    <Wrench className="h-4 w-4" /> Schedule maintenance
+                  </Btn>
+                </div>
+                {vehicle.pendingInspection.remarks ? (
+                  <p className="admin-fleet-inspection__previous">
+                    Return note: {vehicle.pendingInspection.remarks}
+                  </p>
+                ) : null}
+              </section>
+            ) : null}
+            <section className="admin-fleet-detail__management" aria-labelledby="vehicle-management-title">
+              <header>
+                <div>
+                  <h3 id="vehicle-management-title">Vehicle management</h3>
+                  <p>Keep fleet information and customer catalog details current.</p>
+                </div>
+              </header>
+              <div className="admin-fleet-detail__management-actions">
+                {["Reserved", "Rented"].includes(vehicle.status) ? (
+                  <a href="/admin/calendar" className="admin-fleet-detail__management-action admin-fleet-detail__management-action--primary">
+                    <CalendarDays className="h-4 w-4" /> View schedule
+                  </a>
+                ) : null}
+                {vehicle.status === "Maintenance" || !vehicle.maintenanceReady ? (
+                  <Link to="/admin/maintenance" search={{ vehicleId: vehicle.id }} className="admin-fleet-detail__management-action admin-fleet-detail__management-action--primary">
+                    <Wrench className="h-4 w-4" /> View maintenance
+                  </Link>
+                ) : null}
+                {vehicle.status === "Available" ? (
+                  <button type="button" className="admin-fleet-detail__management-action admin-fleet-detail__management-action--primary" onClick={() => onService(vehicle)}>
+                    <Wrench className="h-4 w-4" /> Schedule maintenance
+                  </button>
+                ) : null}
+                <button type="button" className="admin-fleet-detail__management-action" onClick={() => onEditImage(vehicle)}>
+                  <Image className="h-4 w-4" /> Manage photos
+                </button>
+                <button type="button" className="admin-fleet-detail__management-action" onClick={() => onEditVehicle(vehicle)}>
+                  Edit vehicle details
+                </button>
+              </div>
+            </section>
           </div>
         </>
       )}
-    </Card>
+    </aside>
   );
 }
 
@@ -833,9 +1419,7 @@ function Detail({
 }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-        {label}
-      </dt>
+      <dt>{label}</dt>
       <dd className="mt-1 min-w-0 break-words">{children}</dd>
     </div>
   );
@@ -859,21 +1443,27 @@ function formatTimestamp(value: string) {
 
 function AddVehicleDialog({
   open,
+  title = "Add vehicle",
+  saveLabel = "Add vehicle",
   draft,
   branches,
   categories,
   saving,
   error,
+  showAvailability = false,
   onDraftChange,
   onOpenChange,
   onSave,
 }: {
   open: boolean;
+  title?: string;
+  saveLabel?: string;
   draft: AddVehicleDraft;
   branches: AdminFleetResponse["branches"];
   categories: AdminFleetResponse["categories"];
   saving: boolean;
   error: string;
+  showAvailability?: boolean;
   onDraftChange: <K extends keyof AddVehicleDraft>(
     key: K,
     value: AddVehicleDraft[K],
@@ -886,9 +1476,9 @@ function AddVehicleDialog({
       open={open}
       onOpenChange={(value) => !saving && onOpenChange(value)}
     >
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="admin-fleet-vehicle-dialog max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add vehicle</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-2 sm:grid-cols-2">
           <Field label="Plate number *">
@@ -917,6 +1507,20 @@ function AddVehicleDialog({
               onChange={(event) => onDraftChange("seats", event.target.value)}
             />
           </Field>
+          <Field label="Large-bag capacity *">
+            <TInput
+              type="number"
+              min="0"
+              step="1"
+              value={draft.largeBagCapacity}
+              onChange={(event) =>
+                onDraftChange("largeBagCapacity", event.target.value)
+              }
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Number of standard large suitcases the vehicle can carry.
+            </p>
+          </Field>
           <Field label="Category *">
             <TSelect
               value={draft.categoryId}
@@ -932,9 +1536,10 @@ function AddVehicleDialog({
               ))}
             </TSelect>
           </Field>
-          <Field label="Branch *">
+          <Field label="Allocation location *">
             <TSelect
               value={draft.branchId}
+              disabled={showAvailability}
               onChange={(event) =>
                 onDraftChange("branchId", event.target.value)
               }
@@ -946,6 +1551,11 @@ function AddVehicleDialog({
                 </option>
               ))}
             </TSelect>
+            {showAvailability ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Use the Fleet allocation-location control to review affected requests before moving this vehicle.
+              </p>
+            ) : null}
           </Field>
           <Field label="Transmission">
             <TSelect
@@ -975,14 +1585,86 @@ function AddVehicleDialog({
               }
             />
           </Field>
-          <Field label="Vehicle image URL">
+          <Field label="Fuel type">
+            <TSelect
+              value={draft.fuelType}
+              onChange={(event) => onDraftChange("fuelType", event.target.value)}
+            >
+              <option value="">Not specified</option>
+              {fuelTypeOptions.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </TSelect>
+          </Field>
+          <Field label="Reference fuel efficiency (km/L)">
             <TInput
-              type="url"
-              value={draft.imageUrl}
-              placeholder="https://…"
-              onChange={(event) => onDraftChange("imageUrl", event.target.value)}
+              type="number"
+              min="0.1"
+              step="0.1"
+              value={draft.referenceFuelEfficiency}
+              onChange={(event) =>
+                onDraftChange("referenceFuelEfficiency", event.target.value)
+              }
             />
           </Field>
+          <Field label="Current odometer (km)">
+            <TInput
+              type="number"
+              min="0"
+              step="1"
+              value={draft.currentOdometerKm}
+              onChange={(event) =>
+                onDraftChange("currentOdometerKm", event.target.value)
+              }
+            />
+          </Field>
+          <div className="rounded-md border border-dashed border-border bg-muted/30 px-3 py-2.5 text-sm sm:col-span-2">
+            <strong className="font-medium">Vehicle photos</strong>
+            <small className="mt-0.5 block text-muted-foreground">
+              Save this vehicle first, then use Manage photos to upload up to five customer-visible images.
+            </small>
+          </div>
+          {showAvailability ? (
+            <div className="grid gap-3 sm:col-span-2">
+              <label className="flex items-center gap-3 rounded-md border border-border px-3 py-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={draft.isActive}
+                  onChange={(event) =>
+                    onDraftChange("isActive", event.target.checked)
+                  }
+                />
+                <span>
+                  <strong className="font-medium">
+                    Show in customer catalog
+                  </strong>
+                  <small className="mt-0.5 block text-muted-foreground">
+                    Turn this off to remove the vehicle from new customer
+                    requests.
+                  </small>
+                </span>
+              </label>
+              <label className="flex items-center gap-3 rounded-md border border-border px-3 py-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={draft.conditionBlocksRentalUse}
+                  onChange={(event) =>
+                    onDraftChange("conditionBlocksRentalUse", event.target.checked)
+                  }
+                />
+                <span>
+                  <strong className="font-medium">
+                    Block rental use for a condition concern
+                  </strong>
+                  <small className="mt-0.5 block text-muted-foreground">
+                    Keep the vehicle visible for staff review while preventing new rental allocation.
+                  </small>
+                </span>
+              </label>
+            </div>
+          ) : null}
         </div>
         {error ? (
           <p className="text-sm text-[#b43b3b]" role="alert">
@@ -994,7 +1676,7 @@ function AddVehicleDialog({
             Cancel
           </Btn>
           <Btn variant="primary" disabled={saving} onClick={onSave}>
-            {saving ? "Saving…" : "Add vehicle"}
+            {saving ? "Saving…" : saveLabel}
           </Btn>
         </DialogFooter>
       </DialogContent>
@@ -1002,54 +1684,94 @@ function AddVehicleDialog({
   );
 }
 
-function ImageUrlDialog({
+type VehiclePhoto = {
+  id: string;
+  public_url: string;
+  alt_text: string | null;
+  sort_order: number;
+  is_cover: boolean;
+};
+
+function VehiclePhotoDialog({
   open,
+  vehicleId,
   vehicleName,
-  value,
-  saving,
-  error,
-  onChange,
   onOpenChange,
-  onSave,
+  onUpdated,
 }: {
   open: boolean;
+  vehicleId: string | null;
   vehicleName: string;
-  value: string;
-  saving: boolean;
-  error: string;
-  onChange: (value: string) => void;
   onOpenChange: (open: boolean) => void;
-  onSave: () => void;
+  onUpdated: () => void;
 }) {
-  return (
-    <Dialog open={open} onOpenChange={(next) => !saving && onOpenChange(next)}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Change vehicle image</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-2 py-2">
-          <p className="text-sm text-muted-foreground">
-            Paste a public image URL for {vehicleName}. Leave it blank to remove the image.
-          </p>
-          <Field label="Public image URL">
-            <TInput
-              type="url"
-              value={value}
-              placeholder="https://…"
-              onChange={(event) => onChange(event.target.value)}
-            />
-          </Field>
-        </div>
-        {error ? <p className="text-sm text-[#b43b3b]" role="alert">{error}</p> : null}
-        <DialogFooter>
-          <Btn disabled={saving} onClick={() => onOpenChange(false)}>Cancel</Btn>
-          <Btn variant="primary" disabled={saving} onClick={onSave}>
-            {saving ? "Saving…" : "Save image"}
-          </Btn>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+  const [images, setImages] = useState<VehiclePhoto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const refresh = useCallback(async () => {
+    if (!vehicleId) return;
+    setLoading(true);
+    const response = await fetch(`/api/vehicle-images?vehicleId=${encodeURIComponent(vehicleId)}`);
+    const payload = await response.json().catch(() => null) as { images?: VehiclePhoto[]; message?: string } | null;
+    setLoading(false);
+    if (!response.ok) { setError(payload?.message ?? "Unable to load vehicle photos."); return; }
+    setImages(payload?.images ?? []);
+  }, [vehicleId]);
+
+  useEffect(() => {
+    if (open) { setError(""); void refresh(); }
+  }, [open, refresh]);
+
+  async function upload(file: File) {
+    if (!vehicleId) return;
+    setSaving(true); setError("");
+    const form = new FormData(); form.set("vehicleId", vehicleId); form.set("file", file);
+    const response = await fetch("/api/vehicle-images", { method: "POST", body: form });
+    const payload = await response.json().catch(() => null) as { message?: string } | null;
+    setSaving(false);
+    if (!response.ok) { setError(payload?.message ?? "Unable to upload vehicle photo."); return; }
+    await refresh(); onUpdated();
+  }
+
+  async function action(imageId: string, method: "PATCH" | "DELETE") {
+    if (!vehicleId) return;
+    setSaving(true); setError("");
+    const response = await fetch("/api/vehicle-images", {
+      method,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(method === "PATCH" ? { vehicleId, imageId, action: "set-cover" } : { vehicleId, imageId }),
+    });
+    const payload = await response.json().catch(() => null) as { message?: string } | null;
+    setSaving(false);
+    if (!response.ok) { setError(payload?.message ?? "Unable to update vehicle photos."); return; }
+    await refresh(); onUpdated();
+  }
+
+  return <Dialog open={open} onOpenChange={(next) => !saving && onOpenChange(next)}>
+    <DialogContent className="admin-fleet-photo-dialog sm:max-w-xl">
+      <DialogHeader className="admin-fleet-photo-dialog__header"><div><DialogTitle>Vehicle photos</DialogTitle><p>{images.length} of 5 photos</p></div></DialogHeader>
+      <p className="admin-fleet-photo-dialog__intro">Add clear exterior or interior photos for {vehicleName}. Choose a cover photo after uploading.</p>
+      <div className={`admin-fleet-photo-dialog__grid ${images.length === 0 ? "is-empty" : ""}`}>
+        {images.map((image) => <article key={image.id} className="admin-fleet-photo-dialog__card">
+          <img src={image.public_url} alt="" />
+          <div className="admin-fleet-photo-dialog__card-actions">
+            {image.is_cover ? <strong>Cover photo</strong> : <button type="button" disabled={saving} onClick={() => void action(image.id, "PATCH")}>Set as cover</button>}
+            <button type="button" className="admin-fleet-photo-dialog__remove" disabled={saving} onClick={() => void action(image.id, "DELETE")}>Remove</button>
+          </div>
+        </article>)}
+        {images.length < 5 ? <button type="button" className="admin-fleet-photo-dialog__upload" disabled={saving} onClick={() => inputRef.current?.click()}>
+          <Image aria-hidden="true" /> <strong>{saving ? "Uploading…" : "Upload photo"}</strong><small>JPG, PNG, or WebP · 5 MB max</small>
+        </button> : null}
+      </div>
+      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void upload(file); }} />
+      {loading ? <p className="admin-fleet-photo-dialog__status">Loading photos…</p> : null}
+      {error ? <p className="admin-fleet-photo-dialog__error" role="alert">{error}</p> : null}
+      <DialogFooter className="admin-fleet-photo-dialog__footer"><Btn disabled={saving} onClick={() => onOpenChange(false)}>Done</Btn></DialogFooter>
+    </DialogContent>
+  </Dialog>;
 }
 
 function Field({

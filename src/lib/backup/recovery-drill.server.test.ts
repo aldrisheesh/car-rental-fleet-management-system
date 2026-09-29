@@ -53,10 +53,26 @@ function recoveryFixture(options?: { corruptKey?: string }) {
       ],
     },
     { version: 1, bucket: "payment-proofs", objects: [] },
+    {
+      version: 1,
+      bucket: "vehicle-images",
+      objects: [
+        {
+          path: "vehicle/cover.jpg",
+          artifactKey:
+            "backup-runs/run/storage/vehicle-images/objects/vehicle/cover.jpg",
+          ...artifactIntegrity(new TextEncoder().encode("cover")),
+        },
+      ],
+    },
   ];
   bytes.set(
     manifests[0].objects[0].artifactKey,
     new TextEncoder().encode("id"),
+  );
+  bytes.set(
+    manifests[2].objects[0].artifactKey,
+    new TextEncoder().encode("cover"),
   );
   for (const manifest of manifests)
     bytes.set(
@@ -107,7 +123,7 @@ function recoveryFixture(options?: { corruptKey?: string }) {
   const targetClient = {
     storage: {
       async getBucket(id: string) {
-        return { data: { id, public: false }, error: null };
+        return { data: { id, public: id === "vehicle-images" }, error: null };
       },
       from(bucket: string) {
         return {

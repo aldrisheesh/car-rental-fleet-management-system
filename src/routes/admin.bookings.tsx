@@ -1,16 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, SlidersHorizontal } from "lucide-react";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useRouterState,
+} from "@tanstack/react-router";
+import {
+  ArrowRight,
+  Car,
+  ChevronDown,
+  CreditCard,
+  FileText,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import {
   Card,
   DomainStatus,
   EmptyState,
   ErrorState,
-  LoadingRows,
-  PageHeader,
+  QueuePagination,
   TInput,
   TSelect,
-  Toolbar,
 } from "@/components/admin/ui";
 import {
   formatAdminDateRange,
@@ -22,17 +33,44 @@ import {
 import { parseAdminBookingResponse } from "@/lib/booking-retrieval";
 
 export const Route = createFileRoute("/admin/bookings")({
-  component: BookingsPage,
+  component: BookingsRouteComponent,
 });
 
 type LoadState =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; bookings: AdminBooking[] };
+  | {
+      status: "ready";
+      bookings: AdminBooking[];
+      total: number;
+      branches: Array<{ id: string; name: string }>;
+      statuses: string[];
+      serverPaginated: boolean;
+    };
 
 function initialSearchParam(key: string) {
   if (typeof window === "undefined") return "";
   return new URLSearchParams(window.location.search).get(key) ?? "";
+}
+
+function initialPage() {
+  const value = Number(initialSearchParam("page"));
+  return Number.isInteger(value) && value > 0 ? value : 1;
+}
+
+function initialPageSize() {
+  return Number(initialSearchParam("limit")) === 50 ? 50 : 25;
+}
+
+function BookingsRouteComponent() {
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  return pathname === "/admin/bookings" || pathname === "/admin/bookings/" ? (
+    <BookingsPage />
+  ) : (
+    <Outlet />
+  );
 }
 
 function BookingsPage() {
@@ -40,17 +78,35 @@ function BookingsPage() {
   const [query, setQuery] = useState(() => initialSearchParam("q"));
   const [status, setStatus] = useState(() => initialSearchParam("status"));
   const [branch, setBranch] = useState(() => initialSearchParam("branch"));
+  const [page, setPage] = useState(initialPage);
+  const [pageSize, setPageSize] = useState(initialPageSize);
 
   const load = useCallback(async () => {
     setState({ status: "loading" });
     try {
-      const response = await fetch("/api/bookings", {
+      const serverPaginated = !query.trim();
+      const params = new URLSearchParams();
+      if (serverPaginated) {
+        params.set("view", "queue");
+        params.set("page", String(page));
+        params.set("limit", String(pageSize));
+        if (status) params.set("status", status);
+        if (branch) params.set("branch", branch);
+      }
+      const response = await fetch(`/api/bookings${params.size ? `?${params}` : ""}`, {
         credentials: "same-origin",
       });
       const data = await parseAdminBookingResponse(response, {
         allowStaffResponse: true,
       });
-      setState({ status: "ready", bookings: data.bookings as AdminBooking[] });
+      setState({
+        status: "ready",
+        bookings: data.bookings as AdminBooking[],
+        total: data.pagination?.total ?? data.bookings.length,
+        branches: data.branches ?? [],
+        statuses: data.statuses ?? [],
+        serverPaginated,
+      });
     } catch (error) {
       setState({
         status: "error",
@@ -60,7 +116,7 @@ function BookingsPage() {
             : "Unable to load rental requests.",
       });
     }
-  }, []);
+  }, [branch, page, pageSize, query, status]);
 
   useEffect(() => {
     void load();
@@ -72,13 +128,15 @@ function BookingsPage() {
     if (query) next.set("q", query);
     if (status) next.set("status", status);
     if (branch) next.set("branch", branch);
+    if (page > 1) next.set("page", String(page));
+    if (pageSize !== 25) next.set("limit", String(pageSize));
     const search = next.toString();
     window.history.replaceState(
       window.history.state,
       "",
       `${window.location.pathname}${search ? `?${search}` : ""}`,
     );
-  }, [branch, query, status]);
+  }, [branch, page, pageSize, query, status]);
 
   const bookings = useMemo(
     () => (state.status === "ready" ? state.bookings : []),
@@ -86,29 +144,37 @@ function BookingsPage() {
   );
   const statusOptions = useMemo(
     () =>
-      [
-        ...new Set(
-          bookings.map((booking) => booking.booking_status).filter(Boolean),
-        ),
-      ].sort(),
-    [bookings],
+      state.status === "ready" && state.statuses.length
+        ? state.statuses
+        : [
+            ...new Set(
+              bookings.map((booking) => booking.booking_status).filter(Boolean),
+            ),
+          ].sort(),
+    [bookings, state],
   );
   const branchOptions = useMemo(
-    () =>
-      [
-        ...new Set(
-          bookings
-            .map((booking) => booking.pickup_branch?.name)
-            .filter((value): value is string => Boolean(value)),
-        ),
-      ].sort(),
-    [bookings],
+    () => {
+      if (state.status === "ready" && state.branches.length) return state.branches;
+      return bookings
+        .map((booking) => booking.pickup_branch)
+        .filter(
+          (value): value is { id: string; name: string } =>
+            Boolean(value?.id && value.name),
+        )
+        .filter(
+          (value, index, values) =>
+            values.findIndex((item) => item.id === value.id) === index,
+        )
+        .sort((left, right) => left.name.localeCompare(right.name));
+    },
+    [bookings, state],
   );
   const rows = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     return bookings.filter((booking) => {
       if (status && booking.booking_status !== status) return false;
-      if (branch && booking.pickup_branch?.name !== branch) return false;
+      if (branch && booking.pickup_branch?.id !== branch) return false;
       if (!normalizedQuery) return true;
       return [
         booking.id,
@@ -128,20 +194,76 @@ function BookingsPage() {
     });
   }, [bookings, branch, query, status]);
 
+  const serverPaginated = state.status === "ready" && state.serverPaginated;
+  const total = serverPaginated ? state.total : rows.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const visibleRows = useMemo(
+    () =>
+      serverPaginated
+        ? rows
+        : rows.slice((page - 1) * pageSize, page * pageSize),
+    [page, pageSize, rows, serverPaginated],
+  );
+
   const clearFilters = () => {
     setQuery("");
     setStatus("");
     setBranch("");
+    setPage(1);
   };
+  const attentionCount = rows.filter((booking) =>
+    [
+      booking.requirement_status,
+      booking.payment_status,
+      booking.booking_status,
+    ].some((value) =>
+      ["Pending Review", "Needs Resubmission", "Pending Verification"].includes(
+        value ?? "",
+      ),
+    ),
+  ).length;
+  const documentReviewCount = rows.filter((booking) =>
+    ["Pending Review", "Needs Resubmission"].includes(
+      booking.requirement_status ?? "",
+    ),
+  ).length;
+  const readyForReviewCount = rows.filter(
+    (booking) =>
+      booking.booking_status === "Submitted" &&
+      booking.requirement_status === "Verified" &&
+      booking.payment_status === "Verified",
+  ).length;
+  const paymentReviewCount = rows.filter(
+    (booking) => booking.payment_status === "Pending Verification",
+  ).length;
+  const hasFilters = Boolean(query || status || branch);
+  const isLoading = state.status === "loading";
 
   return (
-    <div>
-      <PageHeader
-        title="Rental requests"
-        subtitle="Scan request, review, payment, and rental state."
-      />
+    <div className="admin-bookings-workspace" aria-busy={isLoading || undefined}>
+      <header className="admin-bookings-heading">
+        <div>
+          <h1>Rental requests</h1>
+          <p>
+            Review requirements, record and verify payment, then confirm the rental.
+          </p>
+        </div>
+        <div className="admin-bookings-heading__stats" aria-label="Queue overview">
+          <QueueMetric
+            label="Total requests"
+            value={total}
+            loading={isLoading}
+          />
+          <QueueMetric
+            label="Needs attention on this page"
+            value={attentionCount}
+            loading={isLoading}
+            attention={attentionCount > 0}
+          />
+        </div>
+      </header>
 
-      <Toolbar>
+      <div className="admin-bookings-toolbar" role="search" aria-label="Filter rental requests">
         <label className="min-w-0 flex-1 md:min-w-[300px]">
           <span className="sr-only">Search rental requests</span>
           <span className="relative block">
@@ -153,7 +275,10 @@ function BookingsPage() {
               name="booking-search"
               autoComplete="off"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setPage(1);
+              }}
               placeholder="Search by customer, vehicle, or reference…"
               className="pl-10"
             />
@@ -164,9 +289,12 @@ function BookingsPage() {
           <TSelect
             name="booking-status"
             value={status}
-            onChange={(event) => setStatus(event.target.value)}
+            onChange={(event) => {
+              setStatus(event.target.value);
+              setPage(1);
+            }}
           >
-            <option value="">All request states</option>
+            <option value="">All Status</option>
             {statusOptions.map((value) => (
               <option key={value} value={value}>
                 {value}
@@ -175,16 +303,19 @@ function BookingsPage() {
           </TSelect>
         </label>
         <label className="min-w-[150px]">
-          <span className="sr-only">Filter by pickup branch</span>
+          <span className="sr-only">Filter by allocation location</span>
           <TSelect
             name="booking-branch"
             value={branch}
-            onChange={(event) => setBranch(event.target.value)}
+            onChange={(event) => {
+              setBranch(event.target.value);
+              setPage(1);
+            }}
           >
-            <option value="">All branches</option>
+            <option value="">All locations</option>
             {branchOptions.map((value) => (
-              <option key={value} value={value}>
-                {value}
+              <option key={value.id} value={value.id}>
+                {value.name}
               </option>
             ))}
           </TSelect>
@@ -192,15 +323,22 @@ function BookingsPage() {
         <span className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
           <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
           {state.status === "ready"
-            ? `Showing ${rows.length} of ${bookings.length}`
+            ? `${total.toLocaleString()} request${total === 1 ? "" : "s"}`
             : "Loading requests…"}
         </span>
-      </Toolbar>
+        {hasFilters ? (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="touch-target admin-bookings-clear"
+          >
+            Clear filters
+          </button>
+        ) : null}
+      </div>
 
-      {state.status === "loading" ? (
-        <Card>
-          <LoadingRows count={6} />
-        </Card>
+      {isLoading ? (
+        <BookingsWorkspaceSkeleton />
       ) : state.status === "error" ? (
         <Card>
           <ErrorState message={state.message} onRetry={() => void load()} />
@@ -232,24 +370,189 @@ function BookingsPage() {
           />
         </Card>
       ) : (
-        <BookingsTable rows={rows} />
+        <>
+          <section className="admin-bookings-triage" aria-label="Rental request triage">
+            <AttentionRail
+              documentReviewCount={documentReviewCount}
+              readyForReviewCount={readyForReviewCount}
+              paymentReviewCount={paymentReviewCount}
+            />
+            <div className="admin-bookings-queue">
+              <div className="admin-bookings-queue__heading">
+                <div>
+                  <h2>Review queue</h2>
+                  <p>Open a request to review its requirements and next action.</p>
+                </div>
+                <span>{visibleRows.length} on this page</span>
+              </div>
+              <BookingsTable rows={visibleRows} />
+            </div>
+          </section>
+          <QueuePagination
+            page={Math.min(page, pageCount)}
+            pageSize={pageSize}
+            total={total}
+            itemLabel="rental requests"
+            onPageChange={(nextPage) =>
+              setPage(Math.max(1, Math.min(nextPage, pageCount)))
+            }
+            onPageSizeChange={(nextSize) => {
+              setPageSize(nextSize);
+              setPage(1);
+            }}
+          />
+        </>
       )}
     </div>
+  );
+}
+
+function QueueMetric({
+  label,
+  value,
+  loading,
+  attention = false,
+}: {
+  label: string;
+  value: number;
+  loading: boolean;
+  attention?: boolean;
+}) {
+  return (
+    <span className={attention ? "is-attention" : undefined}>
+      {loading ? (
+        <i className="admin-bookings-skeleton admin-bookings-skeleton--metric" />
+      ) : (
+        <strong>{value.toLocaleString()}</strong>
+      )}
+      {label}
+    </span>
+  );
+}
+
+function AttentionRail({
+  documentReviewCount,
+  readyForReviewCount,
+  paymentReviewCount,
+}: {
+  documentReviewCount: number;
+  readyForReviewCount: number;
+  paymentReviewCount: number;
+}) {
+  const items = [
+    {
+      icon: FileText,
+      label: "Requirements to review",
+      detail: "Submitted documents awaiting a decision",
+      value: documentReviewCount,
+      to: "/admin/requirements" as never,
+      attention: documentReviewCount > 0,
+    },
+    {
+      icon: Car,
+      label: "Ready to confirm",
+      detail: "Requirements and payment verified; confirm rental",
+      value: readyForReviewCount,
+      to: "/admin/bookings" as never,
+    },
+    {
+      icon: CreditCard,
+      label: "Payments to verify",
+      detail: "Payment proof awaiting verification",
+      value: paymentReviewCount,
+      to: "/admin/payments" as never,
+      attention: paymentReviewCount > 0,
+    },
+  ];
+
+  return (
+    <aside className="admin-bookings-attention" aria-labelledby="attention-heading">
+      <div className="admin-bookings-attention__heading">
+        <h2 id="attention-heading">Current page tasks</h2>
+        <p>Counts reflect the requests currently shown in this page.</p>
+      </div>
+      <div className="admin-bookings-attention__list">
+        {items.map(({ icon: Icon, label, detail, value, to, attention }) => (
+          <Link
+            key={label}
+            to={to}
+            className="admin-bookings-attention__item"
+          >
+            <span className={attention ? "is-attention" : undefined}>
+              <Icon className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <span>
+              <strong>{label}</strong>
+              <small>{detail}</small>
+            </span>
+            <b className={attention ? "is-attention" : undefined}>{value}</b>
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+function BookingsWorkspaceSkeleton() {
+  return (
+    <section className="admin-bookings-triage admin-bookings-triage--loading" aria-label="Loading rental request queue">
+      <aside className="admin-bookings-attention">
+        <div className="admin-bookings-attention__heading">
+          <i className="admin-bookings-skeleton admin-bookings-skeleton--title" />
+          <i className="admin-bookings-skeleton admin-bookings-skeleton--copy" />
+        </div>
+        <div className="admin-bookings-attention__list">
+          {[1, 2, 3].map((item) => (
+            <div className="admin-bookings-skeleton-attention" key={item}>
+              <i className="admin-bookings-skeleton admin-bookings-skeleton--icon" />
+              <span>
+                <i className="admin-bookings-skeleton admin-bookings-skeleton--line" />
+                <i className="admin-bookings-skeleton admin-bookings-skeleton--copy" />
+              </span>
+              <i className="admin-bookings-skeleton admin-bookings-skeleton--count" />
+            </div>
+          ))}
+        </div>
+      </aside>
+      <div className="admin-bookings-queue">
+        <div className="admin-bookings-queue__heading">
+          <div>
+            <i className="admin-bookings-skeleton admin-bookings-skeleton--title" />
+            <i className="admin-bookings-skeleton admin-bookings-skeleton--copy" />
+          </div>
+        </div>
+        <div className="admin-bookings-skeleton-table" aria-hidden="true">
+          <div className="admin-bookings-skeleton-table__head">
+            {[1, 2, 3, 4, 5].map((item) => (
+              <i className="admin-bookings-skeleton admin-bookings-skeleton--line" key={item} />
+            ))}
+          </div>
+          {[1, 2, 3, 4, 5].map((item) => (
+            <div className="admin-bookings-skeleton-table__row" key={item}>
+              {[1, 2, 3, 4, 5].map((column) => (
+                <i className="admin-bookings-skeleton admin-bookings-skeleton--line" key={column} />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
 function BookingsTable({ rows }: { rows: AdminBooking[] }) {
   return (
     <>
-      <div className="hidden xl:block">
-        <Card>
+      <div className="hidden 2xl:block">
+        <Card className="admin-bookings-table-card">
           <div
             className="overflow-x-auto"
             role="region"
             aria-label="Rental requests table"
             tabIndex={0}
           >
-            <table className="w-full min-w-[1120px] text-left text-sm">
+            <table className="admin-bookings-table w-full min-w-[920px] text-left text-sm">
               <caption className="sr-only">
                 Rental requests and their current operational state
               </caption>
@@ -259,25 +562,16 @@ function BookingsTable({ rows }: { rows: AdminBooking[] }) {
                     Customer
                   </th>
                   <th scope="col" className="px-4 py-4">
-                    Vehicle / plate
+                    Vehicle / schedule
                   </th>
                   <th scope="col" className="px-4 py-4">
-                    Requested schedule
+                    Allocation / service
                   </th>
                   <th scope="col" className="px-4 py-4">
-                    Branch / service
+                    Request gate
                   </th>
                   <th scope="col" className="px-4 py-4">
-                    Request
-                  </th>
-                  <th scope="col" className="px-4 py-4">
-                    Requirements
-                  </th>
-                  <th scope="col" className="px-4 py-4">
-                    Payment
-                  </th>
-                  <th scope="col" className="px-4 py-4">
-                    Rental
+                    Payment / rental
                   </th>
                   <th scope="col" className="px-4 py-4">
                     Action
@@ -293,10 +587,7 @@ function BookingsTable({ rows }: { rows: AdminBooking[] }) {
           </div>
         </Card>
       </div>
-      <div className="space-y-3 xl:hidden">
-        <p className="text-xs text-muted-foreground">
-          Select a request to review its complete operational context.
-        </p>
+      <div className="admin-bookings-responsive-list 2xl:hidden">
         {rows.map((booking) => (
           <BookingDisclosure key={booking.id} booking={booking} />
         ))}
@@ -307,7 +598,7 @@ function BookingsTable({ rows }: { rows: AdminBooking[] }) {
 
 function BookingTableRow({ booking }: { booking: AdminBooking }) {
   return (
-    <tr className="align-top hover:bg-secondary/35">
+    <tr className="admin-bookings-row align-top">
       <td className="px-4 py-4">
         <div className="font-semibold">
           {booking.customer?.full_name ?? "Customer unavailable"}
@@ -315,8 +606,8 @@ function BookingTableRow({ booking }: { booking: AdminBooking }) {
         <div className="mt-1 text-xs text-muted-foreground">
           {booking.customer?.email ?? "Email unavailable"}
         </div>
-        <div className="mt-1 font-mono text-xs text-muted-foreground">
-          {booking.id}
+        <div className="admin-bookings-reference" title={booking.id}>
+          Ref. {shortBookingReference(booking.id)}
         </div>
       </td>
       <td className="px-4 py-4">
@@ -329,17 +620,13 @@ function BookingTableRow({ booking }: { booking: AdminBooking }) {
             : (booking.requested_vehicle?.license_plate ??
               "Plate not recorded")}
         </div>
-      </td>
-      <td className="px-4 py-4 tabular-nums">
-        <div>{formatAdminDateRange(booking.pickup_at, booking.return_at)}</div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          {formatAdminDateTime(booking.pickup_at)} –{" "}
-          {formatAdminDateTime(booking.return_at)}
+        <div className="mt-2 text-xs font-medium tabular-nums text-foreground">
+          {formatAdminDateRange(booking.pickup_at, booking.return_at)}
         </div>
       </td>
       <td className="px-4 py-4">
         <div className="font-medium">
-          {booking.pickup_branch?.name ?? "Branch unavailable"}
+          {booking.pickup_branch?.name ?? "Location unavailable"}
         </div>
         <div className="mt-1 text-xs text-muted-foreground">
           {serviceLabel(booking)}
@@ -350,31 +637,32 @@ function BookingTableRow({ booking }: { booking: AdminBooking }) {
           label={booking.booking_status || "Unknown"}
           tone={statusTone(booking.booking_status)}
         />
-      </td>
-      <td className="px-4 py-4">
-        <DomainStatus
-          label={booking.requirement_status ?? "Unavailable"}
-          tone={statusTone(booking.requirement_status)}
-        />
+        <div className="mt-2">
+          <DomainStatus
+            label={booking.requirement_status ?? "Unavailable"}
+            tone={statusTone(booking.requirement_status)}
+          />
+        </div>
       </td>
       <td className="px-4 py-4">
         <DomainStatus
           label={booking.payment_status ?? "Unavailable"}
           tone={statusTone(booking.payment_status)}
         />
-      </td>
-      <td className="px-4 py-4">
-        <DomainStatus
-          label={rentalState(booking)}
-          tone={statusTone(rentalState(booking))}
-        />
+        <div className="mt-2">
+          <DomainStatus
+            label={rentalState(booking)}
+            tone={statusTone(rentalState(booking))}
+          />
+        </div>
       </td>
       <td className="px-4 py-4">
         <Link
           to={`/admin/bookings/${encodeURIComponent(booking.id)}` as never}
-          className="touch-target inline-flex items-center font-semibold text-primary underline underline-offset-4 hover:text-[#0d322e]"
+          className="admin-bookings-detail-link touch-target"
         >
-          Open detail
+          Review request
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </td>
     </tr>
@@ -383,7 +671,7 @@ function BookingTableRow({ booking }: { booking: AdminBooking }) {
 
 function BookingDisclosure({ booking }: { booking: AdminBooking }) {
   return (
-    <details className="rounded-lg border border-border bg-card">
+    <details className="admin-bookings-disclosure">
       <summary className="cursor-pointer list-none px-4 py-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -394,20 +682,18 @@ function BookingDisclosure({ booking }: { booking: AdminBooking }) {
               {booking.requested_vehicle?.name ?? "Vehicle not recorded"} ·{" "}
               {formatAdminDateRange(booking.pickup_at, booking.return_at)}
             </p>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">
-              {booking.id}
-            </p>
+            <p className="admin-bookings-reference">Ref. {shortBookingReference(booking.id)}</p>
           </div>
-          <span className="shrink-0 text-sm font-semibold text-primary">
-            Details
+          <span className="admin-bookings-disclosure-toggle">
+            View details <ChevronDown className="h-4 w-4" aria-hidden="true" />
           </span>
         </div>
       </summary>
       <div className="border-t border-border px-4 pb-4 pt-3">
         <dl className="grid gap-3 sm:grid-cols-2">
           <DisclosureField
-            label="Branch / service"
-            value={`${booking.pickup_branch?.name ?? "Branch unavailable"} · ${serviceLabel(booking)}`}
+            label="Allocation / service"
+            value={`${booking.pickup_branch?.name ?? "Location unavailable"} · ${serviceLabel(booking)}`}
           />
           <DisclosureField
             label="Schedule"
@@ -426,13 +712,18 @@ function BookingDisclosure({ booking }: { booking: AdminBooking }) {
         </dl>
         <Link
           to={`/admin/bookings/${encodeURIComponent(booking.id)}` as never}
-          className="touch-target mt-4 inline-flex items-center font-semibold text-primary underline underline-offset-4"
+          className="admin-bookings-detail-link touch-target mt-4"
         >
-          Open detail
+          Review request
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>
     </details>
   );
+}
+
+function shortBookingReference(id: string) {
+  return id.slice(-8).toUpperCase();
 }
 
 function DisclosureField({ label, value }: { label: string; value: string }) {
@@ -458,5 +749,5 @@ function DisclosureStatus({ label, value }: { label: string; value: string }) {
 function serviceLabel(booking: AdminBooking) {
   return booking.pickup_delivery_option === "delivery"
     ? "Delivery"
-    : "Pickup at branch";
+    : "Delivery / collection service";
 }

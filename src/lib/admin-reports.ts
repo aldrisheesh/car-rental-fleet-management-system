@@ -40,9 +40,15 @@ export type ReportMaintenanceSource = {
   id: string;
   vehicleId: string;
   branchId: string | null;
-  status: "Open" | "Completed" | "Cancelled";
+  status:
+    | "Scheduled"
+    | "In Progress"
+    | "Completed"
+    | "Overdue"
+    | "Cancelled"
+    | "Open";
   blocksRentalUse: boolean;
-  serviceStartedAt: string;
+  serviceStartedAt: string | null;
   completedAt: string | null;
   updatedAt: string;
 };
@@ -51,6 +57,15 @@ export type ReportVehicleSource = {
   branchId: string | null;
   categoryId: string | null;
   createdAt: string;
+};
+export type ReportPaymentSource = {
+  id: string;
+  branchId: string | null;
+  status: string;
+  submittedAt: string | null;
+  reviewedAt: string | null;
+  submittedAmount: number | null;
+  reviewedSubmittedAmount: number | null;
 };
 
 export type AdminReportSources = {
@@ -61,12 +76,98 @@ export type AdminReportSources = {
   maintenance: ReportMaintenanceSource[];
   vehicles: ReportVehicleSource[];
   vehicleAnalytics: VehicleAnalyticsRow[];
+  payments?: ReportPaymentSource[];
 };
 
 export type UtilizationSummary = {
   averagePercent: number | null;
   availableVehicleCount: number;
   unavailableVehicleCount: number;
+};
+
+export type DecisionSupportForecastSource = {
+  id: string;
+  branchId: string;
+  branchName: string;
+  categoryId: string;
+  categoryName: string;
+  horizon: number;
+  targetWeekStart: string;
+  forecastedDemand: number;
+  requiredUnits: number;
+};
+
+export type DecisionSupportSupplySource = {
+  id: string;
+  forecastId: string;
+  evaluatedAt: string;
+  projectedSupply: number;
+  shortageUnits: number;
+  surplusUnits: number;
+};
+
+export type DecisionSupportBatchSource = {
+  id: string;
+  generatedAt: string;
+};
+
+export type DecisionSupportRecommendationSource = {
+  batchId: string;
+  sourceSupplyEvaluationId: string;
+  destinationSupplyEvaluationId: string;
+  sourceBranchId: string;
+  destinationBranchId: string;
+  decisionState: "Pending" | "Approved" | "Rejected";
+  recommendedUnits: number;
+  approvedUnits: number | null;
+};
+
+export type DecisionSupportAccuracySource = {
+  overallMape: number | null;
+  eligibleForecasts: number;
+  excludedZeroActuals: number;
+};
+
+export type DecisionSupportReport = {
+  availability: "Available" | "No forecast run in selected period";
+  latestRun: {
+    id: string;
+    generatedAt: string;
+    method: string;
+  } | null;
+  forecastPositions: number;
+  horizonOnePositions: number;
+  accuracy: DecisionSupportAccuracySource;
+  supply: {
+    evaluatedPositions: number;
+    shortagePositions: number;
+    surplusPositions: number;
+    balancedPositions: number;
+    shortageUnits: number;
+    surplusUnits: number;
+  };
+  allocation: {
+    latestBatchGeneratedAt: string | null;
+    recommendations: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+    recommendedUnits: number;
+    approvedUnits: number;
+  };
+  horizonOne: Array<{
+    forecastId: string;
+    branchId: string;
+    branchName: string;
+    categoryId: string;
+    categoryName: string;
+    targetWeekStart: string;
+    forecastedDemand: number;
+    requiredUnits: number;
+    projectedSupply: number | null;
+    shortageUnits: number | null;
+    surplusUnits: number | null;
+  }>;
 };
 
 export type AdminReportsResponse = {
@@ -79,6 +180,28 @@ export type AdminReportsResponse = {
     rentalsStarted: number;
     rentalsCompleted: number;
     fleetCount: number;
+  };
+  historical: {
+    previousRange: { start: string; end: string };
+    previous: {
+      bookingRequests: number;
+      rentalsStarted: number;
+      rentalsCompleted: number;
+      fleetCount: number;
+    };
+    change: {
+      bookingRequests: number | null;
+      rentalsStarted: number | null;
+      rentalsCompleted: number | null;
+      fleetCount: number | null;
+    };
+    trend: Array<{
+      start: string;
+      end: string;
+      bookingRequests: number;
+      rentalsStarted: number;
+      rentalsCompleted: number;
+    }>;
   };
   bookings: {
     requests: number;
@@ -122,7 +245,147 @@ export type AdminReportsResponse = {
     idleVehicles: number;
     unableToDetermineIdle: number;
   }>;
+  payments?: {
+    latestSubmissions: number;
+    latestSubmittedAmount: number;
+    verified: number;
+    verifiedAmount: number;
+    needsResubmission: number;
+  };
+  decisionSupport?: DecisionSupportReport;
 };
+
+export function buildDecisionSupportReport(
+  latestRun: DecisionSupportReport["latestRun"],
+  branchFilter: string,
+  forecasts: DecisionSupportForecastSource[],
+  evaluations: DecisionSupportSupplySource[],
+  batches: DecisionSupportBatchSource[],
+  recommendations: DecisionSupportRecommendationSource[],
+  accuracy: DecisionSupportAccuracySource,
+): DecisionSupportReport {
+  const branchMatches = (branchId: string) =>
+    branchFilter === ALL_BRANCHES || branchId === branchFilter;
+  const visibleForecasts = forecasts.filter((row) =>
+    branchMatches(row.branchId),
+  );
+  const allForecastIds = new Set(forecasts.map((row) => row.id));
+  const allLatestEvaluationByForecast = new Map<
+    string,
+    DecisionSupportSupplySource
+  >();
+  for (const evaluation of evaluations) {
+    if (!allForecastIds.has(evaluation.forecastId)) continue;
+    const current = allLatestEvaluationByForecast.get(evaluation.forecastId);
+    if (!current || evaluation.evaluatedAt > current.evaluatedAt)
+      allLatestEvaluationByForecast.set(evaluation.forecastId, evaluation);
+  }
+  const visibleForecastIds = new Set(visibleForecasts.map((row) => row.id));
+  const latestEvaluations = [...allLatestEvaluationByForecast.values()].filter(
+    (row) => visibleForecastIds.has(row.forecastId),
+  );
+  const evaluationIds = new Set(
+    [...allLatestEvaluationByForecast.values()].map((row) => row.id),
+  );
+  const matchingRecommendations = recommendations.filter(
+    (row) =>
+      branchMatches(row.sourceBranchId) ||
+      branchMatches(row.destinationBranchId),
+  );
+  const exactRecommendations = matchingRecommendations.filter(
+    (row) =>
+      evaluationIds.has(row.sourceSupplyEvaluationId) &&
+      evaluationIds.has(row.destinationSupplyEvaluationId),
+  );
+  const batchesByNewest = [...batches].sort((left, right) =>
+    right.generatedAt.localeCompare(left.generatedAt),
+  );
+  const latestBatch = batchesByNewest.find((batch) =>
+    exactRecommendations.some((row) => row.batchId === batch.id),
+  );
+  const latestRecommendations = latestBatch
+    ? exactRecommendations.filter((row) => row.batchId === latestBatch.id)
+    : [];
+
+  return {
+    availability: latestRun
+      ? "Available"
+      : "No forecast run in selected period",
+    latestRun,
+    forecastPositions: visibleForecasts.length,
+    horizonOnePositions: visibleForecasts.filter((row) => row.horizon === 1)
+      .length,
+    accuracy: {
+      overallMape: accuracy.overallMape,
+      eligibleForecasts: accuracy.eligibleForecasts,
+      excludedZeroActuals: accuracy.excludedZeroActuals,
+    },
+    supply: {
+      evaluatedPositions: latestEvaluations.length,
+      shortagePositions: latestEvaluations.filter(
+        (row) => row.shortageUnits > 0,
+      ).length,
+      surplusPositions: latestEvaluations.filter((row) => row.surplusUnits > 0)
+        .length,
+      balancedPositions: latestEvaluations.filter(
+        (row) => row.shortageUnits === 0 && row.surplusUnits === 0,
+      ).length,
+      shortageUnits: latestEvaluations.reduce(
+        (total, row) => total + row.shortageUnits,
+        0,
+      ),
+      surplusUnits: latestEvaluations.reduce(
+        (total, row) => total + row.surplusUnits,
+        0,
+      ),
+    },
+    allocation: {
+      latestBatchGeneratedAt: latestBatch?.generatedAt ?? null,
+      recommendations: latestRecommendations.length,
+      pending: latestRecommendations.filter(
+        (row) => row.decisionState === "Pending",
+      ).length,
+      approved: latestRecommendations.filter(
+        (row) => row.decisionState === "Approved",
+      ).length,
+      rejected: latestRecommendations.filter(
+        (row) => row.decisionState === "Rejected",
+      ).length,
+      recommendedUnits: latestRecommendations.reduce(
+        (total, row) => total + row.recommendedUnits,
+        0,
+      ),
+      approvedUnits: latestRecommendations.reduce(
+        (total, row) => total + (row.approvedUnits ?? 0),
+        0,
+      ),
+    },
+    horizonOne: visibleForecasts
+      .filter((row) => row.horizon === 1)
+      .map((forecast) => {
+        const evaluation = allLatestEvaluationByForecast.get(forecast.id);
+        return {
+          forecastId: forecast.id,
+          branchId: forecast.branchId,
+          branchName: forecast.branchName,
+          categoryId: forecast.categoryId,
+          categoryName: forecast.categoryName,
+          targetWeekStart: forecast.targetWeekStart,
+          forecastedDemand: forecast.forecastedDemand,
+          requiredUnits: forecast.requiredUnits,
+          projectedSupply: evaluation?.projectedSupply ?? null,
+          shortageUnits: evaluation?.shortageUnits ?? null,
+          surplusUnits: evaluation?.surplusUnits ?? null,
+        };
+      })
+      .sort(
+        (left, right) =>
+          left.targetWeekStart.localeCompare(right.targetWeekStart) ||
+          left.branchName.localeCompare(right.branchName) ||
+          left.categoryName.localeCompare(right.categoryName),
+      ),
+  };
+}
 
 function validDate(value: string) {
   return (
@@ -152,6 +415,16 @@ export function validateReportRange(start: string, end: string): ReportRange {
 export function defaultReportRange(now = new Date()) {
   const end = dayKey(now);
   return { start: addDays(end, -29), end };
+}
+
+/**
+ * The preceding period uses the same number of Manila calendar days as the
+ * selected reporting range. This keeps historical comparisons descriptive and
+ * prevents a partial month from being compared with a full month.
+ */
+export function previousReportRange(range: ReportRange): ReportRange {
+  const end = addDays(range.start, -1);
+  return validateReportRange(addDays(end, -(range.days.length - 1)), end);
 }
 
 export function assertCanonicalBranch(
@@ -192,6 +465,7 @@ function maintenanceEnd(row: ReportMaintenanceSource) {
 function overlapsRange(row: ReportMaintenanceSource, range: ReportRange) {
   const end = maintenanceEnd(row);
   return (
+    row.serviceStartedAt != null &&
     instant(row.serviceStartedAt) < instant(range.endExclusiveInstant) &&
     (end == null || instant(end) > instant(range.startInstant))
   );
@@ -208,8 +482,13 @@ export function buildAdminReport(
 ): AdminReportsResponse {
   const branchMatches = (branchId: string | null) =>
     branchFilter === ALL_BRANCHES || branchId === branchFilter;
+  const previousRange = previousReportRange(range);
   const bookings = sources.bookings.filter(
     (row) => branchMatches(row.branchId) && inRange(row.createdAt, range),
+  );
+  const previousBookings = sources.bookings.filter(
+    (row) =>
+      branchMatches(row.branchId) && inRange(row.createdAt, previousRange),
   );
   const rentals = sources.rentals.filter((row) => branchMatches(row.branchId));
   const vehicles = sources.vehicles.filter(
@@ -224,8 +503,17 @@ export function buildAdminReport(
   const maintenance = sources.maintenance.filter((row) =>
     branchMatches(row.branchId),
   );
+  const payments = (sources.payments ?? []).filter((row) =>
+    branchMatches(row.branchId),
+  );
   const rentalsStarted = rentals.filter((row) => inRange(row.startedAt, range));
   const rentalsCompleted = rentals.filter((row) => inRange(row.endedAt, range));
+  const previousRentalsStarted = rentals.filter((row) =>
+    inRange(row.startedAt, previousRange),
+  );
+  const previousRentalsCompleted = rentals.filter((row) =>
+    inRange(row.endedAt, previousRange),
+  );
   const periodEnd = instant(range.endExclusiveInstant);
   const activeAtPeriodEnd = rentals.filter(
     (row) =>
@@ -276,6 +564,41 @@ export function buildAdminReport(
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  const percentageChange = (current: number, previous: number) =>
+    previous === 0 ? null : ((current - previous) / previous) * 100;
+  const vehiclesAtPreviousPeriodEnd = sources.vehicles.filter(
+    (row) =>
+      branchMatches(row.branchId) &&
+      instant(row.createdAt) < instant(previousRange.endExclusiveInstant),
+  );
+  const pointInRange = (value: string | null, start: string, end: string) => {
+    if (value == null) return false;
+    const key = dayKey(new Date(value));
+    return key >= start && key <= end;
+  };
+  const trend = Array.from(
+    { length: Math.ceil(range.days.length / 7) },
+    (_, index) => {
+      const days = range.days.slice(index * 7, index * 7 + 7);
+      const [start, end] = [days[0]!, days[days.length - 1]!];
+      return {
+        start,
+        end,
+        bookingRequests: sources.bookings.filter(
+          (row) =>
+            branchMatches(row.branchId) &&
+            pointInRange(row.createdAt, start, end),
+        ).length,
+        rentalsStarted: rentals.filter((row) =>
+          pointInRange(row.startedAt, start, end),
+        ).length,
+        rentalsCompleted: rentals.filter((row) =>
+          pointInRange(row.endedAt, start, end),
+        ).length,
+      };
+    },
+  );
+
   return {
     role,
     range: { start: range.start, end: range.end },
@@ -286,6 +609,34 @@ export function buildAdminReport(
       rentalsStarted: rentalsStarted.length,
       rentalsCompleted: rentalsCompleted.length,
       fleetCount: vehicles.length,
+    },
+    historical: {
+      previousRange: { start: previousRange.start, end: previousRange.end },
+      previous: {
+        bookingRequests: previousBookings.length,
+        rentalsStarted: previousRentalsStarted.length,
+        rentalsCompleted: previousRentalsCompleted.length,
+        fleetCount: vehiclesAtPreviousPeriodEnd.length,
+      },
+      change: {
+        bookingRequests: percentageChange(
+          bookings.length,
+          previousBookings.length,
+        ),
+        rentalsStarted: percentageChange(
+          rentalsStarted.length,
+          previousRentalsStarted.length,
+        ),
+        rentalsCompleted: percentageChange(
+          rentalsCompleted.length,
+          previousRentalsCompleted.length,
+        ),
+        fleetCount: percentageChange(
+          vehicles.length,
+          vehiclesAtPreviousPeriodEnd.length,
+        ),
+      },
+      trend,
     },
     bookings: {
       requests: bookings.length,
@@ -315,6 +666,36 @@ export function buildAdminReport(
       cancelled: cancelledMaintenance.length,
       blockingWorkload: blockingMaintenance.length,
     },
+    ...(role === "Owner/Admin" && sources.payments
+      ? {
+          payments: {
+            latestSubmissions: payments.filter((row) =>
+              inRange(row.submittedAt, range),
+            ).length,
+            latestSubmittedAmount: payments
+              .filter((row) => inRange(row.submittedAt, range))
+              .reduce((total, row) => total + (row.submittedAmount ?? 0), 0),
+            verified: payments.filter(
+              (row) =>
+                row.status === "Verified" && inRange(row.reviewedAt, range),
+            ).length,
+            verifiedAmount: payments
+              .filter(
+                (row) =>
+                  row.status === "Verified" && inRange(row.reviewedAt, range),
+              )
+              .reduce(
+                (total, row) => total + (row.reviewedSubmittedAmount ?? 0),
+                0,
+              ),
+            needsResubmission: payments.filter(
+              (row) =>
+                row.status === "Needs Resubmission" &&
+                inRange(row.reviewedAt, range),
+            ).length,
+          },
+        }
+      : {}),
     branchesPerformance: branchGroups.map((branch) => {
       const rows = analytics.filter((row) => row.branchId === branch.id);
       return {

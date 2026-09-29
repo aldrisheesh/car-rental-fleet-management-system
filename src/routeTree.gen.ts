@@ -21,19 +21,28 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as VehiclesVehicleIdRouteImport } from './routes/vehicles.$vehicleId'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
+import { Route as CustomerNotificationsRouteImport } from './routes/customer_.notifications'
 import { Route as BookingsBookingIdRouteImport } from './routes/bookings.$bookingId'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
+import { Route as ApiVehicleLocationRouteImport } from './routes/api.vehicle-location'
+import { Route as ApiVehicleImagesRouteImport } from './routes/api.vehicle-images'
 import { Route as ApiVehicleFinderRouteImport } from './routes/api.vehicle-finder'
 import { Route as ApiVehicleAnalyticsRouteImport } from './routes/api.vehicle-analytics'
 import { Route as ApiSupplyEvaluationsRouteImport } from './routes/api.supply-evaluations'
 import { Route as ApiRequirementsRouteImport } from './routes/api.requirements'
+import { Route as ApiPublicContactRouteImport } from './routes/api.public-contact'
 import { Route as ApiPaymentsRouteImport } from './routes/api.payments'
+import { Route as ApiPaymentTermsRouteImport } from './routes/api.payment-terms'
+import { Route as ApiPaymentQuoteRouteImport } from './routes/api.payment-quote'
+import { Route as ApiPaymentMethodsRouteImport } from './routes/api.payment-methods'
 import { Route as ApiOperationalContextRouteImport } from './routes/api.operational-context'
 import { Route as ApiNotificationsRouteImport } from './routes/api.notifications'
 import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
 import { Route as ApiMaintenanceRouteImport } from './routes/api.maintenance'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as ApiForecastsRouteImport } from './routes/api.forecasts'
+import { Route as ApiContactInquiriesRouteImport } from './routes/api.contact-inquiries'
 import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
 import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-master-data'
 import { Route as ApiBackupStatusRouteImport } from './routes/api.backup-status'
@@ -41,6 +50,7 @@ import { Route as ApiAuditEventsRouteImport } from './routes/api.audit-events'
 import { Route as ApiAllocationRecommendationsRouteImport } from './routes/api.allocation-recommendations'
 import { Route as ApiAdminUsersRouteImport } from './routes/api.admin-users'
 import { Route as ApiAdminReportsRouteImport } from './routes/api.admin-reports'
+import { Route as ApiAdminPublicContactRouteImport } from './routes/api.admin-public-contact'
 import { Route as ApiAdminFleetRouteImport } from './routes/api.admin-fleet'
 import { Route as ApiAdminDashboardRouteImport } from './routes/api.admin-dashboard'
 import { Route as ApiAdminCalendarRouteImport } from './routes/api.admin-calendar'
@@ -65,9 +75,11 @@ import { Route as ApiAuthSignOutRouteImport } from './routes/api.auth.sign-out'
 import { Route as ApiAuthSignInRouteImport } from './routes/api.auth.sign-in'
 import { Route as ApiAuthSessionRouteImport } from './routes/api.auth.session'
 import { Route as ApiAuthProfileRouteImport } from './routes/api.auth.profile'
+import { Route as ApiAuthAccountStatusRouteImport } from './routes/api.auth.account-status'
 import { Route as AdminRequirementsBookingIdRouteImport } from './routes/admin.requirements.$bookingId'
 import { Route as AdminPaymentsPaymentIdRouteImport } from './routes/admin.payments.$paymentId'
 import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings.$bookingId'
+import { Route as ApiAuthOauthSessionRouteImport } from './routes/api.auth.oauth.session'
 
 const VehiclesRoute = VehiclesRouteImport.update({
   id: '/vehicles',
@@ -129,14 +141,34 @@ const CustomerProfileRoute = CustomerProfileRouteImport.update({
   path: '/customer/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CustomerNotificationsRoute = CustomerNotificationsRouteImport.update({
+  id: '/customer_/notifications',
+  path: '/customer/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookingsBookingIdRoute = BookingsBookingIdRouteImport.update({
   id: '/bookings/$bookingId',
   path: '/bookings/$bookingId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
   id: '/api/vehicles',
   path: '/api/vehicles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVehicleLocationRoute = ApiVehicleLocationRouteImport.update({
+  id: '/api/vehicle-location',
+  path: '/api/vehicle-location',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVehicleImagesRoute = ApiVehicleImagesRouteImport.update({
+  id: '/api/vehicle-images',
+  path: '/api/vehicle-images',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVehicleFinderRoute = ApiVehicleFinderRouteImport.update({
@@ -159,9 +191,29 @@ const ApiRequirementsRoute = ApiRequirementsRouteImport.update({
   path: '/api/requirements',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
+  id: '/api/public-contact',
+  path: '/api/public-contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPaymentsRoute = ApiPaymentsRouteImport.update({
   id: '/api/payments',
   path: '/api/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentTermsRoute = ApiPaymentTermsRouteImport.update({
+  id: '/api/payment-terms',
+  path: '/api/payment-terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentQuoteRoute = ApiPaymentQuoteRouteImport.update({
+  id: '/api/payment-quote',
+  path: '/api/payment-quote',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentMethodsRoute = ApiPaymentMethodsRouteImport.update({
+  id: '/api/payment-methods',
+  path: '/api/payment-methods',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiOperationalContextRoute = ApiOperationalContextRouteImport.update({
@@ -192,6 +244,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const ApiForecastsRoute = ApiForecastsRouteImport.update({
   id: '/api/forecasts',
   path: '/api/forecasts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiContactInquiriesRoute = ApiContactInquiriesRouteImport.update({
+  id: '/api/contact-inquiries',
+  path: '/api/contact-inquiries',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiBookingsRoute = ApiBookingsRouteImport.update({
@@ -228,6 +285,11 @@ const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
 const ApiAdminReportsRoute = ApiAdminReportsRouteImport.update({
   id: '/api/admin-reports',
   path: '/api/admin-reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminPublicContactRoute = ApiAdminPublicContactRouteImport.update({
+  id: '/api/admin-public-contact',
+  path: '/api/admin-public-contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminFleetRoute = ApiAdminFleetRouteImport.update({
@@ -350,6 +412,11 @@ const ApiAuthProfileRoute = ApiAuthProfileRouteImport.update({
   path: '/api/auth/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthAccountStatusRoute = ApiAuthAccountStatusRouteImport.update({
+  id: '/api/auth/account-status',
+  path: '/api/auth/account-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRequirementsBookingIdRoute =
   AdminRequirementsBookingIdRouteImport.update({
     id: '/$bookingId',
@@ -365,6 +432,11 @@ const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
   id: '/$bookingId',
   path: '/$bookingId',
   getParentRoute: () => AdminBookingsRoute,
+} as any)
+const ApiAuthOauthSessionRoute = ApiAuthOauthSessionRouteImport.update({
+  id: '/api/auth/oauth/session',
+  path: '/api/auth/oauth/session',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -395,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
   '/api/admin-fleet': typeof ApiAdminFleetRoute
+  '/api/admin-public-contact': typeof ApiAdminPublicContactRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
@@ -402,31 +475,42 @@ export interface FileRoutesByFullPath {
   '/api/backup-status': typeof ApiBackupStatusRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
+  '/api/contact-inquiries': typeof ApiContactInquiriesRoute
   '/api/forecasts': typeof ApiForecastsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/operational-context': typeof ApiOperationalContextRoute
+  '/api/payment-methods': typeof ApiPaymentMethodsRoute
+  '/api/payment-quote': typeof ApiPaymentQuoteRoute
+  '/api/payment-terms': typeof ApiPaymentTermsRoute
   '/api/payments': typeof ApiPaymentsRoute
+  '/api/public-contact': typeof ApiPublicContactRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
+  '/api/vehicle-images': typeof ApiVehicleImagesRoute
+  '/api/vehicle-location': typeof ApiVehicleLocationRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
+  '/customer/notifications': typeof CustomerNotificationsRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
   '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
+  '/api/auth/account-status': typeof ApiAuthAccountStatusRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/internal/reminders': typeof ApiInternalRemindersRoute
+  '/api/auth/oauth/session': typeof ApiAuthOauthSessionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -455,6 +539,7 @@ export interface FileRoutesByTo {
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
   '/api/admin-fleet': typeof ApiAdminFleetRoute
+  '/api/admin-public-contact': typeof ApiAdminPublicContactRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
@@ -462,31 +547,42 @@ export interface FileRoutesByTo {
   '/api/backup-status': typeof ApiBackupStatusRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
+  '/api/contact-inquiries': typeof ApiContactInquiriesRoute
   '/api/forecasts': typeof ApiForecastsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/operational-context': typeof ApiOperationalContextRoute
+  '/api/payment-methods': typeof ApiPaymentMethodsRoute
+  '/api/payment-quote': typeof ApiPaymentQuoteRoute
+  '/api/payment-terms': typeof ApiPaymentTermsRoute
   '/api/payments': typeof ApiPaymentsRoute
+  '/api/public-contact': typeof ApiPublicContactRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
+  '/api/vehicle-images': typeof ApiVehicleImagesRoute
+  '/api/vehicle-location': typeof ApiVehicleLocationRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
+  '/customer/notifications': typeof CustomerNotificationsRoute
   '/customer/profile': typeof CustomerProfileRoute
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin': typeof AdminIndexRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
   '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
+  '/api/auth/account-status': typeof ApiAuthAccountStatusRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/internal/reminders': typeof ApiInternalRemindersRoute
+  '/api/auth/oauth/session': typeof ApiAuthOauthSessionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -517,6 +613,7 @@ export interface FileRoutesById {
   '/api/admin-calendar': typeof ApiAdminCalendarRoute
   '/api/admin-dashboard': typeof ApiAdminDashboardRoute
   '/api/admin-fleet': typeof ApiAdminFleetRoute
+  '/api/admin-public-contact': typeof ApiAdminPublicContactRoute
   '/api/admin-reports': typeof ApiAdminReportsRoute
   '/api/admin-users': typeof ApiAdminUsersRoute
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
@@ -524,31 +621,42 @@ export interface FileRoutesById {
   '/api/backup-status': typeof ApiBackupStatusRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
+  '/api/contact-inquiries': typeof ApiContactInquiriesRoute
   '/api/forecasts': typeof ApiForecastsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/maintenance': typeof ApiMaintenanceRoute
   '/api/master-data': typeof ApiMasterDataRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/operational-context': typeof ApiOperationalContextRoute
+  '/api/payment-methods': typeof ApiPaymentMethodsRoute
+  '/api/payment-quote': typeof ApiPaymentQuoteRoute
+  '/api/payment-terms': typeof ApiPaymentTermsRoute
   '/api/payments': typeof ApiPaymentsRoute
+  '/api/public-contact': typeof ApiPublicContactRoute
   '/api/requirements': typeof ApiRequirementsRoute
   '/api/supply-evaluations': typeof ApiSupplyEvaluationsRoute
   '/api/vehicle-analytics': typeof ApiVehicleAnalyticsRoute
   '/api/vehicle-finder': typeof ApiVehicleFinderRoute
+  '/api/vehicle-images': typeof ApiVehicleImagesRoute
+  '/api/vehicle-location': typeof ApiVehicleLocationRoute
   '/api/vehicles': typeof ApiVehiclesRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
+  '/customer_/notifications': typeof CustomerNotificationsRoute
   '/customer_/profile': typeof CustomerProfileRoute
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
   '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
+  '/api/auth/account-status': typeof ApiAuthAccountStatusRoute
   '/api/auth/profile': typeof ApiAuthProfileRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/sign-in': typeof ApiAuthSignInRoute
   '/api/auth/sign-out': typeof ApiAuthSignOutRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpRoute
   '/api/internal/reminders': typeof ApiInternalRemindersRoute
+  '/api/auth/oauth/session': typeof ApiAuthOauthSessionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -580,6 +688,7 @@ export interface FileRouteTypes {
     | '/api/admin-calendar'
     | '/api/admin-dashboard'
     | '/api/admin-fleet'
+    | '/api/admin-public-contact'
     | '/api/admin-reports'
     | '/api/admin-users'
     | '/api/allocation-recommendations'
@@ -587,31 +696,42 @@ export interface FileRouteTypes {
     | '/api/backup-status'
     | '/api/booking-master-data'
     | '/api/bookings'
+    | '/api/contact-inquiries'
     | '/api/forecasts'
     | '/api/health'
     | '/api/maintenance'
     | '/api/master-data'
     | '/api/notifications'
     | '/api/operational-context'
+    | '/api/payment-methods'
+    | '/api/payment-quote'
+    | '/api/payment-terms'
     | '/api/payments'
+    | '/api/public-contact'
     | '/api/requirements'
     | '/api/supply-evaluations'
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
+    | '/api/vehicle-images'
+    | '/api/vehicle-location'
     | '/api/vehicles'
+    | '/auth/callback'
     | '/bookings/$bookingId'
+    | '/customer/notifications'
     | '/customer/profile'
     | '/vehicles/$vehicleId'
     | '/admin/'
     | '/admin/bookings/$bookingId'
     | '/admin/payments/$paymentId'
     | '/admin/requirements/$bookingId'
+    | '/api/auth/account-status'
     | '/api/auth/profile'
     | '/api/auth/session'
     | '/api/auth/sign-in'
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
     | '/api/internal/reminders'
+    | '/api/auth/oauth/session'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -640,6 +760,7 @@ export interface FileRouteTypes {
     | '/api/admin-calendar'
     | '/api/admin-dashboard'
     | '/api/admin-fleet'
+    | '/api/admin-public-contact'
     | '/api/admin-reports'
     | '/api/admin-users'
     | '/api/allocation-recommendations'
@@ -647,31 +768,42 @@ export interface FileRouteTypes {
     | '/api/backup-status'
     | '/api/booking-master-data'
     | '/api/bookings'
+    | '/api/contact-inquiries'
     | '/api/forecasts'
     | '/api/health'
     | '/api/maintenance'
     | '/api/master-data'
     | '/api/notifications'
     | '/api/operational-context'
+    | '/api/payment-methods'
+    | '/api/payment-quote'
+    | '/api/payment-terms'
     | '/api/payments'
+    | '/api/public-contact'
     | '/api/requirements'
     | '/api/supply-evaluations'
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
+    | '/api/vehicle-images'
+    | '/api/vehicle-location'
     | '/api/vehicles'
+    | '/auth/callback'
     | '/bookings/$bookingId'
+    | '/customer/notifications'
     | '/customer/profile'
     | '/vehicles/$vehicleId'
     | '/admin'
     | '/admin/bookings/$bookingId'
     | '/admin/payments/$paymentId'
     | '/admin/requirements/$bookingId'
+    | '/api/auth/account-status'
     | '/api/auth/profile'
     | '/api/auth/session'
     | '/api/auth/sign-in'
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
     | '/api/internal/reminders'
+    | '/api/auth/oauth/session'
   id:
     | '__root__'
     | '/'
@@ -701,6 +833,7 @@ export interface FileRouteTypes {
     | '/api/admin-calendar'
     | '/api/admin-dashboard'
     | '/api/admin-fleet'
+    | '/api/admin-public-contact'
     | '/api/admin-reports'
     | '/api/admin-users'
     | '/api/allocation-recommendations'
@@ -708,31 +841,42 @@ export interface FileRouteTypes {
     | '/api/backup-status'
     | '/api/booking-master-data'
     | '/api/bookings'
+    | '/api/contact-inquiries'
     | '/api/forecasts'
     | '/api/health'
     | '/api/maintenance'
     | '/api/master-data'
     | '/api/notifications'
     | '/api/operational-context'
+    | '/api/payment-methods'
+    | '/api/payment-quote'
+    | '/api/payment-terms'
     | '/api/payments'
+    | '/api/public-contact'
     | '/api/requirements'
     | '/api/supply-evaluations'
     | '/api/vehicle-analytics'
     | '/api/vehicle-finder'
+    | '/api/vehicle-images'
+    | '/api/vehicle-location'
     | '/api/vehicles'
+    | '/auth/callback'
     | '/bookings/$bookingId'
+    | '/customer_/notifications'
     | '/customer_/profile'
     | '/vehicles/$vehicleId'
     | '/admin/'
     | '/admin/bookings/$bookingId'
     | '/admin/payments/$paymentId'
     | '/admin/requirements/$bookingId'
+    | '/api/auth/account-status'
     | '/api/auth/profile'
     | '/api/auth/session'
     | '/api/auth/sign-in'
     | '/api/auth/sign-out'
     | '/api/auth/sign-up'
     | '/api/internal/reminders'
+    | '/api/auth/oauth/session'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -748,6 +892,7 @@ export interface RootRouteChildren {
   ApiAdminCalendarRoute: typeof ApiAdminCalendarRoute
   ApiAdminDashboardRoute: typeof ApiAdminDashboardRoute
   ApiAdminFleetRoute: typeof ApiAdminFleetRoute
+  ApiAdminPublicContactRoute: typeof ApiAdminPublicContactRoute
   ApiAdminReportsRoute: typeof ApiAdminReportsRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRoute
   ApiAllocationRecommendationsRoute: typeof ApiAllocationRecommendationsRoute
@@ -755,26 +900,37 @@ export interface RootRouteChildren {
   ApiBackupStatusRoute: typeof ApiBackupStatusRoute
   ApiBookingMasterDataRoute: typeof ApiBookingMasterDataRoute
   ApiBookingsRoute: typeof ApiBookingsRoute
+  ApiContactInquiriesRoute: typeof ApiContactInquiriesRoute
   ApiForecastsRoute: typeof ApiForecastsRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMaintenanceRoute: typeof ApiMaintenanceRoute
   ApiMasterDataRoute: typeof ApiMasterDataRoute
   ApiNotificationsRoute: typeof ApiNotificationsRoute
   ApiOperationalContextRoute: typeof ApiOperationalContextRoute
+  ApiPaymentMethodsRoute: typeof ApiPaymentMethodsRoute
+  ApiPaymentQuoteRoute: typeof ApiPaymentQuoteRoute
+  ApiPaymentTermsRoute: typeof ApiPaymentTermsRoute
   ApiPaymentsRoute: typeof ApiPaymentsRoute
+  ApiPublicContactRoute: typeof ApiPublicContactRoute
   ApiRequirementsRoute: typeof ApiRequirementsRoute
   ApiSupplyEvaluationsRoute: typeof ApiSupplyEvaluationsRoute
   ApiVehicleAnalyticsRoute: typeof ApiVehicleAnalyticsRoute
   ApiVehicleFinderRoute: typeof ApiVehicleFinderRoute
+  ApiVehicleImagesRoute: typeof ApiVehicleImagesRoute
+  ApiVehicleLocationRoute: typeof ApiVehicleLocationRoute
   ApiVehiclesRoute: typeof ApiVehiclesRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   BookingsBookingIdRoute: typeof BookingsBookingIdRoute
+  CustomerNotificationsRoute: typeof CustomerNotificationsRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
+  ApiAuthAccountStatusRoute: typeof ApiAuthAccountStatusRoute
   ApiAuthProfileRoute: typeof ApiAuthProfileRoute
   ApiAuthSessionRoute: typeof ApiAuthSessionRoute
   ApiAuthSignInRoute: typeof ApiAuthSignInRoute
   ApiAuthSignOutRoute: typeof ApiAuthSignOutRoute
   ApiAuthSignUpRoute: typeof ApiAuthSignUpRoute
   ApiInternalRemindersRoute: typeof ApiInternalRemindersRoute
+  ApiAuthOauthSessionRoute: typeof ApiAuthOauthSessionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -863,6 +1019,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CustomerProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/customer_/notifications': {
+      id: '/customer_/notifications'
+      path: '/customer/notifications'
+      fullPath: '/customer/notifications'
+      preLoaderRoute: typeof CustomerNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bookings/$bookingId': {
       id: '/bookings/$bookingId'
       path: '/bookings/$bookingId'
@@ -870,11 +1033,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookingsBookingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/vehicles': {
       id: '/api/vehicles'
       path: '/api/vehicles'
       fullPath: '/api/vehicles'
       preLoaderRoute: typeof ApiVehiclesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vehicle-location': {
+      id: '/api/vehicle-location'
+      path: '/api/vehicle-location'
+      fullPath: '/api/vehicle-location'
+      preLoaderRoute: typeof ApiVehicleLocationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vehicle-images': {
+      id: '/api/vehicle-images'
+      path: '/api/vehicle-images'
+      fullPath: '/api/vehicle-images'
+      preLoaderRoute: typeof ApiVehicleImagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/vehicle-finder': {
@@ -905,11 +1089,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiRequirementsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public-contact': {
+      id: '/api/public-contact'
+      path: '/api/public-contact'
+      fullPath: '/api/public-contact'
+      preLoaderRoute: typeof ApiPublicContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/payments': {
       id: '/api/payments'
       path: '/api/payments'
       fullPath: '/api/payments'
       preLoaderRoute: typeof ApiPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payment-terms': {
+      id: '/api/payment-terms'
+      path: '/api/payment-terms'
+      fullPath: '/api/payment-terms'
+      preLoaderRoute: typeof ApiPaymentTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payment-quote': {
+      id: '/api/payment-quote'
+      path: '/api/payment-quote'
+      fullPath: '/api/payment-quote'
+      preLoaderRoute: typeof ApiPaymentQuoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payment-methods': {
+      id: '/api/payment-methods'
+      path: '/api/payment-methods'
+      fullPath: '/api/payment-methods'
+      preLoaderRoute: typeof ApiPaymentMethodsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/operational-context': {
@@ -952,6 +1164,13 @@ declare module '@tanstack/react-router' {
       path: '/api/forecasts'
       fullPath: '/api/forecasts'
       preLoaderRoute: typeof ApiForecastsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/contact-inquiries': {
+      id: '/api/contact-inquiries'
+      path: '/api/contact-inquiries'
+      fullPath: '/api/contact-inquiries'
+      preLoaderRoute: typeof ApiContactInquiriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/bookings': {
@@ -1001,6 +1220,13 @@ declare module '@tanstack/react-router' {
       path: '/api/admin-reports'
       fullPath: '/api/admin-reports'
       preLoaderRoute: typeof ApiAdminReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin-public-contact': {
+      id: '/api/admin-public-contact'
+      path: '/api/admin-public-contact'
+      fullPath: '/api/admin-public-contact'
+      preLoaderRoute: typeof ApiAdminPublicContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin-fleet': {
@@ -1171,6 +1397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/account-status': {
+      id: '/api/auth/account-status'
+      path: '/api/auth/account-status'
+      fullPath: '/api/auth/account-status'
+      preLoaderRoute: typeof ApiAuthAccountStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/requirements/$bookingId': {
       id: '/admin/requirements/$bookingId'
       path: '/$bookingId'
@@ -1191,6 +1424,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/bookings/$bookingId'
       preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
       parentRoute: typeof AdminBookingsRoute
+    }
+    '/api/auth/oauth/session': {
+      id: '/api/auth/oauth/session'
+      path: '/api/auth/oauth/session'
+      fullPath: '/api/auth/oauth/session'
+      preLoaderRoute: typeof ApiAuthOauthSessionRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -1295,6 +1535,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminCalendarRoute: ApiAdminCalendarRoute,
   ApiAdminDashboardRoute: ApiAdminDashboardRoute,
   ApiAdminFleetRoute: ApiAdminFleetRoute,
+  ApiAdminPublicContactRoute: ApiAdminPublicContactRoute,
   ApiAdminReportsRoute: ApiAdminReportsRoute,
   ApiAdminUsersRoute: ApiAdminUsersRoute,
   ApiAllocationRecommendationsRoute: ApiAllocationRecommendationsRoute,
@@ -1302,26 +1543,37 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBackupStatusRoute: ApiBackupStatusRoute,
   ApiBookingMasterDataRoute: ApiBookingMasterDataRoute,
   ApiBookingsRoute: ApiBookingsRoute,
+  ApiContactInquiriesRoute: ApiContactInquiriesRoute,
   ApiForecastsRoute: ApiForecastsRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiMaintenanceRoute: ApiMaintenanceRoute,
   ApiMasterDataRoute: ApiMasterDataRoute,
   ApiNotificationsRoute: ApiNotificationsRoute,
   ApiOperationalContextRoute: ApiOperationalContextRoute,
+  ApiPaymentMethodsRoute: ApiPaymentMethodsRoute,
+  ApiPaymentQuoteRoute: ApiPaymentQuoteRoute,
+  ApiPaymentTermsRoute: ApiPaymentTermsRoute,
   ApiPaymentsRoute: ApiPaymentsRoute,
+  ApiPublicContactRoute: ApiPublicContactRoute,
   ApiRequirementsRoute: ApiRequirementsRoute,
   ApiSupplyEvaluationsRoute: ApiSupplyEvaluationsRoute,
   ApiVehicleAnalyticsRoute: ApiVehicleAnalyticsRoute,
   ApiVehicleFinderRoute: ApiVehicleFinderRoute,
+  ApiVehicleImagesRoute: ApiVehicleImagesRoute,
+  ApiVehicleLocationRoute: ApiVehicleLocationRoute,
   ApiVehiclesRoute: ApiVehiclesRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   BookingsBookingIdRoute: BookingsBookingIdRoute,
+  CustomerNotificationsRoute: CustomerNotificationsRoute,
   CustomerProfileRoute: CustomerProfileRoute,
+  ApiAuthAccountStatusRoute: ApiAuthAccountStatusRoute,
   ApiAuthProfileRoute: ApiAuthProfileRoute,
   ApiAuthSessionRoute: ApiAuthSessionRoute,
   ApiAuthSignInRoute: ApiAuthSignInRoute,
   ApiAuthSignOutRoute: ApiAuthSignOutRoute,
   ApiAuthSignUpRoute: ApiAuthSignUpRoute,
   ApiInternalRemindersRoute: ApiInternalRemindersRoute,
+  ApiAuthOauthSessionRoute: ApiAuthOauthSessionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

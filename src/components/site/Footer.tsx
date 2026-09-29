@@ -1,7 +1,28 @@
 import { Link } from "@tanstack/react-router";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import {
+  defaultPublicContact,
+  fetchPublicContact,
+  phoneHref,
+} from "@/lib/public-contact";
 
 export function Footer() {
+  const [contact, setContact] = useState(defaultPublicContact);
+
+  useEffect(() => {
+    let active = true;
+    void fetchPublicContact()
+      .then((result) => {
+        if (active) setContact(result.settings);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <footer className="customer-footer">
       <div className="customer-container customer-footer-inner">
@@ -12,18 +33,17 @@ export function Footer() {
           <span className="customer-footer-contact-label">
             Help &amp; contact
           </span>
-          <a href="tel:+639175550142">
-            <Phone size={16} aria-hidden="true" /> +63 917 555 0142
+          <a href={phoneHref(contact.phone)}>
+            <Phone size={16} aria-hidden="true" /> {contact.phone}
           </a>
-          <a href="mailto:hello@briahsrental.ph">
-            <Mail size={16} aria-hidden="true" /> hello@briahsrental.ph
+          <a href={`mailto:${contact.email}`}>
+            <Mail size={16} aria-hidden="true" /> {contact.email}
           </a>
           <span>
-            <MapPin size={16} aria-hidden="true" /> Taft, Manila · Antipolo,
-            Rizal
+            <MapPin size={16} aria-hidden="true" /> {contact.location_summary}
           </span>
           <span>
-            <Clock size={16} aria-hidden="true" /> Mon–Sun, 7:00 AM–9:00 PM
+            <Clock size={16} aria-hidden="true" /> {contact.office_hours}
           </span>
         </div>
       </div>

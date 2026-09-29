@@ -39,15 +39,62 @@ async function readNotifications() {
       return errorResponse("Unable to load notifications.", 503);
     }
 
+    const notifications = (items.data ?? []).map(projectNotification);
+    const adminBindings =
+      principal.role === "Customer/Renter"
+        ? []
+        : await notificationAdminBindings(notifications, client);
     return Response.json({
-      notifications: (items.data ?? []).map(projectNotification),
+      notifications,
       unreadCount: unread.count ?? 0,
       emailNotificationsEnabled:
         preference.data?.email_notifications_enabled ?? true,
+      adminBindings,
     });
   } catch {
     return errorResponse("Authentication required.", 401);
   }
+}
+
+async function notificationAdminBindings(
+  notifications: ReturnType<typeof projectNotification>[],
+  client: ReturnType<typeof getSupabaseServerClient>,
+) {
+  const requirementIds = notifications
+    .filter((item) => item.relatedEntityType === "requirements")
+    .map((item) => item.relatedEntityId);
+  const rentalIds = notifications
+    .filter((item) => item.relatedEntityType === "rental")
+    .map((item) => item.relatedEntityId);
+  const [requirements, rentals] = await Promise.all([
+    requirementIds.length
+      ? client
+          .from("renter_requirement_sets")
+          .select("id,booking_id")
+          .in("id", requirementIds)
+      : Promise.resolve({ data: [] }),
+    rentalIds.length
+      ? client
+          .from("rental_transactions")
+          .select("id,booking_id")
+          .in("id", rentalIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+  const bookingByRequirement = new Map(
+    (requirements.data ?? []).map((item: any) => [item.id, item.booking_id]),
+  );
+  const bookingByRental = new Map(
+    (rentals.data ?? []).map((item: any) => [item.id, item.booking_id]),
+  );
+  return notifications.map((item) => ({
+    notificationId: item.id,
+    bookingId:
+      item.relatedEntityType === "requirements"
+        ? (bookingByRequirement.get(item.relatedEntityId) ?? null)
+        : item.relatedEntityType === "rental"
+          ? (bookingByRental.get(item.relatedEntityId) ?? null)
+          : null,
+  }));
 }
 
 async function markNotificationRead({ request }: { request: Request }) {

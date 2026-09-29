@@ -190,6 +190,15 @@ function PaymentReviewPage() {
 
   async function openProof() {
     if (!proof) return;
+    const preview = window.open("about:blank", "_blank");
+    if (!preview) {
+      setMutation({
+        tone: "error",
+        message: "Allow pop-ups to open this secure proof preview.",
+      });
+      return;
+    }
+    preview.opener = null;
     setOpeningProof(true);
     setMutation(null);
     try {
@@ -205,8 +214,9 @@ function PaymentReviewPage() {
         throw new Error(
           body?.message ?? "This proof is unavailable for secure preview.",
         );
-      window.open(body.url, "_blank", "noopener,noreferrer");
+      preview.location.replace(body.url);
     } catch (error) {
+      preview.close();
       setMutation({
         tone: "error",
         message:
@@ -488,8 +498,8 @@ function PaymentReviewPage() {
                 value={`${formatAdminDateTime(booking.pickup_at)} – ${formatAdminDateTime(booking.return_at)}`}
               />
               <DetailField
-                label="Pickup / return"
-                value={`${booking.pickup_branch?.name ?? "Branch unavailable"} → ${booking.return_branch?.name ?? "Branch unavailable"}`}
+                label="Allocation / return location"
+                value={`${booking.pickup_branch?.name ?? "Location unavailable"} → ${booking.return_branch?.name ?? "Location unavailable"}`}
               />
               <DetailField
                 label="Requested vehicle"

@@ -29,7 +29,7 @@ export function finderEvaluationState({
 }
 
 export type FinderCriteriaSummaryItem = {
-  id: "dates" | "passengers" | "budget" | "category";
+  id: "dates" | "passengers" | "largeBags" | "budget" | "category";
   label: string;
   value: string;
 };
@@ -49,6 +49,13 @@ export function finderCriteriaSummary(
       label: "Passengers",
       value: Number.isFinite(criteria.passengerCount)
         ? String(criteria.passengerCount)
+        : "Not recorded",
+    },
+    {
+      id: "largeBags",
+      label: "Large bags",
+      value: Number.isFinite(criteria.largeBagCount)
+        ? String(criteria.largeBagCount)
         : "Not recorded",
     },
     {

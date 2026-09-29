@@ -1,0 +1,100 @@
+{
+  "pass": true,
+  "branch": "stabilization/ui-refinement",
+  "environment": "local application connected to the configured synthetic defense Supabase project",
+  "completedAt": "2026-09-29T06:16:01.720Z",
+  "command": "npm run defense:decision-support -- --apply --base-url=http://127.0.0.1:3001",
+  "evidence": [
+    {
+      "scenario": "Owner/Admin authentication",
+      "status": "PASS",
+      "observed": "Authenticated as Owner/Admin."
+    },
+    {
+      "scenario": "Explainable three-horizon WMA",
+      "status": "PASS",
+      "observed": "36 positions generated; every position had 3 stored inputs and a ceiling-based requirement."
+    },
+    {
+      "scenario": "Forecast evaluation contract",
+      "status": "PASS",
+      "observed": "Eligible MAPE samples: 164; zero-actual exclusions: 88."
+    },
+    {
+      "scenario": "Current supply evaluation",
+      "status": "PASS",
+      "observed": "36 of 36 forecast positions received current supply snapshots."
+    },
+    {
+      "scenario": "Compatible shortage/surplus recommendation",
+      "status": "PASS",
+      "observed": "1 recommendation, 2 ranked candidates, 11 shortage positions and 3 surplus positions."
+    },
+    {
+      "scenario": "No compatible donor explanation",
+      "status": "PASS",
+      "observed": "8 shortage positions were explicitly classified as NoCompatibleSurplus."
+    },
+    {
+      "scenario": "Reload-safe allocation evidence",
+      "status": "PASS",
+      "observed": "Batch count remained 2; reconstructed summary matched the generation result."
+    },
+    {
+      "scenario": "Lower-quantity approval setup",
+      "status": "PASS",
+      "observed": "Recommended quantity was 2."
+    },
+    {
+      "scenario": "Human decision paths",
+      "status": "PASS",
+      "observed": "Recorded full approval, lower approval of 1, and rejection in separate immutable batches."
+    },
+    {
+      "scenario": "Advisory decision does not move vehicles",
+      "status": "PASS",
+      "observed": "Vehicle branch assignments were identical before and after all three decision paths."
+    },
+    {
+      "scenario": "External operational context",
+      "status": "PASS",
+      "observed": "Partial review-time context with 5 provider records and 2 explicit limitations."
+    },
+    {
+      "scenario": "Maintenance negative-case setup",
+      "status": "PASS",
+      "observed": "2 currently eligible candidates were selected for temporary blocking maintenance."
+    },
+    {
+      "scenario": "Newly maintenance-blocked candidates",
+      "status": "PASS",
+      "observed": "Recommendation count fell to 0; 3 positions reported NoEligibleCandidates."
+    },
+    {
+      "scenario": "Recalculation after operational change",
+      "status": "PASS",
+      "observed": "36 supply positions were refreshed after maintenance; 0 transfer recommendations remained."
+    },
+    {
+      "scenario": "Insufficient forecasting history",
+      "status": "PASS",
+      "observed": "Forecast generation returned HTTP 409: no branch and vehicle-category pair had three complete weeks of demand history."
+    },
+    {
+      "scenario": "No scenario automatically reallocates the fleet",
+      "status": "PASS",
+      "observed": "All vehicle branch assignments remained unchanged through generation, decisions, blocking, and recalculation."
+    },
+    {
+      "scenario": "Acceptance mutations are isolated from baseline",
+      "status": "PASS",
+      "observed": "The controlled run added review evidence above the starting baseline and was followed by a baseline restore."
+    }
+  ],
+  "cleanup": {
+    "applied": true,
+    "restoredTables": 26,
+    "accountsPreserved": true,
+    "dryRunDifferences": []
+  }
+}

@@ -20,6 +20,9 @@ function storageClient(options?: { failPaymentUpload?: boolean }) {
     "payment-proofs": {
       "customer-a/proof.png": new TextEncoder().encode("proof"),
     },
+    "vehicle-images": {
+      "vehicle-a/cover.jpg": new TextEncoder().encode("cover"),
+    },
   };
   const client = {
     storage: {
@@ -27,15 +30,16 @@ function storageClient(options?: { failPaymentUpload?: boolean }) {
         visitedBuckets.push(bucket);
         return {
           async list(folder: string) {
-            if (!folder)
-              return { data: [{ name: "customer-a", id: null }], error: null };
+            const prefix = folder ? `${folder}/` : "";
+            const entries = new Map<string, string | null>();
+            for (const path of Object.keys(files[bucket] ?? {})) {
+              if (!path.startsWith(prefix)) continue;
+              const remaining = path.slice(prefix.length);
+              const [name, ...rest] = remaining.split("/");
+              entries.set(name, rest.length ? null : "object-id");
+            }
             return {
-              data: Object.keys(files[bucket] ?? {})
-                .filter((path) => path.startsWith(`${folder}/`))
-                .map((path) => ({
-                  name: path.slice(folder.length + 1),
-                  id: "object-id",
-                })),
+              data: [...entries].map(([name, id]) => ({ name, id })),
               error: null,
             };
           },
@@ -99,9 +103,15 @@ test("Storage backup includes canonical buckets, preserves paths, and excludes u
   assert.equal(outcome, "Completed");
   assert.deepEqual(
     [...new Set(fixture.visitedBuckets)],
-    ["renter-requirements", "payment-proofs"],
+    ["renter-requirements", "payment-proofs", "vehicle-images"],
   );
   assert.equal(fixture.visitedBuckets.includes("public-images"), false);
+  assert.equal(
+    fixture.uploaded.some((key) =>
+      key.endsWith("vehicle-images/objects/vehicle-a/cover.jpg"),
+    ),
+    true,
+  );
   assert.equal(
     fixture.uploaded.some((key) =>
       key.endsWith("payment-proofs/objects/customer-a/proof.png"),

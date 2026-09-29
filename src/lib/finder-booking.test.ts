@@ -5,6 +5,7 @@ import {
   finderBookingPrefill,
   finderContextForSubmission,
   finderProvenanceMatchesBooking,
+  parseFinderDateSelection,
   parseFinderBookingHandoff,
   revalidateFinderBookingBasis,
 } from "./finder-booking.ts";
@@ -18,8 +19,8 @@ const search = {
   finderStart: "2026-09-10T02:00:00.000Z",
   finderEnd: "2026-09-12T02:00:00.000Z",
   finderPassengers: "5",
+  finderBags: "2",
   finderBudget: "5000",
-  finderCategory: "SUV",
   finderDestination: "Baguio City",
   finderRank: "99",
 };
@@ -28,6 +29,7 @@ const canonicalInput: VehicleFinderInput = {
   requestedStart: "2026-09-10T02:00:00.000Z",
   requestedEnd: "2026-09-12T02:00:00.000Z",
   passengerCount: 5,
+  largeBagCount: 2,
   maximumBudget: 5_000,
   preferredCategory: "SUV",
   destination: "Baguio City",
@@ -38,6 +40,8 @@ const recommendation: VehicleRecommendation = {
   name: "Alpha",
   category: "SUV",
   passengerCapacity: 5,
+  largeLuggageCapacity: 2,
+  largeBagCount: 2,
   baseRentalRate: 1_000,
   estimatedTotalBaseRental: 2_000,
   imageUrl: null,
@@ -63,15 +67,34 @@ test("Finder handoff prefills the existing Booking fields in Manila time", () =>
     requestedStart: "2026-09-10T10:00",
     requestedEnd: "2026-09-12T10:00",
     passengerCount: 5,
+    largeBagCount: 2,
     maximumBudget: 5_000,
-    preferredCategory: "SUV",
-    destination: "Baguio City",
     displayedRank: 99,
   });
 });
 
 test("ordinary vehicle navigation does not claim Finder provenance", () => {
   assert.equal(parseFinderBookingHandoff({ vehicle: "vehicle-a" }), null);
+});
+
+test("date-only browse selections remain available without Finder provenance", () => {
+  assert.deepEqual(
+    parseFinderDateSelection({
+      finderStart: "2026-09-18T10:00",
+      finderEnd: "2026-09-24T18:00",
+    }),
+    {
+      requestedStart: "2026-09-18T02:00:00.000Z",
+      requestedEnd: "2026-09-24T10:00:00.000Z",
+    },
+  );
+  assert.equal(
+    parseFinderDateSelection({
+      finderStart: "2026-09-24T18:00",
+      finderEnd: "2026-09-18T10:00",
+    }),
+    null,
+  );
 });
 
 test("only material Finder basis changes invalidate client provenance", () => {
@@ -110,7 +133,7 @@ test("only material Finder basis changes invalidate client provenance", () => {
       ...booking,
       destination: "Tagaytay",
     }),
-    false,
+    true,
   );
 
   const withoutDestination = parseFinderBookingHandoff({
@@ -177,7 +200,21 @@ test("Finder selection uses canonical fleet/Finder APIs and preserves booking co
   );
   assert.match(
     vehiclesSource,
-    /fetchJson<CustomerVehicle\[\]>\("\/api\/vehicles"\)/,
+    /fetchJson<CustomerVehicle\[\]>\(\s*`\/api\/vehicles\$\{availabilitySearch\}`/,
+  );
+  assert.match(vehiclesSource, /finderStart: availabilityStart/);
+  assert.match(vehiclesSource, /finderEnd: availabilityEnd/);
+  const vehicleDetailSource = await readFile(
+    new URL("../routes/vehicles.$vehicleId.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    vehicleDetailSource,
+    /finderStart: dateTimeInputFromIso\(tripDates\.requestedStart\)/,
+  );
+  assert.match(
+    vehicleDetailSource,
+    /finderEnd: dateTimeInputFromIso\(tripDates\.requestedEnd\)/,
   );
   assert.match(
     vehiclesSource,
@@ -188,6 +225,26 @@ test("Finder selection uses canonical fleet/Finder APIs and preserves booking co
   assert.match(vehiclesSource, /from "@\/lib\/finder-booking"/);
   assert.match(bookingApiSource, /evaluateCanonicalVehicleFinder/);
   assert.match(finderApiSource, /evaluateCanonicalVehicleFinder/);
+});
+
+test("booking creation enforces the one-day policy at its server boundary and in the database", async () => {
+  const [bookingApiSource, migrationSource] = await Promise.all([
+    readFile(new URL("../routes/api.bookings.ts", import.meta.url), "utf8"),
+    readFile(
+      new URL(
+        "../../supabase/migrations/20260917063758_booking_one_day_lead_time_policy.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ]);
+  assert.match(
+    bookingApiSource,
+    /isAtLeastNextManilaCalendarDay\(pickupDate\)/,
+  );
+  assert.match(bookingApiSource, /booking_lead_time_required/);
+  assert.match(migrationSource, /before insert or update of pickup_at/i);
+  assert.match(migrationSource, /Asia\/Manila/);
 });
 
 test("migration creates booking and immutable 1:1 Finder context in one RPC", async () => {
@@ -250,7 +307,10 @@ test("same key and same Finder request creates one booking and one context", asy
   assert.match(originalMigration, /booking_id uuid primary key/);
   assert.ok(
     bookingSource.indexOf("lookup_booking_creation_idempotency") <
-      bookingSource.indexOf("evaluateCanonicalVehicleFinder(finderContext"),
+      bookingSource.indexOf(
+        "evaluateCanonicalVehicleFinder(",
+        bookingSource.indexOf("lookup_booking_creation_idempotency"),
+      ),
   );
 });
 
@@ -284,8 +344,8 @@ test("trusted fingerprint binds the material manual and Finder request", async (
     "requestedStart",
     "requestedEnd",
     "passengerCount",
+    "largeBagCount",
     "maximumBudget",
-    "preferredCategory",
   ])
     assert.match(fingerprintInput, new RegExp(`\\b${field}\\b`));
   assert.match(source, /createHash\("sha256"\)/);
@@ -347,4 +407,16 @@ test("a new customer-scoped key may create a later intentional booking", async (
   );
   assert.match(migration, /primary key \(customer_id, idempotency_key\)/);
   assert.doesNotMatch(migration, /unique \(customer_id, request_fingerprint\)/);
+});
+
+test("booking review presents an honest editable base-rental estimate", async () => {
+  const source = await readFile(
+    new URL("../routes/booking.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /<h2>Rental estimate<\/h2>/);
+  assert.match(source, /calculateRentalDays\(pickup, returned\)/);
+  assert.match(source, /Daily-rate reference estimate/);
+  assert.match(source, /not a final quotation or the amount due/);
 });

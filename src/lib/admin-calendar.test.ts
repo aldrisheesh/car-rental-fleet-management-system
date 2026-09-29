@@ -102,27 +102,27 @@ test("canonical bookings, rentals, and maintenance map to supported dates", () =
       {
         date: "2026-09-03",
         kind: "reservation",
-        label: "Requested Vios reservation",
+        label: "Requested Vios reserved",
       },
       {
         date: "2026-09-07",
         kind: "pickup",
-        label: "Assigned Hiace pickup",
+        label: "Assigned Hiace deliver",
       },
       {
         date: "2026-09-08",
         kind: "return",
-        label: "Assigned Hiace return",
+        label: "Assigned Hiace returned",
       },
       {
         date: "2026-09-10",
         kind: "pickup",
-        label: "Rental Innova pickup",
+        label: "Rental Innova deliver",
       },
       {
         date: "2026-09-12",
         kind: "return",
-        label: "Rental Innova return",
+        label: "Rental Innova returned",
       },
       {
         date: "2026-09-15",
@@ -188,14 +188,17 @@ test("calendar page has real loading, error, empty, and month-navigation states"
     "utf8",
   );
   assert.match(page, /fetch\(\s*`\/api\/admin-calendar\?month=/);
-  assert.match(page, /shiftMonth\(value, -1\)/);
-  assert.match(page, /shiftMonth\(value, 1\)/);
+  assert.match(page, /onClick=\{\(\) => changeMonth\(-1\)\}/);
+  assert.match(page, /onClick=\{\(\) => changeMonth\(1\)\}/);
   assert.match(page, /latestRequest\.current === request/);
   assert.match(page, /Loading calendar schedule/);
   assert.match(page, /Unable to load the calendar schedule/);
+  assert.match(page, /pickup: "Delivery"/);
+  assert.match(page, /return: "Return"/);
+  assert.match(page, /reservation: "Reserved"/);
   assert.match(
     page,
-    /No reservations, pickups, returns, or maintenance are scheduled/,
+    /No reservations, deliveries, returns, or maintenance are planned/,
   );
   assert.match(page, /aria-label="Previous month"/);
   assert.match(page, /aria-label="Next month"/);

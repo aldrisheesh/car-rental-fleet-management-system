@@ -15,7 +15,7 @@ import {
   Car,
   ChevronDown,
   CreditCard,
-  FileText,
+  ExternalLink,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -41,7 +41,6 @@ import {
   type AdminRole,
   type AdminSession,
 } from "@/lib/admin-auth";
-import { clearCustomerSession } from "@/lib/customer-auth";
 import {
   NOTIFICATIONS_CHANGED_EVENT,
   type NotificationsResponse,
@@ -54,31 +53,79 @@ type NavItem = {
   exact?: boolean;
 };
 
-const ownerNav: NavItem[] = [
+type NavGroup = {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  items: NavItem[];
+};
+
+type NavEntry = NavItem | NavGroup;
+
+const ownerNav: NavEntry[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
-  { to: "/admin/requirements", label: "Requirements", icon: FileText },
-  { to: "/admin/fleet", label: "Fleet", icon: Car },
-  { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
-  { to: "/admin/maintenance", label: "Maintenance", icon: Wrench },
-  { to: "/admin/payments", label: "Payments", icon: CreditCard },
   { to: "/admin/decisions", label: "Decision Support", icon: Brain },
-  { to: "/admin/reports", label: "Reports", icon: BarChart3 },
-  { to: "/admin/users", label: "Users & Roles", icon: ShieldCheck },
-  { to: "/admin/branches", label: "Branches", icon: Building2 },
-  { to: "/admin/activity", label: "Audit Trail", icon: ScrollText },
+  {
+    id: "operations",
+    label: "Operations",
+    icon: CalendarRange,
+    items: [
+      { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+      { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
+      { to: "/admin/payments", label: "Payments", icon: CreditCard },
+    ],
+  },
+  {
+    id: "vehicle-management",
+    label: "Vehicle Management",
+    icon: Car,
+    items: [
+      { to: "/admin/fleet", label: "Fleet", icon: Car },
+      {
+        to: "/admin/maintenance",
+        label: "Maintenance",
+        icon: Wrench,
+      },
+      { to: "/admin/branches", label: "Locations", icon: Building2 },
+    ],
+  },
+  {
+    id: "administration",
+    label: "Administration",
+    icon: ShieldCheck,
+    items: [
+      { to: "/admin/reports", label: "Reports", icon: BarChart3 },
+      { to: "/admin/users", label: "Users & Roles", icon: ShieldCheck },
+      { to: "/admin/activity", label: "Audit Trail", icon: ScrollText },
+    ],
+  },
 ];
 
-const staffNav: NavItem[] = [
+const staffNav: NavEntry[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
-  { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
-  { to: "/admin/notifications", label: "Notifications", icon: Bell },
+  {
+    id: "operations",
+    label: "Operations",
+    icon: CalendarRange,
+    items: [
+      { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+      { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
+      { to: "/admin/notifications", label: "Notifications", icon: Bell },
+    ],
+  },
   { to: "/admin/reports", label: "Reports", icon: BarChart3 },
 ];
 
 function isActive(pathname: string, item: NavItem) {
   return item.exact ? pathname === item.to : pathname.startsWith(item.to);
+}
+
+function isNavGroup(entry: NavEntry): entry is NavGroup {
+  return "items" in entry;
+}
+
+function flatNavItems(entries: NavEntry[]) {
+  return entries.flatMap((entry) => (isNavGroup(entry) ? entry.items : entry));
 }
 
 function getInitials(name: string) {
@@ -96,14 +143,111 @@ function SidebarLinks({
   pathname,
   onNavigate,
 }: {
-  items: NavItem[];
+  items: NavEntry[];
   pathname: string;
   onNavigate?: () => void;
 }) {
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    () =>
+      Object.fromEntries(
+        items
+          .filter(isNavGroup)
+          .map((group) => [
+            group.id,
+            group.items.some((item) => isActive(pathname, item)),
+          ]),
+      ),
+  );
+
+  useEffect(() => {
+    const activeGroup = items
+      .filter(isNavGroup)
+      .find((group) => group.items.some((item) => isActive(pathname, item)));
+    if (!activeGroup) return;
+    setExpandedGroups((current) =>
+      current[activeGroup.id]
+        ? current
+        : { ...current, [activeGroup.id]: true },
+    );
+  }, [items, pathname]);
+
   return (
-    <ul className="space-y-1">
-      {items.map((item) => {
+    <ul className="space-y-1.5">
+      {items.map((entry) => {
+        if (isNavGroup(entry)) {
+          const groupActive = entry.items.some((item) =>
+            isActive(pathname, item),
+          );
+          const expanded = expandedGroups[entry.id] || groupActive;
+          const Icon = entry.icon;
+          const regionId = `admin-nav-${entry.id}`;
+          return (
+            <li key={entry.id}>
+              <button
+                type="button"
+                onClick={() =>
+                  setExpandedGroups((current) => ({
+                    ...current,
+                    [entry.id]: !expanded,
+                  }))
+                }
+                aria-expanded={expanded}
+                aria-controls={regionId}
+                className={`group flex min-h-11 w-full items-center gap-2.5 rounded-md border border-transparent px-2.5 text-left text-[13px] font-semibold transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${groupActive ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
+              >
+                <Icon
+                  aria-hidden="true"
+                  className={`h-5 w-5 shrink-0 ${groupActive ? "text-primary" : "text-[#19385e]"}`}
+                  strokeWidth={1.9}
+                />
+                <span className="min-w-0 flex-1 truncate">{entry.label}</span>
+                <ChevronDown
+                  aria-hidden="true"
+                  className={`h-4 w-4 shrink-0 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+                />
+              </button>
+              <div
+                id={regionId}
+                aria-hidden={!expanded}
+                className={`grid overflow-hidden transition-[grid-template-rows] duration-200 ${expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+              >
+                <ul
+                  className={`ml-5 min-h-0 overflow-hidden pl-2 ${expanded ? "border-l border-[#c9d8d2] py-1.5" : "py-0"}`}
+                >
+                  {entry.items.map((item) => {
+                    const active = isActive(pathname, item);
+                    const ItemIcon = item.icon;
+                    return (
+                      <li key={item.to}>
+                        <Link
+                          to={item.to as never}
+                          activeOptions={
+                            item.exact ? { exact: true } : undefined
+                          }
+                          onClick={onNavigate}
+                          aria-current={active ? "page" : undefined}
+                          tabIndex={expanded ? undefined : -1}
+                          className={`group flex min-h-10 items-center gap-2.5 rounded-md px-2.5 text-sm transition-[background-color,color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "bg-[#e2ece6] font-semibold text-primary" : "text-muted-foreground"}`}
+                        >
+                          <ItemIcon
+                            aria-hidden="true"
+                            className={`h-4 w-4 shrink-0 ${active ? "text-primary" : "text-[#526c7b]"}`}
+                            strokeWidth={1.9}
+                          />
+                          <span className="min-w-0 truncate">{item.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </li>
+          );
+        }
+
+        const item = entry;
         const active = isActive(pathname, item);
+        const featured = item.to === "/admin/decisions";
         const Icon = item.icon;
         return (
           <li key={item.to}>
@@ -112,14 +256,24 @@ function SidebarLinks({
               activeOptions={item.exact ? { exact: true } : undefined}
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
-              className={`group flex min-h-11 items-center gap-3 rounded-md border border-transparent px-3 text-sm font-medium transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
+              className={`group flex min-h-11 items-center gap-3 rounded-md border border-transparent px-3 text-sm font-medium transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "border-primary/10 bg-[#e7efec] text-primary" : featured ? "bg-[#f2f8fc] text-primary hover:bg-[#e7f1f7]" : "text-muted-foreground"}`}
             >
               <Icon
                 aria-hidden="true"
                 className={`h-5 w-5 shrink-0 ${active ? "text-primary" : "text-[#19385e]"}`}
                 strokeWidth={1.9}
               />
-              <span className="min-w-0 truncate">{item.label}</span>
+              {featured ? (
+                <span className="min-w-0 leading-4">
+                  <span className="block font-medium">{item.label}</span>
+                  <span className="mt-0.5 inline-block rounded bg-[#d6eaf4] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-3 tracking-[0.06em] text-[#2e647b]">
+                    Insights
+                  </span>
+                </span>
+              ) : null}
+              {!featured ? (
+                <span className="min-w-0 truncate">{item.label}</span>
+              ) : null}
             </Link>
           </li>
         );
@@ -133,6 +287,11 @@ export function AdminShell() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
+  const search = useRouterState({
+    select: (state) => state.location.search as Record<string, unknown>,
+  });
+  const paymentBookingId =
+    typeof search.fromBooking === "string" ? search.fromBooking : null;
   const [session, setSession] = useState<AdminSession | null | undefined>();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
@@ -227,10 +386,9 @@ export function AdminShell() {
     };
   }, [pathname, session]);
 
-  function handleSignOut() {
-    signOutAdmin();
-    clearCustomerSession();
+  async function handleSignOut() {
     setSession(null);
+    await signOutAdmin();
     void navigate({ to: "/", replace: true });
   }
 
@@ -252,12 +410,12 @@ export function AdminShell() {
   if (!session) return null;
 
   return (
-    <div className="admin-app flex min-h-screen overflow-x-hidden">
+    <div className="admin-app min-h-screen overflow-x-clip">
       <a className="skip-link" href="#admin-main">
         Skip to main content
       </a>
 
-      <aside className="sticky top-0 hidden h-screen w-[236px] shrink-0 flex-col border-r border-border bg-white lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-border bg-white lg:flex">
         <Link to="/admin" className="border-b border-border px-7 py-6">
           <div className="text-[1.65rem] font-semibold leading-7 tracking-[-0.045em] text-primary">
             Briah&apos;s Car Rental
@@ -273,26 +431,10 @@ export function AdminShell() {
         >
           <SidebarLinks items={navItems} pathname={pathname} />
         </nav>
-
-        <div className="border-t border-border px-4 py-4">
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-semibold text-white">
-              {getInitials(session.name)}
-            </span>
-            <div className="min-w-0 leading-5">
-              <div className="truncate text-sm font-semibold">
-                {session.name}
-              </div>
-              <div className="truncate text-xs text-muted-foreground">
-                {session.role}
-              </div>
-            </div>
-          </div>
-        </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 border-b border-border bg-white">
+      <div className="flex min-w-0 flex-1 flex-col pt-[76px] lg:pl-[236px]">
+        <header className="fixed inset-x-0 top-0 z-30 border-b border-border bg-white lg:left-[236px]">
           <div className="flex min-h-[76px] items-center gap-4 px-5 md:px-8 xl:px-10">
             <button
               type="button"
@@ -318,22 +460,52 @@ export function AdminShell() {
               </span>
             </div>
 
-            <div className="hidden min-w-0 items-center gap-3 text-sm lg:flex">
-              <Link
-                to="/admin"
-                className="text-muted-foreground hover:text-primary"
-              >
-                Home
-              </Link>
-              <span aria-hidden="true" className="text-border">
-                /
-              </span>
-              <span className="truncate font-medium text-foreground">
-                {currentLabel(pathname)}
-              </span>
-            </div>
+            <nav
+              aria-label="Breadcrumb"
+              className="hidden min-w-0 items-center gap-2 text-sm lg:flex"
+            >
+              {adminBreadcrumbs(pathname, paymentBookingId).map(
+                (crumb, index) => (
+                  <span
+                    className="contents"
+                    key={`${crumb.label}-${crumb.to ?? index}`}
+                  >
+                    {index > 0 ? (
+                      <span aria-hidden="true" className="text-border">
+                        /
+                      </span>
+                    ) : null}
+                    {crumb.to ? (
+                      <Link
+                        to={crumb.to as never}
+                        className="truncate text-muted-foreground hover:text-primary"
+                      >
+                        {crumb.label}
+                      </Link>
+                    ) : (
+                      <span
+                        aria-current="page"
+                        className="truncate font-medium text-foreground"
+                      >
+                        {crumb.label}
+                      </span>
+                    )}
+                  </span>
+                ),
+              )}
+            </nav>
 
             <div className="ml-auto flex items-center gap-3">
+              <a
+                href="/vehicles"
+                target="_blank"
+                rel="noreferrer"
+                className="touch-target inline-flex items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+                aria-label="View customer site in a new tab"
+              >
+                <ExternalLink aria-hidden="true" className="h-4 w-4" />
+                <span className="hidden lg:inline">View customer site</span>
+              </a>
               <Link
                 to="/admin/notifications"
                 className="touch-target relative inline-flex items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -433,11 +605,64 @@ export function AdminShell() {
 
 function currentLabel(pathname: string) {
   if (pathname.startsWith("/admin/bookings/")) return "Booking detail";
-  if (pathname.startsWith("/admin/requirements")) return "Requirements review";
+  if (pathname.startsWith("/admin/requirements")) return "Booking requirements";
   if (pathname.startsWith("/admin/payments")) return "Payment review";
   if (pathname.startsWith("/admin/notifications")) return "Notifications";
   return (
-    [...ownerNav, ...staffNav].find((item) => isActive(pathname, item))
-      ?.label ?? "Dashboard"
+    flatNavItems([...ownerNav, ...staffNav]).find((item) =>
+      isActive(pathname, item),
+    )?.label ?? "Dashboard"
   );
+}
+
+function adminBreadcrumbs(pathname: string, paymentBookingId: string | null) {
+  if (pathname.startsWith("/admin/bookings/"))
+    return [
+      { label: "Operations", to: "/admin/bookings" },
+      { label: "Bookings", to: "/admin/bookings" },
+      { label: "Booking detail" },
+    ];
+  if (pathname.startsWith("/admin/payments/") && paymentBookingId)
+    return [
+      { label: "Operations", to: "/admin/bookings" },
+      { label: "Bookings", to: "/admin/bookings" },
+      {
+        label: "Booking detail",
+        to: `/admin/bookings/${encodeURIComponent(paymentBookingId)}`,
+      },
+      { label: "Payment record" },
+    ];
+  if (pathname.startsWith("/admin/payments/"))
+    return [
+      { label: "Operations", to: "/admin/payments" },
+      { label: "Bookings", to: "/admin/bookings" },
+      { label: "Payments", to: "/admin/payments" },
+      { label: "Payment record" },
+    ];
+  if (pathname.startsWith("/admin/calendar"))
+    return [
+      { label: "Operations", to: "/admin/calendar" },
+      { label: "Calendar" },
+    ];
+  if (pathname.startsWith("/admin/bookings"))
+    return [
+      { label: "Operations", to: "/admin/bookings" },
+      { label: "Bookings" },
+    ];
+  if (pathname.startsWith("/admin/payments"))
+    return [
+      { label: "Operations", to: "/admin/payments" },
+      { label: "Payments" },
+    ];
+  if (pathname.startsWith("/admin/fleet"))
+    return [
+      { label: "Vehicle management", to: "/admin/fleet" },
+      { label: "Fleet" },
+    ];
+  if (pathname.startsWith("/admin/maintenance"))
+    return [
+      { label: "Vehicle management", to: "/admin/fleet" },
+      { label: "Maintenance" },
+    ];
+  return [{ label: currentLabel(pathname) }];
 }

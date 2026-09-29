@@ -7,6 +7,7 @@ export type ApiMasterVehicle = {
   transmission: string | null;
   fuel_type: string | null;
   seat_capacity: number | null;
+  large_luggage_capacity?: number | null;
   daily_rate: number | null;
   reference_fuel_efficiency_km_per_liter: number | null;
   current_odometer_km: number | null;
@@ -24,6 +25,7 @@ export type VehicleMasterDataInput = {
   licensePlate: string | null;
   transmission: string | null;
   seatCapacity: number | null;
+  largeLuggageCapacity: number | null;
   dailyRate: number | null;
   isActive: boolean;
   fuelType: string | null;
@@ -59,6 +61,7 @@ function buildVehicleUpdateInput(
     licensePlate: vehicle.license_plate,
     transmission: vehicle.transmission,
     seatCapacity: vehicle.seat_capacity,
+    largeLuggageCapacity: vehicle.large_luggage_capacity ?? null,
     dailyRate: vehicle.daily_rate,
     isActive: vehicle.is_active,
     fuelType: vehicle.fuel_type,

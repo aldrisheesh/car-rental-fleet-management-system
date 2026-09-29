@@ -21,6 +21,7 @@ export type FleetCanonicalVehicle = {
   license_plate: string | null;
   transmission: string | null;
   seat_capacity: number | null;
+  large_luggage_capacity?: number | null;
   daily_rate: number | null;
   image_url: string | null;
   is_active: boolean;
@@ -36,9 +37,16 @@ export type FleetCanonicalBooking = {
 };
 
 export type FleetCanonicalRental = {
+  id: string;
   vehicle_id: string;
   started_at: string | null;
   ended_at: string | null;
+  inspection_status?:
+    | "Not required"
+    | "Pending"
+    | "Cleared"
+    | "Maintenance scheduled";
+  inspection_remarks?: string | null;
 };
 
 export type FleetCanonicalReadiness = {
@@ -66,6 +74,7 @@ export type FleetVehicleRow = {
   categoryId: string | null;
   transmission: string | null;
   seats: number | null;
+  largeBagCapacity: number | null;
   branch: string | null;
   branchId: string | null;
   pricePerDay: number | null;
@@ -74,6 +83,7 @@ export type FleetVehicleRow = {
   status: FleetStatus;
   maintenanceReady: boolean;
   readinessReasons: string[];
+  pendingInspection: { rentalId: string; remarks: string | null } | null;
 };
 
 export type AdminFleetResponse = {
@@ -87,6 +97,7 @@ export type AdminFleetResponse = {
     availableVehicles: number;
     reservedVehicles: number;
     ongoingRentals: number;
+    underMaintenance: number;
     readinessAttention: number;
     completedRentals: number;
   };
@@ -114,9 +125,11 @@ export function getFleetVehicleStatus(
   readiness: FleetCanonicalReadiness | undefined,
   activeRentalVehicleIds: ReadonlySet<string>,
   reservedVehicleIds: ReadonlySet<string>,
+  inspectionVehicleIds: ReadonlySet<string> = new Set(),
 ): FleetStatus {
   if (!vehicle.is_active) return "Inactive";
   if (activeRentalVehicleIds.has(vehicle.id)) return "Rented";
+  if (inspectionVehicleIds.has(vehicle.id)) return "Maintenance";
   if (!readiness || !readiness.maintenanceReady) return "Maintenance";
   if (reservedVehicleIds.has(vehicle.id)) return "Reserved";
   return "Available";
@@ -138,6 +151,17 @@ export function buildAdminFleet(
       .filter((booking) => isCurrentConfirmedReservation(booking, now))
       .map((booking) => booking.assigned_vehicle_id as string),
   );
+  const inspectionByVehicle = new Map(
+    sources.rentals
+      .filter(
+        (rental) =>
+          rental.ended_at != null && rental.inspection_status === "Pending",
+      )
+      .sort((left, right) =>
+        String(right.ended_at).localeCompare(String(left.ended_at)),
+      )
+      .map((rental) => [rental.vehicle_id, rental]),
+  );
 
   const vehicles = sources.vehicles.map((vehicle) => {
     const readiness = readinessByVehicle.get(vehicle.id);
@@ -152,6 +176,7 @@ export function buildAdminFleet(
       categoryId: vehicle.category?.id ?? null,
       transmission: vehicle.transmission,
       seats: vehicle.seat_capacity,
+      largeBagCapacity: vehicle.large_luggage_capacity ?? null,
       branch: vehicle.branch?.name ?? null,
       branchId: vehicle.branch?.id ?? null,
       pricePerDay: vehicle.daily_rate,
@@ -162,9 +187,17 @@ export function buildAdminFleet(
         readiness,
         activeRentalVehicleIds,
         reservedVehicleIds,
+        new Set(inspectionByVehicle.keys()),
       ),
       maintenanceReady: readiness?.maintenanceReady ?? false,
       readinessReasons: readiness?.reasons ?? ["Readiness unavailable"],
+      pendingInspection: inspectionByVehicle.has(vehicle.id)
+        ? {
+            rentalId: inspectionByVehicle.get(vehicle.id)!.id,
+            remarks:
+              inspectionByVehicle.get(vehicle.id)!.inspection_remarks ?? null,
+          }
+        : null,
     } satisfies FleetVehicleRow;
   });
 
@@ -188,6 +221,9 @@ export function buildAdminFleet(
       ).length,
       ongoingRentals: vehicles.filter((vehicle) => vehicle.status === "Rented")
         .length,
+      underMaintenance: vehicles.filter(
+        (vehicle) => vehicle.status === "Maintenance",
+      ).length,
       readinessAttention: vehicles.filter(
         (vehicle) => !vehicle.maintenanceReady,
       ).length,

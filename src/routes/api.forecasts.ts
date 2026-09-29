@@ -10,7 +10,7 @@ import {
   loadCanonicalBookings,
   loadDemandCoverage,
   manilaWeekStart,
-  mapeFromDatabaseRows,
+  forecastAccuracyFromDatabaseRows,
 } from "@/lib/forecasting.server";
 export const Route = createFileRoute("/api/forecasts")({
   server: { handlers: { GET: read, POST: mutate } },
@@ -36,10 +36,18 @@ async function read() {
         .order("target_week_start"),
     ]);
     if (a.error || b.error) return deny(503, "Unable to load forecasts.");
+    const accuracy = forecastAccuracyFromDatabaseRows(b.data ?? []);
+    const current = isoDay(manilaWeekStart(new Date()));
     return Response.json({
       runs: a.data ?? [],
       forecasts: b.data ?? [],
-      mape: mapeFromDatabaseRows(b.data ?? []),
+      mape: accuracy.overallMape,
+      accuracy,
+      finalizableForecasts: (b.data ?? []).filter(
+        (forecast: any) =>
+          forecast.target_week_start < current &&
+          forecast.actual_demand == null,
+      ).length,
     });
   } catch (e) {
     return deny(
@@ -65,6 +73,8 @@ async function mutate({ request }: { request: Request }) {
       .from("vehicle_categories")
       .select("id")
       .eq("is_active", true);
+    if (branches.error || cats.error)
+      return deny(503, "Unable to load the configured forecast scope.");
     const pairs = (branches.data ?? []).flatMap((b: any) =>
       (cats.data ?? []).map((cat: any) => ({
         branchId: b.id,
@@ -81,6 +91,8 @@ async function mutate({ request }: { request: Request }) {
         )
         .lt("target_week_start", current)
         .is("actual_demand", null);
+      if (pending.error)
+        return deny(503, "Unable to load forecasts awaiting finalization.");
       const updates = (pending.data ?? []).flatMap((r: any) => {
         const d = (
           actual.get(`${r.branch_id}:${r.vehicle_category_id}`) ?? []
@@ -148,6 +160,11 @@ async function mutate({ request }: { request: Request }) {
           );
         }
       }
+    if (!records.length)
+      return deny(
+        409,
+        "No branch and vehicle-category pair has three complete weeks of demand history yet.",
+      );
     const rpc = await c.rpc("persist_forecast_run", {
       p_generated_by: p.userId,
       p_method: "WMA",

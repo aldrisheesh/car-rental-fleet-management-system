@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  buildWmaCalculation,
   buildForecastChart,
   canShowSupplyEvaluationActions,
+  selectActionableForecasts,
   selectLatestForecasts,
   selectLatestSupplyEvaluations,
+  selectCurrentRecommendations,
   supplyBalanceState,
   type CanonicalForecast,
 } from "./admin-decisions.ts";
@@ -51,6 +54,69 @@ test("decision support selects the latest persisted forecast run", () => {
   ]);
 });
 
+test("decision support exposes the stored WMA terms and rounded planning requirement", () => {
+  const calculation = buildWmaCalculation(
+    forecast({
+      forecasted_demand: 1.3,
+      required_vehicle_units: 2,
+      inputs: [
+        {
+          source_type: "Actual",
+          source_week_start: "2026-09-07",
+          source_value: 1,
+          input_order: 3,
+          weight: 0.5,
+          weighted_contribution: 0.5,
+        },
+        {
+          source_type: "Actual",
+          source_week_start: "2026-08-24",
+          source_value: 1,
+          input_order: 1,
+          weight: 0.2,
+          weighted_contribution: 0.2,
+        },
+        {
+          source_type: "Actual",
+          source_week_start: "2026-08-31",
+          source_value: 2,
+          input_order: 2,
+          weight: 0.3,
+          weighted_contribution: 0.6,
+        },
+      ],
+    }),
+  );
+
+  assert.deepEqual(calculation, {
+    terms: [
+      {
+        sourceType: "Actual",
+        sourceWeekStart: "2026-08-24",
+        sourceValue: 1,
+        weight: 0.2,
+        weightedContribution: 0.2,
+      },
+      {
+        sourceType: "Actual",
+        sourceWeekStart: "2026-08-31",
+        sourceValue: 2,
+        weight: 0.3,
+        weightedContribution: 0.6,
+      },
+      {
+        sourceType: "Actual",
+        sourceWeekStart: "2026-09-07",
+        sourceValue: 1,
+        weight: 0.5,
+        weightedContribution: 0.5,
+      },
+    ],
+    forecastDemand: 1.3,
+    requiredVehicles: 2,
+  });
+});
+
 test("decision support keeps the latest canonical supply snapshot per forecast", () => {
   const rows = selectLatestSupplyEvaluations([
     {
@@ -80,6 +146,34 @@ test("decision support keeps the latest canonical supply snapshot per forecast",
   assert.equal(supplyBalanceState(rows[0]), "Surplus");
 });
 
+test("elapsed forecast weeks are excluded from current supply and allocation actions", () => {
+  const rows = selectActionableForecasts(
+    [
+      forecast({
+        id: "elapsed",
+        target_week_start: "2026-09-14",
+        target_week_end: "2026-09-21",
+      }),
+      forecast({
+        id: "current",
+        target_week_start: "2026-09-28",
+        target_week_end: "2026-10-05",
+      }),
+      forecast({
+        id: "future",
+        target_week_start: "2026-10-05",
+        target_week_end: "2026-10-12",
+      }),
+    ],
+    "2026-09-29",
+  );
+
+  assert.deepEqual(
+    rows.map((row) => row.id),
+    ["current", "future"],
+  );
+});
+
 test("zero-snapshot state exposes supply evaluation only for Owner/Admin forecasts", () => {
   const latestForecasts = selectLatestForecasts(
     [{ id: "run-new", generated_at: "2026-09-08T00:00:00Z" }],
@@ -102,6 +196,69 @@ test("zero-snapshot state exposes supply evaluation only for Owner/Admin forecas
   assert.equal(canShowSupplyEvaluationActions(false, 0), false);
 });
 
+test("current recommendations are bound to the exact latest supply snapshots", () => {
+  const evaluations = selectLatestSupplyEvaluations([
+    {
+      id: "source-old",
+      forecast_id: "source",
+      evaluated_at: "2026-09-08T00:00:00Z",
+      required_units_snapshot: 1,
+      projected_supply: 3,
+      shortage_units: 0,
+      surplus_units: 2,
+    },
+    {
+      id: "source-current",
+      forecast_id: "source",
+      evaluated_at: "2026-09-09T00:00:00Z",
+      required_units_snapshot: 1,
+      projected_supply: 2,
+      shortage_units: 0,
+      surplus_units: 1,
+    },
+    {
+      id: "destination-current",
+      forecast_id: "destination",
+      evaluated_at: "2026-09-09T00:00:00Z",
+      required_units_snapshot: 2,
+      projected_supply: 1,
+      shortage_units: 1,
+      surplus_units: 0,
+    },
+  ]);
+  const rows = selectCurrentRecommendations(
+    [
+      {
+        id: "stale",
+        batch_id: "batch-old-snapshot",
+        created_at: "2026-09-08T00:00:00Z",
+        source_supply_evaluation_id: "source-old",
+        destination_supply_evaluation_id: "destination-current",
+      },
+      {
+        id: "older-current-batch",
+        batch_id: "batch-older",
+        created_at: "2026-09-09T00:00:00Z",
+        source_supply_evaluation_id: "source-current",
+        destination_supply_evaluation_id: "destination-current",
+      },
+      {
+        id: "current",
+        batch_id: "batch-current",
+        created_at: "2026-09-10T00:00:00Z",
+        source_supply_evaluation_id: "source-current",
+        destination_supply_evaluation_id: "destination-current",
+      },
+    ],
+    evaluations,
+  );
+
+  assert.deepEqual(
+    rows.map((row) => row.id),
+    ["current"],
+  );
+});
+
 test("Decision Support uses canonical sources and has no prototype analytics", async () => {
   const page = await readFile(
     new URL("../routes/admin.decisions.tsx", import.meta.url),
@@ -115,6 +272,10 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
     new URL("../routes/api.supply-evaluations.ts", import.meta.url),
     "utf8",
   );
+  const allocationApi = await readFile(
+    new URL("../routes/api.allocation-recommendations.ts", import.meta.url),
+    "utf8",
+  );
 
   assert.match(page, /\/api\/forecasts/);
   assert.match(page, /\/api\/supply-evaluations/);
@@ -126,23 +287,43 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
   );
   assert.match(
     page,
-    /body: JSON\.stringify\(\{\s*forecastId,\s*idempotencyKey: crypto\.randomUUID\(\),\s*\}\)/s,
+    /body: JSON\.stringify\(\{\s*forecastIds,\s*idempotencyKey,\s*\}\)/s,
   );
   assert.match(page, /setSupportVersion\(\(version\) => version \+ 1\)/);
   assert.match(
     page,
     /\[analyticsRange\.end, analyticsRange\.start, supportVersion\]/,
   );
-  assert.match(page, /canShowSupplyEvaluationActions\(/);
-  assert.match(page, /showSupplyEvaluationActions \?/);
-  assert.match(page, /Persisted forecasts without a supply snapshot/);
-  assert.match(page, /supplyRows\.map\(\(evaluation\) =>/);
-  assert.match(
-    page,
-    /No canonical projected-supply evaluations are available yet/,
-  );
-  assert.match(page, /Sufficient covered demand history is required/);
-  assert.match(page, /Insufficient historical eligibility data/);
+  assert.match(page, /latestForecastIds/);
+  assert.match(page, /currentSupplyRows/);
+  assert.match(page, /Decision brief/);
+  assert.match(page, /Review supply gaps/);
+  assert.match(page, /Generate transfer recommendations/);
+  assert.match(page, /Branch balance/);
+  assert.match(page, /Vehicle attention/);
+  assert.match(page, /Supply analysis/);
+  assert.match(page, /Unresolved shortage evidence/);
+  assert.match(page, /Auditable decision trace/);
+  assert.match(page, /External context/);
+  assert.match(page, /do not change the WMA demand forecast/);
+  assert.match(page, /No compatible donor is available/);
+  assert.match(page, /blocked by a booking, rental, maintenance/);
+  assert.match(page, /forecastError \|\| allocationError \|\| forecastNotice/);
+  assert.match(page, /automatic-supply-/);
+  assert.match(page, /automatic-allocation-/);
+  assert.match(page, /allocationLoading/);
+  assert.match(page, /currentAllocationRows\.length/);
+  assert.match(page, /hasForecastSnapshot/);
+  assert.match(page, /actual weekly demand/);
+  assert.match(page, /selectedBranchId === "all"/);
+  assert.match(page, /Forecast horizon:/);
+  assert.match(page, /Auditable WMA example/);
+  assert.match(page, /planning requirement rounds up to/);
+  assert.match(page, /supplyWeekSummaries\.map\(\(summary\) =>/);
+  assert.match(page, /Automatic readiness snapshots/);
+  assert.match(page, /approvedUnits/);
+  assert.doesNotMatch(page, /window\.prompt/);
+  assert.doesNotMatch(page, /High priority|expected unmet rental|revenue/i);
   assert.doesNotMatch(
     page,
     /Toyota Hilux|NDA 6610|Taft, Manila|High confidence/,
@@ -150,5 +331,14 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
   assert.doesNotMatch(page, /const forecast = \[/);
   assert.match(forecastsApi, /branch:branches\(id,name\)/);
   assert.match(forecastsApi, /category:vehicle_categories\(id,name\)/);
+  assert.doesNotMatch(forecastsApi, /extractDailyDemand/);
   assert.match(supplyApi, /if \(principal\.role !== "Owner\/Admin"\)/);
+  assert.match(
+    allocationApi,
+    /summary = \(await loadCurrentAllocationContext\(client\)\)\.summary/,
+  );
+  assert.match(
+    allocationApi,
+    /return Response\.json\(\{ \.\.\.view, summary \}\)/,
+  );
 });

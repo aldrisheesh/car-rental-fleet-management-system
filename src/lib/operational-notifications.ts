@@ -70,7 +70,8 @@ export type OperationalConditionStore = {
 };
 
 const MATERIAL_MAINTENANCE_REASONS = new Set<MaintenanceReadinessReason>([
-  "Active blocking maintenance",
+  "Unresolved maintenance concern prevents rental use",
+  "Active maintenance in progress",
   "Preventive maintenance due by date",
   "Preventive maintenance due by odometer",
   "Vehicle condition blocks rental use",

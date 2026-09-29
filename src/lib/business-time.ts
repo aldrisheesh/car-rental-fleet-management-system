@@ -59,3 +59,15 @@ export function instantToManilaCalendarDate(instant: Date) {
     .toISOString()
     .slice(0, 10);
 }
+
+/** Whether an instant falls on a later Manila calendar day than the current one. */
+export function isAtLeastNextManilaCalendarDay(
+  instant: Date,
+  now: Date = new Date(),
+) {
+  if (Number.isNaN(instant.getTime()) || Number.isNaN(now.getTime()))
+    return false;
+  return (
+    instantToManilaCalendarDate(instant) > instantToManilaCalendarDate(now)
+  );
+}

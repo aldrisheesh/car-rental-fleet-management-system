@@ -1,5 +1,8 @@
 import { calculateRentalDays } from "./rental-duration.ts";
-import { manilaDateTimeLocalToInstant } from "./business-time.ts";
+import {
+  isAtLeastNextManilaCalendarDay,
+  manilaDateTimeLocalToInstant,
+} from "./business-time.ts";
 
 export const MAX_FINDER_PASSENGERS = 100;
 export const FINDER_START_PRECISION_TOLERANCE_MS = 60_000;
@@ -8,6 +11,7 @@ export type VehicleFinderInput = {
   requestedStart: string;
   requestedEnd: string;
   passengerCount: number;
+  largeBagCount?: number;
   maximumBudget: number;
   preferredCategory: string | null;
   destination: string | null;
@@ -18,11 +22,13 @@ export type FinderCandidate = {
   name: string;
   category: string;
   passengerCapacity: number | null;
+  largeLuggageCapacity?: number | null;
   baseRentalRate: number | null;
   imageUrl: string | null;
   branchName: string | null;
   transmission: string | null;
   fuelType: string | null;
+  preferredCategoryMatch?: boolean;
   isActive: boolean;
   maintenanceReady: boolean;
   bookingConflict: boolean;
@@ -34,20 +40,24 @@ export type VehicleRecommendation = {
   name: string;
   category: string;
   passengerCapacity: number;
+  largeLuggageCapacity?: number;
+  largeBagCount?: number;
   baseRentalRate: number;
   estimatedTotalBaseRental: number;
   imageUrl: string | null;
   branchName: string | null;
   transmission: string | null;
   fuelType: string | null;
-  preferredCategoryMatch: boolean;
+  preferredCategoryMatch?: boolean;
   rank: number;
   reasons: string[];
 };
 
 export type FinderNoMatch = {
   code: "NO_ELIGIBLE_VEHICLES";
-  factors: Array<"CAPACITY" | "BUDGET" | "PERIOD_AVAILABILITY" | "GENERAL">;
+  factors: Array<
+    "CAPACITY" | "LUGGAGE" | "BUDGET" | "PERIOD_AVAILABILITY" | "GENERAL"
+  >;
   message: string;
 };
 
@@ -61,12 +71,55 @@ export type FinderValidationResult =
   | { ok: true; value: VehicleFinderInput }
   | { ok: false; errors: Record<string, string> };
 
+export type VehicleAvailabilityInput = Pick<
+  VehicleFinderInput,
+  "requestedStart" | "requestedEnd"
+>;
+
+export type VehicleAvailabilityValidationResult =
+  | { ok: true; value: VehicleAvailabilityInput }
+  | { ok: false; errors: Record<string, string> };
+
 const cleanText = (value: unknown) =>
   typeof value === "string" ? value.trim() : "";
 
+export function validateVehicleAvailabilityInput(
+  input: Record<string, unknown> | null,
+  now: Date = new Date(),
+): VehicleAvailabilityValidationResult {
+  const errors: Record<string, string> = {};
+  const requestedStart = cleanText(input?.requestedStart);
+  const requestedEnd = cleanText(input?.requestedEnd);
+  const start = manilaDateTimeLocalToInstant(requestedStart);
+  const end = manilaDateTimeLocalToInstant(requestedEnd);
+
+  if (!start) errors.requestedStart = "Enter a valid rental start.";
+  if (!end) errors.requestedEnd = "Enter a valid rental end.";
+  if (
+    start &&
+    !Number.isNaN(now.getTime()) &&
+    start.getTime() < now.getTime() - FINDER_START_PRECISION_TOLERANCE_MS
+  )
+    errors.requestedStart = "Rental start cannot be in the past.";
+  else if (start && !isAtLeastNextManilaCalendarDay(start, now))
+    errors.requestedStart =
+      "Choose a rental start date at least one calendar day ahead. Same-day booking is not available.";
+  if (start && end && start >= end)
+    errors.requestedEnd = "Rental end must be after the start.";
+
+  if (Object.keys(errors).length) return { ok: false, errors };
+  return {
+    ok: true,
+    value: {
+      requestedStart: start!.toISOString(),
+      requestedEnd: end!.toISOString(),
+    },
+  };
+}
+
 export function validateFinderInput(
   input: Record<string, unknown> | null,
-  supportedCategories: string[],
+  supportedCategories: string[] = [],
   now: Date = new Date(),
 ): FinderValidationResult {
   const errors: Record<string, string> = {};
@@ -83,6 +136,9 @@ export function validateFinderInput(
     start.getTime() < now.getTime() - FINDER_START_PRECISION_TOLERANCE_MS
   )
     errors.requestedStart = "Rental start cannot be in the past.";
+  else if (start && !isAtLeastNextManilaCalendarDay(start, now))
+    errors.requestedStart =
+      "Choose a rental start date at least one calendar day ahead. Same-day booking is not available.";
   if (start && end && start >= end)
     errors.requestedEnd = "Rental end must be after the start.";
 
@@ -92,11 +148,23 @@ export function validateFinderInput(
     passengerCount <= 0 ||
     passengerCount > MAX_FINDER_PASSENGERS
   )
-    errors.passengerCount = `Passenger count must be a whole number from 1 to ${MAX_FINDER_PASSENGERS}.`;
+    errors.passengerCount = `Enter 1–${MAX_FINDER_PASSENGERS} passengers.`;
 
   const maximumBudget = Number(input?.maximumBudget);
   if (!Number.isFinite(maximumBudget) || maximumBudget <= 0)
-    errors.maximumBudget = "Enter a positive maximum total budget.";
+    errors.maximumBudget = "Enter a total budget.";
+
+  const rawLargeBagCount = input?.largeBagCount;
+  const largeBagCount =
+    rawLargeBagCount === undefined ? 0 : Number(rawLargeBagCount);
+  if (
+    (typeof rawLargeBagCount === "string" &&
+      rawLargeBagCount.trim().length === 0) ||
+    !Number.isInteger(largeBagCount) ||
+    largeBagCount < 0 ||
+    largeBagCount > MAX_FINDER_PASSENGERS
+  )
+    errors.largeBagCount = `Enter 0–${MAX_FINDER_PASSENGERS} bags.`;
 
   const preferredCategoryInput = cleanText(input?.preferredCategory);
   const preferredCategory = preferredCategoryInput
@@ -108,7 +176,6 @@ export function validateFinderInput(
     : null;
   if (preferredCategoryInput && !preferredCategory)
     errors.preferredCategory = "Choose a supported vehicle category.";
-
   const destinationInput = cleanText(input?.destination);
   if (destinationInput.length > 200)
     errors.destination = "Destination must be 200 characters or fewer.";
@@ -120,6 +187,7 @@ export function validateFinderInput(
       requestedStart: start!.toISOString(),
       requestedEnd: end!.toISOString(),
       passengerCount,
+      largeBagCount,
       maximumBudget,
       preferredCategory,
       destination: destinationInput || null,
@@ -194,6 +262,18 @@ export function findVehicles(
     const periodAvailable = !vehicle.bookingConflict && !vehicle.rentalConflict;
     const capacitySufficient =
       capacityKnown && vehicle.passengerCapacity! >= input.passengerCount;
+    // Existing direct callers may not yet supply luggage criteria. In that case,
+    // preserve the legacy capacity evaluation. Customer Finder requests always
+    // provide a bag count, so they require an owner-maintained luggage capacity.
+    const luggageRequired = input.largeBagCount !== undefined;
+    const luggageKnown =
+      !luggageRequired ||
+      (Number.isInteger(vehicle.largeLuggageCapacity) &&
+        Number(vehicle.largeLuggageCapacity) >= 0);
+    const luggageSufficient =
+      !luggageRequired ||
+      (luggageKnown &&
+        vehicle.largeLuggageCapacity! >= (input.largeBagCount ?? 0));
     const withinBudget =
       estimatedTotalBaseRental !== null &&
       estimatedTotalBaseRental <= input.maximumBudget;
@@ -202,6 +282,8 @@ export function findVehicles(
       capacityKnown,
       periodAvailable,
       capacitySufficient,
+      luggageKnown,
+      luggageSufficient,
       withinBudget,
       estimatedTotalBaseRental,
       eligible:
@@ -209,6 +291,7 @@ export function findVehicles(
         vehicle.maintenanceReady &&
         periodAvailable &&
         capacitySufficient &&
+        luggageSufficient &&
         withinBudget,
     };
   });
@@ -231,6 +314,11 @@ export function findVehicles(
         input.passengerCount -
         (right.vehicle.passengerCapacity! - input.passengerCount);
       if (capacityDifference) return capacityDifference;
+      const luggageDifference =
+        left.vehicle.largeLuggageCapacity! -
+        (input.largeBagCount ?? 0) -
+        (right.vehicle.largeLuggageCapacity! - (input.largeBagCount ?? 0));
+      if (luggageDifference) return luggageDifference;
       const costDifference =
         left.estimatedTotalBaseRental! - right.estimatedTotalBaseRental!;
       if (costDifference) return costDifference;
@@ -242,33 +330,31 @@ export function findVehicles(
     });
 
   const recommendations = eligible.map((item, index) => {
-    const preferredCategoryMatch =
-      input.preferredCategory !== null &&
-      item.vehicle.category === input.preferredCategory;
     const reasons = [
       "Available for your selected dates",
       `Seats your group of ${input.passengerCount}`,
-      `Within your maximum base-rental budget`,
+      (input.largeBagCount ?? 0) === 0
+        ? "No large luggage requirement"
+        : `Fits ${input.largeBagCount} large bag${input.largeBagCount === 1 ? "" : "s"}`,
+      `Within your budget using the daily-rate reference estimate`,
       "Maintenance-ready",
     ];
-    if (preferredCategoryMatch)
-      reasons.push(`Matches your ${input.preferredCategory} preference`);
-    else if (input.preferredCategory)
-      reasons.push(
-        `Suitable alternative to your ${input.preferredCategory} preference`,
-      );
     return {
       vehicleId: item.vehicle.id,
       name: item.vehicle.name,
       category: item.vehicle.category,
       passengerCapacity: item.vehicle.passengerCapacity!,
+      largeLuggageCapacity: item.vehicle.largeLuggageCapacity!,
+      largeBagCount: input.largeBagCount ?? 0,
       baseRentalRate: item.vehicle.baseRentalRate!,
       estimatedTotalBaseRental: item.estimatedTotalBaseRental!,
       imageUrl: item.vehicle.imageUrl,
       branchName: item.vehicle.branchName,
       transmission: item.vehicle.transmission,
       fuelType: item.vehicle.fuelType,
-      preferredCategoryMatch,
+      preferredCategoryMatch:
+        input.preferredCategory !== null &&
+        item.vehicle.category === input.preferredCategory,
       rank: index + 1,
       reasons,
     };
@@ -299,7 +385,22 @@ export function findVehicles(
     ) &&
     !operationallyPossible.some(
       (item) =>
-        item.periodAvailable && item.capacitySufficient && item.withinBudget,
+        item.periodAvailable &&
+        item.capacitySufficient &&
+        item.luggageSufficient,
+    )
+  )
+    factors.push("LUGGAGE");
+  if (
+    operationallyPossible.some(
+      (item) => item.periodAvailable && item.capacitySufficient,
+    ) &&
+    !operationallyPossible.some(
+      (item) =>
+        item.periodAvailable &&
+        item.capacitySufficient &&
+        item.luggageSufficient &&
+        item.withinBudget,
     )
   )
     factors.push("BUDGET");

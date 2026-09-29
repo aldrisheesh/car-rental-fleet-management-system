@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
+  isAtLeastNextManilaCalendarDay,
   instantToManilaDateTimeLocal,
   manilaDateTimeLocalToInstant,
 } from "./business-time.ts";
@@ -10,6 +11,7 @@ import {
   hasScheduledRentalConflict,
   intervalsOverlap,
   validateFinderInput,
+  validateVehicleAvailabilityInput,
   type FinderCandidate,
   type VehicleFinderInput,
 } from "./vehicle-finder.ts";
@@ -143,6 +145,42 @@ test("Manila datetime-local values resolve independently of process timezone", (
   );
 });
 
+test("catalog availability validation retains the selected Manila times", () => {
+  const result = validateVehicleAvailabilityInput(
+    {
+      requestedStart: "2026-09-18T10:00",
+      requestedEnd: "2026-09-24T18:00",
+    },
+    new Date("2026-09-16T00:00:00.000Z"),
+  );
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.value.requestedStart, "2026-09-18T02:00:00.000Z");
+    assert.equal(result.value.requestedEnd, "2026-09-24T10:00:00.000Z");
+  }
+});
+
+test("catalog availability rejects incomplete or reversed trip windows", () => {
+  const incomplete = validateVehicleAvailabilityInput(
+    { requestedStart: "2026-09-18T10:00", requestedEnd: "" },
+    new Date("2026-09-16T00:00:00.000Z"),
+  );
+  const reversed = validateVehicleAvailabilityInput(
+    {
+      requestedStart: "2026-09-24T18:00",
+      requestedEnd: "2026-09-18T10:00",
+    },
+    new Date("2026-09-16T00:00:00.000Z"),
+  );
+  assert.equal(incomplete.ok, false);
+  assert.equal(reversed.ok, false);
+  if (!reversed.ok)
+    assert.equal(
+      reversed.errors.requestedEnd,
+      "Rental end must be after the start.",
+    );
+});
+
 test("malformed Manila local datetime and timezone-bearing input are rejected", () => {
   assert.equal(manilaDateTimeLocalToInstant("2026-09-10 10:00"), null);
   assert.equal(manilaDateTimeLocalToInstant("2026-09-10T10:00Z"), null);
@@ -168,10 +206,25 @@ test("requested interval ordering uses resolved Manila instants", () => {
     );
 });
 
-test("future starts are accepted and past starts are rejected by trusted time", () => {
+test("the one-day policy uses Manila calendar dates", () => {
+  const now = new Date("2026-09-10T01:00:00.000Z"); // 9:00 AM in Manila
+  assert.equal(
+    isAtLeastNextManilaCalendarDay(new Date("2026-09-10T10:00:00.000Z"), now),
+    false,
+  );
+  assert.equal(
+    isAtLeastNextManilaCalendarDay(
+      new Date("2026-09-10T16:00:00.000Z"), // midnight, Sep. 11 Manila
+      now,
+    ),
+    true,
+  );
+});
+
+test("same-day starts are rejected and next-day starts are accepted by trusted time", () => {
   const input = {
-    requestedStart: "2026-09-10T10:00",
-    requestedEnd: "2026-09-10T12:00",
+    requestedStart: "2026-09-11T10:00",
+    requestedEnd: "2026-09-11T12:00",
     passengerCount: 5,
     maximumBudget: 5000,
   };
@@ -180,17 +233,17 @@ test("future starts are accepted and past starts are rejected by trusted time", 
     categories,
     new Date("2026-09-10T01:00:00.000Z"),
   );
-  const past = validateFinderInput(
-    input,
+  const sameDay = validateFinderInput(
+    { ...input, requestedStart: "2026-09-10T10:00" },
     categories,
-    new Date("2026-09-10T03:01:00.000Z"),
+    new Date("2026-09-10T01:00:00.000Z"),
   );
   assert.equal(future.ok, true);
-  assert.equal(past.ok, false);
-  if (!past.ok)
+  assert.equal(sameDay.ok, false);
+  if (!sameDay.ok)
     assert.equal(
-      past.errors.requestedStart,
-      "Rental start cannot be in the past.",
+      sameDay.errors.requestedStart,
+      "Choose a rental start date at least one calendar day ahead. Same-day booking is not available.",
     );
 });
 
@@ -413,6 +466,8 @@ test("customer result is allowlisted and contains no score or internal records",
     "estimatedTotalBaseRental",
     "fuelType",
     "imageUrl",
+    "largeBagCount",
+    "largeLuggageCapacity",
     "name",
     "passengerCapacity",
     "preferredCategoryMatch",

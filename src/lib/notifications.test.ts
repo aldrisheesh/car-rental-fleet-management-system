@@ -170,8 +170,20 @@ test("operational types project and route without changing existing destinations
     related_entity_type: "booking",
     related_entity_id: "booking-1",
   });
-  assert.equal(notificationRoute(payment, "admin"), "/admin/payments");
-  assert.equal(notificationRoute(booking, "admin"), "/admin/bookings");
+  assert.equal(
+    notificationRoute(payment, "admin"),
+    "/admin/payments/payment-1",
+  );
+  assert.equal(
+    notificationRoute(booking, "admin"),
+    "/admin/bookings/booking-1",
+  );
+  assert.equal(
+    notificationRoute(requirements, "admin", [], [
+      { notificationId: requirements.id, bookingId: "booking-1" },
+    ]),
+    "/admin/bookings/booking-1",
+  );
   assert.equal(
     notificationRoute(payment, "customer", [
       { bookingId: "booking-1", paymentId: "payment-1" },
@@ -196,7 +208,7 @@ test("operational types project and route without changing existing destinations
 });
 
 test("customer child notification routing fails safely without an exact owned binding", () => {
-  const payment = projectNotification({
+  const paymentRow = {
     id: "notification-payment",
     notification_type: "payment_verified",
     title: "Payment verified",
@@ -205,23 +217,24 @@ test("customer child notification routing fails safely without an exact owned bi
     related_entity_id: "payment-1",
     created_at: "2026-09-02T01:00:00.000Z",
     read_at: null,
-  });
+  };
+  const payment = projectNotification(paymentRow);
   const requirements = projectNotification({
-    ...payment,
+    ...paymentRow,
     id: "notification-requirements",
     notification_type: "requirements_verified",
     related_entity_type: "requirements",
     related_entity_id: "requirements-stale",
   });
   const maintenance = projectNotification({
-    ...payment,
+    ...paymentRow,
     id: "notification-maintenance",
     notification_type: "maintenance_attention",
     related_entity_type: "vehicle",
     related_entity_id: "vehicle-1",
   });
   const missingChildId = projectNotification({
-    ...payment,
+    ...paymentRow,
     id: "notification-missing-child",
     related_entity_id: "",
   });

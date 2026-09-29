@@ -10,9 +10,18 @@ export type CustomerVehicle = {
   transmission: string | null;
   fuel_type: string | null;
   seat_capacity: number | null;
+  large_luggage_capacity?: number | null;
   daily_rate: number | null;
   image_url: string | null;
+  images?: Array<{
+    id: string;
+    public_url: string;
+    alt_text: string | null;
+    sort_order: number;
+    is_cover: boolean;
+  }>;
   is_active?: boolean;
+  is_available?: boolean;
   branch: { id?: string; name: string } | null;
   category: { id?: string; name: string } | null;
 };
@@ -34,20 +43,24 @@ export type FinderRecommendation = {
   name: string;
   category: string;
   passengerCapacity: number;
+  largeLuggageCapacity?: number;
+  largeBagCount?: number;
   baseRentalRate: number;
   estimatedTotalBaseRental: number;
   imageUrl: string | null;
   branchName: string | null;
   transmission: string | null;
   fuelType: string | null;
-  preferredCategoryMatch: boolean;
+  preferredCategoryMatch?: boolean;
   rank: number;
   reasons: string[];
 };
 
 export type FinderNoMatch = {
   code: "NO_ELIGIBLE_VEHICLES";
-  factors: Array<"CAPACITY" | "BUDGET" | "PERIOD_AVAILABILITY" | "GENERAL">;
+  factors: Array<
+    "CAPACITY" | "LUGGAGE" | "BUDGET" | "PERIOD_AVAILABILITY" | "GENERAL"
+  >;
   message: string;
 };
 
@@ -58,8 +71,9 @@ export type FinderResponse = {
     requestedEnd: string;
     passengerCount: number;
     maximumBudget: number;
-    preferredCategory: string | null;
-    destination: string | null;
+    largeBagCount?: number;
+    preferredCategory?: string | null;
+    destination?: string | null;
   };
   recommendations: FinderRecommendation[];
   noMatch: FinderNoMatch | null;
@@ -68,6 +82,11 @@ export type FinderResponse = {
 export type CustomerBooking = {
   id: string;
   booking_status: string;
+  resolution_reason?: string | null;
+  resolved_at?: string | null;
+  confirmation_exception_code?: string | null;
+  confirmation_exception_message?: string | null;
+  confirmation_exception_at?: string | null;
   pickup_at: string;
   return_at: string;
   purpose_of_use?: string | null;
@@ -151,6 +170,10 @@ export type CustomerRequirementReview = {
   governmentIdReason: string;
   driversLicenseOutcome: string;
   driversLicenseReason: string;
+  proofOfBillingOutcome: string;
+  proofOfBillingReason: string;
+  selfieWithIdOutcome: string;
+  selfieWithIdReason: string;
   identityConsistency: string;
   ltoOutcome: string;
 };

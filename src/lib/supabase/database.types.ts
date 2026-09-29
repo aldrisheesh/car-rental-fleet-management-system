@@ -143,6 +143,7 @@ export type Database = {
           transmission: string | null;
           fuel_type: string | null;
           seat_capacity: number | null;
+          large_luggage_capacity: number | null;
           daily_rate: number | null;
           reference_fuel_efficiency_km_per_liter: number | null;
           current_odometer_km: number | null;
@@ -161,6 +162,7 @@ export type Database = {
           transmission?: string | null;
           fuel_type?: string | null;
           seat_capacity?: number | null;
+          large_luggage_capacity?: number | null;
           daily_rate?: number | null;
           reference_fuel_efficiency_km_per_liter?: number | null;
           current_odometer_km?: number | null;
@@ -186,15 +188,134 @@ export type Database = {
           },
         ];
       };
+      rate_cards: {
+        Row: {
+          id: string;
+          vehicle_id: string;
+          package_code: string;
+          package_label: string;
+          duration_hours: number;
+          base_rate: number;
+          effective_from: string;
+          effective_until: string | null;
+          is_active: boolean;
+          researcher_designed: boolean;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          vehicle_id: string;
+          package_code: string;
+          package_label: string;
+          duration_hours: number;
+          base_rate: number;
+          effective_from: string;
+          effective_until?: string | null;
+          is_active?: boolean;
+          researcher_designed?: boolean;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["rate_cards"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "rate_cards_vehicle_id_fkey";
+            columns: ["vehicle_id"];
+            referencedRelation: "vehicles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "rate_cards_created_by_fkey";
+            columns: ["created_by"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      booking_rate_quotes: {
+        Row: {
+          id: string;
+          booking_id: string;
+          rate_card_id: string;
+          package_code: string;
+          package_label: string;
+          duration_hours: number;
+          base_rental_amount: number;
+          delivery_fee: number;
+          approved_discount: number;
+          approved_subtotal: number;
+          required_down_payment: number;
+          quote_version: number;
+          status: string;
+          researcher_designed: boolean;
+          approved_by: string;
+          approved_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          booking_id: string;
+          rate_card_id: string;
+          package_code: string;
+          package_label: string;
+          duration_hours: number;
+          base_rental_amount: number;
+          delivery_fee?: number;
+          approved_discount?: number;
+          approved_subtotal?: never;
+          required_down_payment?: never;
+          quote_version?: number;
+          status?: string;
+          researcher_designed?: boolean;
+          approved_by: string;
+          approved_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["booking_rate_quotes"]["Insert"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "booking_rate_quotes_booking_id_fkey";
+            columns: ["booking_id"];
+            referencedRelation: "booking_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "booking_rate_quotes_rate_card_id_fkey";
+            columns: ["rate_card_id"];
+            referencedRelation: "rate_cards";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "booking_rate_quotes_approved_by_fkey";
+            columns: ["approved_by"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       maintenance_records: {
         Row: {
           id: string;
           vehicle_id: string;
           maintenance_type: string;
           description: string;
-          status: "Open" | "Completed" | "Cancelled";
+          status:
+            | "Scheduled"
+            | "In Progress"
+            | "Completed"
+            | "Overdue"
+            | "Cancelled"
+            | "Open";
           blocks_rental_use: boolean;
-          service_started_at: string;
+          scheduled_for: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          service_started_at: string | null;
           completed_at: string | null;
           odometer_at_service: number | null;
           next_service_odometer: number | null;
@@ -211,9 +332,18 @@ export type Database = {
           vehicle_id: string;
           maintenance_type: string;
           description: string;
-          status?: "Open" | "Completed" | "Cancelled";
+          status?:
+            | "Scheduled"
+            | "In Progress"
+            | "Completed"
+            | "Overdue"
+            | "Cancelled"
+            | "Open";
           blocks_rental_use?: boolean;
-          service_started_at?: string;
+          scheduled_for?: string | null;
+          archived_at?: string | null;
+          archived_by?: string | null;
+          service_started_at?: string | null;
           completed_at?: string | null;
           odometer_at_service?: number | null;
           next_service_odometer?: number | null;
@@ -228,7 +358,15 @@ export type Database = {
         Update: Partial<
           Database["public"]["Tables"]["maintenance_records"]["Insert"]
         >;
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_records_vehicle_id_fkey";
+            columns: ["vehicle_id"];
+            isOneToOne: false;
+            referencedRelation: "vehicles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       booking_requests: {
         Row: {
@@ -288,7 +426,22 @@ export type Database = {
         Update: Partial<
           Database["public"]["Tables"]["booking_requests"]["Insert"]
         >;
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "booking_requests_requested_vehicle_id_fkey";
+            columns: ["requested_vehicle_id"];
+            isOneToOne: false;
+            referencedRelation: "vehicles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "booking_requests_assigned_vehicle_id_fkey";
+            columns: ["assigned_vehicle_id"];
+            isOneToOne: false;
+            referencedRelation: "vehicles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       renter_requirement_sets: {
         Row: {
@@ -363,6 +516,14 @@ export type Database = {
           drivers_license_version: number;
           drivers_license_outcome: string;
           drivers_license_reason: string | null;
+          proof_of_billing_document_id: string | null;
+          proof_of_billing_version: number | null;
+          proof_of_billing_outcome: string | null;
+          proof_of_billing_reason: string | null;
+          selfie_with_id_document_id: string | null;
+          selfie_with_id_version: number | null;
+          selfie_with_id_outcome: string | null;
+          selfie_with_id_reason: string | null;
           identity_consistency: string;
           lto_outcome: string;
           lto_checked_at: string | null;
@@ -578,6 +739,14 @@ export type Database = {
           agreement_acknowledged: boolean;
           condition_acknowledged: boolean;
           return_schedule_acknowledged: boolean;
+          inspection_status:
+            | "Not required"
+            | "Pending"
+            | "Cleared"
+            | "Maintenance scheduled";
+          inspection_remarks: string | null;
+          inspected_at: string | null;
+          inspected_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -598,17 +767,37 @@ export type Database = {
           agreement_acknowledged?: boolean;
           condition_acknowledged?: boolean;
           return_schedule_acknowledged?: boolean;
+          inspection_status?:
+            | "Not required"
+            | "Pending"
+            | "Cleared"
+            | "Maintenance scheduled";
+          inspection_remarks?: string | null;
+          inspected_at?: string | null;
+          inspected_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: Partial<
           Database["public"]["Tables"]["rental_transactions"]["Insert"]
         >;
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "rental_transactions_booking_id_fkey";
+            columns: ["booking_id"];
+            isOneToOne: true;
+            referencedRelation: "booking_requests";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: Record<string, never>;
     Functions: {
+      submit_renter_requirements: {
+        Args: { p_requirement_set_id: string; p_customer_id: string };
+        Returns: boolean;
+      };
       replace_renter_requirement_document: {
         Args: {
           p_requirement_set_id: string;
@@ -645,6 +834,16 @@ export type Database = {
         };
         Returns: Record<string, unknown>;
       };
+      upsert_booking_rate_quote_atomic: {
+        Args: {
+          p_booking_id: string;
+          p_rate_card_id: string;
+          p_delivery_fee: number;
+          p_approved_discount: number;
+          p_actor_id: string;
+        };
+        Returns: Database["public"]["Tables"]["booking_rate_quotes"]["Row"];
+      };
       assign_booking_vehicle: {
         Args: Record<string, any>;
         Returns: Database["public"]["Tables"]["booking_requests"]["Row"];
@@ -663,8 +862,7 @@ export type Database = {
           p_maintenance_type: string;
           p_description: string;
           p_blocks: boolean;
-          p_started_at: string;
-          p_odometer: number | null;
+          p_scheduled_for: string;
           p_next_odometer: number | null;
           p_next_date: string | null;
           p_cost: number | null;
@@ -677,11 +875,41 @@ export type Database = {
         Args: {
           p_record_id: string;
           p_status: string;
+          p_started_at: string | null;
           p_odometer: number | null;
           p_next_odometer: number | null;
           p_next_date: string | null;
           p_cost: number | null;
           p_remarks: string | null;
+          p_actor: string;
+        };
+        Returns: Database["public"]["Tables"]["maintenance_records"]["Row"];
+      };
+      archive_maintenance_record: {
+        Args: { p_record_id: string; p_actor: string };
+        Returns: Database["public"]["Tables"]["maintenance_records"]["Row"];
+      };
+      resolve_return_inspection: {
+        Args: {
+          p_rental_id: string;
+          p_outcome: "Cleared";
+          p_remarks: string | null;
+          p_actor_id: string;
+        };
+        Returns: Database["public"]["Tables"]["rental_transactions"]["Row"];
+      };
+      schedule_return_maintenance: {
+        Args: {
+          p_rental_id: string;
+          p_vehicle_id: string;
+          p_maintenance_type: string;
+          p_description: string;
+          p_scheduled_for: string;
+          p_next_odometer: number | null;
+          p_next_date: string | null;
+          p_cost: number | null;
+          p_maintenance_remarks: string | null;
+          p_inspection_remarks: string;
           p_actor: string;
         };
         Returns: Database["public"]["Tables"]["maintenance_records"]["Row"];

@@ -12,6 +12,11 @@ export type AdminVehicle = {
   license_plate?: string | null;
   branch_id?: string | null;
   is_active?: boolean | null;
+  image_url?: string | null;
+  seat_capacity?: number | null;
+  transmission?: string | null;
+  fuel_type?: string | null;
+  daily_rate?: number | null;
   branch?: { id?: string; name: string } | null;
   category?: { id?: string; name: string } | null;
 };
@@ -68,6 +73,8 @@ export type AdminBooking = {
   preferred_seat_count?: number | null;
   customer_contact_number?: string | null;
   booking_status: string;
+  resolution_reason?: string | null;
+  resolved_at?: string | null;
   assigned_by?: string | null;
   assigned_at?: string | null;
   assignment_note?: string | null;
@@ -75,6 +82,9 @@ export type AdminBooking = {
   cross_branch_acknowledged?: boolean;
   confirmed_by?: string | null;
   confirmed_at?: string | null;
+  confirmation_exception_code?: string | null;
+  confirmation_exception_message?: string | null;
+  confirmation_exception_at?: string | null;
   created_at?: string;
   updated_at?: string;
   customer?: {
@@ -113,6 +123,10 @@ export type AdminRequirementReview = {
   government_id_reason?: string | null;
   drivers_license_outcome?: string;
   drivers_license_reason?: string | null;
+  proof_of_billing_outcome?: string;
+  proof_of_billing_reason?: string | null;
+  selfie_with_id_outcome?: string;
+  selfie_with_id_reason?: string | null;
   identity_consistency?: string;
   lto_outcome?: string;
   reviewed_at?: string;
@@ -167,6 +181,14 @@ export type AdminPayment = {
   resubmission_reason?: string | null;
   submitted_at?: string | null;
   updated_at?: string | null;
+  payment_quote?: {
+    billable_days?: number | null;
+    rental_subtotal?: number | string | null;
+    delivery_fee?: number | string | null;
+    total_amount?: number | string | null;
+    down_payment_amount?: number | string | null;
+    security_deposit_amount?: number | string | null;
+  } | null;
   booking?: {
     id: string;
     booking_status?: string;
@@ -307,30 +329,36 @@ export function currentPaymentProof(payment: AdminPayment | null | undefined) {
 export function requirementReviewGate({
   governmentIdOutcome,
   driversLicenseOutcome,
+  proofOfBillingOutcome,
+  selfieWithIdOutcome,
   identityConsistency,
-  ltoOutcome,
 }: {
   governmentIdOutcome: string;
   driversLicenseOutcome: string;
+  proofOfBillingOutcome: string;
+  selfieWithIdOutcome: string;
   identityConsistency: string;
-  ltoOutcome: string;
 }) {
   const allOutcomesSelected = Boolean(
     governmentIdOutcome &&
     driversLicenseOutcome &&
-    identityConsistency &&
-    ltoOutcome,
+    proofOfBillingOutcome &&
+    selfieWithIdOutcome &&
+    identityConsistency,
   );
   const canVerify =
     allOutcomesSelected &&
     governmentIdOutcome === "Accepted" &&
     driversLicenseOutcome === "Accepted" &&
-    identityConsistency === "Consistent" &&
-    ltoOutcome === "Clear";
+    proofOfBillingOutcome === "Accepted" &&
+    selfieWithIdOutcome === "Accepted" &&
+    identityConsistency === "Consistent";
   const canResubmit =
     allOutcomesSelected &&
     (governmentIdOutcome === "Needs Replacement" ||
-      driversLicenseOutcome === "Needs Replacement");
+      driversLicenseOutcome === "Needs Replacement" ||
+      proofOfBillingOutcome === "Needs Replacement" ||
+      selfieWithIdOutcome === "Needs Replacement");
   return { canVerify, canResubmit };
 }
 

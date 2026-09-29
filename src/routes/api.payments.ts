@@ -47,7 +47,7 @@ async function read({ request }: { request: Request }) {
     let query = client
       .from("payments")
       .select(
-        "*, booking:booking_requests(id,booking_status,customer:profiles!booking_requests_customer_id_fkey(id,full_name,email)), payment_methods(id,code,label,instructions,is_demo), payment_proofs(*)",
+        "*, booking:booking_requests(id,booking_status,customer:profiles!booking_requests_customer_id_fkey(id,full_name,email)), payment_methods(id,code,label,recipient_name,account_number,qr_image_path), payment_proofs(*)",
       )
       .order("updated_at", { ascending: false });
     if (principal.role === "Customer/Renter")
@@ -57,14 +57,53 @@ async function read({ request }: { request: Request }) {
     if (result.error) return error("Unable to load payments.", 503);
     const methods = await client
       .from("payment_methods")
-      .select("id,code,label,instructions,is_demo")
+      .select("id,code,label,recipient_name,account_number,qr_image_path")
       .eq("is_active", true)
       .order("label");
+    const bookingIds = [
+      ...new Set(
+        (result.data ?? []).map(
+          (payment: { booking_id: string }) => payment.booking_id,
+        ),
+      ),
+    ];
+    const quotes = bookingIds.length
+      ? await client
+          .from("booking_payment_quotes")
+          .select("*")
+          .in("booking_id", bookingIds)
+      : { data: [] };
+    // A quote enriches payment review, but it must not prevent the operational
+    // payment queue from loading when its source is temporarily unavailable.
+    const quoteByBooking = new Map(
+      (quotes.error ? [] : (quotes.data ?? [])).map(
+        (quote: { booking_id: string }) => [quote.booking_id, quote],
+      ),
+    );
+    const enrichedPayments = (result.data ?? []).map(
+      (payment: { booking_id: string }) => ({
+        ...payment,
+        payment_quote: quoteByBooking.get(payment.booking_id) ?? null,
+      }),
+    );
     const payments =
       principal.role === "Customer/Renter"
-        ? (result.data ?? []).map(projectCustomerPayment)
-        : (result.data ?? []);
-    return Response.json({ payments, paymentMethods: methods.data ?? [] });
+        ? enrichedPayments.map(projectCustomerPayment)
+        : enrichedPayments;
+    const paymentMethods = await Promise.all(
+      (methods.data ?? []).map(async (method: Record<string, unknown>) => {
+        const qrImagePath =
+          typeof method.qr_image_path === "string"
+            ? method.qr_image_path
+            : null;
+        if (!qrImagePath) return { ...method, qr_image_url: null };
+        const signed = await client.storage
+          .from("payment-method-qr")
+          .createSignedUrl(qrImagePath, 3600);
+        return { ...method, qr_image_url: signed.data?.signedUrl ?? null };
+      }),
+    );
+    return Response.json({ payments, paymentMethods });
   } catch (e) {
     return error(
       e instanceof Error && e.message === "forbidden"
@@ -129,7 +168,7 @@ async function mutate({ request }: { request: Request }) {
       if (updated.error) {
         const map: Record<string, string> = {
           insufficient_amount:
-            "Submitted amount is below the required down payment.",
+            "Submitted amount is below the required payment amount.",
           stale_proof: "Proof changed; reload before reviewing.",
           stale_snapshot: "Payment details changed; reload before reviewing.",
           missing_reason: "A customer-facing reason is required.",
@@ -140,7 +179,30 @@ async function mutate({ request }: { request: Request }) {
           409,
         );
       }
-      return Response.json({ payment: updated.data });
+      let confirmation:
+        | { status: "confirmed" | "review-needed"; message: string }
+        | undefined;
+      if (action === "verify" && updated.data?.booking_id) {
+        const booking = await client
+          .from("booking_requests")
+          .select(
+            "booking_status,confirmation_exception_code,confirmation_exception_message",
+          )
+          .eq("id", updated.data.booking_id)
+          .maybeSingle();
+        if (booking.data?.booking_status === "Confirmed") {
+          confirmation = {
+            status: "confirmed",
+            message: "Payment verified and rental confirmed automatically.",
+          };
+        } else if (booking.data?.confirmation_exception_message) {
+          confirmation = {
+            status: "review-needed",
+            message: `Payment verified. ${booking.data.confirmation_exception_message}`,
+          };
+        }
+      }
+      return Response.json({ payment: updated.data, confirmation });
     }
     if (principal.role !== "Customer/Renter")
       return error("Customer access is required.", 403);
@@ -205,13 +267,27 @@ async function mutate({ request }: { request: Request }) {
     if (submitted.error) {
       await client.storage.from("payment-proofs").remove([path]);
       uploadedPath = null;
+      const paymentMessages: Record<string, string> = {
+        not_submittable: "Payment proof is already pending verification.",
+        payment_requirement_not_set:
+          "The required payment amount has not been recorded for this booking yet.",
+        insufficient_amount:
+          "Submitted amount is below the required payment amount.",
+        amount_must_match_required:
+          "Submitted amount must match the required payment amount exactly.",
+      };
       const message =
-        submitted.error.message === "not_submittable"
-          ? "Payment proof is already pending verification."
-          : "Unable to submit payment.";
+        paymentMessages[submitted.error.message] ?? "Unable to submit payment.";
       return error(
         message,
-        submitted.error.message === "not_submittable" ? 409 : 503,
+        [
+          "not_submittable",
+          "payment_requirement_not_set",
+          "insufficient_amount",
+          "amount_must_match_required",
+        ].includes(submitted.error.message)
+          ? 409
+          : 503,
       );
     }
     uploadedPath = null;

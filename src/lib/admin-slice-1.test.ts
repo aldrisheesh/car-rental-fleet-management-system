@@ -30,12 +30,34 @@ test("Owner/Admin and Operations Staff action mapping remains role-safe", () => 
   assert.deepEqual(bookingActionAvailability(facts), {
     assign: true,
     confirm: true,
+    cancel: false,
+    reject: true,
     release: false,
     return: false,
   });
   assert.deepEqual(
     bookingActionAvailability({ ...facts, role: "Operations Staff" }),
-    { assign: false, confirm: false, release: false, return: false },
+    {
+      assign: false,
+      confirm: false,
+      cancel: false,
+      reject: false,
+      release: false,
+      return: false,
+    },
+  );
+
+  assert.equal(
+    bookingActionAvailability({
+      ...facts,
+      bookingStatus: "Confirmed",
+      confirmedAt: true,
+    }).cancel,
+    true,
+  );
+  assert.equal(
+    bookingActionAvailability({ ...facts, bookingStatus: "Draft" }).reject,
+    true,
   );
   assert.equal(
     canAccessAdminSlice1Path("Owner/Admin", "/admin/payments"),
@@ -62,8 +84,9 @@ test("requirements review gates follow the canonical outcomes", () => {
     requirementReviewGate({
       governmentIdOutcome: "Accepted",
       driversLicenseOutcome: "Accepted",
+      proofOfBillingOutcome: "Accepted",
+      selfieWithIdOutcome: "Accepted",
       identityConsistency: "Consistent",
-      ltoOutcome: "Clear",
     }),
     { canVerify: true, canResubmit: false },
   );
@@ -71,8 +94,9 @@ test("requirements review gates follow the canonical outcomes", () => {
     requirementReviewGate({
       governmentIdOutcome: "Needs Replacement",
       driversLicenseOutcome: "Accepted",
+      proofOfBillingOutcome: "Accepted",
+      selfieWithIdOutcome: "Accepted",
       identityConsistency: "Concern",
-      ltoOutcome: "Unavailable",
     }),
     { canVerify: false, canResubmit: true },
   );

@@ -15,7 +15,6 @@ import {
 
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
-import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
 import {
   CustomerPage,
   StatusCallout,
@@ -30,7 +29,6 @@ import {
   type CustomerVehicle,
   type RequirementsResponse,
 } from "@/lib/customer-data";
-import type { CustomerNotificationBinding } from "@/lib/notifications";
 import {
   deriveCustomerLifecycle,
   paymentForBooking,
@@ -128,21 +126,6 @@ function MyBookingsPage() {
     () => records.filter((record) => matchesFilter(record, filter)),
     [filter, records],
   );
-  const customerNotificationBindings = useMemo(
-    () =>
-      records.map(({ booking, requirements, payment }) => ({
-        bookingId: booking.id,
-        requirementSetId:
-          requirements?.requirementSet?.booking_id === booking.id
-            ? requirements.requirementSet.id
-            : null,
-        paymentId: payment?.booking_id === booking.id ? payment.id : null,
-        rentalId:
-          booking.rental?.booking_id === booking.id ? booking.rental.id : null,
-      })) satisfies CustomerNotificationBinding[],
-    [records],
-  );
-
   return (
     <CustomerPage className="booking-list-page">
       <Header />
@@ -150,6 +133,7 @@ function MyBookingsPage() {
         <div className="customer-container">
           <div className="booking-list-heading">
             <div>
+              <p className="booking-list-kicker">My account</p>
               <h1>My bookings</h1>
               <p>
                 Your current requests and rentals, with the next step shown
@@ -241,16 +225,6 @@ function MyBookingsPage() {
                     hasBookings={records.length > 0}
                   />
                 )}
-              </section>
-              <section
-                className="booking-notifications"
-                aria-label="Notifications"
-              >
-                <NotificationsPanel
-                  audience="customer"
-                  compact
-                  customerBindings={customerNotificationBindings}
-                />
               </section>
             </>
           )}

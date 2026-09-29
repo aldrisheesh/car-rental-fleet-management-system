@@ -20,12 +20,13 @@ export async function getCanonicalAdminFleet(
     categoriesResult,
     bookingsResult,
     rentalsResult,
+    inspectionResult,
     readiness,
   ] = await Promise.all([
     client
       .from("vehicles")
       .select(
-        "id,name,license_plate,transmission,seat_capacity,daily_rate,image_url,is_active,branch:branches(id,name),category:vehicle_categories(id,name)",
+        "id,name,license_plate,transmission,seat_capacity,large_luggage_capacity,daily_rate,image_url,is_active,branch:branches(id,name),category:vehicle_categories(id,name)",
       )
       .order("name"),
     client.from("branches").select("id,name").order("name"),
@@ -33,7 +34,12 @@ export async function getCanonicalAdminFleet(
     client
       .from("booking_requests")
       .select("assigned_vehicle_id,booking_status,pickup_at,return_at"),
-    client.from("rental_transactions").select("vehicle_id,started_at,ended_at"),
+    client
+      .from("rental_transactions")
+      .select("id,vehicle_id,started_at,ended_at"),
+    client
+      .from("rental_transactions")
+      .select("id,inspection_status,inspection_remarks"),
     calculateFleetMaintenanceSnapshot(client, now),
   ]);
 
@@ -43,6 +49,7 @@ export async function getCanonicalAdminFleet(
     categoriesResult,
     bookingsResult,
     rentalsResult,
+    inspectionResult,
   ].find((result) => result.error);
   if (failed?.error) throw failed.error;
 
@@ -53,7 +60,16 @@ export async function getCanonicalAdminFleet(
       branches: (branchesResult.data ?? []) as FleetOption[],
       categories: (categoriesResult.data ?? []) as FleetOption[],
       bookings: (bookingsResult.data ?? []) as FleetCanonicalBooking[],
-      rentals: (rentalsResult.data ?? []) as FleetCanonicalRental[],
+      rentals: (rentalsResult.data ?? []).map((rental) => {
+        const inspection = (inspectionResult.data ?? []).find(
+          (candidate) => candidate.id === rental.id,
+        );
+        return {
+          ...rental,
+          inspection_status: inspection?.inspection_status,
+          inspection_remarks: inspection?.inspection_remarks,
+        };
+      }) as FleetCanonicalRental[],
       readiness: readiness.readiness,
     },
     now.toISOString(),

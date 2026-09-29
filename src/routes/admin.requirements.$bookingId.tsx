@@ -66,8 +66,11 @@ function RequirementsReviewPage() {
   const [governmentIdReason, setGovernmentIdReason] = useState("");
   const [driversLicenseOutcome, setDriversLicenseOutcome] = useState("");
   const [driversLicenseReason, setDriversLicenseReason] = useState("");
+  const [proofOfBillingOutcome, setProofOfBillingOutcome] = useState("");
+  const [proofOfBillingReason, setProofOfBillingReason] = useState("");
+  const [selfieWithIdOutcome, setSelfieWithIdOutcome] = useState("");
+  const [selfieWithIdReason, setSelfieWithIdReason] = useState("");
   const [identityConsistency, setIdentityConsistency] = useState("");
-  const [ltoOutcome, setLtoOutcome] = useState("");
   const [resultingStatus, setResultingStatus] =
     useState<ReviewStatus>("Pending Review");
   const [saving, setSaving] = useState(false);
@@ -124,8 +127,11 @@ function RequirementsReviewPage() {
     setGovernmentIdReason(review?.government_id_reason ?? "");
     setDriversLicenseOutcome(review?.drivers_license_outcome ?? "");
     setDriversLicenseReason(review?.drivers_license_reason ?? "");
+    setProofOfBillingOutcome(review?.proof_of_billing_outcome ?? "");
+    setProofOfBillingReason(review?.proof_of_billing_reason ?? "");
+    setSelfieWithIdOutcome(review?.selfie_with_id_outcome ?? "");
+    setSelfieWithIdReason(review?.selfie_with_id_reason ?? "");
     setIdentityConsistency(review?.identity_consistency ?? "");
-    setLtoOutcome(review?.lto_outcome ?? "");
     const status = state.data.requirements.requirementSet?.status;
     setResultingStatus(
       status === "Verified" || status === "Needs Resubmission"
@@ -194,19 +200,29 @@ function RequirementsReviewPage() {
     requirements.requiredTypes,
   );
   const review = requirements.reviews?.[0] ?? null;
-  const hasBothDocuments = requirements.requiredTypes.every((type) =>
+  const hasAllDocuments = requirements.requiredTypes.every((type) =>
     documents.some((document) => document.requirement_type === type),
   );
   const gate = requirementReviewGate({
     governmentIdOutcome,
     driversLicenseOutcome,
+    proofOfBillingOutcome,
+    selfieWithIdOutcome,
     identityConsistency,
-    ltoOutcome,
   });
   const canMutate =
-    requirementSet?.status === "Pending Review" && hasBothDocuments;
+    requirementSet?.status === "Pending Review" && hasAllDocuments;
 
   async function openDocument(document: AdminRequirementDocument) {
+    const preview = window.open("about:blank", "_blank");
+    if (!preview) {
+      setMutation({
+        tone: "error",
+        message: "Allow pop-ups to open this secure document preview.",
+      });
+      return;
+    }
+    preview.opener = null;
     setOpeningDocumentId(document.id);
     setMutation(null);
     try {
@@ -223,8 +239,9 @@ function RequirementsReviewPage() {
           body?.message ?? "This document is not available for secure preview.",
         );
       }
-      window.open(body.url, "_blank", "noopener,noreferrer");
+      preview.location.replace(body.url);
     } catch (error) {
+      preview.close();
       setMutation({
         tone: "error",
         message:
@@ -242,8 +259,9 @@ function RequirementsReviewPage() {
     if (
       !governmentIdOutcome ||
       !driversLicenseOutcome ||
-      !identityConsistency ||
-      !ltoOutcome
+      !proofOfBillingOutcome ||
+      !selfieWithIdOutcome ||
+      !identityConsistency
     ) {
       setMutation({
         tone: "error",
@@ -255,14 +273,17 @@ function RequirementsReviewPage() {
       setMutation({
         tone: "error",
         message:
-          "Verified requires both accepted documents, consistent identity, and LTO Clear.",
+          "Verified requires all four documents accepted and a consistent identity.",
       });
       return;
     }
     if (
       nextStatus === "Needs Resubmission" &&
       (!gate.canResubmit ||
-        (!governmentIdReason.trim() && !driversLicenseReason.trim()))
+        (!governmentIdReason.trim() &&
+          !driversLicenseReason.trim() &&
+          !proofOfBillingReason.trim() &&
+          !selfieWithIdReason.trim()))
     ) {
       setMutation({
         tone: "error",
@@ -277,7 +298,14 @@ function RequirementsReviewPage() {
     const driversLicense = documents.find(
       (document) => document.requirement_type === "Driver's License",
     );
-    if (!governmentId || !driversLicense) return;
+    const proofOfBilling = documents.find(
+      (document) => document.requirement_type === "Proof of Billing",
+    );
+    const selfieWithId = documents.find(
+      (document) => document.requirement_type === "Selfie with ID",
+    );
+    if (!governmentId || !driversLicense || !proofOfBilling || !selfieWithId)
+      return;
 
     setSaving(true);
     setMutation(null);
@@ -297,8 +325,15 @@ function RequirementsReviewPage() {
           driversLicenseVersion: driversLicense.version,
           driversLicenseOutcome,
           driversLicenseReason: driversLicenseReason.trim(),
+          proofOfBillingDocumentId: proofOfBilling.id,
+          proofOfBillingVersion: proofOfBilling.version,
+          proofOfBillingOutcome,
+          proofOfBillingReason: proofOfBillingReason.trim(),
+          selfieWithIdDocumentId: selfieWithId.id,
+          selfieWithIdVersion: selfieWithId.version,
+          selfieWithIdOutcome,
+          selfieWithIdReason: selfieWithIdReason.trim(),
           identityConsistency,
-          ltoOutcome,
           resultingStatus: nextStatus,
         }),
       });
@@ -498,7 +533,7 @@ function RequirementsReviewPage() {
             review={review}
             requirementSetStatus={requirementSet.status}
             canMutate={canMutate}
-            hasBothDocuments={hasBothDocuments}
+            hasAllDocuments={hasAllDocuments}
             governmentIdOutcome={governmentIdOutcome}
             setGovernmentIdOutcome={setGovernmentIdOutcome}
             governmentIdReason={governmentIdReason}
@@ -507,10 +542,16 @@ function RequirementsReviewPage() {
             setDriversLicenseOutcome={setDriversLicenseOutcome}
             driversLicenseReason={driversLicenseReason}
             setDriversLicenseReason={setDriversLicenseReason}
+            proofOfBillingOutcome={proofOfBillingOutcome}
+            setProofOfBillingOutcome={setProofOfBillingOutcome}
+            proofOfBillingReason={proofOfBillingReason}
+            setProofOfBillingReason={setProofOfBillingReason}
+            selfieWithIdOutcome={selfieWithIdOutcome}
+            setSelfieWithIdOutcome={setSelfieWithIdOutcome}
+            selfieWithIdReason={selfieWithIdReason}
+            setSelfieWithIdReason={setSelfieWithIdReason}
             identityConsistency={identityConsistency}
             setIdentityConsistency={setIdentityConsistency}
-            ltoOutcome={ltoOutcome}
-            setLtoOutcome={setLtoOutcome}
             resultingStatus={resultingStatus}
             setResultingStatus={setResultingStatus}
             gate={gate}
@@ -529,7 +570,7 @@ function ReviewPanel({
   review,
   requirementSetStatus,
   canMutate,
-  hasBothDocuments,
+  hasAllDocuments,
   governmentIdOutcome,
   setGovernmentIdOutcome,
   governmentIdReason,
@@ -538,10 +579,16 @@ function ReviewPanel({
   setDriversLicenseOutcome,
   driversLicenseReason,
   setDriversLicenseReason,
+  proofOfBillingOutcome,
+  setProofOfBillingOutcome,
+  proofOfBillingReason,
+  setProofOfBillingReason,
+  selfieWithIdOutcome,
+  setSelfieWithIdOutcome,
+  selfieWithIdReason,
+  setSelfieWithIdReason,
   identityConsistency,
   setIdentityConsistency,
-  ltoOutcome,
-  setLtoOutcome,
   resultingStatus,
   setResultingStatus,
   gate,
@@ -551,7 +598,7 @@ function ReviewPanel({
   review: AdminRequirementReview | null;
   requirementSetStatus: string;
   canMutate: boolean;
-  hasBothDocuments: boolean;
+  hasAllDocuments: boolean;
   governmentIdOutcome: string;
   setGovernmentIdOutcome: (value: string) => void;
   governmentIdReason: string;
@@ -560,10 +607,16 @@ function ReviewPanel({
   setDriversLicenseOutcome: (value: string) => void;
   driversLicenseReason: string;
   setDriversLicenseReason: (value: string) => void;
+  proofOfBillingOutcome: string;
+  setProofOfBillingOutcome: (value: string) => void;
+  proofOfBillingReason: string;
+  setProofOfBillingReason: (value: string) => void;
+  selfieWithIdOutcome: string;
+  setSelfieWithIdOutcome: (value: string) => void;
+  selfieWithIdReason: string;
+  setSelfieWithIdReason: (value: string) => void;
   identityConsistency: string;
   setIdentityConsistency: (value: string) => void;
-  ltoOutcome: string;
-  setLtoOutcome: (value: string) => void;
   resultingStatus: ReviewStatus;
   setResultingStatus: (value: ReviewStatus) => void;
   gate: { canVerify: boolean; canResubmit: boolean };
@@ -586,9 +639,9 @@ function ReviewPanel({
             Last review: {formatAdminDateTime(review.reviewed_at)}
           </p>
         ) : null}
-        {!hasBothDocuments ? (
+        {!hasAllDocuments ? (
           <p className="rounded-md border border-[#edc9c5] bg-[#fff5f3] px-3 py-2 text-sm text-[#8d302f]">
-            Both current canonical documents are required before a review can be
+            All required current documents are needed before a review can be
             saved.
           </p>
         ) : null}
@@ -644,18 +697,53 @@ function ReviewPanel({
             />
           </label>
           <ReviewSelect
+            id="proof-of-billing-outcome"
+            label="Proof of Billing outcome"
+            value={proofOfBillingOutcome}
+            onChange={setProofOfBillingOutcome}
+            options={["Accepted", "Needs Replacement"]}
+          />
+          <label
+            className="block text-sm font-medium"
+            htmlFor="proof-of-billing-reason"
+          >
+            <span>Proof of Billing reason</span>
+            <TInput
+              id="proof-of-billing-reason"
+              name="proof-of-billing-reason"
+              value={proofOfBillingReason}
+              onChange={(event) => setProofOfBillingReason(event.target.value)}
+              placeholder="Required when replacement is needed"
+              className="mt-2"
+            />
+          </label>
+          <ReviewSelect
+            id="selfie-with-id-outcome"
+            label="Selfie with ID outcome"
+            value={selfieWithIdOutcome}
+            onChange={setSelfieWithIdOutcome}
+            options={["Accepted", "Needs Replacement"]}
+          />
+          <label
+            className="block text-sm font-medium"
+            htmlFor="selfie-with-id-reason"
+          >
+            <span>Selfie with ID reason</span>
+            <TInput
+              id="selfie-with-id-reason"
+              name="selfie-with-id-reason"
+              value={selfieWithIdReason}
+              onChange={(event) => setSelfieWithIdReason(event.target.value)}
+              placeholder="Required when replacement is needed"
+              className="mt-2"
+            />
+          </label>
+          <ReviewSelect
             id="identity-consistency"
             label="Identity consistency"
             value={identityConsistency}
             onChange={setIdentityConsistency}
             options={["Consistent", "Concern"]}
-          />
-          <ReviewSelect
-            id="lto-outcome"
-            label="LTO outcome"
-            value={ltoOutcome}
-            onChange={setLtoOutcome}
-            options={["Not Checked", "Clear", "Concern", "Unavailable"]}
           />
           <ReviewSelect
             id="resulting-status"
@@ -668,9 +756,9 @@ function ReviewPanel({
 
         <div className="border-t border-border pt-4">
           <p className="text-xs leading-5 text-muted-foreground">
-            Verified is available only when both documents are accepted,
-            identity is consistent, and LTO is Clear. Needs Resubmission
-            requires at least one flagged document with a reason.
+            Verified is available only when all four documents are accepted and
+            identity is consistent. Needs Resubmission requires at least one
+            flagged document with a reason.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Btn

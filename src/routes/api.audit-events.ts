@@ -48,8 +48,10 @@ async function readAuditEvents({ request }: { request: Request }) {
       .order("id", { ascending: false })
       .range(start, start + limit - 1);
 
-    if (domain) query = query.eq("entity_type", domain);
-    if (actorType) query = query.eq("actor_type", actorType);
+    if (domain)
+      query = query.eq("entity_type", domain as (typeof AUDIT_DOMAINS)[number]);
+    if (actorType)
+      query = query.eq("actor_type", actorType as (typeof AUDIT_ACTOR_TYPES)[number]);
     if (actorUserId) query = query.eq("actor_user_id", actorUserId);
     if (from) query = query.gte("occurred_at", from.toISOString());
     if (to) query = query.lte("occurred_at", to.toISOString());

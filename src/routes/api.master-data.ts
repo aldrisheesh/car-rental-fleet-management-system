@@ -119,6 +119,11 @@ async function mutate(request: Request, mode: "create" | "update") {
               input.seatCapacity === "" || input.seatCapacity == null
                 ? null
                 : Number(input.seatCapacity),
+            large_luggage_capacity:
+              input.largeLuggageCapacity === "" ||
+              input.largeLuggageCapacity == null
+                ? null
+                : Number(input.largeLuggageCapacity),
             daily_rate:
               input.dailyRate === "" || input.dailyRate == null
                 ? null
@@ -155,6 +160,23 @@ async function mutate(request: Request, mode: "create" | "update") {
         Number(current.data.current_odometer_km)
     )
       return errorResponse("Current odometer cannot decrease.");
+  }
+  if (resource === "vehicles" && mode === "update" && id) {
+    const currentBranch = await client
+      .from("vehicles")
+      .select("branch_id")
+      .eq("id", id)
+      .maybeSingle();
+    if (
+      currentBranch.data &&
+      values.branch_id != null &&
+      currentBranch.data.branch_id !== values.branch_id
+    ) {
+      return errorResponse(
+        "Use the Fleet location workflow to review affected bookings before moving a vehicle.",
+        409,
+      );
+    }
   }
   // The validated resource discriminator cannot narrow Supabase's generated
   // union type for a dynamic table name.

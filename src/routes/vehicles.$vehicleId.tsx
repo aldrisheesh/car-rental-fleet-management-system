@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, RefreshCw } from "lucide-react";
 
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import {
   CustomerPage,
-  FinderReasons,
-  FinderRationale,
   Rate,
   StatusCallout,
   VehicleFacts,
@@ -15,14 +13,17 @@ import {
 } from "@/components/customer/CustomerPrimitives";
 import {
   ApiRequestError,
+  dateTimeInputFromIso,
   encodeSearch,
   fetchJson,
-  formatDateRange,
+  formatMoney,
   type CustomerVehicle,
   type FinderResponse,
 } from "@/lib/customer-data";
+import { calculateRentalDays } from "@/lib/rental-duration";
 import {
   finderContextForSubmission,
+  parseFinderDateSelection,
   parseFinderBookingHandoff,
   validateFinderBookingSearch,
 } from "@/lib/finder-booking";
@@ -43,6 +44,64 @@ export const Route = createFileRoute("/vehicles/$vehicleId")({
   component: VehicleDetailPage,
 });
 
+function formatTripDate(value: string) {
+  return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(value));
+}
+
+function formatTripTime(value: string) {
+  const instant = new Date(value);
+  if (Number.isNaN(instant.getTime())) return "Time not selected";
+  return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(instant);
+}
+
+function VehicleDetailSkeleton() {
+  return (
+    <div
+      className="detail-layout vehicle-detail-skeleton"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading vehicle details"
+    >
+      <span className="sr-only">Loading vehicle details</span>
+      <section className="detail-gallery" aria-hidden="true">
+        <i className="vehicle-detail-skeleton__image" />
+        <i className="vehicle-detail-skeleton__thumb" />
+      </section>
+      <section className="detail-panel" aria-hidden="true">
+        <div className="vehicle-detail-skeleton__heading">
+          <i />
+          <i />
+          <i />
+        </div>
+        <div className="vehicle-detail-skeleton__facts">
+          {Array.from({ length: 4 }, (_, index) => (
+            <div key={index}>
+              <i />
+              <i />
+            </div>
+          ))}
+        </div>
+        <div className="vehicle-detail-skeleton__trip">
+          <i />
+          <span>
+            <i />
+            <i />
+          </span>
+        </div>
+        <i className="vehicle-detail-skeleton__action" />
+      </section>
+    </div>
+  );
+}
+
 function VehicleDetailPage() {
   const { vehicleId } = Route.useParams();
   const search = Route.useSearch();
@@ -52,24 +111,46 @@ function VehicleDetailPage() {
   const [finderStatus, setFinderStatus] = useState<
     "idle" | "checking" | "matched" | "stale" | "error"
   >("idle");
-  const [finderResponse, setFinderResponse] = useState<FinderResponse | null>(
-    null,
-  );
   const [activeImage, setActiveImage] = useState(0);
   const finderKey = useRef("");
 
   const vehicle = vehicles.find((item) => item.id === vehicleId) ?? null;
+  const galleryImages = useMemo(() => {
+    if (!vehicle) return [];
+    const images = vehicle.images?.length
+      ? [...vehicle.images]
+      : vehicle.image_url
+        ? [{ id: "cover", public_url: vehicle.image_url, is_cover: true }]
+        : [];
+    return images.sort(
+      (left, right) =>
+        Number(Boolean(right.is_cover)) - Number(Boolean(left.is_cover)),
+    );
+  }, [vehicle]);
   const handoff = useMemo(
     () => parseFinderBookingHandoff({ ...search, vehicle: vehicleId }),
     [search, vehicleId],
   );
-  const hasEvaluatedContext = Boolean(handoff);
+  const selectedDates = useMemo(
+    () => parseFinderDateSelection(search),
+    [search],
+  );
+  const tripDates = handoff ?? selectedDates;
+  const canContinue = Boolean(tripDates);
 
-  async function loadVehicle() {
+  const loadVehicle = useCallback(async () => {
     setLoading(true);
     setLoadError("");
     try {
-      const rows = await fetchJson<CustomerVehicle[]>("/api/vehicles");
+      const availabilitySearch = tripDates
+        ? encodeSearch({
+            finderStart: dateTimeInputFromIso(tripDates.requestedStart),
+            finderEnd: dateTimeInputFromIso(tripDates.requestedEnd),
+          })
+        : "";
+      const rows = await fetchJson<CustomerVehicle[]>(
+        `/api/vehicles${availabilitySearch}`,
+      );
       setVehicles(rows);
     } catch (error) {
       setLoadError(
@@ -80,16 +161,19 @@ function VehicleDetailPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [tripDates?.requestedEnd, tripDates?.requestedStart]);
 
   useEffect(() => {
     void loadVehicle();
-  }, []);
+  }, [loadVehicle]);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [vehicle?.id, galleryImages[0]?.id]);
 
   useEffect(() => {
     if (!handoff) {
       finderKey.current = "";
-      setFinderResponse(null);
       setFinderStatus("idle");
       return;
     }
@@ -98,9 +182,8 @@ function VehicleDetailPage() {
       handoff.requestedStart,
       handoff.requestedEnd,
       handoff.passengerCount,
+      handoff.largeBagCount,
       handoff.maximumBudget,
-      handoff.preferredCategory,
-      handoff.destination,
     ].join("|");
     if (finderKey.current === key) return;
     finderKey.current = key;
@@ -111,7 +194,6 @@ function VehicleDetailPage() {
       body: JSON.stringify(finderContextForSubmission(handoff)),
     })
       .then((result) => {
-        setFinderResponse(result);
         const selected = result.recommendations.find(
           (item) => item.vehicleId === vehicleId,
         );
@@ -124,12 +206,24 @@ function VehicleDetailPage() {
 
   const backSearch = encodeSearch({ ...search, vehicle: undefined });
   const bookingSearch = encodeSearch({ ...search, vehicle: vehicleId });
-  const matchedRecommendation = finderResponse?.recommendations.find(
-    (item) => item.vehicleId === vehicleId,
-  );
+  const rentalEstimate = useMemo(() => {
+    if (!tripDates || !vehicle || vehicle.daily_rate == null) return null;
+    try {
+      const rentalDays = calculateRentalDays(
+        new Date(tripDates.requestedStart),
+        new Date(tripDates.requestedEnd),
+      );
+      return {
+        rentalDays,
+        total: rentalDays * vehicle.daily_rate,
+      };
+    } catch {
+      return null;
+    }
+  }, [tripDates, vehicle]);
 
   function continueWithVehicle() {
-    if (!vehicle) return;
+    if (!vehicle || !canContinue) return;
     const destination = getCustomerSession()
       ? `/booking${bookingSearch}`
       : `/sign-in${bookingSearch}`;
@@ -150,14 +244,7 @@ function VehicleDetailPage() {
           </div>
 
           {loading ? (
-            <div
-              className="finder-empty-state"
-              role="status"
-              aria-live="polite"
-            >
-              <h1>Loading vehicle details</h1>
-              <p>The selected vehicle is being loaded from the active fleet.</p>
-            </div>
+            <VehicleDetailSkeleton />
           ) : loadError ? (
             <StatusCallout
               tone="error"
@@ -179,6 +266,14 @@ function VehicleDetailPage() {
               This vehicle is not in the active fleet returned by the service.
               Go back to Find a Car to choose another vehicle.
             </StatusCallout>
+          ) : tripDates && vehicle.is_available === false ? (
+            <StatusCallout
+              tone="warning"
+              title="Car unavailable for your dates"
+            >
+              This car cannot be selected for the requested rental period. Go
+              back to the available cars to choose another option.
+            </StatusCallout>
           ) : (
             <div className="detail-layout">
               <section
@@ -187,23 +282,28 @@ function VehicleDetailPage() {
               >
                 <div className="detail-gallery-main">
                   <VehicleImage
-                    src={vehicle.image_url}
+                    src={galleryImages[activeImage]?.public_url ?? vehicle.image_url}
                     alt={vehicle.name}
                     priority
                     sizes="(max-width: 767px) 100vw, 58vw"
                   />
                 </div>
-                <div className="detail-gallery-thumbs">
-                  <button
-                    className={`detail-gallery-thumb ${activeImage === 0 ? "is-active" : ""}`}
-                    type="button"
-                    aria-label={`Show ${vehicle.name} image`}
-                    aria-pressed={activeImage === 0}
-                    onClick={() => setActiveImage(0)}
-                  >
-                    <VehicleImage src={vehicle.image_url} alt="" sizes="5rem" />
-                  </button>
-                </div>
+                {galleryImages.length > 1 ? (
+                  <div className="detail-gallery-thumbs">
+                    {galleryImages.map((image, index) => (
+                      <button
+                        key={image.id}
+                        className={`detail-gallery-thumb ${activeImage === index ? "is-active" : ""}`}
+                        type="button"
+                        aria-label={`Show ${vehicle.name} image ${index + 1}`}
+                        aria-pressed={activeImage === index}
+                        onClick={() => setActiveImage(index)}
+                      >
+                        <VehicleImage src={image.public_url} alt="" sizes="5rem" />
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </section>
 
               <section className="detail-panel" aria-labelledby="vehicle-title">
@@ -213,10 +313,13 @@ function VehicleDetailPage() {
                   </p>
                   <h1 id="vehicle-title">{vehicle.name}</h1>
                   <Rate value={vehicle.daily_rate} />
+                  <p className="detail-intro">
+                    {vehicleFitSummary(vehicle)}
+                  </p>
                 </div>
 
                 {finderStatus === "checking" ? (
-                  <StatusCallout tone="info" title="Checking your trip fit">
+                  <StatusCallout tone="info" title="Checking your ride match">
                     The Finder context is being checked against the current
                     fleet.
                   </StatusCallout>
@@ -234,84 +337,99 @@ function VehicleDetailPage() {
                 {finderStatus === "error" ? (
                   <StatusCallout
                     tone="warning"
-                    title="Trip fit could not be refreshed"
+                    title="Your ride match could not be refreshed"
                   >
                     The vehicle details below are current fleet data. Finder
                     reasons are hidden until the trip evaluation can be checked
                     again.
                   </StatusCallout>
                 ) : null}
-                {matchedRecommendation ? (
-                  <FinderReasons
-                    reasons={matchedRecommendation.reasons.slice(0, 1)}
-                  />
-                ) : null}
+                <section
+                  className="detail-trip-fit"
+                  aria-labelledby="detail-trip-fit-title"
+                >
+                  <h2 id="detail-trip-fit-title">A good fit for your trip</h2>
+                  <VehicleFacts vehicle={vehicle} showBranch={false} />
+                </section>
 
-                <VehicleFacts vehicle={vehicle} />
-
-                <div className="detail-context">
-                  <h2>
-                    <CalendarDays size={17} aria-hidden="true" /> Your trip
+                <section
+                  className="detail-rental"
+                  aria-labelledby="detail-rental-title"
+                >
+                  <h2 id="detail-rental-title">
+                    <CalendarDays size={18} aria-hidden="true" /> Plan your rental
                   </h2>
-                  {handoff ? (
-                    <p>
-                      {formatDateRange(
-                        handoff.requestedStart,
-                        handoff.requestedEnd,
-                      )}{" "}
-                      · {handoff.passengerCount}{" "}
-                      {handoff.passengerCount === 1
-                        ? "passenger"
-                        : "passengers"}
-                    </p>
+                  {tripDates ? (
+                    <>
+                      <p className="detail-rental-dates">
+                        <time dateTime={tripDates.requestedStart}>
+                          {formatTripDate(tripDates.requestedStart)} at{" "}
+                          {formatTripTime(tripDates.requestedStart)}
+                        </time>
+                        <span aria-hidden="true"> to </span>
+                        <time dateTime={tripDates.requestedEnd}>
+                          {formatTripDate(tripDates.requestedEnd)} at{" "}
+                          {formatTripTime(tripDates.requestedEnd)}
+                        </time>
+                      </p>
+                      {rentalEstimate ? (
+                        <div className="detail-rental-estimate">
+                          <span>
+                            {rentalEstimate.rentalDays} {rentalEstimate.rentalDays === 1 ? "day" : "days"}
+                          </span>
+                          <p>Estimated vehicle rental</p>
+                          <strong>{formatMoney(rentalEstimate.total)}</strong>
+                        </div>
+                      ) : null}
+                    </>
                   ) : (
-                    <p>
-                      No trip dates selected yet. You can continue with this car
-                      and add the request details next.
+                    <p className="detail-rental-empty">
+                      Choose dates to see the estimated vehicle rental and request this car.
                     </p>
                   )}
-                  <a className="customer-link" href={`/vehicles${backSearch}`}>
-                    Change trip or browse more cars
-                  </a>
-                </div>
-
-                <div className="detail-action-panel detail-action-panel-desktop">
                   <button
                     className="customer-primary-button"
                     type="button"
                     onClick={continueWithVehicle}
+                    disabled={!canContinue}
                   >
-                    Continue with this car
+                    Request this car
                   </button>
+                  {!canContinue ? (
+                    <Link
+                      className="customer-secondary-button detail-choose-dates"
+                      to="/vehicles"
+                      search={
+                        {
+                          ...search,
+                          vehicle: undefined,
+                          finderOpenDates: "true",
+                        } as never
+                      }
+                    >
+                      <CalendarDays size={16} aria-hidden="true" /> Choose dates
+                    </Link>
+                  ) : null}
                   <p className="detail-action-note">
-                    Your selection is not a reservation until you send a rental
-                    request.
+                    Delivery details are confirmed after your request is approved.
                   </p>
-                </div>
+                </section>
               </section>
             </div>
           )}
-          {matchedRecommendation ? (
-            <FinderRationale reasons={matchedRecommendation.reasons} />
-          ) : null}
-          {vehicle ? (
-            <div className="detail-action-panel detail-action-panel-mobile">
-              <button
-                className="customer-primary-button"
-                type="button"
-                onClick={continueWithVehicle}
-              >
-                Continue with this car
-              </button>
-              <p className="detail-action-note">
-                Your selection is not a reservation until you send a rental
-                request.
-              </p>
-            </div>
-          ) : null}
         </div>
       </main>
       <Footer />
     </CustomerPage>
   );
+}
+
+function vehicleFitSummary(vehicle: CustomerVehicle) {
+  const seats = vehicle.seat_capacity;
+  const bags = vehicle.large_luggage_capacity;
+  if (seats && bags != null) {
+    return `Comfortably carries up to ${seats} travellers with room for ${bags} large ${bags === 1 ? "suitcase" : "suitcases"}.`;
+  }
+  if (seats) return `Comfortably carries up to ${seats} travellers.`;
+  return "Review the rental plan to see whether this car suits your trip.";
 }
