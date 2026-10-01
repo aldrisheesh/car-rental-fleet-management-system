@@ -1,16 +1,15 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  AlertCircle,
   ArrowRight,
+  AlertCircle,
   CalendarDays,
-  CarFront,
   CheckCircle2,
   Clock3,
   FileCheck2,
-  Info,
   MapPin,
   RefreshCw,
+  XCircle,
 } from "lucide-react";
 
 import { Footer } from "@/components/site/Footer";
@@ -24,9 +23,9 @@ import {
   ApiRequestError,
   fetchJson,
   formatDateRange,
-  formatInstant,
   type CustomerBooking,
   type CustomerVehicle,
+  type RequirementSet,
   type RequirementsResponse,
 } from "@/lib/customer-data";
 import {
@@ -35,7 +34,7 @@ import {
   type CustomerBookingComposition,
   type LifecyclePresentation,
 } from "@/lib/customer-lifecycle";
-import type { CustomerPaymentResponse } from "@/lib/payment-retrieval";
+import type { CustomerPayment } from "@/lib/payment-retrieval";
 import { getAdminSession } from "@/lib/admin-auth";
 import { getCustomerSession } from "@/lib/customer-auth";
 
@@ -70,39 +69,45 @@ type BookingRecord = CustomerBookingComposition & {
   lifecycle: LifecyclePresentation;
 };
 
-type BookingFilter = "all" | "needs-action" | "current";
+type CustomerDashboardResponse = {
+  bookings: CustomerBooking[];
+  vehicles: CustomerVehicle[];
+  requirements: Array<{
+    bookingId: string;
+    requirementSet: RequirementSet;
+    review: RequirementsResponse["review"];
+  }>;
+  payments: CustomerPayment[];
+};
 
 function MyBookingsPage() {
   const [records, setRecords] = useState<BookingRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [vehicleWarning, setVehicleWarning] = useState("");
-  const [filter, setFilter] = useState<BookingFilter>("all");
-
   const loadBookings = useCallback(async () => {
     setLoading(true);
     setError("");
-    setVehicleWarning("");
 
     try {
-      const [bookings, vehiclesResult] = await Promise.all([
-        fetchJson<CustomerBooking[]>("/api/bookings"),
-        fetchJson<CustomerVehicle[]>("/api/vehicles").catch((requestError) => {
-          setVehicleWarning(
-            requestError instanceof ApiRequestError
-              ? requestError.message
-              : "Vehicle images and specifications are unavailable right now.",
-          );
-          return [];
-        }),
-      ]);
-
-      const composed = await Promise.all(
-        bookings.map(async (booking) =>
-          composeBookingRecord(booking, vehiclesResult),
+      const dashboard = await fetchJson<CustomerDashboardResponse>(
+        "/api/bookings?view=dashboard",
+      );
+      const requirementsByBooking = new Map(
+        dashboard.requirements.map((requirements) => [
+          requirements.bookingId,
+          requirements,
+        ]),
+      );
+      setRecords(
+        dashboard.bookings.map((booking) =>
+          composeBookingRecord(
+            booking,
+            dashboard.vehicles,
+            requirementsByBooking.get(booking.id),
+            paymentForBooking(booking.id, dashboard.payments),
+          ),
         ),
       );
-      setRecords(composed);
     } catch (requestError) {
       setError(
         requestError instanceof ApiRequestError
@@ -118,44 +123,37 @@ function MyBookingsPage() {
     void loadBookings();
   }, [loadBookings]);
 
-  const attentionRecords = useMemo(
-    () => records.filter((record) => record.lifecycle.actionRequired),
-    [records],
-  );
-  const filteredRecords = useMemo(
-    () => records.filter((record) => matchesFilter(record, filter)),
-    [filter, records],
-  );
+  const {
+    featuredRecord,
+    remainingActiveRecords,
+    pastRentalRecords,
+    closedRecords,
+  } = useMemo(() => groupBookings(records), [records]);
+
+  if (loading) {
+    return (
+      <CustomerPage className="booking-list-page">
+        <Header />
+        <main id="main-content" className="booking-list-main">
+          <div className="customer-container">
+            <BookingListLoading />
+          </div>
+        </main>
+        <Footer />
+      </CustomerPage>
+    );
+  }
+
   return (
     <CustomerPage className="booking-list-page">
       <Header />
       <main id="main-content" className="booking-list-main">
         <div className="customer-container">
           <div className="booking-list-heading">
-            <div>
-              <p className="booking-list-kicker">My account</p>
-              <h1>My bookings</h1>
-              <p>
-                Your current requests and rentals, with the next step shown
-                first.
-              </p>
-            </div>
-            <Link className="customer-primary-button" to="/vehicles">
-              <CarFront size={20} aria-hidden="true" />
-              Find another car
-            </Link>
+            <h1>Your rentals</h1>
           </div>
 
-          {vehicleWarning ? (
-            <StatusCallout tone="info" title="Vehicle details are limited">
-              {vehicleWarning} Booking dates and lifecycle state remain tied to
-              your account records.
-            </StatusCallout>
-          ) : null}
-
-          {loading ? (
-            <BookingListLoading />
-          ) : error ? (
+          {error ? (
             <StatusCallout
               tone="error"
               title="Bookings unavailable"
@@ -174,58 +172,65 @@ function MyBookingsPage() {
             </StatusCallout>
           ) : (
             <>
-              {attentionRecords.length > 0 ? (
+              {featuredRecord ? (
                 <section
-                  className="booking-attention"
-                  aria-labelledby="booking-attention-title"
+                  className="booking-dossier-section"
+                  aria-labelledby="booking-current-title"
                 >
-                  <div className="booking-section-heading">
-                    <h2 id="booking-attention-title">Needs your attention</h2>
-                    <span>{attentionRecords.length} request(s)</span>
-                  </div>
-                  <div className="booking-attention-list">
-                    {attentionRecords.map((record) => (
-                      <BookingListItem
+                  <h2 id="booking-current-title">
+                    {remainingActiveRecords.length > 0
+                      ? "Active and upcoming bookings"
+                      : "Active booking"}
+                  </h2>
+                  <BookingDossier record={featuredRecord} />
+                  {remainingActiveRecords.length > 0 ? (
+                    <div className="booking-current-list">
+                      {remainingActiveRecords.map((record) => (
+                        <CurrentBookingRow
+                          key={record.booking.id}
+                          record={record}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                </section>
+              ) : null}
+
+              {pastRentalRecords.length > 0 ? (
+                <section
+                  className="booking-archive"
+                  aria-labelledby="booking-archive-title"
+                >
+                  <h2 id="booking-archive-title">Past rentals</h2>
+                  <div className="booking-archive-table" role="list">
+                    {pastRentalRecords.map((record) => (
+                      <ArchiveBookingRow
                         key={record.booking.id}
                         record={record}
-                        featured
                       />
                     ))}
                   </div>
                 </section>
               ) : null}
 
-              <section
-                className="booking-all-section"
-                aria-labelledby="booking-all-title"
-              >
-                <div className="booking-section-heading booking-all-heading">
-                  <div>
-                    <h2 id="booking-all-title">All bookings</h2>
-                    <p>
-                      Open any request for its exact requirements, payment, and
-                      rental record.
-                    </p>
-                  </div>
-                  <BookingFilterTabs filter={filter} onChange={setFilter} />
-                </div>
-
-                {filteredRecords.length > 0 ? (
-                  <div id="booking-list" className="booking-list" role="list">
-                    {filteredRecords.map((record) => (
-                      <BookingListItem
+              {closedRecords.length > 0 ? (
+                <section
+                  className="booking-closed-section"
+                  aria-labelledby="booking-closed-title"
+                >
+                  <h2 id="booking-closed-title">Other requests</h2>
+                  <div className="booking-closed-list" role="list">
+                    {closedRecords.map((record) => (
+                      <CurrentBookingRow
                         key={record.booking.id}
                         record={record}
                       />
                     ))}
                   </div>
-                ) : (
-                  <BookingEmpty
-                    filter={filter}
-                    hasBookings={records.length > 0}
-                  />
-                )}
-              </section>
+                </section>
+              ) : null}
+
+              {records.length === 0 ? <BookingEmpty /> : null}
             </>
           )}
         </div>
@@ -235,42 +240,29 @@ function MyBookingsPage() {
   );
 }
 
-async function composeBookingRecord(
+function composeBookingRecord(
   booking: CustomerBooking,
   vehicles: CustomerVehicle[],
-): Promise<BookingRecord> {
-  const [requirementsResult, paymentResult] = await Promise.allSettled([
-    fetchJson<RequirementsResponse>(
-      `/api/requirements?bookingId=${encodeURIComponent(booking.id)}`,
-    ),
-    fetchJson<CustomerPaymentResponse>(
-      `/api/payments?bookingId=${encodeURIComponent(booking.id)}`,
-    ),
-  ]);
-  const requirementsAvailable = requirementsResult.status === "fulfilled";
-  const paymentAvailable = paymentResult.status === "fulfilled";
-  const requirements = requirementsAvailable ? requirementsResult.value : null;
-  const payment = paymentAvailable
-    ? paymentForBooking(booking.id, paymentResult.value.payments)
-    : null;
-  const requirementsError = requirementsAvailable
-    ? null
-    : describeError(
-        requirementsResult.reason,
-        "Requirements status is unavailable.",
-      );
-  const paymentError = paymentAvailable
-    ? null
-    : describeError(paymentResult.reason, "Payment status is unavailable.");
+  dashboardRequirements:
+    | CustomerDashboardResponse["requirements"][number]
+    | undefined,
+  payment: CustomerPayment | null,
+): BookingRecord {
+  const requirements: RequirementsResponse = {
+    requirementSet: dashboardRequirements?.requirementSet ?? null,
+    documents: [],
+    review: dashboardRequirements?.review ?? null,
+    requiredTypes: [],
+  };
   const composition: CustomerBookingComposition = {
     booking,
     requirements,
     payment,
     paymentMethods: [],
-    requirementsAvailable,
-    paymentAvailable,
-    requirementsError,
-    paymentError,
+    requirementsAvailable: true,
+    paymentAvailable: true,
+    requirementsError: null,
+    paymentError: null,
   };
 
   return {
@@ -312,62 +304,38 @@ function vehicleForBooking(
   } satisfies CustomerVehicle;
 }
 
-function describeError(reason: unknown, fallback: string) {
-  return reason instanceof ApiRequestError || reason instanceof Error
-    ? reason.message
-    : fallback;
+function groupBookings(records: BookingRecord[]) {
+  const byPickup = (left: BookingRecord, right: BookingRecord) =>
+    new Date(left.booking.pickup_at).getTime() -
+    new Date(right.booking.pickup_at).getTime();
+  const active = records
+    .filter(
+      (record) =>
+        !["returned", "rejected", "cancelled"].includes(record.lifecycle.state),
+    )
+    .sort((left, right) => {
+      if (left.lifecycle.actionRequired !== right.lifecycle.actionRequired)
+        return left.lifecycle.actionRequired ? -1 : 1;
+      return byPickup(left, right);
+    });
+  const pastRentalRecords = records
+    .filter((record) => record.lifecycle.state === "returned")
+    .sort((left, right) => byPickup(right, left));
+  const closedRecords = records
+    .filter((record) =>
+      ["rejected", "cancelled"].includes(record.lifecycle.state),
+    )
+    .sort((left, right) => byPickup(right, left));
+
+  return {
+    featuredRecord: active[0] ?? null,
+    remainingActiveRecords: active.slice(1),
+    pastRentalRecords,
+    closedRecords,
+  };
 }
 
-function matchesFilter(record: BookingRecord, filter: BookingFilter) {
-  if (filter === "needs-action") return record.lifecycle.actionRequired;
-  if (filter === "current") {
-    return !["returned", "rejected", "cancelled"].includes(
-      record.lifecycle.state,
-    );
-  }
-  return true;
-}
-
-function BookingFilterTabs({
-  filter,
-  onChange,
-}: {
-  filter: BookingFilter;
-  onChange: (filter: BookingFilter) => void;
-}) {
-  const filters: Array<{ value: BookingFilter; label: string }> = [
-    { value: "all", label: "All" },
-    { value: "needs-action", label: "Needs action" },
-    { value: "current", label: "Current" },
-  ];
-  return (
-    <div
-      className="booking-filter-tabs"
-      role="group"
-      aria-label="Filter bookings"
-    >
-      {filters.map((item) => (
-        <button
-          className={filter === item.value ? "is-active" : ""}
-          key={item.value}
-          type="button"
-          aria-pressed={filter === item.value}
-          onClick={() => onChange(item.value)}
-        >
-          {item.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function BookingListItem({
-  record,
-  featured = false,
-}: {
-  record: BookingRecord;
-  featured?: boolean;
-}) {
+function BookingDossier({ record }: { record: BookingRecord }) {
   const { booking, lifecycle, vehicle } = record;
   const actionLabel = lifecycle.actionLabel ?? defaultActionLabel(lifecycle);
   const vehicleName =
@@ -375,80 +343,130 @@ function BookingListItem({
     (booking.rental
       ? "Vehicle details unavailable"
       : (booking.requested_vehicle?.name ?? "Vehicle not recorded"));
-  const pickup = booking.pickup_branch?.name ?? "Pickup branch not recorded";
-  const returnAt = booking.rental?.ended_at
-    ? `Returned ${formatInstant(booking.rental.ended_at)}`
-    : booking.rental?.started_at
-      ? `Return ${formatInstant(booking.rental.scheduled_return_at)}`
-      : lifecycle.state === "unavailable"
-        ? "Booking details need attention"
-        : lifecycle.statusLabel;
-  const StatusIcon = statusIcon(lifecycle);
+  const location = bookingLocation(booking);
+  const journey = lifecycle.journey;
 
   return (
-    <article
-      className={`booking-list-item${featured ? " is-featured" : ""}`}
-      role="listitem"
-    >
-      <div className="booking-list-image">
+    <article className="booking-dossier">
+      <div className="booking-dossier-image">
         <VehicleImage
           src={vehicle?.image_url}
           alt={vehicleName}
-          sizes="(max-width: 767px) 100vw, 14rem"
+          sizes="(max-width: 767px) 100vw, 50vw"
         />
       </div>
-      <div className="booking-list-identity">
-        <h3>{vehicleName}</h3>
-        <p>
-          <CalendarDays size={18} aria-hidden="true" />
-          <span>{formatDateRange(booking.pickup_at, booking.return_at)}</span>
-        </p>
-        <p>
-          <MapPin size={18} aria-hidden="true" />
-          <span>Pickup: {pickup}</span>
-        </p>
-      </div>
-      <div className={`booking-list-status is-${lifecycle.statusTone}`}>
-        <div className="booking-status-heading">
-          <StatusIcon size={20} aria-hidden="true" />
-          <strong>{lifecycle.statusLabel}</strong>
+      <div className="booking-dossier-content">
+        <div className={`booking-dossier-status is-${lifecycle.statusTone}`}>
+          <Clock3 size={21} aria-hidden="true" />
+          <div>
+            <strong>{lifecycle.statusLabel}</strong>
+            <p>{lifecycle.reason ?? lifecycle.message}</p>
+          </div>
         </div>
-        <p>{lifecycle.reason || returnAt}</p>
-        {lifecycle.state === "unavailable" ? (
-          <p className="booking-list-unavailable">
-            {record.requirementsError || record.paymentError}
+        <h3>{vehicleName}</h3>
+        <div className="booking-dossier-facts">
+          <p>
+            <CalendarDays size={18} aria-hidden="true" />
+            {formatDateRange(booking.pickup_at, booking.return_at)}
           </p>
-        ) : null}
-      </div>
-      <div className="booking-list-action">
+          <p>
+            <MapPin size={18} aria-hidden="true" />
+            {location}
+          </p>
+        </div>
+        <ol className="booking-dossier-journey" aria-label="Rental journey">
+          {journey.map((step) => (
+            <li className={`is-${step.state}`} key={step.key}>
+              <span aria-hidden="true">
+                {step.state === "complete" ? <CheckCircle2 size={15} /> : null}
+              </span>
+              <strong>{step.label}</strong>
+              {step.note ? <small>{step.note}</small> : null}
+            </li>
+          ))}
+        </ol>
         <Link
-          className={
-            lifecycle.actionRequired
-              ? "customer-primary-button"
-              : "customer-link"
-          }
+          className="customer-primary-button"
           to="/bookings/$bookingId"
           params={{ bookingId: booking.id }}
         >
           {actionLabel}
-          {lifecycle.actionRequired ? (
-            <ArrowRight size={20} aria-hidden="true" />
-          ) : (
-            <ArrowRight size={18} aria-hidden="true" />
-          )}
+          <ArrowRight size={20} aria-hidden="true" />
         </Link>
       </div>
     </article>
   );
 }
 
-function statusIcon(lifecycle: LifecyclePresentation) {
-  if (lifecycle.actionRequired) return AlertCircle;
-  if (lifecycle.state === "unavailable") return Info;
-  if (["active-rental", "returned", "confirmed"].includes(lifecycle.state)) {
-    return CheckCircle2;
-  }
-  return Clock3;
+function CurrentBookingRow({ record }: { record: BookingRecord }) {
+  const { booking, lifecycle, vehicle } = record;
+  const StatusIcon = lifecycle.actionRequired
+    ? AlertCircle
+    : lifecycle.statusTone === "success"
+      ? CheckCircle2
+      : lifecycle.statusTone === "error"
+        ? XCircle
+        : Clock3;
+  const vehicleName =
+    vehicle?.name ?? booking.requested_vehicle?.name ?? "Vehicle not recorded";
+  return (
+    <article className="booking-current-row" role="listitem">
+      <div className="booking-current-row-image">
+        <VehicleImage src={vehicle?.image_url} alt={vehicleName} sizes="8rem" />
+      </div>
+      <div>
+        <h3>{vehicleName}</h3>
+        <p>{formatDateRange(booking.pickup_at, booking.return_at)}</p>
+      </div>
+      <div className={`booking-current-row-status is-${lifecycle.statusTone}`}>
+        <span className="booking-current-row-status-icon" aria-hidden="true">
+          <StatusIcon size={16} strokeWidth={2} />
+        </span>
+        <div>
+          <strong>{lifecycle.statusLabel}</strong>
+          <span>
+            {lifecycle.actionRequired ? "Action needed" : "In progress"}
+          </span>
+        </div>
+      </div>
+      <Link to="/bookings/$bookingId" params={{ bookingId: booking.id }}>
+        View rental <ArrowRight size={16} aria-hidden="true" />
+      </Link>
+    </article>
+  );
+}
+
+function ArchiveBookingRow({ record }: { record: BookingRecord }) {
+  const { booking, vehicle } = record;
+  const vehicleName =
+    vehicle?.name ?? booking.requested_vehicle?.name ?? "Vehicle not recorded";
+  return (
+    <article className="booking-archive-row" role="listitem">
+      <div className="booking-archive-date">
+        <strong>{formatDateRange(booking.pickup_at, booking.return_at)}</strong>
+      </div>
+      <div className="booking-archive-car">
+        <VehicleImage src={vehicle?.image_url} alt={vehicleName} sizes="7rem" />
+        <div>
+          <h3>{vehicleName}</h3>
+          <p>{bookingLocation(booking)}</p>
+        </div>
+      </div>
+      <span className="booking-archive-status">Completed</span>
+      <Link
+        to="/bookings/$bookingId"
+        params={{ bookingId: booking.id }}
+        aria-label={`View ${vehicleName} rental details`}
+      >
+        <ArrowRight size={18} aria-hidden="true" />
+      </Link>
+    </article>
+  );
+}
+
+function bookingLocation(booking: CustomerBooking) {
+  const pickup = booking.pickup_branch?.name ?? booking.pickup_location;
+  return pickup ? `Pickup: ${pickup}` : "Pickup details will appear here";
 }
 
 function defaultActionLabel(lifecycle: LifecyclePresentation) {
@@ -461,36 +479,46 @@ function defaultActionLabel(lifecycle: LifecyclePresentation) {
 
 function BookingListLoading() {
   return (
-    <div className="booking-loading" role="status" aria-live="polite">
-      <span>Loading your bookings…</span>
-      {[1, 2].map((item) => (
-        <div className="booking-skeleton" key={item} aria-hidden="true">
-          <div />
-          <div />
-          <div />
+    <div className="booking-list-skeleton" role="status" aria-live="polite">
+      <span className="sr-only">Loading your rentals…</span>
+      <div className="booking-list-skeleton__heading" aria-hidden="true">
+        <i />
+        <i />
+      </div>
+      <section className="booking-list-skeleton__featured" aria-hidden="true">
+        <i />
+        <div>
+          <i />
+          <i />
+          <i />
+          <div className="booking-list-skeleton__journey">
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
+          <i />
         </div>
-      ))}
+      </section>
+      <div className="booking-list-skeleton__rows" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </div>
     </div>
   );
 }
 
-function BookingEmpty({
-  filter,
-  hasBookings,
-}: {
-  filter: BookingFilter;
-  hasBookings: boolean;
-}) {
+function BookingEmpty({}: {}) {
   return (
     <div className="booking-empty">
       <FileCheck2 size={28} aria-hidden="true" />
-      <h3>{hasBookings ? "No bookings in this view" : "No bookings yet"}</h3>
+      <h3>No bookings yet</h3>
       <p>
-        {hasBookings
-          ? filter === "needs-action"
-            ? "Nothing needs your action right now. You can review all booking records instead."
-            : "There are no current requests or rentals in this view."
-          : "When you send a rental request, its requirements, payment, and rental stages will appear here."}
+        When you send a rental request, its requirements, payment, and rental
+        stages will appear here.
       </p>
       <Link className="customer-secondary-button" to="/vehicles">
         Find a car

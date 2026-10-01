@@ -1,0 +1,37 @@
+
+> defense:baseline
+> node --env-file=.env.local --experimental-strip-types scripts/defense/baseline.ts reset
+
+{
+  "dryRun": true,
+  "referenceDate": "2026-09-29",
+  "differences": [],
+  "resetTables": [
+    "forecast_demand_coverage",
+    "booking_requests",
+    "renter_requirement_sets",
+    "renter_requirement_documents",
+    "renter_requirement_reviews",
+    "booking_payment_quotes",
+    "booking_rate_quotes",
+    "payments",
+    "payment_proofs",
+    "rental_transactions",
+    "maintenance_records",
+    "vehicle_operational_state_events",
+    "forecast_runs",
+    "forecasts",
+    "forecast_inputs",
+    "supply_evaluations",
+    "supply_evaluation_vehicles",
+    "allocation_recommendation_batches",
+    "allocation_recommendations",
+    "allocation_recommendation_candidates",
+    "booking_creation_idempotency",
+    "booking_finder_context",
+    "notifications",
+    "email_deliveries",
+    "operational_notification_conditions",
+    "audit_events"
+  ]
+}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
@@ -419,16 +419,15 @@ function BookingDetailPage() {
   const requirementStatus = booking.requirement_status ?? "Unavailable";
   const paymentStatus = booking.payment_status ?? "Unavailable";
   const confirmationException = booking.confirmation_exception_message?.trim();
-  const paymentStageDetail =
-    confirmationException
-      ? `Payment approved. ${confirmationException}`
-      : payment?.status === "Not Submitted"
+  const paymentStageDetail = confirmationException
+    ? `Payment approved. ${confirmationException}`
+    : payment?.status === "Not Submitted"
       ? "Waiting for the customer to submit the payment proof."
       : paymentStatus === "Not Submitted"
         ? "Set the delivery fee and issue the customer’s payment request."
         : paymentStatus === "Needs Resubmission"
-        ? "Review the customer’s resubmitted payment proof."
-        : "Review the customer’s submitted payment proof.";
+          ? "Review the customer’s resubmitted payment proof."
+          : "Review the customer’s submitted payment proof.";
   const currentStage = currentLedgerStage({
     booking,
     requirementStatus,
@@ -505,7 +504,7 @@ function BookingDetailPage() {
     <div className="admin-booking-detail-page">
       <header className="admin-booking-detail-page__header">
         <div>
-          <Link to="/admin/bookings" replace className="touch-target">
+          <Link to="/admin/bookings" reloadDocument className="touch-target">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back to Bookings
           </Link>
@@ -1130,21 +1129,25 @@ function PaymentQuotePanel({
   onRefresh: () => Promise<void>;
 }) {
   const [deliveryFee, setDeliveryFee] = useState("");
-  const [issuedQuote, setIssuedQuote] = useState<Record<string, unknown> | null>(null);
+  const [issuedQuote, setIssuedQuote] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<Feedback | null>(null);
   const dailyRate = Number(booking.requested_vehicle?.daily_rate);
   const fee = Number(deliveryFee);
   const hasDailyRate = Number.isFinite(dailyRate) && dailyRate > 0;
-  const quote = hasDailyRate && Number.isFinite(fee) && fee >= 0
-    ? calculateRentalQuote(
-        dailyRate,
-        new Date(booking.pickup_at),
-        new Date(booking.return_at),
-        fee,
-      )
-    : null;
+  const quote =
+    hasDailyRate && Number.isFinite(fee) && fee >= 0
+      ? calculateRentalQuote(
+          dailyRate,
+          new Date(booking.pickup_at),
+          new Date(booking.return_at),
+          fee,
+        )
+      : null;
   const locked = Boolean(payment && payment.status !== "Not Submitted");
 
   useEffect(() => {
@@ -1157,7 +1160,9 @@ function PaymentQuotePanel({
       .then((body) => {
         if (body?.quote) {
           setIssuedQuote(body.quote);
-          setDeliveryFee(body.quote.delivery_fee ? String(body.quote.delivery_fee) : "");
+          setDeliveryFee(
+            body.quote.delivery_fee ? String(body.quote.delivery_fee) : "",
+          );
         }
       })
       .catch(() => undefined);
@@ -1185,7 +1190,8 @@ function PaymentQuotePanel({
       await onRefresh();
       setMessage({
         tone: "success",
-        message: "Quote sent. The customer can now submit the required down payment.",
+        message:
+          "Quote sent. The customer can now submit the required down payment.",
       });
     } catch (error) {
       setMessage({
@@ -1199,12 +1205,15 @@ function PaymentQuotePanel({
   }
 
   const customerName = booking.customer?.full_name?.trim() || "the customer";
-  const customerFirstName = customerName === "the customer"
-    ? "customer"
-    : customerName.split(/\s+/)[0];
-  const quoteIssued = Boolean(issuedQuote) || payment?.status === "Not Submitted";
+  const customerFirstName =
+    customerName === "the customer" ? "customer" : customerName.split(/\s+/)[0];
+  const quoteIssued = Boolean(issuedQuote);
+  const canEditQuote = !locked && requirementsVerified;
   const vehicleName = booking.requested_vehicle?.name || "Requested vehicle";
-  const bookingWindow = formatAdminDateRange(booking.pickup_at, booking.return_at);
+  const bookingWindow = formatAdminDateRange(
+    booking.pickup_at,
+    booking.return_at,
+  );
 
   return (
     <section className="admin-booking-payment-terms admin-booking-payment-quote-panel">
@@ -1217,10 +1226,10 @@ function PaymentQuotePanel({
       {quote ? (
         <>
           <header className="admin-booking-payment-quote-panel__header">
-            <h4>{quoteIssued ? "Waiting for customer payment" : "Review customer quote"}</h4>
+            <h4>Review customer quote</h4>
             <p>
               {quoteIssued
-                ? `Quote sent to ${customerFirstName}. We’ll notify you when the down payment is submitted.`
+                ? `Quote sent to ${customerFirstName}. You can revise it until payment proof is submitted.`
                 : `${vehicleName} · ${bookingWindow}`}
             </p>
           </header>
@@ -1232,18 +1241,15 @@ function PaymentQuotePanel({
             </div>
             <div>
               <dt>Billable rental</dt>
-              <dd>{quote.billableDays} day{quote.billableDays === 1 ? "" : "s"}</dd>
+              <dd>
+                {quote.billableDays} day{quote.billableDays === 1 ? "" : "s"}
+              </dd>
             </div>
             <div>
               <dt>Rental charge</dt>
               <dd>{formatAdminMoney(quote.rentalSubtotal)}</dd>
             </div>
-            {quoteIssued ? (
-              <div>
-                <dt>Delivery fee</dt>
-                <dd>{formatAdminMoney(fee)}</dd>
-              </div>
-            ) : (
+            {canEditQuote ? (
               <div className="admin-booking-payment-quote-panel__delivery-row">
                 <dt>Delivery fee</dt>
                 <dd>
@@ -1263,10 +1269,15 @@ function PaymentQuotePanel({
                         setDeliveryFee(event.target.value);
                         setConfirmed(false);
                       }}
-                      disabled={saving || locked || !requirementsVerified}
+                      disabled={saving}
                     />
                   </label>
                 </dd>
+              </div>
+            ) : (
+              <div>
+                <dt>Delivery fee</dt>
+                <dd>{formatAdminMoney(fee)}</dd>
               </div>
             )}
             <div className="admin-booking-payment-quote-panel__final-row">
@@ -1275,22 +1286,33 @@ function PaymentQuotePanel({
             </div>
           </dl>
 
-          <section className="admin-booking-payment-quote-panel__request-summary" aria-labelledby="payment-request-heading">
+          <section
+            className="admin-booking-payment-quote-panel__request-summary"
+            aria-labelledby="payment-request-heading"
+          >
             <div>
               <h5 id="payment-request-heading">Payment request</h5>
               <p>
-                50% down payment. {formatAdminMoney(quote.securityDepositAmount)} refundable security deposit collected before release.
+                50% down payment.{" "}
+                {formatAdminMoney(quote.securityDepositAmount)} refundable
+                security deposit collected before release.
               </p>
             </div>
-            <strong>{formatAdminMoney(quote.downPaymentAmount)} due today</strong>
+            <strong>
+              {formatAdminMoney(quote.downPaymentAmount)} due today
+            </strong>
           </section>
 
           <div className="admin-booking-payment-quote-panel__footer">
-            {quoteIssued ? (
-              <p className="admin-booking-payment-quote-panel__waiting" role="status">
-                Waiting for {customerFirstName} to submit the 50% down payment.
+            {quoteIssued && locked ? (
+              <p
+                className="admin-booking-payment-quote-panel__waiting"
+                role="status"
+              >
+                Payment proof has been submitted. This quote is now locked for
+                review.
               </p>
-            ) : !locked && requirementsVerified ? (
+            ) : canEditQuote ? (
               <label className="admin-booking-payment-quote-panel__confirmation">
                 <input
                   type="checkbox"
@@ -1298,16 +1320,22 @@ function PaymentQuotePanel({
                   onChange={(event) => setConfirmed(event.target.checked)}
                   disabled={saving}
                 />
-                <span>I confirm this quote matches the booking details</span>
+                <span>
+                  I confirm this quote matches the booking details
+                </span>
               </label>
             ) : null}
-            {!quoteIssued && !locked && requirementsVerified ? (
+            {canEditQuote ? (
               <Btn
                 variant="primary"
                 disabled={saving || !confirmed}
                 onClick={() => void issue()}
               >
-                {saving ? "Sending…" : `Send quote to ${customerFirstName}`}
+                {saving
+                  ? "Saving…"
+                  : quoteIssued
+                    ? `Update quote for ${customerFirstName}`
+                    : `Send quote to ${customerFirstName}`}
               </Btn>
             ) : null}
           </div>
@@ -1321,7 +1349,8 @@ function PaymentQuotePanel({
       ) : null}
       {locked ? (
         <p className="admin-booking-payment-terms__notice">
-          This payment request is locked because payment proof is already under review or verified.
+          This payment request is locked because payment proof is already under
+          review or verified.
         </p>
       ) : null}
 
@@ -1636,22 +1665,42 @@ function BookingRequirementsReview({
         if (saved) {
           const parsed = JSON.parse(saved) as Record<string, unknown>;
           draft = Object.fromEntries(
-            Object.entries(parsed).filter(([, value]) => typeof value === "string"),
+            Object.entries(parsed).filter(
+              ([, value]) => typeof value === "string",
+            ),
           ) as Record<string, string>;
         }
       } catch {
         window.localStorage.removeItem(reviewDraftKey);
       }
     }
-    setGovernmentIdOutcome(draft?.governmentIdOutcome ?? review?.government_id_outcome ?? "");
-    setGovernmentIdReason(draft?.governmentIdReason ?? review?.government_id_reason ?? "");
-    setDriversLicenseOutcome(draft?.driversLicenseOutcome ?? review?.drivers_license_outcome ?? "");
-    setDriversLicenseReason(draft?.driversLicenseReason ?? review?.drivers_license_reason ?? "");
-    setProofOfBillingOutcome(draft?.proofOfBillingOutcome ?? review?.proof_of_billing_outcome ?? "");
-    setProofOfBillingReason(draft?.proofOfBillingReason ?? review?.proof_of_billing_reason ?? "");
-    setSelfieWithIdOutcome(draft?.selfieWithIdOutcome ?? review?.selfie_with_id_outcome ?? "");
-    setSelfieWithIdReason(draft?.selfieWithIdReason ?? review?.selfie_with_id_reason ?? "");
-    setIdentityConsistency(draft?.identityConsistency ?? review?.identity_consistency ?? "");
+    setGovernmentIdOutcome(
+      draft?.governmentIdOutcome ?? review?.government_id_outcome ?? "",
+    );
+    setGovernmentIdReason(
+      draft?.governmentIdReason ?? review?.government_id_reason ?? "",
+    );
+    setDriversLicenseOutcome(
+      draft?.driversLicenseOutcome ?? review?.drivers_license_outcome ?? "",
+    );
+    setDriversLicenseReason(
+      draft?.driversLicenseReason ?? review?.drivers_license_reason ?? "",
+    );
+    setProofOfBillingOutcome(
+      draft?.proofOfBillingOutcome ?? review?.proof_of_billing_outcome ?? "",
+    );
+    setProofOfBillingReason(
+      draft?.proofOfBillingReason ?? review?.proof_of_billing_reason ?? "",
+    );
+    setSelfieWithIdOutcome(
+      draft?.selfieWithIdOutcome ?? review?.selfie_with_id_outcome ?? "",
+    );
+    setSelfieWithIdReason(
+      draft?.selfieWithIdReason ?? review?.selfie_with_id_reason ?? "",
+    );
+    setIdentityConsistency(
+      draft?.identityConsistency ?? review?.identity_consistency ?? "",
+    );
     setMessage(null);
     setDraftReady(true);
   }, [review, requirementSet?.status, reviewDraftKey]);
@@ -1703,7 +1752,7 @@ function BookingRequirementsReview({
     driversLicenseOutcome &&
     proofOfBillingOutcome &&
     selfieWithIdOutcome &&
-      identityConsistency,
+    identityConsistency,
   );
   const hasReplacementRequest = [
     governmentIdOutcome,
@@ -2065,7 +2114,10 @@ function AdminDocumentThumbnail({
   }, [document.id]);
 
   return (
-    <span className="admin-booking-ledger__document-thumbnail" aria-hidden="true">
+    <span
+      className="admin-booking-ledger__document-thumbnail"
+      aria-hidden="true"
+    >
       {url ? (
         document.mime_type === "application/pdf" ? (
           <AdminPdfThumbnail source={url} />
@@ -2096,7 +2148,8 @@ function AdminPdfThumbnail({ source }: { source: string }) {
             import("pdfjs-dist"),
             fetch(source, { credentials: "omit" }),
           ]);
-        if (!response.ok) throw new Error("The secure PDF could not be loaded.");
+        if (!response.ok)
+          throw new Error("The secure PDF could not be loaded.");
         GlobalWorkerOptions.workerSrc = new URL(
           "pdfjs-dist/build/pdf.worker.min.mjs",
           import.meta.url,
@@ -2127,7 +2180,11 @@ function AdminPdfThumbnail({ source }: { source: string }) {
     };
   }, [source]);
 
-  return thumbnail ? <img src={thumbnail} alt="" /> : <FileCheck2 className="h-4 w-4" />;
+  return thumbnail ? (
+    <img src={thumbnail} alt="" />
+  ) : (
+    <FileCheck2 className="h-4 w-4" />
+  );
 }
 
 function AdminDocumentPreview({
@@ -2221,8 +2278,24 @@ function AdminPdfDocumentPreview({
 }) {
   const [pages, setPages] = useState<string[]>([]);
   const [renderError, setRenderError] = useState("");
+  const [zoom, setZoom] = useState(1);
+  const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const preview = previewRef.current;
+    if (!preview) return;
+    const handleWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey) return;
+      event.preventDefault();
+      const factor = Math.exp(-event.deltaY * 0.0015);
+      setZoom((current) => Math.min(3, Math.max(0.65, current * factor)));
+    };
+    preview.addEventListener("wheel", handleWheel, { passive: false });
+    return () => preview.removeEventListener("wheel", handleWheel);
+  }, [pages.length]);
+
+  useEffect(() => {
+    setZoom(1);
     let cancelled = false;
     let loadingTask: {
       destroy?: () => void | Promise<void>;
@@ -2238,7 +2311,8 @@ function AdminPdfDocumentPreview({
             import("pdfjs-dist"),
             fetch(src, { credentials: "omit" }),
           ]);
-        if (!response.ok) throw new Error("The secure PDF could not be loaded.");
+        if (!response.ok)
+          throw new Error("The secure PDF could not be loaded.");
         GlobalWorkerOptions.workerSrc = new URL(
           "pdfjs-dist/build/pdf.worker.min.mjs",
           import.meta.url,
@@ -2258,7 +2332,8 @@ function AdminPdfDocumentPreview({
           canvas.width = Math.ceil(viewport.width * pixelRatio);
           canvas.height = Math.ceil(viewport.height * pixelRatio);
           const context = canvas.getContext("2d");
-          if (!context) throw new Error("The PDF preview canvas is unavailable.");
+          if (!context)
+            throw new Error("The PDF preview canvas is unavailable.");
           await page.render({
             canvasContext: context,
             transform: [pixelRatio, 0, 0, pixelRatio, 0, 0],
@@ -2286,18 +2361,28 @@ function AdminPdfDocumentPreview({
     };
   }, [src]);
 
-  if (renderError) return <p className="p-6 text-sm text-red-700">{renderError}</p>;
+  if (renderError)
+    return <p className="p-6 text-sm text-red-700">{renderError}</p>;
   if (pages.length === 0) {
-    return <p className="p-6 text-sm text-muted-foreground">Rendering secure PDF preview…</p>;
+    return (
+      <p className="p-6 text-sm text-muted-foreground">
+        Rendering secure PDF preview…
+      </p>
+    );
   }
   return (
-    <div className="booking-document-preview-pages">
+    <div
+      ref={previewRef}
+      className="booking-document-preview-pages"
+      aria-label="Document pages. Pinch with two fingers to zoom."
+    >
       {pages.map((page, index) => (
         <img
           alt={`${filename}, page ${index + 1}`}
           className="booking-document-preview-image"
           key={page}
           src={page}
+          style={{ zoom }}
         />
       ))}
     </div>

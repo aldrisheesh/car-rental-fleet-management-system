@@ -14,6 +14,7 @@ import {
   FileText,
   IdCard,
   MapPin,
+  Phone,
   RefreshCw,
   ShieldCheck,
   type LucideIcon,
@@ -121,28 +122,34 @@ type BookingPageData = {
   vehicleError: string | null;
 };
 
+type BookingLoadingVariant = "detail" | "payment-waiting" | "resolution";
+
 function BookingDetailPage() {
   const { bookingId } = Route.useParams();
   const [pageData, setPageData] = useState<BookingPageData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingVariant, setLoadingVariant] = useState<BookingLoadingVariant>(
+    () =>
+      typeof window !== "undefined" &&
+      window.sessionStorage.getItem(`booking-loading-variant:${bookingId}`) ===
+        "payment-waiting"
+        ? "payment-waiting"
+        : "detail",
+  );
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState("");
-  const [paymentSkeletonVariant, setPaymentSkeletonVariant] = useState<
-    "request" | "review"
-  >("request");
-
-  useEffect(() => {
-    setPaymentSkeletonVariant(
-      window.sessionStorage.getItem(`booking-payment-stage:${bookingId}`) ===
-        "payment-review"
-        ? "review"
-        : "request",
-    );
-  }, [bookingId]);
-
   const loadBooking = useCallback(
     async ({ preserveView = false }: { preserveView?: boolean } = {}) => {
-      if (!preserveView) setLoading(true);
+      if (!preserveView) {
+        setLoading(true);
+        setLoadingVariant(
+          window.sessionStorage.getItem(
+            `booking-loading-variant:${bookingId}`,
+          ) === "payment-waiting"
+            ? "payment-waiting"
+            : "detail",
+        );
+      }
       setError("");
       setNotFound(false);
 
@@ -168,6 +175,8 @@ function BookingDetailPage() {
           setNotFound(true);
           return;
         }
+        if (booking.confirmation_exception_message?.trim())
+          setLoadingVariant("resolution");
 
         const [requirementsResult, paymentResult, vehiclesResult] =
           await Promise.allSettled([
@@ -256,21 +265,15 @@ function BookingDetailPage() {
 
   useEffect(() => {
     if (!pageData) return;
-    const nextLifecycle = deriveCustomerLifecycle(pageData.composition);
-    if (
-      ["payment-action", "payment-review", "payment-resubmission"].includes(
-        nextLifecycle.state,
-      )
-    ) {
-      window.sessionStorage.setItem(
-        `booking-payment-stage:${bookingId}`,
-        nextLifecycle.state,
-      );
-    }
+    const lifecycle = deriveCustomerLifecycle(pageData.composition);
+    window.sessionStorage.setItem(
+      `booking-loading-variant:${bookingId}`,
+      lifecycle.state === "payment-waiting" ? "payment-waiting" : "detail",
+    );
   }, [bookingId, pageData]);
 
   if (loading) {
-    return <BookingPaymentSkeleton variant={paymentSkeletonVariant} />;
+    return <BookingDetailSkeleton variant={loadingVariant} />;
   }
 
   if (error) {
@@ -334,6 +337,9 @@ function BookingDetailPage() {
     "payment-review",
     "payment-resubmission",
   ].includes(lifecycle.state);
+  const isPaymentWaiting = lifecycle.state === "payment-waiting";
+  const isActiveRental = lifecycle.state === "active-rental";
+  const isReturnedRental = lifecycle.state === "returned";
   const canManageRequest = lifecycle.state === "requirements-needed";
   const compositionErrors = [
     composition.requirementsError,
@@ -342,31 +348,57 @@ function BookingDetailPage() {
 
   return (
     <CustomerPage
-      className={`booking-detail-page${isRequirementsStage ? " booking-detail-page--requirements" : ""}${isPaymentStage ? " booking-detail-page--payment" : ""}`}
+      className={`booking-detail-page${isRequirementsStage ? " booking-detail-page--requirements" : ""}${isPaymentStage || isPaymentWaiting ? " booking-detail-page--payment" : ""}${lifecycle.state === "confirmed" ? " booking-detail-page--confirmed" : ""}${isActiveRental ? " booking-detail-page--active" : ""}${isReturnedRental ? " booking-detail-page--returned" : ""}${lifecycle.state === "confirmation-resolution" ? " booking-detail-page--resolution" : ""}`}
     >
       <Header />
       <LifecycleJourney steps={lifecycle.journey} />
       <main id="main-content" className="booking-detail-main">
         <div className="customer-container">
-          <div className="booking-detail-breadcrumb">
-            <Link to="/customer">My Bookings</Link>
-            <span aria-hidden="true">/</span>
-            <span>
-              {vehicle?.name ??
-                booking.requested_vehicle?.name ??
-                "Booking details"}
-            </span>
-          </div>
-
-          <div className="booking-detail-heading">
-            <div>
-              <p className="booking-detail-eyebrow">Your rental request</p>
-              <h1>{lifecycle.title}</h1>
+          {!isPaymentWaiting &&
+          !isActiveRental &&
+          !isReturnedRental &&
+          lifecycle.state !== "confirmed" &&
+          lifecycle.state !== "confirmation-resolution" ? (
+            <div className="booking-detail-breadcrumb">
+              <Link to="/customer">My Bookings</Link>
+              <span aria-hidden="true">/</span>
+              <span>
+                {vehicle?.name ??
+                  booking.requested_vehicle?.name ??
+                  "Booking details"}
+              </span>
             </div>
-            <p className={`booking-detail-stage is-${lifecycle.statusTone}`}>
-              {lifecycle.statusLabel}
-            </p>
-          </div>
+          ) : null}
+
+          {!isPaymentWaiting && !isActiveRental && !isReturnedRental ? <div className="booking-detail-heading">
+            <div>
+              {lifecycle.state !== "confirmed" &&
+              lifecycle.state !== "confirmation-resolution" ? (
+                <p className="booking-detail-eyebrow">Your rental request</p>
+              ) : null}
+              <h1>{lifecycle.title}</h1>
+              {lifecycle.state === "confirmed" ? (
+                <p className="booking-detail-confirmation-message">
+                  Thank you for choosing Briah&apos;s Car Rental. We&apos;ve
+                  sent a confirmation to your email with all the booking
+                  details.
+                </p>
+              ) : null}
+            </div>
+            {lifecycle.state === "confirmed" ? (
+              <div className="booking-confirmation-mark">
+                <span aria-hidden="true">
+                  <CheckCircle2 size={28} strokeWidth={1.8} />
+                </span>
+                <strong>Booking Confirmed</strong>
+                <small>Reference #{booking.id.slice(0, 8).toUpperCase()}</small>
+              </div>
+            ) : lifecycle.state === "confirmation-resolution" ? null : (
+              <p className={`booking-detail-stage is-${lifecycle.statusTone}`}>
+                {lifecycle.statusLabel}
+              </p>
+            )}
+          </div> : null}
 
           {compositionErrors.length > 0 ? (
             <StatusCallout
@@ -396,7 +428,13 @@ function BookingDetailPage() {
 
           <div className="booking-detail-layout">
             <div className="booking-detail-primary">
-              {!isRequirementsStage && !isPaymentStage ? (
+              {!isRequirementsStage &&
+              !isPaymentStage &&
+              !isPaymentWaiting &&
+              !isActiveRental &&
+              !isReturnedRental &&
+              lifecycle.state !== "confirmed" &&
+              lifecycle.state !== "confirmation-resolution" ? (
                 <BookingStatusBand
                   booking={booking}
                   lifecycle={lifecycle}
@@ -426,11 +464,96 @@ function BookingDetailPage() {
   );
 }
 
-function BookingPaymentSkeleton({
-  variant,
+function BookingDetailSkeleton({
+  variant = "detail",
 }: {
-  variant: "request" | "review";
+  variant?: BookingLoadingVariant;
 }) {
+  if (variant === "resolution") {
+    return <BookingResolutionSkeleton />;
+  }
+  if (variant === "payment-waiting") {
+    return <PaymentAwaitingSkeleton />;
+  }
+
+  return (
+    <CustomerPage className="booking-detail-page booking-detail-page--confirmed">
+      <Header />
+      <section
+        className="booking-requirements-skeleton-journey"
+        aria-hidden="true"
+      >
+        <div className="customer-container booking-requirements-skeleton-journey__inner">
+          <i />
+          <div>
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
+        </div>
+      </section>
+      <main id="main-content" className="booking-detail-main">
+        <div className="customer-container">
+          <div
+            className="booking-detail-skeleton"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="sr-only">Loading booking details…</span>
+            <div
+              className="booking-detail-skeleton__primary"
+              aria-hidden="true"
+            >
+              <i className="booking-detail-skeleton__title" />
+              <i className="booking-detail-skeleton__copy" />
+              {[1, 2].map((moment) => (
+                <section
+                  className="booking-detail-skeleton__moment"
+                  key={moment}
+                >
+                  <div>
+                    <i />
+                    <i />
+                    <i />
+                  </div>
+                  <div>
+                    <i />
+                    <i />
+                    <i />
+                  </div>
+                </section>
+              ))}
+              <section className="booking-detail-skeleton__next">
+                <i />
+                <div>
+                  <i />
+                  <i />
+                  <i />
+                </div>
+              </section>
+            </div>
+            <aside
+              className="booking-detail-skeleton__summary"
+              aria-hidden="true"
+            >
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+            </aside>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </CustomerPage>
+  );
+}
+
+function PaymentAwaitingSkeleton() {
   return (
     <CustomerPage className="booking-detail-page booking-detail-page--payment">
       <Header />
@@ -452,68 +575,119 @@ function BookingPaymentSkeleton({
       </section>
       <main id="main-content" className="booking-detail-main">
         <div className="customer-container">
+          <div className="booking-payment-awaiting-skeleton" role="status" aria-live="polite">
+            <span className="sr-only">Loading payment details…</span>
+            <div className="booking-payment-awaiting-skeleton__primary" aria-hidden="true">
+              <i className="booking-payment-awaiting-skeleton__title" />
+              <i className="booking-payment-awaiting-skeleton__copy" />
+              <section className="booking-payment-awaiting-skeleton__handoff">
+                {[1, 2, 3].map((step) => (
+                  <div key={step}>
+                    <i />
+                    <i />
+                    {step === 2 ? <i /> : null}
+                  </div>
+                ))}
+              </section>
+              <section className="booking-payment-awaiting-skeleton__trip">
+                <i />
+                <div>
+                  <section><i /><div><i /><i /><i /></div></section>
+                  <section><i /><div><i /><i /></div></section>
+                </div>
+              </section>
+            </div>
+            <aside className="booking-payment-awaiting-skeleton__summary" aria-hidden="true">
+              <i /><i /><i /><i /><i />
+            </aside>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </CustomerPage>
+  );
+}
+
+function BookingResolutionSkeleton() {
+  return (
+    <CustomerPage className="booking-detail-page booking-detail-page--resolution">
+      <Header />
+      <section
+        className="booking-requirements-skeleton-journey"
+        aria-hidden="true"
+      >
+        <div className="customer-container booking-requirements-skeleton-journey__inner">
+          <i />
+          <div>
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
+        </div>
+      </section>
+      <main id="main-content" className="booking-detail-main">
+        <div className="customer-container">
           <div
-            className="booking-payment-skeleton"
+            className="booking-resolution-skeleton"
             role="status"
             aria-live="polite"
           >
-            <span className="sr-only">Loading payment details…</span>
-            <div className="booking-payment-skeleton__primary" aria-hidden="true">
-              <i className="booking-payment-skeleton__title" />
-              <i className="booking-payment-skeleton__copy" />
-              {variant === "review" ? (
-                <section className="booking-payment-skeleton__review">
+            <span className="sr-only">Loading booking resolution details…</span>
+            <div
+              className="booking-resolution-skeleton__primary"
+              aria-hidden="true"
+            >
+              <i className="booking-resolution-skeleton__title" />
+              <section className="booking-resolution-skeleton__reassurance">
+                <article>
                   <i />
                   <i />
-                  <div className="booking-payment-skeleton__review-proof">
+                  <i />
+                </article>
+                <article>
+                  <i />
+                  <i />
+                  <i />
+                </article>
+                <article>
+                  <i />
+                  <i />
+                  <i />
+                </article>
+              </section>
+              <div className="booking-resolution-skeleton__summary-copy">
+                <i />
+                <i />
+                <i />
+              </div>
+              <dl className="booking-resolution-skeleton__facts">
+                {[1, 2, 3, 4].map((fact) => (
+                  <div key={fact}>
                     <i />
+                    <i />
+                    {fact === 1 || fact === 4 ? <i /> : null}
                   </div>
-                  <div className="booking-payment-skeleton__review-facts">
-                    <i />
-                    <i />
-                    <i />
-                  </div>
-                </section>
-              ) : (
-                <>
-                  <section className="booking-payment-skeleton__quote">
-                    <div>
-                      <i />
-                      <i />
-                      <i />
-                    </div>
-                    <div>
-                      <i />
-                      <i />
-                      <i />
-                    </div>
-                  </section>
-                  <section className="booking-payment-skeleton__form">
-                    <i />
-                    <i />
-                    <div>
-                      <i />
-                      <section>
-                        <i />
-                        <i />
-                        <i />
-                      </section>
-                    </div>
-                  </section>
-                </>
-              )}
+                ))}
+              </dl>
+              <i className="booking-resolution-skeleton__contact" />
             </div>
             <aside
-              className="booking-payment-skeleton__summary"
+              className="booking-resolution-skeleton__vehicle"
               aria-hidden="true"
             >
               <i />
               <i />
               <i />
               <i />
-              <i />
-              <i />
-              <i />
+              <div>
+                <i />
+                <i />
+                <i />
+                <i />
+              </div>
             </aside>
           </div>
         </div>
@@ -586,16 +760,6 @@ function BookingStatusBand({
       >
         Briah is reviewing your submitted documents. Payment remains locked
         until requirements are verified.
-      </StatusCallout>
-    );
-  }
-  if (lifecycle.state === "confirmation-waiting") {
-    return (
-      <StatusCallout
-        tone="info"
-        title="No action needed — booking confirmation is next."
-      >
-        Your payment is verified. Booking confirmation is a separate later step.
       </StatusCallout>
     );
   }
@@ -686,11 +850,17 @@ function BookingStateContent({
         />
       );
     case "payment-waiting":
-      return <PaymentAwaitingAmount />;
+      return <PaymentAwaitingAmount booking={booking} />;
     case "payment-review":
       return <PaymentUnderReview payment={composition.payment} />;
-    case "confirmation-waiting":
-      return <PaymentVerified payment={composition.payment} />;
+    case "confirmation-resolution":
+      return (
+        <BookingResolution
+          booking={booking}
+          payment={composition.payment}
+          vehicle={vehicle}
+        />
+      );
     case "confirmed":
       return <ConfirmedBooking booking={booking} vehicle={vehicle} />;
     case "active-rental":
@@ -874,30 +1044,32 @@ function BookingSummary({
         }
         showBranch={false}
       />
-      <dl className="booking-summary-facts">
-        <div>
-          <dt>Delivery</dt>
-          <dd>
-            {formatInstant(booking.pickup_at)}
-            <small>
-              {booking.pickup_location ??
-                booking.pickup_branch?.name ??
-                "Not recorded"}
-            </small>
-          </dd>
-        </div>
-        <div>
-          <dt>Return</dt>
-          <dd>
-            {formatInstant(booking.return_at)}
-            <small>
-              {booking.dropoff_location ??
-                booking.return_branch?.name ??
-                "Not recorded"}
-            </small>
-          </dd>
-        </div>
-      </dl>
+      {lifecycle.state !== "confirmed" ? (
+        <dl className="booking-summary-facts">
+          <div>
+            <dt>Delivery</dt>
+            <dd>
+              {formatInstant(booking.pickup_at)}
+              <small>
+                {booking.pickup_location ??
+                  booking.pickup_branch?.name ??
+                  "Not recorded"}
+              </small>
+            </dd>
+          </div>
+          <div>
+            <dt>Return</dt>
+            <dd>
+              {formatInstant(booking.return_at)}
+              <small>
+                {booking.dropoff_location ??
+                  booking.return_branch?.name ??
+                  "Not recorded"}
+              </small>
+            </dd>
+          </div>
+        </dl>
+      ) : null}
       {showRequestManagement && booking.requested_vehicle ? (
         <Link
           className="customer-link booking-summary-link"
@@ -2041,23 +2213,103 @@ function PaymentSubmission({
   );
 }
 
-function PaymentAwaitingAmount() {
+function PaymentAwaitingAmount({ booking }: { booking: CustomerBooking }) {
+  const deliveryLocation =
+    booking.pickup_location ??
+    booking.pickup_branch?.name ??
+    "Delivery location will be confirmed with your booking.";
+  const rentalDays = Math.max(
+    1,
+    Math.ceil(
+      (new Date(booking.return_at).getTime() -
+        new Date(booking.pickup_at).getTime()) /
+        (1000 * 60 * 60 * 24),
+    ),
+  );
+
   return (
     <section
-      className="booking-detail-section booking-payment-section"
+      className="booking-detail-section booking-payment-awaiting"
       aria-labelledby="payment-amount-pending-title"
     >
-      <div className="booking-section-heading">
-        <div>
-          <h2 id="payment-amount-pending-title">Payment amount pending</h2>
-          <p>Your requirements are verified. The next step is with Briah.</p>
-        </div>
-        <span className="booking-step-label">Payment</span>
-      </div>
-      <StatusCallout tone="info" title="Awaiting required payment amount">
-        Briah will record the amount required for this booking. Once it is set,
-        this page will show the exact amount and let you submit a payment proof.
-      </StatusCallout>
+      <header className="booking-payment-awaiting__header">
+        <h1 id="payment-amount-pending-title">
+          We&apos;re preparing your payment details.
+        </h1>
+        <p>
+          Your requirements are verified. Briah&apos;s team is confirming the
+          amount for this trip.
+        </p>
+      </header>
+
+      <ol
+        className="booking-payment-awaiting__handoff"
+        aria-label="Payment progress"
+      >
+        <li className="is-complete">
+          <span aria-hidden="true">
+            <FileCheck2 size={27} strokeWidth={1.8} />
+          </span>
+          <div>
+            <strong>Requirements verified</strong>
+          </div>
+          <span
+            className="booking-payment-awaiting__connector"
+            aria-hidden="true"
+          >
+            <ArrowRight size={19} strokeWidth={1.7} />
+          </span>
+        </li>
+        <li className="is-current">
+          <span aria-hidden="true">
+            <CreditCard size={24} strokeWidth={1.8} />
+          </span>
+          <div>
+            <strong>Amount being prepared</strong>
+            <p>We&apos;ll email you when it&apos;s ready.</p>
+          </div>
+          <span
+            className="booking-payment-awaiting__connector"
+            aria-hidden="true"
+          >
+            <ArrowRight size={19} strokeWidth={1.7} />
+          </span>
+        </li>
+        <li>
+          <span aria-hidden="true">
+            <Clock3 size={27} strokeWidth={1.8} />
+          </span>
+          <div>
+            <strong>Payment ready</strong>
+          </div>
+        </li>
+      </ol>
+
+      <section
+        className="booking-payment-awaiting__trip"
+        aria-labelledby="payment-trip-details-title"
+      >
+        <h2 id="payment-trip-details-title">Trip details</h2>
+        <dl>
+          <div>
+            <CalendarDays size={22} aria-hidden="true" />
+            <div>
+              <dt>Rental dates</dt>
+              <dd>{formatDateRange(booking.pickup_at, booking.return_at)}</dd>
+              <small>
+                {rentalDays} {rentalDays === 1 ? "day" : "days"}
+              </small>
+            </div>
+          </div>
+          <div>
+            <MapPin size={22} aria-hidden="true" />
+            <div>
+              <dt>Delivery location</dt>
+              <dd>{deliveryLocation}</dd>
+            </div>
+          </div>
+        </dl>
+      </section>
     </section>
   );
 }
@@ -2144,7 +2396,9 @@ function PaymentUnderReview({ payment }: { payment: CustomerPayment | null }) {
                 {proofIsPdf ? (
                   <PdfDocumentThumbnail
                     source={proofPreviewUrl}
-                    filename={proof.original_filename ?? "Submitted payment proof"}
+                    filename={
+                      proof.original_filename ?? "Submitted payment proof"
+                    }
                   />
                 ) : (
                   <img src={proofPreviewUrl} alt="Submitted payment proof" />
@@ -2162,7 +2416,9 @@ function PaymentUnderReview({ payment }: { payment: CustomerPayment | null }) {
               >
                 <FileText size={30} aria-hidden="true" />
                 <span>
-                  <strong>{proof.original_filename ?? "Submitted payment proof"}</strong>
+                  <strong>
+                    {proof.original_filename ?? "Submitted payment proof"}
+                  </strong>
                   <small>
                     {proofIsImage ? "Open image proof" : "Open submitted proof"}
                   </small>
@@ -2192,7 +2448,9 @@ function PaymentUnderReview({ payment }: { payment: CustomerPayment | null }) {
                 <div className="booking-document-preview-frame">
                   <PdfDocumentPreview
                     source={proofPreviewUrl}
-                    filename={proof?.original_filename ?? "Submitted payment proof"}
+                    filename={
+                      proof?.original_filename ?? "Submitted payment proof"
+                    }
                   />
                 </div>
               ) : (
@@ -2218,7 +2476,9 @@ function PaymentUnderReview({ payment }: { payment: CustomerPayment | null }) {
           </div>
           <div>
             <dt>Reference number</dt>
-            <dd>{payment?.transaction_reference ?? "Reference not recorded"}</dd>
+            <dd>
+              {payment?.transaction_reference ?? "Reference not recorded"}
+            </dd>
           </div>
         </dl>
         <p className="booking-payment-review__note">
@@ -2235,38 +2495,91 @@ function PaymentUnderReview({ payment }: { payment: CustomerPayment | null }) {
   );
 }
 
-function PaymentVerified({ payment }: { payment: CustomerPayment | null }) {
+function BookingResolution({
+  booking,
+  payment,
+  vehicle,
+}: {
+  booking: CustomerBooking;
+  payment: CustomerPayment | null;
+  vehicle: CustomerVehicle | null;
+}) {
+  const vehicleName =
+    vehicle?.name ??
+    booking.assigned_vehicle?.name ??
+    booking.requested_vehicle?.name ??
+    "your vehicle";
+  const vehicleUnavailable =
+    booking.confirmation_exception_code === "vehicle_unavailable";
+  const submittedAmount = Number(payment?.submitted_amount);
+  const amount = Number.isFinite(submittedAmount)
+    ? formatCurrency(submittedAmount)
+    : "Payment recorded";
+  const availabilityUpdate = vehicleUnavailable
+    ? `${vehicleName} is no longer available for your dates.`
+    : "We couldn’t complete this booking for your dates.";
+
   return (
     <section
-      className="booking-detail-section"
-      aria-labelledby="payment-verified-title"
+      className="booking-detail-section booking-resolution"
+      aria-labelledby="resolution-title"
     >
-      <div className="booking-section-heading">
+      <h2 id="resolution-title" className="sr-only">
+        Booking resolution in progress
+      </h2>
+      <div className="booking-resolution__reassurance">
+        <article>
+          <ShieldCheck size={28} aria-hidden="true" />
+          <div>
+            <h3>Payment protected</h3>
+            <p>You won&apos;t be charged again.</p>
+          </div>
+        </article>
+        <article>
+          <CarFront size={28} aria-hidden="true" />
+          <div>
+            <h3>Finding a similar vehicle</h3>
+            <p>Same class and capacity where available.</p>
+          </div>
+        </article>
+        <article>
+          <Clock3 size={28} aria-hidden="true" />
+          <div>
+            <h3>Update within one business day</h3>
+            <p>We&apos;ll be in touch soon.</p>
+          </div>
+        </article>
+      </div>
+      <p className="booking-resolution__summary">
+        {availabilityUpdate} We&apos;re finding the best available option and
+        will confirm your updated booking shortly.
+      </p>
+      <dl className="booking-resolution__facts">
         <div>
-          <h2 id="payment-verified-title">Payment verified</h2>
-          <p>
-            Your payment has been verified. Booking confirmation remains a
-            separate later milestone.
-          </p>
+          <dt>Amount paid</dt>
+          <dd>{amount}</dd>
+          <small>{formatInstant(payment?.submitted_at)}</small>
         </div>
-      </div>
-      <div className="booking-facts-table">
-        <FactRow icon={CheckCircle2} label="Payment status" value="Verified" />
-        <FactRow
-          icon={FileCheck2}
-          label="Payment method"
-          value={paymentMethodLabel(payment)}
-        />
-        <FactRow
-          icon={FileCheck2}
-          label="Transaction reference"
-          value={payment?.transaction_reference ?? "Reference not recorded"}
-        />
-      </div>
-      <StatusCallout tone="locked" title="Confirmation is next">
-        No customer action is available while the booking is waiting for
-        canonical confirmation.
-      </StatusCallout>
+        <div>
+          <dt>Vehicle</dt>
+          <dd>{vehicleName}</dd>
+        </div>
+        <div>
+          <dt>Rental dates</dt>
+          <dd>{formatDateRange(booking.pickup_at, booking.return_at)}</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd>Being resolved</dd>
+          <small>We&apos;ll update you soon.</small>
+        </div>
+      </dl>
+      <p className="booking-resolution__contact">
+        Questions?{" "}
+        <Link to="/contact">
+          Contact the team <ArrowRight size={17} aria-hidden="true" />
+        </Link>
+      </p>
     </section>
   );
 }
@@ -2278,35 +2591,103 @@ function ConfirmedBooking({
   booking: CustomerBooking;
   vehicle: CustomerVehicle | null;
 }) {
+  const pickup = confirmationSchedule(booking.pickup_at);
+  const rentalReturn = confirmationSchedule(booking.return_at);
+  const deliveryAddress =
+    booking.pickup_location ?? "Delivery address not recorded";
+  const returnAddress =
+    booking.dropoff_location ?? "Return address not recorded";
+
   return (
     <section
-      className="booking-detail-section"
+      className="booking-detail-section booking-confirmation-dossier"
       aria-labelledby="confirmed-title"
     >
-      <h2 id="confirmed-title">Scheduled pickup</h2>
-      <FactTable
-        rows={[
-          [CalendarDays, "Date and time", formatInstant(booking.pickup_at)],
-          [MapPin, "Pickup at", booking.pickup_branch?.name ?? "Not recorded"],
-          [CarFront, "Service", serviceLabel(booking)],
-        ]}
-      />
-      <StatusCallout tone="info" title="Scheduled details only">
-        This confirms your booking schedule. It does not mean the vehicle is
-        ready for pickup before the scheduled time.
-      </StatusCallout>
-      <h2>Trip details</h2>
-      <FactTable
-        rows={[
-          [CalendarDays, "Rental return", formatInstant(booking.return_at)],
-          [
-            MapPin,
-            "Return branch",
-            booking.return_branch?.name ?? "Not recorded",
-          ],
-          [MapPin, "Destination", booking.destination ?? "Not recorded"],
-        ]}
-      />
+      <h2 id="confirmed-title" className="sr-only">
+        Confirmed booking schedule
+      </h2>
+      <div className="booking-confirmation-moment">
+        <div
+          className="booking-confirmation-date"
+          aria-label={formatInstant(booking.pickup_at)}
+        >
+          <strong>{pickup.day}</strong>
+          <span>{pickup.month}</span>
+          <small>{pickup.weekdayAndTime}</small>
+        </div>
+        <div className="booking-confirmation-details">
+          <p>Scheduled delivery</p>
+          <h3>Delivery to {deliveryAddress}</h3>
+          <dl>
+            <div>
+              <Clock3 size={20} aria-hidden="true" />
+              <div>
+                <dt>{pickup.weekdayAndTime}</dt>
+                <dd>We&apos;ll deliver the vehicle at this scheduled time.</dd>
+              </div>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div className="booking-confirmation-moment">
+        <div
+          className="booking-confirmation-date"
+          aria-label={formatInstant(booking.return_at)}
+        >
+          <strong>{rentalReturn.day}</strong>
+          <span>{rentalReturn.month}</span>
+          <small>{rentalReturn.weekdayAndTime}</small>
+        </div>
+        <div className="booking-confirmation-details">
+          <p>Rental return</p>
+          <h3>Return to {returnAddress}</h3>
+          <dl>
+            <div>
+              <Clock3 size={20} aria-hidden="true" />
+              <div>
+                <dt>{rentalReturn.weekdayAndTime}</dt>
+                <dd>Return the vehicle at the scheduled time and location.</dd>
+              </div>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <section
+        className="booking-confirmation-next"
+        aria-labelledby="next-steps-title"
+      >
+        <h3 id="next-steps-title">What happens next</h3>
+        <ol>
+          <li>
+            <FileCheck2 size={24} aria-hidden="true" />
+            <div>
+              <strong>Bring your documents</strong>
+              <p>
+                Have your driver’s license and a government-issued ID ready.
+              </p>
+            </div>
+          </li>
+          <li>
+            <CarFront size={24} aria-hidden="true" />
+            <div>
+              <strong>Meet the team for handover</strong>
+              <p>Our team will meet you at the delivery address and time.</p>
+            </div>
+          </li>
+          <li>
+            <Eye size={24} aria-hidden="true" />
+            <div>
+              <strong>Inspect the vehicle with the team</strong>
+              <p>
+                We’ll walk through the vehicle condition together before your
+                trip.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </section>
       {vehicle?.name ? null : (
         <p className="booking-detail-optional-data">
           Assigned vehicle details are not recorded.
@@ -2323,47 +2704,79 @@ function ActiveRental({
   booking: CustomerBooking;
   vehicle: CustomerVehicle | null;
 }) {
+  const startedAt = booking.rental?.started_at ?? booking.pickup_at;
+  const returnAt = booking.rental?.scheduled_return_at ?? booking.return_at;
+  const started = activeRentalDate(startedAt);
+  const rentalReturn = activeRentalDate(returnAt);
+  const pickupLocation =
+    booking.pickup_location ?? booking.pickup_branch?.name ?? "Not recorded";
+  const returnLocation =
+    booking.dropoff_location ?? booking.return_branch?.name ?? "Not recorded";
+  const daysRemaining = Math.max(
+    0,
+    Math.ceil((new Date(returnAt).getTime() - Date.now()) / 86_400_000),
+  );
+
   return (
     <section
-      className="booking-detail-section"
+      className="booking-detail-section booking-active-rental"
       aria-labelledby="active-rental-title"
     >
-      <h2 id="active-rental-title">Scheduled return</h2>
-      <FactTable
-        rows={[
-          [
-            CalendarDays,
-            "Date and time",
-            formatInstant(booking.rental?.scheduled_return_at),
-          ],
-          [MapPin, "Return to", booking.return_branch?.name ?? "Not recorded"],
-          [Clock3, "Status", "Return is scheduled"],
-        ]}
-      />
-      <h2>Rental details</h2>
-      <FactTable
-        rows={[
-          [
-            CalendarDays,
-            "Actual start",
-            formatInstant(booking.rental?.started_at),
-          ],
-          [CalendarDays, "Scheduled pickup", formatInstant(booking.pickup_at)],
-          [CarFront, "Vehicle", vehicle?.name ?? "Vehicle details unavailable"],
-          [
-            MapPin,
-            "Return branch",
-            booking.return_branch?.name ?? "Not recorded",
-          ],
-        ]}
-      />
-      <p className="booking-inline-note">
-        The customer rental view does not include tracking, emergency tooling,
-        or extension controls.
-      </p>
-      <Link className="customer-link" to="/customer">
-        Back to My Bookings <ArrowRight size={18} aria-hidden="true" />
-      </Link>
+      <header className="booking-active-rental__header">
+        <h1 id="active-rental-title">Your rental is active.</h1>
+        <p>You&apos;re all set. Enjoy the drive, and let us know if you need anything.</p>
+      </header>
+
+      <section
+        className="booking-active-rental__schedule"
+        aria-labelledby="rental-schedule-title"
+      >
+        <h2 id="rental-schedule-title">Rental schedule</h2>
+        <dl>
+          <div>
+            <dt>Started</dt>
+            <dd>{started.date}</dd>
+            <dd>{started.time}</dd>
+            <p>
+              <MapPin size={18} aria-hidden="true" />
+              {pickupLocation}
+            </p>
+          </div>
+          <div>
+            <dt>Return</dt>
+            <dd>{rentalReturn.date}</dd>
+            <dd>{rentalReturn.time}</dd>
+            <p>
+              <MapPin size={18} aria-hidden="true" />
+              {returnLocation}
+            </p>
+          </div>
+          <div className="booking-active-rental__remaining">
+            <strong>{daysRemaining}</strong>
+            <span>{daysRemaining === 1 ? "day remaining" : "days remaining"}</span>
+            <p>Return on {rentalReturn.date} at {rentalReturn.time}.</p>
+          </div>
+        </dl>
+      </section>
+
+      <div className="booking-active-rental__help">
+        <h2>Need help on your trip?</h2>
+        <a href="tel:+639175550142">
+          <Phone size={18} aria-hidden="true" />
+          +63 917 555 0142
+        </a>
+        <Link className="customer-link" to="/contact">
+          Contact the team <ArrowRight size={18} aria-hidden="true" />
+        </Link>
+      </div>
+
+      <section className="booking-active-rental__condition" aria-labelledby="vehicle-condition-title">
+        <h2 id="vehicle-condition-title">Vehicle condition</h2>
+        <p>
+          <CarFront size={21} aria-hidden="true" />
+          {vehicle?.name ?? "Your vehicle"} was released for this trip. If you notice an issue during your rental, contact us right away.
+        </p>
+      </section>
     </section>
   );
 }
@@ -2375,52 +2788,75 @@ function ReturnedRental({
   booking: CustomerBooking;
   vehicle: CustomerVehicle | null;
 }) {
+  const startedAt = booking.rental?.started_at ?? booking.pickup_at;
+  const returnedAt =
+    booking.rental?.ended_at ??
+    booking.rental?.scheduled_return_at ??
+    booking.return_at;
+  const started = activeRentalDate(startedAt);
+  const returned = activeRentalDate(returnedAt);
+  const pickupLocation =
+    booking.pickup_location ?? booking.pickup_branch?.name ?? "Not recorded";
+  const returnLocation =
+    booking.dropoff_location ?? booking.return_branch?.name ?? "Not recorded";
+
   return (
     <section
-      className="booking-detail-section"
+      className="booking-detail-section booking-active-rental booking-returned-rental"
       aria-labelledby="returned-title"
     >
-      <h2 id="returned-title">Return details</h2>
-      <FactTable
-        rows={[
-          [
-            CalendarDays,
-            "Actual return",
-            formatInstant(booking.rental?.ended_at),
-          ],
-          [
-            CalendarDays,
-            "Scheduled return",
-            formatInstant(booking.rental?.scheduled_return_at),
-          ],
-          [
-            MapPin,
-            "Return branch",
-            booking.return_branch?.name ?? "Not recorded",
-          ],
-          [Clock3, "Actual start", formatInstant(booking.rental?.started_at)],
-        ]}
-      />
-      <StatusCallout tone="info" title="Return recorded">
-        This status does not confirm settlement, final charges, or booking
-        completion.
-      </StatusCallout>
-      <h2>Trip summary</h2>
-      <FactTable
-        rows={[
-          [CarFront, "Vehicle", vehicle?.name ?? "Vehicle details unavailable"],
-          [
-            MapPin,
-            "Pickup branch",
-            booking.pickup_branch?.name ?? "Not recorded",
-          ],
-          [
-            CalendarDays,
-            "Rental period",
-            formatDateRange(booking.pickup_at, booking.return_at),
-          ],
-        ]}
-      />
+      <header className="booking-active-rental__header">
+        <h1 id="returned-title">Your rental is complete.</h1>
+        <p>
+          Your {vehicle?.name ?? "vehicle"} has been returned. Thank you for
+          choosing Briah&apos;s Car Rental.
+        </p>
+      </header>
+
+      <section
+        className="booking-active-rental__schedule"
+        aria-labelledby="return-schedule-title"
+      >
+        <h2 id="return-schedule-title">Rental schedule</h2>
+        <dl>
+          <div>
+            <dt>Started</dt>
+            <dd>{started.date}</dd>
+            <dd>{started.time}</dd>
+            <p>
+              <MapPin size={18} aria-hidden="true" />
+              {pickupLocation}
+            </p>
+          </div>
+          <div>
+            <dt>Returned</dt>
+            <dd>{returned.date}</dd>
+            <dd>{returned.time}</dd>
+            <p>
+              <MapPin size={18} aria-hidden="true" />
+              {returnLocation}
+            </p>
+          </div>
+          <div className="booking-returned-rental__recorded">
+            <div className="booking-returned-rental__recorded-title">
+              <CheckCircle2 size={30} strokeWidth={1.8} aria-hidden="true" />
+              <strong>Return recorded</strong>
+            </div>
+            <p>We&apos;ll review the return and email any final update.</p>
+          </div>
+        </dl>
+      </section>
+
+      <div className="booking-active-rental__help">
+        <h2>Questions about your return?</h2>
+        <a href="tel:+639175550142">
+          <Phone size={18} aria-hidden="true" />
+          +63 917 555 0142
+        </a>
+        <Link className="customer-link" to="/contact">
+          Contact the team <ArrowRight size={18} aria-hidden="true" />
+        </Link>
+      </div>
     </section>
   );
 }
@@ -2528,6 +2964,45 @@ function serviceLabel(booking: CustomerBooking) {
   }
   if (booking.pickup_delivery_option === "pickup") return "Pick up at branch";
   return "Service method not recorded";
+}
+
+function confirmationSchedule(value: string | null | undefined) {
+  const date = value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) {
+    return { day: "-", month: "", weekdayAndTime: "Not recorded" };
+  }
+  return {
+    day: new Intl.DateTimeFormat("en-PH", { day: "2-digit" }).format(date),
+    month: new Intl.DateTimeFormat("en-PH", { month: "short" })
+      .format(date)
+      .toUpperCase(),
+    weekdayAndTime: new Intl.DateTimeFormat("en-PH", {
+      weekday: "long",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(date),
+  };
+}
+
+function activeRentalDate(value: string | null | undefined) {
+  const date = value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) {
+    return { date: "Not recorded", time: "" };
+  }
+  return {
+    date: new Intl.DateTimeFormat("en-PH", {
+      timeZone: "Asia/Manila",
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(date),
+    time: new Intl.DateTimeFormat("en-PH", {
+      timeZone: "Asia/Manila",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(date),
+  };
 }
 
 function currentDocument(documents: RequirementDocument[], type: string) {

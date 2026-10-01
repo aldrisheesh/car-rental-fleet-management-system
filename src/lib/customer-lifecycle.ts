@@ -22,7 +22,7 @@ export type CustomerLifecycleState =
   | "payment-action"
   | "payment-review"
   | "payment-resubmission"
-  | "confirmation-waiting"
+  | "confirmation-resolution"
   | "confirmed"
   | "active-rental"
   | "returned"
@@ -217,19 +217,20 @@ export function deriveCustomerLifecycle(
   if (paymentState === "Verified") {
     const confirmationException =
       booking.confirmation_exception_message?.trim() || null;
-    return present("confirmation-waiting", "Confirmation", {
-      title: confirmationException
-        ? "Payment verified — scheduling review is needed"
-        : "Payment verified — booking confirmation is next",
-      statusLabel: confirmationException
-        ? "Scheduling review needed"
-        : "Waiting for booking confirmation",
-      statusTone: confirmationException ? "warning" : "info",
-      message: confirmationException
-        ? "Your payment is verified. The team is reviewing the booking details before confirmation."
-        : "No action needed — your payment is verified and Briah will confirm the booking separately.",
-      reason: confirmationException,
-    });
+    if (confirmationException) {
+      return present("confirmation-resolution", "Confirmation", {
+        title: "We’re resolving your booking",
+        statusLabel: "Resolution in progress",
+        statusTone: "warning",
+        message:
+          "Your payment is secure while our team resolves the booking conflict.",
+        reason: confirmationException,
+      });
+    }
+    return unavailable(
+      "Your payment was verified, but the booking did not finalize automatically. Please contact Briah so we can resolve it.",
+      "Confirmation",
+    );
   }
 
   if (!hasRequiredPaymentAmount(payment)) {
@@ -245,10 +246,9 @@ export function deriveCustomerLifecycle(
 
   return present("payment-action", "Payment", {
     title: "Submit your payment",
-    statusLabel: "Payment action required",
+    statusLabel: "Payment ready",
     statusTone: "warning",
-    message:
-      "Action required — your requirements are verified and payment is now available.",
+    message: "Your payment is ready. Submit your proof to continue.",
     reason: null,
     actionLabel: "Continue payment",
   });
@@ -317,7 +317,7 @@ function journeyFor(
 ): LifecycleJourneyStep[] {
   const currentIndex = CUSTOMER_JOURNEY_STAGES.indexOf(currentStage);
   const paymentVerified = [
-    "confirmation-waiting",
+    "confirmation-resolution",
     "confirmed",
     "active-rental",
     "returned",
@@ -334,8 +334,9 @@ function journeyFor(
     );
 
   return CUSTOMER_JOURNEY_STAGES.map((key, index) => {
-    const complete = index < currentIndex;
-    const current = index === currentIndex;
+    const terminal = state === "returned";
+    const complete = index < currentIndex || (terminal && index === currentIndex);
+    const current = index === currentIndex && !terminal;
     const locked = index > currentIndex;
     let label: string = key;
     let note: string | undefined;
@@ -376,11 +377,15 @@ function journeyFor(
     ) {
       label = "Booking confirmed";
     }
-    if (key === "Confirmation" && current && state === "confirmation-waiting") {
-      note = "Next step";
+    if (key === "Confirmation" && current && state === "confirmation-resolution") {
+      label = "Booking confirmation";
+      note = "Awaiting resolution";
     }
-    if (key === "Rental" && state === "active-rental") label = "Active rental";
-    if (key === "Rental" && state === "returned") label = "Rental ended";
+    if (key === "Rental") label = "Pickup & rental";
+    if (key === "Rental" && state === "active-rental") {
+      label = "Rental in progress";
+    }
+    if (key === "Rental" && state === "returned") label = "Rental complete";
     if (key === "Return" && state === "returned") label = "Return recorded";
     return {
       key,

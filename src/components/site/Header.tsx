@@ -6,6 +6,7 @@ import {
   ChevronDown,
   LogOut,
   Menu,
+  MessageCircle,
   UserRound,
   X,
 } from "lucide-react";
@@ -296,6 +297,18 @@ export function Header({
                               </span>
                             ) : null}
                           </Link>
+                          <Link
+                            to="/contact"
+                            className="customer-account-menu-link"
+                            onClick={() => setAccountOpen(false)}
+                          >
+                            <MessageCircle
+                              size={18}
+                              strokeWidth={1.7}
+                              aria-hidden="true"
+                            />
+                            <span>Contact us</span>
+                          </Link>
                         </nav>
                         <div className="customer-account-menu-footer">
                           <button
@@ -413,6 +426,13 @@ export function Header({
                         {notificationUnreadCount > 0
                           ? ` (${notificationUnreadCount})`
                           : ""}
+                      </Link>
+                      <Link
+                        to="/contact"
+                        className="customer-mobile-link"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Contact us
                       </Link>
                     </div>
                   ) : null}

@@ -66,6 +66,48 @@ export async function handleAdminUsers({ request }: { request: Request }) {
         );
       }
 
+      const { data: currentProfile, error: currentProfileError } = await client
+        .from("profiles")
+        .select("id, user_type, account_status")
+        .eq("id", userId)
+        .maybeSingle();
+      if (currentProfileError) {
+        return Response.json(
+          { message: "Unable to check the application account." },
+          { status: 503 },
+        );
+      }
+      if (!currentProfile) {
+        return Response.json(
+          { message: "Application account not found." },
+          { status: 404 },
+        );
+      }
+
+      if (
+        currentProfile.user_type === "Owner/Admin" &&
+        currentProfile.account_status === "Active" &&
+        role !== "Owner/Admin"
+      ) {
+        const { count, error: ownerCountError } = await client
+          .from("profiles")
+          .select("id", { count: "exact", head: true })
+          .eq("user_type", "Owner/Admin")
+          .eq("account_status", "Active");
+        if (ownerCountError) {
+          return Response.json(
+            { message: "Unable to verify owner access." },
+            { status: 503 },
+          );
+        }
+        if ((count ?? 0) <= 1) {
+          return Response.json(
+            { message: "At least one active Owner/Admin must remain." },
+            { status: 409 },
+          );
+        }
+      }
+
       const { data, error } = await client
         .from("profiles")
         .update({ user_type: role })

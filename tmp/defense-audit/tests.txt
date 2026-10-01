@@ -1,0 +1,31 @@
+
+> test:defense
+> node --experimental-strip-types --test scripts/defense/*.test.ts
+
+✔ consistent reproducible baseline 2026-09-29 (78.644084ms)
+✔ consistent reproducible baseline 2026-10-06 (57.321625ms)
+✔ conflicting confirmed bookings fail validation (16.60475ms)
+✔ drift detects new test rows and ignores row order (147.409666ms)
+✔ safe defaults and invalid input (0.280375ms)
+✔ exact project-ref match is required (0.506375ms)
+✔ wrong project is refused before any read can be attempted (0.169333ms)
+✔ complete manifest baseline passes (1.646209ms)
+✔ missing baseline booking is drift (0.844083ms)
+✔ modified baseline booking state is drift (0.649625ms)
+✔ unchanged baseline booking schedule passes (0.566292ms)
+✔ modified baseline pickup schedule is drift (0.54ms)
+✔ modified baseline return schedule is drift (0.726916ms)
+✔ equivalent booking schedule timestamp representations pass (0.522458ms)
+✔ modified pickup and return schedules are both reported as drift (0.561583ms)
+✔ extra UAT account and booking do not corrupt the baseline classification (0.527792ms)
+✔ append-only audit rows and extra notifications are allowed (0.523417ms)
+✔ manifest mismatch is rejected before verification (0.209375ms)
+✔ console report does not expose private paths or secrets (0.637083ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 408.74325

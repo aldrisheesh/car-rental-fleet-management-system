@@ -40,6 +40,7 @@ export type NotificationsResponse = {
   notifications: CanonicalNotification[];
   unreadCount: number;
   emailNotificationsEnabled: boolean;
+  customerBindings?: CustomerNotificationBinding[];
   adminBindings?: AdminNotificationBinding[];
 };
 

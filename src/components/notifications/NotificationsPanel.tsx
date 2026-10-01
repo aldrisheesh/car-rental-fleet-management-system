@@ -3,9 +3,11 @@ import {
   Bell,
   Car,
   CalendarRange,
+  ChevronRight,
   Check,
   CreditCard,
   FileCheck2,
+  Mail,
   RotateCcw,
   RefreshCw,
   TriangleAlert,
@@ -146,6 +148,23 @@ export function NotificationsPanel({
     }
   }
 
+  if (audience === "customer") {
+    return (
+      <CustomerNotificationInbox
+        data={data}
+        loading={loading}
+        error={error}
+        markingId={markingId}
+        customerBindings={customerBindings}
+        savingEmailPreference={savingEmailPreference}
+        groupedCounts={groupedCounts}
+        onRefresh={load}
+        onMarkRead={markRead}
+        onUpdateEmailPreference={updateEmailPreference}
+      />
+    );
+  }
+
   return (
     <section
       className={cn(
@@ -192,29 +211,6 @@ export function NotificationsPanel({
           {showHeading ? "Refresh" : "Refresh notifications"}
         </button>
       </div>
-
-      {audience === "customer" && data && (
-        <label className="flex items-start gap-3 rounded-xl border border-border bg-card/60 p-4 text-sm">
-          <input
-            type="checkbox"
-            className="mt-1 h-4 w-4 accent-primary"
-            checked={data.emailNotificationsEnabled}
-            disabled={savingEmailPreference}
-            onChange={(event) =>
-              void updateEmailPreference(event.target.checked)
-            }
-          />
-          <span>
-            <span className="block font-medium text-foreground">
-              Transactional email notifications
-            </span>
-            <span className="text-muted-foreground">
-              Receive booking, requirement, payment, pickup, return, and overdue
-              updates by email.
-            </span>
-          </span>
-        </label>
-      )}
 
       {!loading && data && data.notifications.length > 0 && (
         <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
@@ -293,6 +289,236 @@ export function NotificationsPanel({
         </div>
       )}
     </section>
+  );
+}
+
+type CustomerNotificationCategory =
+  | "all"
+  | "booking"
+  | "requirements"
+  | "payment"
+  | "rental";
+
+function CustomerNotificationInbox({
+  data,
+  loading,
+  error,
+  markingId,
+  customerBindings,
+  savingEmailPreference,
+  groupedCounts,
+  onRefresh,
+  onMarkRead,
+  onUpdateEmailPreference,
+}: {
+  data: NotificationsResponse | null;
+  loading: boolean;
+  error: string | null;
+  markingId: string | null;
+  customerBindings: readonly CustomerNotificationBinding[];
+  savingEmailPreference: boolean;
+  groupedCounts: Record<CanonicalNotification["relatedEntityType"], number>;
+  onRefresh: () => Promise<void>;
+  onMarkRead: (notification: CanonicalNotification) => Promise<void>;
+  onUpdateEmailPreference: (enabled: boolean) => Promise<void>;
+}) {
+  const [filter, setFilter] = useState<CustomerNotificationCategory>("all");
+  const notifications = data?.notifications ?? [];
+  const resolvedCustomerBindings = data?.customerBindings ?? customerBindings;
+  const visibleNotifications = notifications.filter((notification) =>
+    filter === "all" ? true : notification.relatedEntityType === filter,
+  );
+  const unreadCount = data?.unreadCount ?? 0;
+  const filters: Array<{
+    id: CustomerNotificationCategory;
+    label: string;
+    icon: typeof Bell;
+    count: number;
+  }> = [
+    { id: "all", label: "All activity", icon: Bell, count: notifications.length },
+    { id: "booking", label: "Bookings", icon: CalendarRange, count: groupedCounts.booking },
+    {
+      id: "requirements",
+      label: "Requirements",
+      icon: FileCheck2,
+      count: groupedCounts.requirements,
+    },
+    { id: "payment", label: "Payments", icon: CreditCard, count: groupedCounts.payment },
+    { id: "rental", label: "Your rental", icon: Car, count: groupedCounts.rental },
+  ];
+
+  return (
+    <section className="customer-notification-inbox" aria-label="Notifications">
+      <aside className="customer-notification-inbox-rail">
+        <div>
+          <h1>Notifications</h1>
+          <p>{unreadCount > 0 ? `${unreadCount} unread` : "You’re all caught up"}</p>
+        </div>
+
+        <nav aria-label="Notification categories" className="customer-notification-filters">
+          {filters.map(({ id, label, icon: Icon, count }) => (
+            <button
+              key={id}
+              type="button"
+              className={cn(filter === id && "is-active")}
+              aria-pressed={filter === id}
+              onClick={() => setFilter(id)}
+            >
+              <Icon aria-hidden="true" />
+              <span>{label}</span>
+              <strong>{count}</strong>
+            </button>
+          ))}
+        </nav>
+
+        <div className="customer-notification-email-preference">
+          <Mail aria-hidden="true" />
+          <div>
+            <div className="customer-notification-email-preference-heading">
+              <label htmlFor="transactional-email-notifications">
+                Email preferences
+              </label>
+              <input
+                id="transactional-email-notifications"
+                type="checkbox"
+                role="switch"
+                checked={data?.emailNotificationsEnabled ?? false}
+                disabled={!data || savingEmailPreference}
+                onChange={(event) =>
+                  void onUpdateEmailPreference(event.target.checked)
+                }
+              />
+            </div>
+            <p>Receive important booking and rental updates by email.</p>
+          </div>
+        </div>
+      </aside>
+
+      <div className="customer-notification-inbox-feed">
+        <header className="customer-notification-inbox-heading">
+          <div>
+            <h2>Your updates</h2>
+            <p>Important details about your bookings and rentals.</p>
+          </div>
+          <button type="button" onClick={() => void onRefresh()} disabled={loading}>
+            <RefreshCw className={cn(loading && "is-spinning")} aria-hidden="true" />
+            Refresh
+          </button>
+        </header>
+
+        {loading ? (
+          <CustomerNotificationSkeleton />
+        ) : error && !data ? (
+          <div className="customer-notification-message" role="alert">
+            <p>{error}</p>
+            <button type="button" onClick={() => void onRefresh()}>
+              Try again
+            </button>
+          </div>
+        ) : visibleNotifications.length === 0 ? (
+          <div className="customer-notification-message">
+            <p>{filter === "all" ? "No notifications yet" : `No ${filter} updates`}</p>
+            <span>New account updates will appear here.</span>
+          </div>
+        ) : (
+          <div className="customer-notification-list">
+            {error ? <p className="customer-notification-error">{error}</p> : null}
+            {visibleNotifications.map((notification) => (
+              <CustomerNotificationRow
+                key={notification.id}
+                notification={notification}
+                customerBindings={resolvedCustomerBindings}
+                marking={markingId === notification.id}
+                onMarkRead={onMarkRead}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function CustomerNotificationRow({
+  notification,
+  customerBindings,
+  marking,
+  onMarkRead,
+}: {
+  notification: CanonicalNotification;
+  customerBindings: readonly CustomerNotificationBinding[];
+  marking: boolean;
+  onMarkRead: (notification: CanonicalNotification) => Promise<void>;
+}) {
+  const unread = isUnread(notification);
+  const presentation = customerNotificationPresentation(notification);
+  const destination = notificationRoute(notification, "customer", customerBindings);
+  const Icon = presentation.icon;
+
+  return (
+    <article className={cn("customer-notification-row", `is-${presentation.tone}`, unread && "is-unread")}>
+      <span className="customer-notification-unread" aria-hidden="true" />
+      <span className="customer-notification-icon" aria-hidden="true">
+        <Icon />
+      </span>
+      <div className="customer-notification-copy">
+        <div>
+          <h3>{notification.title}</h3>
+          {unread ? <span>Unread</span> : null}
+        </div>
+        <p>{notification.message}</p>
+        <time dateTime={notification.createdAt}>
+          {formatEntity(notification.relatedEntityType)} · {formatCreatedAt(notification.createdAt)}
+        </time>
+      </div>
+      <div className="customer-notification-actions">
+        {unread ? (
+          <button
+            type="button"
+            disabled={marking}
+            onClick={() => void onMarkRead(notification)}
+          >
+            <Check aria-hidden="true" /> {marking ? "Saving" : "Mark read"}
+          </button>
+        ) : null}
+        <Link to={destination as never}>
+          View details <ChevronRight aria-hidden="true" />
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+function customerNotificationPresentation(notification: CanonicalNotification) {
+  if (
+    notification.notificationType === "requirements_needs_resubmission" ||
+    notification.notificationType === "payment_needs_resubmission"
+  )
+    return { tone: "attention", icon: FileCheck2 };
+  if (notification.relatedEntityType === "payment")
+    return { tone: "payment", icon: CreditCard };
+  if (notification.relatedEntityType === "requirements")
+    return { tone: "requirements", icon: FileCheck2 };
+  if (notification.relatedEntityType === "rental")
+    return { tone: "rental", icon: RotateCcw };
+  return { tone: "booking", icon: CalendarRange };
+}
+
+function CustomerNotificationSkeleton() {
+  return (
+    <div className="customer-notification-skeleton" aria-label="Loading notifications">
+      {Array.from({ length: 4 }, (_, index) => (
+        <div key={index}>
+          <i />
+          <span>
+            <i />
+            <i />
+            <i />
+          </span>
+          <i />
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -401,5 +627,10 @@ function formatEntity(entity: CanonicalNotification["relatedEntityType"]) {
 
 function formatCreatedAt(value: string) {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Recently" : date.toLocaleString();
+  return Number.isNaN(date.getTime())
+    ? "Recently"
+    : new Intl.DateTimeFormat(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(date);
 }

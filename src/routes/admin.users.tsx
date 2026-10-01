@@ -1,15 +1,12 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { RefreshCw, ShieldCheck, UserRound, UsersRound } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Badge,
   Btn,
   Card,
-  CardHeader,
-  PageHeader,
   TInput,
   TSelect,
-  Toolbar,
 } from "@/components/admin/ui";
 import { APP_ROLES, type AppRole } from "@/lib/auth";
 import {
@@ -33,25 +30,25 @@ export const Route = createFileRoute("/admin/users")({
 const roleSummary: Array<{
   role: AppRole;
   description: string;
-  icon: typeof ShieldCheck;
+  marker: "owner" | "staff" | "customer";
 }> = [
   {
     role: "Owner/Admin",
     description:
       "Privileged administrative access, including canonical role management.",
-    icon: ShieldCheck,
+    marker: "owner",
   },
   {
     role: "Operations Staff",
     description:
       "Booking and coordination access defined by the current route and API policy.",
-    icon: UsersRound,
+    marker: "staff",
   },
   {
     role: "Customer/Renter",
     description:
       "Customer-facing rental access; not an administrative permission set.",
-    icon: UserRound,
+    marker: "customer",
   },
 ];
 
@@ -66,6 +63,7 @@ function UsersPage() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftRole, setDraftRole] = useState<AppRole>(APP_ROLES[0]);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -119,6 +117,21 @@ function UsersPage() {
         .includes(normalized);
     });
   }, [accounts, query, roleFilter]);
+  const selectedAccount = useMemo(
+    () =>
+      filteredAccounts.find((account) => account.id === selectedId) ??
+      filteredAccounts[0] ??
+      null,
+    [filteredAccounts, selectedId],
+  );
+  const roleCounts = useMemo(
+    () =>
+      APP_ROLES.map((role) => ({
+        role,
+        count: accounts.filter((account) => account.role === role).length,
+      })),
+    [accounts],
+  );
 
   async function saveRole(account: AdminUserAccount) {
     if (!canManageUsers || savingId) return;
@@ -170,77 +183,90 @@ function UsersPage() {
 
   function startEditing(account: AdminUserAccount) {
     setMutationError("");
+    setSelectedId(account.id);
     setEditingId(account.id);
     setDraftRole(account.role);
   }
 
   return (
-    <div>
-      <PageHeader
-        title="Users & roles"
-        subtitle="Review canonical application identities and manage the fixed application role vocabulary."
-      />
-
-      <div className="grid gap-4 lg:grid-cols-3">
-        {roleSummary.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Card key={item.role} className="p-5">
-              <div className="flex items-start gap-3">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
-                  <Icon className="h-4 w-4" />
-                </span>
-                <div>
-                  <h2 className="font-semibold">{item.role}</h2>
-                  <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-
-      <Card className="mt-6 overflow-hidden">
-        <CardHeader
-          title="Canonical accounts"
-          hint={`${filteredAccounts.length} of ${accounts.length} application profiles`}
-        />
-        <div className="border-b border-border px-5 py-4 text-sm text-muted-foreground">
-          Profile identity and contact fields are read-only. Only the persisted
-          role can be changed here; granular permissions, invitations, and
-          profile editing are not supported.
+    <div className="admin-users-workspace">
+      <header className="admin-users-heading">
+        <div>
+          <h1>Users &amp; roles</h1>
+          <p>
+            Review application identities and assign the role that governs each
+            account&apos;s access.
+          </p>
         </div>
-        <Toolbar>
-          <label className="min-w-60 flex-1">
-            <span className="sr-only">Search users</span>
-            <TInput
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search name, email, or user id…"
-              aria-label="Search canonical users"
-            />
-          </label>
-          <label>
-            <span className="sr-only">Filter by role</span>
-            <TSelect
-              value={roleFilter}
-              onChange={(event) => setRoleFilter(event.target.value)}
-              aria-label="Filter users by role"
-            >
-              <option value="All">All roles</option>
-              {APP_ROLES.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </TSelect>
-          </label>
-        </Toolbar>
+      </header>
+
+      <section className="admin-users-role-coverage" aria-labelledby="role-coverage-title">
+        <h2 id="role-coverage-title">Role coverage</h2>
+        <div>
+          {roleSummary.map((item) => {
+            const count = roleCounts.find((entry) => entry.role === item.role)?.count ?? 0;
+            return (
+              <div key={item.role}>
+                <span
+                  className={`admin-users-role-coverage__icon is-${item.marker}`}
+                  aria-hidden="true"
+                >
+                  <i />
+                </span>
+                <p>
+                  <strong>{item.role}</strong>
+                  <span>{item.description}</span>
+                </p>
+                <b>{count}</b>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="admin-users-layout">
+        <Card className="admin-users-directory overflow-hidden">
+          <header className="admin-users-directory__heading">
+            <div>
+              <h2>Canonical accounts</h2>
+              <p>
+                {filteredAccounts.length} of {accounts.length} application profiles
+              </p>
+            </div>
+          </header>
+          <div className="admin-users-directory__controls">
+            <label className="min-w-60 flex-1">
+              <span className="sr-only">Search users</span>
+              <TInput
+                name="account-search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search accounts"
+                aria-label="Search canonical users"
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
+            <label>
+              <span className="sr-only">Filter by role</span>
+              <TSelect
+                name="role-filter"
+                value={roleFilter}
+                onChange={(event) => setRoleFilter(event.target.value)}
+                aria-label="Filter users by role"
+              >
+                <option value="All">All roles</option>
+                {APP_ROLES.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </TSelect>
+            </label>
+          </div>
         {feedback ? (
           <p
-            className="border-b border-border px-5 py-3 text-sm text-[#267a55]"
+            className="admin-users-directory__notice is-success"
             role="status"
             aria-live="polite"
           >
@@ -249,7 +275,7 @@ function UsersPage() {
         ) : null}
         {mutationError ? (
           <p
-            className="border-b border-border px-5 py-3 text-sm text-[#b43b3b]"
+            className="admin-users-directory__notice is-error"
             role="alert"
           >
             {mutationError}
@@ -257,21 +283,16 @@ function UsersPage() {
         ) : null}
 
         {state.status === "loading" ? (
-          <p
-            className="px-5 py-12 text-center text-sm text-muted-foreground"
-            role="status"
-          >
-            Loading canonical accounts…
-          </p>
+          <AccountListSkeleton />
         ) : state.status === "error" ? (
-          <div className="px-5 py-10 text-center" role="alert">
+          <div className="admin-users-directory__empty" role="alert">
             <p className="text-sm text-[#b43b3b]">{state.message}</p>
             <Btn className="mt-4" onClick={() => void loadAccounts()}>
               <RefreshCw className="h-4 w-4" /> Retry accounts
             </Btn>
           </div>
         ) : !filteredAccounts.length ? (
-          <p className="px-5 py-12 text-center text-sm text-muted-foreground">
+          <p className="admin-users-directory__empty">
             {accounts.length
               ? "No accounts match these filters."
               : "No canonical application accounts are available."}
@@ -291,9 +312,6 @@ function UsersPage() {
                     <th className="px-5 py-3 text-left font-semibold">
                       Created
                     </th>
-                    <th className="px-5 py-3 text-right font-semibold">
-                      Action
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -301,14 +319,8 @@ function UsersPage() {
                     <UserRow
                       key={account.id}
                       account={account}
-                      editing={editingId === account.id}
-                      draftRole={draftRole}
-                      canManage={canManageUsers}
-                      saving={savingId === account.id}
-                      onEdit={() => startEditing(account)}
-                      onRoleChange={setDraftRole}
-                      onSave={() => void saveRole(account)}
-                      onCancel={() => setEditingId(null)}
+                      selected={selectedAccount?.id === account.id}
+                      onSelect={() => setSelectedId(account.id)}
                     />
                   ))}
                 </tbody>
@@ -332,7 +344,20 @@ function UsersPage() {
             </div>
           </>
         )}
-      </Card>
+        </Card>
+
+        <UserInspector
+          account={selectedAccount}
+          editing={selectedAccount?.id === editingId}
+          draftRole={draftRole}
+          canManage={canManageUsers}
+          saving={selectedAccount?.id === savingId}
+          onEdit={() => selectedAccount && startEditing(selectedAccount)}
+          onRoleChange={setDraftRole}
+          onSave={() => selectedAccount && void saveRole(selectedAccount)}
+          onCancel={() => setEditingId(null)}
+        />
+      </div>
     </div>
   );
 }
@@ -361,7 +386,7 @@ function RoleControl({
     return <span className="text-xs text-muted-foreground">Read only</span>;
   if (!editing)
     return (
-      <Btn variant="ghost" onClick={onEdit}>
+      <Btn variant="primary" className="admin-users-inspector__edit" onClick={onEdit}>
         Edit role
       </Btn>
     );
@@ -399,32 +424,36 @@ function RoleSelect({
   );
 }
 
-function UserRow(props: UserControls) {
-  const { account } = props;
+function UserRow({
+  account,
+  selected,
+  onSelect,
+}: Pick<UserControls, "account"> & {
+  selected: boolean;
+  onSelect: () => void;
+}) {
   return (
-    <tr className="border-b border-border/60 align-top hover:bg-secondary/30">
+    <tr
+      className={`admin-users-directory__row ${selected ? "is-selected" : ""}`}
+      onClick={onSelect}
+    >
       <td className="px-5 py-4">
-        <div className="font-medium">
-          {account.fullName || "Unnamed account"}
-        </div>
-        <div className="mt-1 break-all text-xs text-muted-foreground">
-          {account.email || "Email unavailable"}
-        </div>
-        <div className="mt-1 font-mono text-[11px] text-muted-foreground">
-          {account.id}
-        </div>
+        <button
+          type="button"
+          className="admin-users-identity"
+          onClick={onSelect}
+          aria-current={selected ? "true" : undefined}
+        >
+          <span aria-hidden="true">{initialsFor(account)}</span>
+          <span>
+            <strong>{account.fullName || "Unnamed account"}</strong>
+            <small>{account.email || "Email unavailable"}</small>
+            <em>{shortId(account.id)}</em>
+          </span>
+        </button>
       </td>
       <td className="px-5 py-4">
-        {props.editing ? (
-          <RoleSelect
-            account={account}
-            draftRole={props.draftRole}
-            saving={props.saving}
-            onRoleChange={props.onRoleChange}
-          />
-        ) : (
-          <Badge>{account.role}</Badge>
-        )}
+        <Badge>{account.role}</Badge>
       </td>
       <td className="px-5 py-4">
         <Badge>{account.accountStatus}</Badge>
@@ -432,11 +461,110 @@ function UserRow(props: UserControls) {
       <td className="px-5 py-4 text-xs text-muted-foreground">
         {formatDate(account.createdAt)}
       </td>
-      <td className="px-5 py-4 text-right">
-        <RoleControl {...props} />
-      </td>
     </tr>
   );
+}
+
+function UserInspector({
+  account,
+  editing,
+  draftRole,
+  canManage,
+  saving,
+  onEdit,
+  onRoleChange,
+  onSave,
+  onCancel,
+}: Omit<UserControls, "account"> & { account: AdminUserAccount | null }) {
+  if (!account) {
+    return (
+      <Card as="aside" className="admin-users-inspector admin-users-inspector--empty">
+        <h2>Account details</h2>
+        <p>Select an account to review its role and access status.</p>
+      </Card>
+    );
+  }
+
+  return (
+    <Card as="aside" className="admin-users-inspector" aria-labelledby="account-details-title">
+      <header>
+        <p>Account details</p>
+        <span aria-hidden="true">{initialsFor(account)}</span>
+        <h2 id="account-details-title">{account.fullName || "Unnamed account"}</h2>
+        <a href={`mailto:${account.email ?? ""}`}>{account.email || "Email unavailable"}</a>
+      </header>
+      <dl>
+        <div>
+          <dt>Canonical ID</dt>
+          <dd className="font-mono">{account.id}</dd>
+        </div>
+        <div>
+          <dt>Account status</dt>
+          <dd><Badge>{account.accountStatus}</Badge></dd>
+        </div>
+        <div>
+          <dt>Created</dt>
+          <dd>{formatDate(account.createdAt)}</dd>
+        </div>
+      </dl>
+      <div className="admin-users-inspector__role">
+        <div>
+          <h3>Role</h3>
+          <p>Only the persisted role can be changed.</p>
+        </div>
+        {editing ? (
+          <RoleSelect
+            account={account}
+            draftRole={draftRole}
+            saving={saving}
+            onRoleChange={onRoleChange}
+          />
+        ) : (
+          <Badge>{account.role}</Badge>
+        )}
+        <RoleControl
+          account={account}
+          editing={editing}
+          draftRole={draftRole}
+          canManage={canManage}
+          saving={saving}
+          onEdit={onEdit}
+          onRoleChange={onRoleChange}
+          onSave={onSave}
+          onCancel={onCancel}
+        />
+      </div>
+    </Card>
+  );
+}
+
+function AccountListSkeleton() {
+  return (
+    <div className="admin-users-skeleton" role="status" aria-label="Loading canonical accounts">
+      {Array.from({ length: 5 }, (_, index) => (
+        <div key={index}>
+          <i />
+          <i />
+          <i />
+          <i />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function initialsFor(account: AdminUserAccount) {
+  const source = account.fullName || account.email || "Account";
+  return source
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
+function shortId(value: string) {
+  return value.length > 18 ? `${value.slice(0, 8)}…${value.slice(-6)}` : value;
 }
 
 function UserDisclosure(props: UserControls) {

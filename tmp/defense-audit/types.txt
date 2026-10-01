@@ -1,0 +1,8 @@
+src/routes/booking.tsx(291,18): error TS2345: Argument of type '{ pickupBranchId: string; returnBranchId: string; pickupAt: string; returnAt: string; purposeOfUse: string; pickupDeliveryOption: string; pickupLocation: string; dropoffLocation: string; sameReturnLocation: boolean; destination: string; preferredSeatCount: string; }' is not assignable to parameter of type 'SetStateAction<BookingDraft>'.
+  Type '{ pickupBranchId: string; returnBranchId: string; pickupAt: string; returnAt: string; purposeOfUse: string; pickupDeliveryOption: string; pickupLocation: string; dropoffLocation: string; sameReturnLocation: boolean; destination: string; preferredSeatCount: string; }' is not assignable to type 'BookingDraft'.
+    Types of property 'pickupDeliveryOption' are incompatible.
+      Type 'string' is not assignable to type '"pickup" | "delivery"'.
+src/routes/booking.tsx(292,29): error TS2345: Argument of type '{ pickupBranchId: string; returnBranchId: string; pickupAt: string; returnAt: string; purposeOfUse: string; pickupDeliveryOption: string; pickupLocation: string; dropoffLocation: string; sameReturnLocation: boolean; destination: string; preferredSeatCount: string; }' is not assignable to parameter of type 'SetStateAction<BookingDraft | null>'.
+  Type '{ pickupBranchId: string; returnBranchId: string; pickupAt: string; returnAt: string; purposeOfUse: string; pickupDeliveryOption: string; pickupLocation: string; dropoffLocation: string; sameReturnLocation: boolean; destination: string; preferredSeatCount: string; }' is not assignable to type 'BookingDraft'.
+    Types of property 'pickupDeliveryOption' are incompatible.
+      Type 'string' is not assignable to type '"pickup" | "delivery"'.

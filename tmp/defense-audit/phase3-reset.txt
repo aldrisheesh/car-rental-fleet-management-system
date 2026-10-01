@@ -1,0 +1,25 @@
+
+> defense:baseline
+> node --env-file=.env.local --experimental-strip-types scripts/defense/baseline.ts reset --apply
+
+Storage verified: 100/1139
+Storage verified: 200/1139
+Storage verified: 300/1139
+Storage verified: 400/1139
+Storage verified: 500/1139
+Storage verified: 600/1139
+Storage verified: 700/1139
+Storage verified: 800/1139
+Storage verified: 900/1139
+Storage verified: 1000/1139
+Storage verified: 1100/1139
+Storage verified: 1139/1139
+{
+  "applied": true,
+  "baseline": "backup-artifacts/defense/baseline-2026-09-29-2026-09-29T04-45-30.869Z.json",
+  "backup": "backup-artifacts/defense/before-reset-2026-09-29T04-44-59.537Z.json",
+  "referenceDate": "2026-09-29",
+  "restoredTables": 26,
+  "accountsPreserved": true,
+  "auditHistoryArchived": true
+}

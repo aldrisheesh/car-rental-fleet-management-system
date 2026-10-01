@@ -1,5 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
 import { CustomerPage } from "@/components/customer/CustomerPrimitives";
@@ -31,20 +30,8 @@ function CustomerNotificationsPage() {
   return (
     <CustomerPage className="customer-notifications-page">
       <Header />
-      <main id="main-content" className="booking-list-main">
+      <main id="main-content" className="customer-notifications-main">
         <div className="customer-container customer-notifications-container">
-          <div className="customer-notifications-heading">
-            <Link className="customer-back-link" to="/customer">
-              <ArrowLeft size={16} aria-hidden="true" />
-              My bookings
-            </Link>
-            <p>My account</p>
-            <h1>Notifications</h1>
-            <span>
-              Booking, rental, requirement, and payment updates for your
-              account.
-            </span>
-          </div>
           <NotificationsPanel audience="customer" showHeading={false} />
         </div>
       </main>

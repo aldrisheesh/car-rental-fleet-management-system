@@ -1,0 +1,30 @@
+✔ forecast generation uses the explicit requested-vehicle FK relationship (3.259625ms)
+✔ coverage is not inferred from an earliest historical booking (11.671917ms)
+✔ fully covered prospective zero weeks are retained (0.626167ms)
+✔ partial tracking-start week is excluded and three consecutive observations are required (0.374125ms)
+✔ canonical pair with covered all-zero weeks is forecastable (0.19625ms)
+✔ canonical pairs preserve observed qualifying demand (0.270917ms)
+✔ coverage begins only at exact Manila Monday midnight (0.298667ms)
+✔ forecast accuracy selects the latest eligible record within each branch and category series (0.956917ms)
+✔ forecast accuracy excludes records generated after the target week began (0.099334ms)
+✔ newer completed target supersedes old mileage target (1.224709ms)
+✔ latest completed target remains authoritative until reached (0.111833ms)
+✔ cancelled target is never authoritative (0.050917ms)
+✔ completion chronology outranks creation chronology (0.069959ms)
+✔ canonical readiness reports every deterministic blocking reason (0.127625ms)
+✔ readiness identifies an unavailable odometer without inventing a score (0.064ms)
+✔ cancelled blocking records do not block readiness (0.051458ms)
+✔ a returned vehicle stays unavailable while its inspection is pending (0.04825ms)
+✔ VS015 converts Manila week boundaries to instants (0.701833ms)
+✔ VS015 uses half-open overlap boundaries (0.131917ms)
+✔ VS015 counts vehicles once and preserves reasons (0.3985ms)
+✔ VS015 derives shortage, surplus, balanced (0.083666ms)
+✔ maintenance due before the half-open target week ends blocks supply (0.064708ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 107.131917

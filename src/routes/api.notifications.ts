@@ -40,6 +40,10 @@ async function readNotifications() {
     }
 
     const notifications = (items.data ?? []).map(projectNotification);
+    const customerBindings =
+      principal.role === "Customer/Renter"
+        ? await notificationCustomerBindings(notifications, client)
+        : [];
     const adminBindings =
       principal.role === "Customer/Renter"
         ? []
@@ -49,11 +53,58 @@ async function readNotifications() {
       unreadCount: unread.count ?? 0,
       emailNotificationsEnabled:
         preference.data?.email_notifications_enabled ?? true,
+      customerBindings,
       adminBindings,
     });
   } catch {
     return errorResponse("Authentication required.", 401);
   }
+}
+
+async function notificationCustomerBindings(
+  notifications: ReturnType<typeof projectNotification>[],
+  client: ReturnType<typeof getSupabaseServerClient>,
+) {
+  const requirementIds = notifications
+    .filter((item) => item.relatedEntityType === "requirements")
+    .map((item) => item.relatedEntityId);
+  const paymentIds = notifications
+    .filter((item) => item.relatedEntityType === "payment")
+    .map((item) => item.relatedEntityId);
+  const rentalIds = notifications
+    .filter((item) => item.relatedEntityType === "rental")
+    .map((item) => item.relatedEntityId);
+  const [requirements, payments, rentals] = await Promise.all([
+    requirementIds.length
+      ? client
+          .from("renter_requirement_sets")
+          .select("id,booking_id")
+          .in("id", requirementIds)
+      : Promise.resolve({ data: [] }),
+    paymentIds.length
+      ? client.from("payments").select("id,booking_id").in("id", paymentIds)
+      : Promise.resolve({ data: [] }),
+    rentalIds.length
+      ? client
+          .from("rental_transactions")
+          .select("id,booking_id")
+          .in("id", rentalIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+  return [
+    ...(requirements.data ?? []).map((item) => ({
+      bookingId: item.booking_id,
+      requirementSetId: item.id,
+    })),
+    ...(payments.data ?? []).map((item) => ({
+      bookingId: item.booking_id,
+      paymentId: item.id,
+    })),
+    ...(rentals.data ?? []).map((item) => ({
+      bookingId: item.booking_id,
+      rentalId: item.id,
+    })),
+  ];
 }
 
 async function notificationAdminBindings(

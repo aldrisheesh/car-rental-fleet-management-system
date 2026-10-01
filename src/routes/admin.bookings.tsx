@@ -93,9 +93,12 @@ function BookingsPage() {
         if (status) params.set("status", status);
         if (branch) params.set("branch", branch);
       }
-      const response = await fetch(`/api/bookings${params.size ? `?${params}` : ""}`, {
-        credentials: "same-origin",
-      });
+      const response = await fetch(
+        `/api/bookings${params.size ? `?${params}` : ""}`,
+        {
+          credentials: "same-origin",
+        },
+      );
       const data = await parseAdminBookingResponse(response, {
         allowStaffResponse: true,
       });
@@ -153,23 +156,20 @@ function BookingsPage() {
           ].sort(),
     [bookings, state],
   );
-  const branchOptions = useMemo(
-    () => {
-      if (state.status === "ready" && state.branches.length) return state.branches;
-      return bookings
-        .map((booking) => booking.pickup_branch)
-        .filter(
-          (value): value is { id: string; name: string } =>
-            Boolean(value?.id && value.name),
-        )
-        .filter(
-          (value, index, values) =>
-            values.findIndex((item) => item.id === value.id) === index,
-        )
-        .sort((left, right) => left.name.localeCompare(right.name));
-    },
-    [bookings, state],
-  );
+  const branchOptions = useMemo(() => {
+    if (state.status === "ready" && state.branches.length)
+      return state.branches;
+    return bookings
+      .map((booking) => booking.pickup_branch)
+      .filter((value): value is { id: string; name: string } =>
+        Boolean(value?.id && value.name),
+      )
+      .filter(
+        (value, index, values) =>
+          values.findIndex((item) => item.id === value.id) === index,
+      )
+      .sort((left, right) => left.name.localeCompare(right.name));
+  }, [bookings, state]);
   const rows = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     return bookings.filter((booking) => {
@@ -240,15 +240,22 @@ function BookingsPage() {
   const isLoading = state.status === "loading";
 
   return (
-    <div className="admin-bookings-workspace" aria-busy={isLoading || undefined}>
+    <div
+      className="admin-bookings-workspace"
+      aria-busy={isLoading || undefined}
+    >
       <header className="admin-bookings-heading">
         <div>
           <h1>Rental requests</h1>
           <p>
-            Review requirements, record and verify payment, then confirm the rental.
+            Review requirements, record and verify payment, then confirm the
+            rental.
           </p>
         </div>
-        <div className="admin-bookings-heading__stats" aria-label="Queue overview">
+        <div
+          className="admin-bookings-heading__stats"
+          aria-label="Queue overview"
+        >
           <QueueMetric
             label="Total requests"
             value={total}
@@ -263,7 +270,11 @@ function BookingsPage() {
         </div>
       </header>
 
-      <div className="admin-bookings-toolbar" role="search" aria-label="Filter rental requests">
+      <div
+        className="admin-bookings-toolbar"
+        role="search"
+        aria-label="Filter rental requests"
+      >
         <label className="min-w-0 flex-1 md:min-w-[300px]">
           <span className="sr-only">Search rental requests</span>
           <span className="relative block">
@@ -371,7 +382,10 @@ function BookingsPage() {
         </Card>
       ) : (
         <>
-          <section className="admin-bookings-triage" aria-label="Rental request triage">
+          <section
+            className="admin-bookings-triage"
+            aria-label="Rental request triage"
+          >
             <AttentionRail
               documentReviewCount={documentReviewCount}
               readyForReviewCount={readyForReviewCount}
@@ -381,7 +395,9 @@ function BookingsPage() {
               <div className="admin-bookings-queue__heading">
                 <div>
                   <h2>Review queue</h2>
-                  <p>Open a request to review its requirements and next action.</p>
+                  <p>
+                    Open a request to review its requirements and next action.
+                  </p>
                 </div>
                 <span>{visibleRows.length} on this page</span>
               </div>
@@ -466,18 +482,17 @@ function AttentionRail({
   ];
 
   return (
-    <aside className="admin-bookings-attention" aria-labelledby="attention-heading">
+    <aside
+      className="admin-bookings-attention"
+      aria-labelledby="attention-heading"
+    >
       <div className="admin-bookings-attention__heading">
         <h2 id="attention-heading">Current page tasks</h2>
         <p>Counts reflect the requests currently shown in this page.</p>
       </div>
       <div className="admin-bookings-attention__list">
         {items.map(({ icon: Icon, label, detail, value, to, attention }) => (
-          <Link
-            key={label}
-            to={to}
-            className="admin-bookings-attention__item"
-          >
+          <Link key={label} to={to} className="admin-bookings-attention__item">
             <span className={attention ? "is-attention" : undefined}>
               <Icon className="h-4 w-4" aria-hidden="true" />
             </span>
@@ -496,7 +511,10 @@ function AttentionRail({
 
 function BookingsWorkspaceSkeleton() {
   return (
-    <section className="admin-bookings-triage admin-bookings-triage--loading" aria-label="Loading rental request queue">
+    <section
+      className="admin-bookings-triage admin-bookings-triage--loading"
+      aria-label="Loading rental request queue"
+    >
       <aside className="admin-bookings-attention">
         <div className="admin-bookings-attention__heading">
           <i className="admin-bookings-skeleton admin-bookings-skeleton--title" />
@@ -525,13 +543,19 @@ function BookingsWorkspaceSkeleton() {
         <div className="admin-bookings-skeleton-table" aria-hidden="true">
           <div className="admin-bookings-skeleton-table__head">
             {[1, 2, 3, 4, 5].map((item) => (
-              <i className="admin-bookings-skeleton admin-bookings-skeleton--line" key={item} />
+              <i
+                className="admin-bookings-skeleton admin-bookings-skeleton--line"
+                key={item}
+              />
             ))}
           </div>
           {[1, 2, 3, 4, 5].map((item) => (
             <div className="admin-bookings-skeleton-table__row" key={item}>
               {[1, 2, 3, 4, 5].map((column) => (
-                <i className="admin-bookings-skeleton admin-bookings-skeleton--line" key={column} />
+                <i
+                  className="admin-bookings-skeleton admin-bookings-skeleton--line"
+                  key={column}
+                />
               ))}
             </div>
           ))}
@@ -682,7 +706,9 @@ function BookingDisclosure({ booking }: { booking: AdminBooking }) {
               {booking.requested_vehicle?.name ?? "Vehicle not recorded"} ·{" "}
               {formatAdminDateRange(booking.pickup_at, booking.return_at)}
             </p>
-            <p className="admin-bookings-reference">Ref. {shortBookingReference(booking.id)}</p>
+            <p className="admin-bookings-reference">
+              Ref. {shortBookingReference(booking.id)}
+            </p>
           </div>
           <span className="admin-bookings-disclosure-toggle">
             View details <ChevronDown className="h-4 w-4" aria-hidden="true" />

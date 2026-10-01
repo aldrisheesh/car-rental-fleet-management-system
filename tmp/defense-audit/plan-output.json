@@ -1,0 +1,232 @@
+{
+  "plan": "backup-artifacts/defense/plan-2026-09-29-2026-09-29T02-35-35.740Z.json",
+  "counts": {
+    "forecast_demand_coverage": 1,
+    "booking_requests": 231,
+    "renter_requirement_sets": 231,
+    "renter_requirement_documents": 912,
+    "renter_requirement_reviews": 227,
+    "booking_payment_quotes": 231,
+    "booking_rate_quotes": 0,
+    "payments": 231,
+    "payment_proofs": 227,
+    "rental_transactions": 219,
+    "maintenance_records": 14,
+    "vehicle_operational_state_events": 12,
+    "forecast_runs": 22,
+    "forecasts": 792,
+    "forecast_inputs": 2376,
+    "supply_evaluations": 36,
+    "supply_evaluation_vehicles": 36,
+    "allocation_recommendation_batches": 1,
+    "allocation_recommendations": 1,
+    "allocation_recommendation_candidates": 2,
+    "booking_creation_idempotency": 0,
+    "booking_finder_context": 0,
+    "notifications": 0,
+    "email_deliveries": 0,
+    "operational_notification_conditions": 0,
+    "vehicles": 12
+  },
+  "expected": {
+    "synthetic": true,
+    "asOf": "2026-09-29",
+    "historyStart": "2026-04-13",
+    "completeWeeks": 24,
+    "futureThrough": "2026-11-14T01:00:00.000Z",
+    "scenarios": [
+      {
+        "label": "ACTIVE-RENTAL",
+        "bookingId": "1085f8b8-3ec4-42ef-ae7f-bd7de36c7190",
+        "vehicle": "DEV-INNO-001",
+        "pickup": "2026-09-28T01:00:00.000Z",
+        "return": "2026-10-01T01:00:00.000Z",
+        "status": "Confirmed"
+      },
+      {
+        "label": "READY-FOR-PICKUP",
+        "bookingId": "7224677b-018c-452f-aecb-9a7b7bd39b9e",
+        "vehicle": "DEV-WIGO-001",
+        "pickup": "2026-10-01T01:00:00.000Z",
+        "return": "2026-10-03T01:00:00.000Z",
+        "status": "Confirmed"
+      },
+      {
+        "label": "REQUIREMENTS-REVIEW",
+        "bookingId": "d5faa164-d6f8-4de5-a4be-573dca23503f",
+        "vehicle": "DEV-AVAN-001",
+        "pickup": "2026-10-02T01:00:00.000Z",
+        "return": "2026-10-04T01:00:00.000Z",
+        "status": "Submitted"
+      },
+      {
+        "label": "PAYMENT-REVIEW",
+        "bookingId": "0cadd6ab-1daa-4fb1-ab4f-d4a04179451f",
+        "vehicle": "DEV-RUSH-001",
+        "pickup": "2026-10-03T01:00:00.000Z",
+        "return": "2026-10-05T01:00:00.000Z",
+        "status": "Submitted"
+      },
+      {
+        "label": "DRAFT-REQUEST",
+        "bookingId": "7a2c91a4-1a4b-41cc-a79d-c87efb4f87bd",
+        "vehicle": "DEV-HILX-001",
+        "pickup": "2026-10-05T01:00:00.000Z",
+        "return": "2026-10-07T01:00:00.000Z",
+        "status": "Draft"
+      },
+      {
+        "label": "CANCELLED-REQUEST",
+        "bookingId": "d340b7e6-4d47-480f-a7e7-f6c60587118a",
+        "vehicle": "DEV-URVN-001",
+        "pickup": "2026-10-06T01:00:00.000Z",
+        "return": "2026-10-08T01:00:00.000Z",
+        "status": "Cancelled"
+      },
+      {
+        "label": "REJECTED-REQUEST",
+        "bookingId": "a435fc2a-34a9-4e88-ad27-935515b3d319",
+        "vehicle": "DEV-HIAC-001",
+        "pickup": "2026-10-07T01:00:00.000Z",
+        "return": "2026-10-09T01:00:00.000Z",
+        "status": "Rejected"
+      },
+      {
+        "label": "FUTURE-1",
+        "bookingId": "64b5caa3-0e78-4862-a7ea-897e041512a5",
+        "vehicle": "DEV-AVAN-001",
+        "pickup": "2026-10-08T01:00:00.000Z",
+        "return": "2026-10-10T01:00:00.000Z",
+        "status": "Confirmed"
+      },
+      {
+        "label": "FUTURE-2",
+        "bookingId": "566abee1-7723-4dcc-aa1f-f1ce1f12c9e5",
+        "vehicle": "DEV-RUSH-001",
+        "pickup": "2026-10-15T01:00:00.000Z",
+        "return": "2026-10-17T01:00:00.000Z",
+        "status": "Confirmed"
+      },
+      {
+        "label": "FUTURE-3",
+        "bookingId": "1bc1275c-9c9d-4858-acc1-b58153acc2a6",
+        "vehicle": "DEV-HILX-001",
+        "pickup": "2026-10-22T01:00:00.000Z",
+        "return": "2026-10-24T01:00:00.000Z",
+        "status": "Confirmed"
+      },
+      {
+        "label": "FUTURE-4",
+        "bookingId": "152b2af7-419d-4d41-a80f-6e9b4b8ae208",
+        "vehicle": "DEV-URVN-001",
+        "pickup": "2026-10-29T01:00:00.000Z",
+        "return": "2026-10-31T01:00:00.000Z",
+        "status": "Confirmed"
+      },
+      {
+        "label": "FUTURE-5",
+        "bookingId": "0d66ab24-044e-4fa3-a9c3-06bbed314841",
+        "vehicle": "DEV-HIAC-001",
+        "pickup": "2026-11-05T01:00:00.000Z",
+        "return": "2026-11-07T01:00:00.000Z",
+        "status": "Confirmed"
+      },
+      {
+        "label": "FUTURE-6",
+        "bookingId": "30958c5d-7b69-4779-abaf-bc1c22ba2efe",
+        "vehicle": "DEV-WIGO-001",
+        "pickup": "2026-11-12T01:00:00.000Z",
+        "return": "2026-11-14T01:00:00.000Z",
+        "status": "Confirmed"
+      }
+    ],
+    "sedan": {
+      "source": "Antipolo, Rizal",
+      "destination": "Taft, Manila",
+      "lastThreeWeeks": [
+        1,
+        2,
+        1
+      ],
+      "forecast": 1.3,
+      "required": 2,
+      "sourceSupply": 2,
+      "sourceSurplus": 2,
+      "destinationSupply": 0,
+      "shortage": 2,
+      "transfer": 2,
+      "candidates": [
+        "DEV-VIOS-001",
+        "DEV-CITY-001"
+      ]
+    },
+    "accuracy": {
+      "overallMape": 36.97154471544715,
+      "eligibleForecasts": 164,
+      "excludedZeroActuals": 88,
+      "series": [
+        {
+          "branchId": "a8cc9334-114f-4924-a406-61716c997592",
+          "categoryId": "3c5b2da6-0e7c-4b4e-ac58-c07b2630dcd9",
+          "mape": 33.333333333333336,
+          "sampleSize": 15
+        },
+        {
+          "branchId": "a8cc9334-114f-4924-a406-61716c997592",
+          "categoryId": "42fcb84e-d89d-476b-860f-775b7e24399d",
+          "mape": 61.58730158730158,
+          "sampleSize": 21
+        },
+        {
+          "branchId": "a8cc9334-114f-4924-a406-61716c997592",
+          "categoryId": "4c48eda0-cdf5-402b-8a57-c75ac5e8c8c3",
+          "mape": 33.125,
+          "sampleSize": 16
+        },
+        {
+          "branchId": "a8cc9334-114f-4924-a406-61716c997592",
+          "categoryId": "b31ed577-0a51-4f0b-8bae-833324582cee",
+          "mape": 32.5,
+          "sampleSize": 16
+        },
+        {
+          "branchId": "a8cc9334-114f-4924-a406-61716c997592",
+          "categoryId": "ea24e456-cc57-42cc-8a43-fa0f9e310380",
+          "mape": 35.294117647058826,
+          "sampleSize": 17
+        },
+        {
+          "branchId": "a8cc9334-114f-4924-a406-61716c997592",
+          "categoryId": "f7760555-dfee-4f08-b3c7-5fc81fcd7159",
+          "mape": 34.375,
+          "sampleSize": 16
+        },
+        {
+          "branchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+          "categoryId": "3c5b2da6-0e7c-4b4e-ac58-c07b2630dcd9",
+          "mape": 32.5,
+          "sampleSize": 16
+        },
+        {
+          "branchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+          "categoryId": "4c48eda0-cdf5-402b-8a57-c75ac5e8c8c3",
+          "mape": 33.333333333333336,
+          "sampleSize": 15
+        },
+        {
+          "branchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+          "categoryId": "b31ed577-0a51-4f0b-8bae-833324582cee",
+          "mape": 33.125,
+          "sampleSize": 16
+        },
+        {
+          "branchId": "f6656366-3031-49f8-811b-ec320eb2654a",
+          "categoryId": "f7760555-dfee-4f08-b3c7-5fc81fcd7159",
+          "mape": 32.5,
+          "sampleSize": 16
+        }
+      ]
+    }
+  }
+}
+DRY RUN: database and Storage unchanged. Add --apply to prepare this baseline.

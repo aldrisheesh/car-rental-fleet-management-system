@@ -2,18 +2,22 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   AlertCircle,
   ArrowRight,
+  CarFront,
   CheckCircle2,
+  CalendarDays,
   Clock,
+  FileText,
   Loader2,
   Mail,
   MapPin,
   Phone,
-  type LucideIcon,
+  Send,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
+import { getClientPrincipal } from "@/lib/auth-client";
 import {
   defaultPublicContact,
   fetchPublicContact,
@@ -21,7 +25,9 @@ import {
   type PublicContactLocation,
 } from "@/lib/public-contact";
 
-type ContactErrors = Partial<Record<"name" | "email" | "subject" | "message", string>>;
+type ContactErrors = Partial<
+  Record<"name" | "email" | "subject" | "message", string>
+>;
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -39,6 +45,7 @@ export const Route = createFileRoute("/contact")({
 });
 
 function ContactPage() {
+  const [principal, setPrincipal] = useState(() => getClientPrincipal());
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -48,6 +55,15 @@ function ContactPage() {
   const [sent, setSent] = useState(false);
   const [contact, setContact] = useState(defaultPublicContact);
   const [locations, setLocations] = useState<PublicContactLocation[]>([]);
+
+  useEffect(() => {
+    const nextPrincipal = getClientPrincipal();
+    setPrincipal(nextPrincipal);
+    if (nextPrincipal?.email) {
+      setName(nextPrincipal.fullName);
+      setEmail(nextPrincipal.email);
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -82,8 +98,11 @@ function ContactPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, subject, message }),
       });
-      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
-      if (!response.ok) throw new Error(payload?.message ?? "Your message could not be saved.");
+      const payload = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
+      if (!response.ok)
+        throw new Error(payload?.message ?? "Your message could not be saved.");
       setSent(true);
       setSubject("");
       setMessage("");
@@ -91,228 +110,303 @@ function ContactPage() {
         description: contact.reply_commitment,
       });
     } catch (cause) {
-      toast.error(cause instanceof Error ? cause.message : "Your message could not be saved.");
+      toast.error(
+        cause instanceof Error
+          ? cause.message
+          : "Your message could not be saved.",
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
-  const cards = [
-    { icon: Phone, label: "Call us", value: contact.phone, href: phoneHref(contact.phone) },
-    { icon: Mail, label: "Email", value: contact.email, href: `mailto:${contact.email}` },
-    { icon: MapPin, label: "Public locations", value: contact.location_summary },
-    { icon: Clock, label: "Office hours", value: contact.office_hours },
-  ];
+  const isIdentityReadOnly = Boolean(principal?.email);
+
+  const displayedLocations =
+    locations.length > 0
+      ? locations
+      : [
+          {
+            id: "taft",
+            name: "Taft, Manila",
+            address: "2/F Briah Building, Taft Avenue, Manila 1004",
+            note: null,
+            sort_order: 1,
+          },
+          {
+            id: "antipolo",
+            name: "Antipolo, Rizal",
+            address: "Sumulong Highway, Antipolo, Rizal 1870",
+            note: null,
+            sort_order: 2,
+          },
+        ];
 
   return (
     <div>
       <Header />
 
-      <section className="border-b border-border bg-surface">
-        <div className="container-page grid gap-10 py-16 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-              Contact
-            </p>
-            <h1 className="mt-3 font-display text-4xl font-semibold md:text-5xl">
-              Talk to Briah's
-            </h1>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground">
-              Questions about availability, pickup, or your rental plan? Send a note and the rental team can review it.
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            {cards.map((card) => (
-              <ContactCard key={card.label} {...card} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="container-page mt-12 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-        <form
-          onSubmit={submit}
-          noValidate
-          className="rounded-xl border border-border bg-card p-5 shadow-soft md:p-8"
-        >
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h2 className="font-display text-2xl font-semibold">Send us a message</h2>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Share the dates, vehicle type, and pickup branch you have in mind.
+      <main id="main-content" className="contact-local-help">
+        <section className="contact-local-help__hero">
+          <div className="customer-container contact-local-help__hero-grid">
+            <div className="contact-local-help__intro">
+              <h1>How can we help?</h1>
+              <p>
+                Whether you have a question about a booking, need help with your
+                trip, or just want to say hello, our team is ready to assist.
               </p>
+              <div
+                className="contact-local-help__direct-links"
+                aria-label="Contact directly"
+              >
+                <a href={phoneHref(contact.phone)}>
+                  <Phone size={20} strokeWidth={1.8} aria-hidden="true" />
+                  {contact.phone}
+                </a>
+                <a href={`mailto:${contact.email}`}>
+                  <Mail size={20} strokeWidth={1.8} aria-hidden="true" />
+                  {contact.email}
+                </a>
+              </div>
             </div>
-            <span
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${
-                sent
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-                  : "border-primary/30 bg-primary/10 text-primary"
-              }`}
+
+            <section
+              className="contact-local-help__guide"
+              aria-labelledby="contact-guide-title"
             >
-              {sent ? <CheckCircle2 className="h-3.5 w-3.5" /> : null}
-              {sent ? "Message sent" : "Same-day replies"}
-            </span>
-          </div>
-
-          <div className="mt-7 grid gap-5 md:grid-cols-2">
-            <Field label="Full name" id="contact-name" error={errors.name}>
-              <input
-                id="contact-name"
-                value={name}
-                onChange={(event) => {
-                  setName(event.target.value);
-                  setErrors((current) => ({ ...current, name: undefined }));
-                }}
-                aria-invalid={Boolean(errors.name)}
-                aria-describedby={errors.name ? "contact-name-error" : undefined}
-                className="input-control"
-                autoComplete="name"
-                required
-              />
-            </Field>
-            <Field label="Email" id="contact-email" error={errors.email}>
-              <input
-                id="contact-email"
-                type="email"
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                  setErrors((current) => ({ ...current, email: undefined }));
-                }}
-                aria-invalid={Boolean(errors.email)}
-                aria-describedby={errors.email ? "contact-email-error" : undefined}
-                className="input-control"
-                autoComplete="email"
-                required
-              />
-            </Field>
-          </div>
-
-          <Field label="Subject" id="contact-subject" error={errors.subject} className="mt-5">
-            <input
-              id="contact-subject"
-              value={subject}
-              onChange={(event) => {
-                setSubject(event.target.value);
-                setErrors((current) => ({ ...current, subject: undefined }));
-              }}
-              aria-invalid={Boolean(errors.subject)}
-              aria-describedby={errors.subject ? "contact-subject-error" : undefined}
-              className="input-control"
-              placeholder="Booking question, branch pickup, or pricing"
-              required
-            />
-          </Field>
-
-          <Field label="Message" id="contact-message" error={errors.message} className="mt-5">
-            <textarea
-              id="contact-message"
-              rows={6}
-              value={message}
-              onChange={(event) => {
-                setMessage(event.target.value);
-                setErrors((current) => ({ ...current, message: undefined }));
-              }}
-              aria-invalid={Boolean(errors.message)}
-              aria-describedby={errors.message ? "contact-message-error" : undefined}
-              className="input-control h-auto py-3 leading-6"
-              placeholder="How can we help?"
-              required
-            />
-          </Field>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="touch-target mt-6 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {submitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <ArrowRight className="h-4 w-4" />
-            )}
-            {submitting ? "Sending message..." : "Send message"}
-          </button>
-        </form>
-
-        <aside className="space-y-4">
-          <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
-            <h2 className="font-display text-lg font-semibold">Branches</h2>
-            <div className="mt-4 space-y-4">
-              {locations.map((branch) => (
-                <div
-                  key={branch.name}
-                  className="border-t border-border pt-4 first:border-t-0 first:pt-0"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
-                      <MapPin className="h-4 w-4" />
-                    </span>
-                    <div>
-                      <h3 className="text-sm font-semibold">{branch.name}</h3>
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                        {branch.address}
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">{branch.note}</p>
-                    </div>
+              <h2 id="contact-guide-title">Before you write</h2>
+              <p>A few details help our team assist you faster.</p>
+              <ol>
+                <li>
+                  <FileText size={23} strokeWidth={1.65} aria-hidden="true" />
+                  <div>
+                    <strong>About a booking?</strong>
+                    <span>Include your booking reference number.</span>
                   </div>
-                </div>
-              ))}
-            </div>
+                </li>
+                <li>
+                  <CalendarDays
+                    size={23}
+                    strokeWidth={1.65}
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <strong>Planning a trip?</strong>
+                    <span>Share your dates and preferred vehicle.</span>
+                  </div>
+                </li>
+                <li>
+                  <MapPin size={23} strokeWidth={1.65} aria-hidden="true" />
+                  <div>
+                    <strong>Delivery or return?</strong>
+                    <span>Add the address you have in mind.</span>
+                  </div>
+                </li>
+              </ol>
+            </section>
           </div>
+        </section>
 
-          <div className="rounded-xl border border-border bg-secondary p-5">
-            <h2 className="font-display text-lg font-semibold">Service area</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              {contact.service_area}
-            </p>
+        <section className="contact-local-help__message-section">
+          <div className="customer-container contact-local-help__message-grid">
+            <div className="contact-local-help__message-intro">
+              <h2>Send a message</h2>
+              <p>Tell us what you need. We usually reply the same day.</p>
+            </div>
+
+            <form
+              onSubmit={submit}
+              noValidate
+              className="contact-local-help__form"
+            >
+              <div className="contact-local-help__form-fields">
+                <Field label="Full name" id="contact-name" error={errors.name}>
+                  <input
+                    id="contact-name"
+                    value={name}
+                    onChange={(event) => {
+                      setName(event.target.value);
+                      setErrors((current) => ({ ...current, name: undefined }));
+                    }}
+                    readOnly={isIdentityReadOnly}
+                    aria-readonly={isIdentityReadOnly}
+                    aria-invalid={Boolean(errors.name)}
+                    aria-describedby={
+                      errors.name ? "contact-name-error" : undefined
+                    }
+                    className={`contact-local-help__input${isIdentityReadOnly ? " contact-local-help__input--identity" : ""}`}
+                    autoComplete="name"
+                    placeholder="Your full name"
+                    required
+                  />
+                </Field>
+                <Field label="Email" id="contact-email" error={errors.email}>
+                  <input
+                    id="contact-email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      setErrors((current) => ({
+                        ...current,
+                        email: undefined,
+                      }));
+                    }}
+                    readOnly={isIdentityReadOnly}
+                    aria-readonly={isIdentityReadOnly}
+                    aria-invalid={Boolean(errors.email)}
+                    aria-describedby={
+                      errors.email ? "contact-email-error" : undefined
+                    }
+                    className={`contact-local-help__input${isIdentityReadOnly ? " contact-local-help__input--identity" : ""}`}
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    required
+                  />
+                </Field>
+                <Field
+                  label="Topic"
+                  id="contact-subject"
+                  error={errors.subject}
+                  className="contact-local-help__form-field--wide"
+                >
+                  <select
+                    id="contact-subject"
+                    value={subject}
+                    onChange={(event) => {
+                      setSubject(event.target.value);
+                      setErrors((current) => ({
+                        ...current,
+                        subject: undefined,
+                      }));
+                    }}
+                    aria-invalid={Boolean(errors.subject)}
+                    aria-describedby={
+                      errors.subject ? "contact-subject-error" : undefined
+                    }
+                    className="contact-local-help__input"
+                    required
+                  >
+                    <option value="" disabled>
+                      Select a topic
+                    </option>
+                    <option value="Booking question">Booking question</option>
+                    <option value="Delivery or return">
+                      Delivery or return
+                    </option>
+                    <option value="Vehicle availability">
+                      Vehicle availability
+                    </option>
+                    <option value="Pricing or payment">
+                      Pricing or payment
+                    </option>
+                    <option value="Other">Other</option>
+                  </select>
+                </Field>
+                <Field
+                  label="Message"
+                  id="contact-message"
+                  error={errors.message}
+                  className="contact-local-help__form-field--wide"
+                >
+                  <textarea
+                    id="contact-message"
+                    rows={5}
+                    value={message}
+                    onChange={(event) => {
+                      setMessage(event.target.value);
+                      setErrors((current) => ({
+                        ...current,
+                        message: undefined,
+                      }));
+                    }}
+                    aria-invalid={Boolean(errors.message)}
+                    aria-describedby={
+                      errors.message ? "contact-message-error" : undefined
+                    }
+                    className="contact-local-help__input contact-local-help__textarea"
+                    placeholder="How can we help?"
+                    required
+                  />
+                </Field>
+              </div>
+              <div className="contact-local-help__form-footer">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="customer-primary-button"
+                >
+                  {submitting ? (
+                    <Loader2 className="animate-spin" size={17} />
+                  ) : (
+                    <Send size={17} />
+                  )}
+                  {submitting ? "Sending message..." : "Send message"}
+                  {!submitting ? (
+                    <ArrowRight size={17} aria-hidden="true" />
+                  ) : null}
+                </button>
+                {sent ? (
+                  <span className="contact-local-help__sent" role="status">
+                    <CheckCircle2 size={17} aria-hidden="true" /> Message sent
+                  </span>
+                ) : null}
+              </div>
+            </form>
           </div>
-        </aside>
-      </section>
+        </section>
+
+        <section
+          className="customer-container contact-local-help__service"
+          aria-labelledby="contact-service-title"
+        >
+          <h2 id="contact-service-title">At your service</h2>
+          <div className="contact-local-help__service-grid">
+            <article>
+              <MapPin size={27} strokeWidth={1.65} aria-hidden="true" />
+              <div>
+                <h3>Visit a branch</h3>
+                <p>
+                  Drop by for reservations, document support, or in-person
+                  assistance.
+                </p>
+                <dl>
+                  {displayedLocations.map((branch) => (
+                    <div key={branch.id}>
+                      <dt>{branch.name}</dt>
+                      <dd>{branch.address}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </article>
+            <article>
+              <Clock size={27} strokeWidth={1.65} aria-hidden="true" />
+              <div>
+                <h3>Office hours</h3>
+                <p>We’re open every day to serve you.</p>
+                <strong>{contact.office_hours}</strong>
+              </div>
+            </article>
+            <article>
+              <CarFront
+                className="contact-local-help__service-car"
+                size={27}
+                strokeWidth={1.65}
+                aria-hidden="true"
+              />
+              <div>
+                <h3>Service area</h3>
+                <p>{contact.service_area}</p>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
 
       <Footer />
     </div>
   );
-}
-
-function ContactCard({
-  icon: Icon,
-  label,
-  value,
-  href,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-  href?: string;
-}) {
-  const content = (
-    <>
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
-        <Icon className="h-5 w-5" />
-      </span>
-      <span className="min-w-0">
-        <span className="block text-sm font-semibold text-foreground">{label}</span>
-        <span className="mt-1 block break-words text-sm leading-5 text-muted-foreground">
-          {value}
-        </span>
-      </span>
-    </>
-  );
-
-  const className =
-    "flex min-h-24 items-center gap-3 rounded-xl border border-border bg-card p-4 text-left shadow-soft transition-colors hover:border-primary/35";
-
-  if (href) {
-    return (
-      <a href={href} className={className}>
-        {content}
-      </a>
-    );
-  }
-
-  return <div className={className}>{content}</div>;
 }
 
 function Field({
@@ -330,7 +424,9 @@ function Field({
 }) {
   return (
     <label className={`block ${className}`} htmlFor={id}>
-      <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
+        {label}
+      </span>
       {children}
       {error && (
         <span
@@ -359,9 +455,11 @@ function validateContact({
   const nextErrors: ContactErrors = {};
 
   if (!name.trim()) nextErrors.name = "Enter your full name.";
-  if (!/^\S+@\S+\.\S+$/.test(email.trim())) nextErrors.email = "Enter a valid email address.";
+  if (!/^\S+@\S+\.\S+$/.test(email.trim()))
+    nextErrors.email = "Enter a valid email address.";
   if (!subject.trim()) nextErrors.subject = "Add a short subject.";
-  if (message.trim().length < 10) nextErrors.message = "Tell us a little more so we can help.";
+  if (message.trim().length < 10)
+    nextErrors.message = "Tell us a little more so we can help.";
 
   return nextErrors;
 }

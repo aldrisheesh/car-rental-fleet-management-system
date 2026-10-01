@@ -1,0 +1,30 @@
+
+/Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/scripts/defense/baseline-data.ts
+   55:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  594:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  596:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/scripts/defense/baseline.ts
+   16:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   16:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   26:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   31:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   44:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   87:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  152:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  152:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  184:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  184:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  227:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  233:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  268:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  287:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  365:24  error  Empty block statement                     no-empty
+  370:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  371:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  390:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 23 problems (23 errors, 0 warnings)
+

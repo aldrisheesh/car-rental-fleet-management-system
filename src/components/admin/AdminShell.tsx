@@ -193,7 +193,7 @@ function SidebarLinks({
                 }
                 aria-expanded={expanded}
                 aria-controls={regionId}
-                className={`group flex min-h-11 w-full items-center gap-2.5 rounded-md border border-transparent px-2.5 text-left text-[13px] font-semibold transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${groupActive ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
+                className={`group flex min-h-11 w-full cursor-pointer items-center gap-2.5 rounded-md border border-transparent px-2.5 text-left text-[13px] font-semibold transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${groupActive ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
               >
                 <Icon
                   aria-hidden="true"
@@ -247,7 +247,6 @@ function SidebarLinks({
 
         const item = entry;
         const active = isActive(pathname, item);
-        const featured = item.to === "/admin/decisions";
         const Icon = item.icon;
         return (
           <li key={item.to}>
@@ -256,24 +255,14 @@ function SidebarLinks({
               activeOptions={item.exact ? { exact: true } : undefined}
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
-              className={`group flex min-h-11 items-center gap-3 rounded-md border border-transparent px-3 text-sm font-medium transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "border-primary/10 bg-[#e7efec] text-primary" : featured ? "bg-[#f2f8fc] text-primary hover:bg-[#e7f1f7]" : "text-muted-foreground"}`}
+              className={`group flex min-h-11 items-center gap-3 rounded-md border border-transparent px-3 text-sm font-medium transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
             >
               <Icon
                 aria-hidden="true"
                 className={`h-5 w-5 shrink-0 ${active ? "text-primary" : "text-[#19385e]"}`}
                 strokeWidth={1.9}
               />
-              {featured ? (
-                <span className="min-w-0 leading-4">
-                  <span className="block font-medium">{item.label}</span>
-                  <span className="mt-0.5 inline-block rounded bg-[#d6eaf4] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-3 tracking-[0.06em] text-[#2e647b]">
-                    Insights
-                  </span>
-                </span>
-              ) : null}
-              {!featured ? (
-                <span className="min-w-0 truncate">{item.label}</span>
-              ) : null}
+              <span className="min-w-0 truncate">{item.label}</span>
             </Link>
           </li>
         );

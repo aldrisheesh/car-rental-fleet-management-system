@@ -17,6 +17,7 @@ async function readAuditEvents({ request }: { request: Request }) {
     const domain = url.searchParams.get("domain")?.trim() || null;
     const actorType = url.searchParams.get("actorType")?.trim() || null;
     const actorUserId = url.searchParams.get("actorUserId")?.trim() || null;
+    const search = normalizeSearch(url.searchParams.get("search"));
     const from = parseDate(url.searchParams.get("from"));
     const to = parseDate(url.searchParams.get("to"));
     const page = boundedInteger(url.searchParams.get("page"), 1, 1, 10_000);
@@ -30,12 +31,14 @@ async function readAuditEvents({ request }: { request: Request }) {
     )
       return fail("Invalid actor type.");
     if (actorUserId && !UUID.test(actorUserId)) return fail("Invalid actor.");
+    if (search === undefined) return fail("Invalid audit search.");
     if (from === undefined || to === undefined)
       return fail("Invalid date range.");
     if (from && to && from > to) return fail("Date range is reversed.");
     if (page === undefined || limit === undefined)
       return fail("Invalid pagination.");
 
+    const filters = { actorType, actorUserId, from, to, search };
     const start = (page - 1) * limit;
     const client = getSupabaseServerClient();
     let query = client
@@ -47,22 +50,38 @@ async function readAuditEvents({ request }: { request: Request }) {
       .order("occurred_at", { ascending: false })
       .order("id", { ascending: false })
       .range(start, start + limit - 1);
+    query = applyAuditFilters(query, { ...filters, domain });
 
-    if (domain)
-      query = query.eq("entity_type", domain as (typeof AUDIT_DOMAINS)[number]);
-    if (actorType)
-      query = query.eq("actor_type", actorType as (typeof AUDIT_ACTOR_TYPES)[number]);
-    if (actorUserId) query = query.eq("actor_user_id", actorUserId);
-    if (from) query = query.gte("occurred_at", from.toISOString());
-    if (to) query = query.lte("occurred_at", to.toISOString());
+    const [result, countResults] = await Promise.all([
+      query,
+      Promise.all(
+        AUDIT_DOMAINS.map(async (countDomain) => {
+          let countQuery = client
+            .from("audit_events")
+            .select("id", { count: "exact", head: true });
+          countQuery = applyAuditFilters(countQuery, {
+            ...filters,
+            domain: countDomain,
+          });
+          const countResult = await countQuery;
+          return [countDomain, countResult] as const;
+        }),
+      ),
+    ]);
 
-    const result = await query;
-    if (result.error) return fail("Unable to load audit events.", 503);
+    if (result.error || countResults.some(([, value]) => value.error))
+      return fail("Unable to load audit events.", 503);
     return Response.json({
       events: result.data ?? [],
       page,
       limit,
       total: result.count ?? 0,
+      domainCounts: Object.fromEntries(
+        countResults.map(([countDomain, value]) => [
+          countDomain,
+          value.count ?? 0,
+        ]),
+      ),
     });
   } catch (error) {
     return fail(
@@ -72,6 +91,55 @@ async function readAuditEvents({ request }: { request: Request }) {
       error instanceof Error && error.message === "forbidden" ? 403 : 401,
     );
   }
+}
+
+function applyAuditFilters<T extends AuditFilterQuery<T>>(
+  query: T,
+  filters: {
+    domain: string | null;
+    actorType: string | null;
+    actorUserId: string | null;
+    from: Date | null;
+    to: Date | null;
+    search: string | null;
+  },
+) {
+  let filtered = query;
+  if (filters.domain) filtered = filtered.eq("entity_type", filters.domain);
+  if (filters.actorType)
+    filtered = filtered.eq("actor_type", filters.actorType);
+  if (filters.actorUserId)
+    filtered = filtered.eq("actor_user_id", filters.actorUserId);
+  if (filters.from)
+    filtered = filtered.gte("occurred_at", filters.from.toISOString());
+  if (filters.to)
+    filtered = filtered.lte("occurred_at", filters.to.toISOString());
+  if (filters.search) {
+    if (UUID.test(filters.search)) {
+      filtered = filtered.or(
+        `entity_id.eq.${filters.search},booking_id.eq.${filters.search}`,
+      );
+    } else {
+      filtered = filtered.ilike("action", `%${filters.search}%`);
+    }
+  }
+  return filtered;
+}
+
+type AuditFilterQuery<T> = {
+  eq: (column: string, value: string) => T;
+  gte: (column: string, value: string) => T;
+  lte: (column: string, value: string) => T;
+  ilike: (column: string, value: string) => T;
+  or: (filters: string) => T;
+};
+
+function normalizeSearch(value: string | null) {
+  if (!value?.trim()) return null;
+  const normalized = value.trim();
+  if (normalized.length > 100 || /[^a-zA-Z0-9 .-]/.test(normalized))
+    return undefined;
+  return normalized;
 }
 
 function parseDate(value: string | null) {

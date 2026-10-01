@@ -118,8 +118,7 @@ async function readBookings({ request }: { request: Request }) {
       booking.finder_context = finderMap.get(booking.id) ?? null;
     });
     if (principal.role === "Customer/Renter") {
-      return Response.json(
-        rows.map((b: any) => {
+      const customerBookings = rows.map((b: any) => {
           const {
             assigned_by,
             assigned_at,
@@ -142,8 +141,100 @@ async function readBookings({ request }: { request: Request }) {
             unknown
           > | null;
           return { ...customerBooking, rental: projectCustomerRental(rental) };
-        }),
-      );
+        });
+
+      if (url.searchParams.get("view") === "dashboard") {
+        const [requirementsResult, paymentsResult, vehiclesResult] =
+          await Promise.all([
+            bookingIds.length
+              ? (client as any)
+                  .from("renter_requirement_sets")
+                  .select("id,booking_id,customer_id,status,submitted_at,updated_at")
+                  .eq("customer_id", principal.userId)
+                  .in("booking_id", bookingIds)
+              : { data: [], error: null },
+            bookingIds.length
+              ? (client as any)
+                  .from("payments")
+                  .select(
+                    "id,booking_id,status,payment_method_id,payment_method_label,submitted_amount,required_amount,transaction_reference,resubmission_reason,submitted_at,updated_at",
+                  )
+                  .eq("customer_id", principal.userId)
+                  .in("booking_id", bookingIds)
+              : { data: [], error: null },
+            bookingIds.length
+              ? (client as any)
+                  .from("vehicles")
+                  .select(
+                    "id,name,license_plate,transmission,fuel_type,seat_capacity,large_luggage_capacity,daily_rate,image_url,branch:branches(id,name),category:vehicle_categories(id,name)",
+                  )
+                  .in(
+                    "id",
+                    [
+                      ...new Set(
+                        rows
+                          .flatMap((booking: any) => [
+                            booking.rental?.vehicle_id,
+                            booking.assigned_vehicle?.id,
+                            booking.requested_vehicle?.id,
+                          ])
+                          .filter(Boolean),
+                      ),
+                    ],
+                  )
+              : { data: [], error: null },
+          ]);
+        if (
+          requirementsResult.error ||
+          paymentsResult.error ||
+          vehiclesResult.error
+        )
+          return errorResponse("Unable to load your rental summary.", 503);
+
+        const requirementSets = requirementsResult.data ?? [];
+        const setIds = requirementSets.map((set: any) => set.id);
+        const reviewsResult = setIds.length
+          ? await (client as any)
+              .from("renter_requirement_reviews")
+              .select(
+                "requirement_set_id,government_id_outcome,government_id_reason,drivers_license_outcome,drivers_license_reason,proof_of_billing_outcome,proof_of_billing_reason,selfie_with_id_outcome,selfie_with_id_reason,identity_consistency,lto_outcome",
+              )
+              .in("requirement_set_id", setIds)
+          : { data: [], error: null };
+        if (reviewsResult.error)
+          return errorResponse("Unable to load your rental summary.", 503);
+
+        const reviewsBySet = new Map(
+          (reviewsResult.data ?? []).map((review: any) => [
+            review.requirement_set_id,
+            {
+              governmentIdOutcome: review.government_id_outcome,
+              governmentIdReason: review.government_id_reason,
+              driversLicenseOutcome: review.drivers_license_outcome,
+              driversLicenseReason: review.drivers_license_reason,
+              proofOfBillingOutcome: review.proof_of_billing_outcome,
+              proofOfBillingReason: review.proof_of_billing_reason,
+              selfieWithIdOutcome: review.selfie_with_id_outcome,
+              selfieWithIdReason: review.selfie_with_id_reason,
+              identityConsistency: review.identity_consistency,
+              ltoOutcome: review.lto_outcome,
+            },
+          ]),
+        );
+
+        return Response.json({
+          bookings: customerBookings,
+          vehicles: vehiclesResult.data ?? [],
+          requirements: requirementSets.map((set: any) => ({
+            bookingId: set.booking_id,
+            requirementSet: set,
+            review: reviewsBySet.get(set.id) ?? null,
+          })),
+          payments: paymentsResult.data ?? [],
+        });
+      }
+
+      return Response.json(customerBookings);
     }
     if (bookingIds.length) {
       const [reqs, pays] = await Promise.all([

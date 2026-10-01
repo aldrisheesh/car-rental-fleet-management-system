@@ -5,7 +5,15 @@ import {
   useNavigate,
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Mail, MapPin, Phone, Save, UserRound } from "lucide-react";
+import {
+  ArrowRight,
+  Bell,
+  CircleHelp,
+  LockKeyhole,
+  Save,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
@@ -61,51 +69,50 @@ function CustomerProfilePage() {
     postalCode: "",
   });
   const [saving, setSaving] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [savedForm, setSavedForm] = useState<ProfileForm | null>(null);
 
   useEffect(() => {
     const activeSession = getCustomerSession();
     if (!activeSession) {
       void navigate({ to: "/sign-in", replace: true });
       setSession(null);
+      setProfileLoading(false);
       return;
     }
 
     setSession(activeSession);
-    void getOwnProfile().then((result) => {
-      if (!result.ok) {
-        toast.error(result.message);
-        return;
-      }
-      const profile = result.data.profile;
-      setForm({
-        name: profile.full_name,
-        email: profile.email ?? activeSession.email,
-        phone: profile.phone_number ?? "",
-        streetAddress: profile.street_address ?? "",
-        barangay: profile.barangay ?? "",
-        cityMunicipality: profile.city_municipality ?? "",
-        province: profile.province ?? "",
-        postalCode: profile.postal_code ?? "",
-      });
-    });
+    void getOwnProfile()
+      .then((result) => {
+        if (!result.ok) {
+          toast.error(result.message);
+          return;
+        }
+        const profile = result.data.profile;
+        const loadedForm = {
+          name: profile.full_name,
+          email: profile.email ?? activeSession.email,
+          phone: profile.phone_number ?? "",
+          streetAddress: profile.street_address ?? "",
+          barangay: profile.barangay ?? "",
+          cityMunicipality: profile.city_municipality ?? "",
+          province: profile.province ?? "",
+          postalCode: profile.postal_code ?? "",
+        };
+        setForm(loadedForm);
+        setSavedForm(loadedForm);
+      })
+      .catch(() => toast.error("We couldn’t load your profile."))
+      .finally(() => setProfileLoading(false));
   }, [navigate]);
 
-  if (session === undefined) {
-    return (
-      <div className="grid min-h-screen place-items-center bg-background px-6 text-center text-foreground">
-        <div>
-          <div className="font-display text-lg font-semibold tracking-tight">
-            Briah&apos;s Car Rental
-          </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Loading profile...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (session === undefined || profileLoading) return <ProfileWorkspaceSkeleton />;
 
   if (session === null) return null;
+
+  const hasChanges =
+    savedForm !== null &&
+    profileFieldsDiffer(form, savedForm);
 
   function updateField(field: keyof ProfileForm, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -138,7 +145,7 @@ function CustomerProfilePage() {
         return;
       }
 
-      setForm({
+      const updatedForm = {
         name: result.data.principal.fullName,
         email: activeSession.email,
         phone: form.phone.trim(),
@@ -147,7 +154,9 @@ function CustomerProfilePage() {
         cityMunicipality: form.cityMunicipality.trim(),
         province: form.province.trim(),
         postalCode: form.postalCode.trim(),
-      });
+      };
+      setForm(updatedForm);
+      setSavedForm(updatedForm);
       toast.success("Profile updated", {
         description: "Your customer details have been saved.",
       });
@@ -157,295 +166,257 @@ function CustomerProfilePage() {
   }
 
   return (
-    <div>
+    <div className="profile-workspace-page">
       <Header />
 
-      <section className="border-b border-border bg-secondary/60">
-        <div className="container-page py-10">
-          <Link
-            to="/customer"
-            className="inline-flex items-center gap-2 rounded-md text-sm font-semibold text-primary transition-colors hover:text-primary/80"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Customer Dashboard
-          </Link>
-          <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
-                Account
-              </p>
-              <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight md:text-4xl">
-                Edit profile
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Keep your contact details current for reservation updates.
-              </p>
+      <main id="main-content" className="profile-workspace-main">
+        <div className="customer-container profile-workspace-shell">
+          <aside className="profile-workspace-rail" aria-label="Account">
+            <div className="profile-workspace-identity">
+              <div className="profile-workspace-avatar" aria-hidden="true">
+                {getInitials(form.name)}
+              </div>
+              <h2>{form.name || "Customer"}</h2>
+              <p>{form.email}</p>
             </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="container-page mt-8">
-        <form
-          onSubmit={submit}
-          className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-[1fr_0.8fr]"
-        >
-          <div className="rounded-xl border border-border bg-card p-5 shadow-soft md:p-6">
-            <div className="mb-5 flex items-center gap-2">
-              <UserRound className="h-4 w-4 text-primary" />
-              <h2 className="font-display text-lg font-semibold">
+            <nav className="profile-workspace-nav" aria-label="Account settings">
+              <span className="is-current" aria-current="page">
+                <UserRound aria-hidden="true" />
                 Profile details
-              </h2>
-            </div>
+              </span>
+              <span>
+                <Bell aria-hidden="true" />
+                Contact preferences
+              </span>
+              <span>
+                <ShieldCheck aria-hidden="true" />
+                Security
+              </span>
+            </nav>
 
-            <div className="space-y-7">
-              <section>
-                <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Identity
-                </h3>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <Field
-                    label="Full name"
-                    id="profile-name"
-                    icon={<UserRound />}
-                  >
-                    <div
-                      id="profile-name"
-                      className="input-control flex items-center bg-secondary/40 text-muted-foreground"
-                    >
-                      <span className="truncate text-foreground">
-                        {form.name || "Customer"}
-                      </span>
-                    </div>
-                  </Field>
-
-                  <Field
-                    label="Email address"
-                    id="profile-email"
-                    icon={<Mail />}
-                  >
-                    <div
-                      id="profile-email"
-                      className="input-control flex items-center bg-secondary/40 text-muted-foreground"
-                    >
-                      <span className="truncate text-foreground">
-                        {form.email}
-                      </span>
-                    </div>
-                  </Field>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Contact details
-                </h3>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <Field
-                    label="Contact No."
-                    id="profile-phone"
-                    icon={<Phone />}
-                  >
-                    <input
-                      id="profile-phone"
-                      value={form.phone}
-                      onChange={(event) =>
-                        updateField("phone", event.target.value)
-                      }
-                      className="input-control"
-                      autoComplete="tel"
-                      placeholder="+63 917 000 0000"
-                    />
-                  </Field>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Address
-                </h3>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <Field
-                    label="House no. / Street / Subdivision"
-                    id="profile-street"
-                    icon={<MapPin />}
-                  >
-                    <input
-                      id="profile-street"
-                      value={form.streetAddress}
-                      onChange={(event) =>
-                        updateField("streetAddress", event.target.value)
-                      }
-                      className="input-control"
-                      autoComplete="street-address"
-                    />
-                  </Field>
-
-                  <Field
-                    label="Barangay"
-                    id="profile-barangay"
-                    icon={<MapPin />}
-                  >
-                    <input
-                      id="profile-barangay"
-                      value={form.barangay}
-                      onChange={(event) =>
-                        updateField("barangay", event.target.value)
-                      }
-                      className="input-control"
-                    />
-                  </Field>
-
-                  <Field
-                    label="City / Municipality"
-                    id="profile-city"
-                    icon={<MapPin />}
-                  >
-                    <input
-                      id="profile-city"
-                      value={form.cityMunicipality}
-                      onChange={(event) =>
-                        updateField("cityMunicipality", event.target.value)
-                      }
-                      className="input-control"
-                    />
-                  </Field>
-
-                  <Field
-                    label="Province"
-                    id="profile-province"
-                    icon={<MapPin />}
-                  >
-                    <input
-                      id="profile-province"
-                      value={form.province}
-                      onChange={(event) =>
-                        updateField("province", event.target.value)
-                      }
-                      className="input-control"
-                    />
-                  </Field>
-
-                  <Field
-                    label="Postal code"
-                    id="profile-postal"
-                    icon={<MapPin />}
-                  >
-                    <input
-                      id="profile-postal"
-                      value={form.postalCode}
-                      onChange={(event) =>
-                        updateField("postalCode", event.target.value)
-                      }
-                      className="input-control"
-                      inputMode="numeric"
-                      autoComplete="postal-code"
-                    />
-                  </Field>
-                </div>
-              </section>
-            </div>
-
-            <div className="mt-6 flex flex-wrap justify-end gap-3">
-              <Link
-                to="/customer"
-                className="touch-target inline-flex items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
-              >
-                Cancel
+            <div className="profile-workspace-help">
+              <div className="profile-workspace-help-heading">
+                <CircleHelp aria-hidden="true" />
+                <h3>Need a hand?</h3>
+              </div>
+              <p>Our team is here to help with your account, bookings and more.</p>
+              <Link to="/contact" className="profile-workspace-help-link">
+                Contact the team
+                <ArrowRight aria-hidden="true" />
               </Link>
+            </div>
+          </aside>
+
+          <form onSubmit={submit} className="profile-workspace-form">
+            <div className="profile-workspace-intro">
+              <nav aria-label="Breadcrumb">
+                <Link to="/customer">Customer dashboard</Link>
+                <span aria-hidden="true">/</span>
+                <strong>Profile</strong>
+              </nav>
+              <h1>Profile details</h1>
+              <p className="profile-workspace-lead">Your booking details, kept in one place.</p>
+              <p>This helps Briah&apos;s coordinate your bookings and keep you updated about your rentals.</p>
+            </div>
+
+            <section className="profile-workspace-section">
+              <header>
+                <h2>About you</h2>
+                <p>Your name and account information.</p>
+              </header>
+              <div className="profile-workspace-two-column">
+                <Field label="Full name" id="profile-name">
+                  <div id="profile-name" className="profile-workspace-readonly">
+                    <span>{form.name || "Customer"}</span>
+                    <LockKeyhole aria-label="Account managed" />
+                  </div>
+                  <small>This is the name on your account and will be used for your bookings.</small>
+                </Field>
+                <Field label="Email" id="profile-email">
+                  <div id="profile-email" className="profile-workspace-readonly">
+                    <span>{form.email}</span>
+                    <LockKeyhole aria-label="Account managed" />
+                  </div>
+                  <small>Your email is account-managed and can&apos;t be changed here.</small>
+                </Field>
+              </div>
+            </section>
+
+            <section className="profile-workspace-section">
+              <header>
+                <h2>How we can reach you</h2>
+                <p>We&apos;ll use this to send booking updates and important reminders.</p>
+              </header>
+              <div className="profile-workspace-contact-field">
+                <Field label="Contact number" id="profile-phone">
+                  <input
+                    id="profile-phone"
+                    value={form.phone}
+                    onChange={(event) => updateField("phone", event.target.value)}
+                    className="profile-workspace-input"
+                    autoComplete="tel"
+                    placeholder="e.g. 0917 123 4567"
+                  />
+                </Field>
+              </div>
+            </section>
+
+            <section className="profile-workspace-section">
+              <header>
+                <h2>Saved delivery address <span>(optional)</span></h2>
+                <p>This helps with delivery, pickup and official documents, when needed.</p>
+              </header>
+              <div className="profile-workspace-address-grid">
+                <Field label="House no. / Street / Subdivision" id="profile-street">
+                  <input
+                    id="profile-street"
+                    value={form.streetAddress}
+                    onChange={(event) => updateField("streetAddress", event.target.value)}
+                    className="profile-workspace-input"
+                    autoComplete="street-address"
+                    placeholder="e.g. 123 Rizal Street, Greenwoods Subdivision"
+                  />
+                </Field>
+                <Field label="Barangay" id="profile-barangay">
+                  <input id="profile-barangay" value={form.barangay} onChange={(event) => updateField("barangay", event.target.value)} className="profile-workspace-input" placeholder="e.g. San Isidro" />
+                </Field>
+                <Field label="City / Municipality" id="profile-city">
+                  <input id="profile-city" value={form.cityMunicipality} onChange={(event) => updateField("cityMunicipality", event.target.value)} className="profile-workspace-input" placeholder="e.g. Makati" />
+                </Field>
+                <Field label="Province" id="profile-province">
+                  <input id="profile-province" value={form.province} onChange={(event) => updateField("province", event.target.value)} className="profile-workspace-input" placeholder="e.g. Metro Manila" />
+                </Field>
+                <Field label="Postal code" id="profile-postal">
+                  <input id="profile-postal" value={form.postalCode} onChange={(event) => updateField("postalCode", event.target.value)} className="profile-workspace-input" inputMode="numeric" autoComplete="postal-code" placeholder="e.g. 1200" />
+                </Field>
+              </div>
+            </section>
+
+            <div className="profile-workspace-actions">
               <button
                 type="submit"
-                disabled={saving}
-                className="touch-target inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={saving || !hasChanges}
+                className="profile-workspace-save"
               >
-                <Save className="h-4 w-4" />
+                <Save aria-hidden="true" />
                 {saving ? "Saving..." : "Save changes"}
               </button>
             </div>
-          </div>
-
-          <aside className="rounded-xl border border-border bg-card p-5 shadow-soft md:p-6">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-primary/25 bg-primary/15 font-display text-xl font-semibold text-primary">
-              {getInitials(form.name)}
-            </div>
-            <h2 className="mt-4 font-display text-xl font-semibold">
-              {form.name || "Customer"}
-            </h2>
-            <p className="mt-1 break-all text-sm text-muted-foreground">
-              {form.email}
-            </p>
-            <div className="mt-5 space-y-3 text-sm">
-              <ProfileLine
-                label="Contact No."
-                value={form.phone || "Not set"}
-              />
-              <ProfileLine
-                label="Address"
-                value={formatAddress(form) || "Not set"}
-              />
-            </div>
-          </aside>
-        </form>
-      </section>
+          </form>
+        </div>
+      </main>
 
       <Footer />
     </div>
   );
 }
 
-function Field({
-  label,
-  id,
-  icon,
-  children,
-}: {
-  label: string;
-  id: string;
-  icon: React.ReactElement;
-  children: React.ReactNode;
-}) {
+function ProfileWorkspaceSkeleton() {
   return (
-    <label className="block" htmlFor={id}>
-      <span className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-        {icon && <span className="[&_svg]:h-3.5 [&_svg]:w-3.5">{icon}</span>}
-        {label}
-      </span>
-      {children}
-    </label>
-  );
-}
+    <div className="profile-workspace-page">
+      <Header />
+      <main
+        id="main-content"
+        className="profile-workspace-main profile-workspace-skeleton"
+        aria-busy="true"
+        aria-label="Loading profile details"
+      >
+        <div className="customer-container profile-workspace-shell">
+          <aside className="profile-workspace-rail" aria-hidden="true">
+            <div className="profile-workspace-skeleton-avatar" />
+            <i className="profile-workspace-skeleton-name" />
+            <i className="profile-workspace-skeleton-email" />
+            <div className="profile-workspace-skeleton-nav">
+              <i />
+              <i />
+              <i />
+            </div>
+            <div className="profile-workspace-skeleton-help">
+              <i />
+              <i />
+              <i />
+            </div>
+          </aside>
 
-function ProfileLine({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-md border border-border bg-secondary/30 px-3 py-2">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </div>
-      <div className="mt-1 break-words text-foreground">{value}</div>
+          <section className="profile-workspace-form" aria-hidden="true">
+            <div className="profile-workspace-skeleton-intro">
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+            <ProfileSkeletonSection fields={2} withHelp />
+            <ProfileSkeletonSection fields={1} />
+            <ProfileSkeletonSection fields={5} wideFirst />
+            <div className="profile-workspace-skeleton-actions">
+              <i />
+              <i />
+            </div>
+          </section>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }
 
-function formatAddress(
-  profile: Pick<
-    ProfileForm,
-    | "streetAddress"
-    | "barangay"
-    | "cityMunicipality"
-    | "province"
-    | "postalCode"
-  >,
-) {
-  return [
-    profile.streetAddress,
-    profile.barangay,
-    profile.cityMunicipality,
-    profile.province,
-    profile.postalCode,
-  ]
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .join(", ");
+function ProfileSkeletonSection({
+  fields,
+  wideFirst = false,
+  withHelp = false,
+}: {
+  fields: number;
+  wideFirst?: boolean;
+  withHelp?: boolean;
+}) {
+  return (
+    <section className="profile-workspace-skeleton-section">
+      <i className="profile-workspace-skeleton-section-title" />
+      <i className="profile-workspace-skeleton-section-copy" />
+      <div
+        className={`profile-workspace-skeleton-fields${
+          wideFirst ? " has-wide-first" : ""
+        }${fields === 1 ? " is-single" : ""}`}
+      >
+        {Array.from({ length: fields }, (_, index) => (
+          <div key={index}>
+            <i />
+            <i />
+            {withHelp ? <i /> : null}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function profileFieldsDiffer(current: ProfileForm, saved: ProfileForm) {
+  return (
+    current.phone !== saved.phone ||
+    current.streetAddress !== saved.streetAddress ||
+    current.barangay !== saved.barangay ||
+    current.cityMunicipality !== saved.cityMunicipality ||
+    current.province !== saved.province ||
+    current.postalCode !== saved.postalCode
+  );
+}
+
+function Field({
+  label,
+  id,
+  children,
+}: {
+  label: string;
+  id: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="profile-workspace-field" htmlFor={id}>
+      <span>{label}</span>
+      {children}
+    </label>
+  );
 }
 
 function getInitials(name: string) {
