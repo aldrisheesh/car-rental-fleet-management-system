@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import type { RentalFinancialRecord } from "@/lib/rental-finance";
 import { createHash } from "node:crypto";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -29,18 +30,20 @@ export const Route = createFileRoute("/api/bookings")({
           .clone()
           .json()
           .catch(() => null)) as Record<string, unknown> | null;
-        return body?.action === "withdraw"
-          ? withdrawBooking({ request })
-          : body?.action === "edit"
-            ? editDraftBooking({ request })
-          : body?.action === "assign" ||
-          body?.action === "confirm" ||
-          body?.action === "cancel" ||
-          body?.action === "reject" ||
-          body?.action === "release" ||
-          body?.action === "return"
-          ? mutateBooking({ request })
-          : createBooking({ request });
+        return body?.action === "pickup-arrangement"
+          ? savePickupArrangement({ request })
+          : body?.action === "withdraw"
+            ? withdrawBooking({ request })
+            : body?.action === "edit"
+              ? editDraftBooking({ request })
+              : body?.action === "assign" ||
+                  body?.action === "confirm" ||
+                  body?.action === "cancel" ||
+                  body?.action === "reject" ||
+                  body?.action === "release" ||
+                  body?.action === "return"
+                ? mutateBooking({ request })
+                : createBooking({ request });
       },
     },
   },
@@ -117,31 +120,96 @@ async function readBookings({ request }: { request: Request }) {
     rows.forEach((booking: any) => {
       booking.finder_context = finderMap.get(booking.id) ?? null;
     });
+    if (principal.role !== "Operations Staff" && bookingIds.length) {
+      const [quotes, finances] = await Promise.all([
+        client
+          .from("booking_payment_quotes")
+          .select("*")
+          .in("booking_id", bookingIds),
+        client
+          .from("rental_financial_records")
+          .select("*")
+          .in("booking_id", bookingIds),
+      ]);
+      if (quotes.error || finances.error)
+        return errorResponse("Unable to load rental financial records.", 503);
+      const quoteMap = new Map(
+        (quotes.data ?? []).map((q: { booking_id: string }) => [
+          q.booking_id,
+          q,
+        ]),
+      );
+      const financeMap = new Map(
+        (finances.data ?? []).map(
+          (f: RentalFinancialRecord & { booking_id: string }) => [
+            f.booking_id,
+            f,
+          ],
+        ),
+      );
+      for (const b of rows) {
+        const f = financeMap.get(b.id);
+        b.payment_quote = quoteMap.get(b.id) ?? null;
+        b.financial_record = f
+          ? {
+              balance_collected: f.balance_collected,
+              deposit_collected: f.deposit_collected,
+              collection_method: f.collection_method,
+              collection_reference: f.collection_reference,
+              collected_at: f.collected_at,
+              deposit_deduction: f.deposit_deduction,
+              deduction_reason: f.deduction_reason,
+              deposit_refunded: f.deposit_refunded,
+              refund_method: f.refund_method,
+              refund_reference: f.refund_reference,
+              settled_at: f.settled_at,
+            }
+          : null;
+      }
+    }
     if (principal.role === "Customer/Renter") {
+      const quoteResult = bookingIds.length
+        ? await (client as any)
+            .from("booking_payment_quotes")
+            .select("booking_id")
+            .in("booking_id", bookingIds)
+        : { data: [], error: null };
+      if (quoteResult.error)
+        return errorResponse("Unable to load booking arrangements.", 503);
+      const quotedBookings = new Set(
+        (quoteResult.data ?? []).map((quote: any) => quote.booking_id),
+      );
       const customerBookings = rows.map((b: any) => {
-          const {
-            assigned_by,
-            assigned_at,
-            assignment_note,
-            substitution_acknowledged,
-            cross_branch_acknowledged,
-            confirmed_by,
-            confirmed_at,
-            ...customerBooking
-          } = b;
-          void assigned_by;
-          void assigned_at;
-          void assignment_note;
-          void substitution_acknowledged;
-          void cross_branch_acknowledged;
-          void confirmed_by;
-          void confirmed_at;
-          const rental = customerBooking.rental as Record<
-            string,
-            unknown
-          > | null;
-          return { ...customerBooking, rental: projectCustomerRental(rental) };
-        });
+        const {
+          assigned_by,
+          assigned_at,
+          assignment_note,
+          substitution_acknowledged,
+          cross_branch_acknowledged,
+          confirmed_by,
+          confirmed_at,
+          ...customerBooking
+        } = b;
+        void assigned_by;
+        void assigned_at;
+        void assignment_note;
+        void substitution_acknowledged;
+        void cross_branch_acknowledged;
+        void confirmed_by;
+        void confirmed_at;
+        const rental = customerBooking.rental as Record<string, unknown> | null;
+        if (
+          customerBooking.booking_status !== "Confirmed" &&
+          !rental &&
+          !quotedBookings.has(customerBooking.id)
+        ) {
+          customerBooking.pickup_meeting_address = null;
+          customerBooking.pickup_meeting_instructions = null;
+          customerBooking.return_meeting_address = null;
+          customerBooking.return_meeting_instructions = null;
+        }
+        return { ...customerBooking, rental: projectCustomerRental(rental) };
+      });
 
       if (url.searchParams.get("view") === "dashboard") {
         const [requirementsResult, paymentsResult, vehiclesResult] =
@@ -149,7 +217,9 @@ async function readBookings({ request }: { request: Request }) {
             bookingIds.length
               ? (client as any)
                   .from("renter_requirement_sets")
-                  .select("id,booking_id,customer_id,status,submitted_at,updated_at")
+                  .select(
+                    "id,booking_id,customer_id,status,submitted_at,updated_at",
+                  )
                   .eq("customer_id", principal.userId)
                   .in("booking_id", bookingIds)
               : { data: [], error: null },
@@ -168,20 +238,17 @@ async function readBookings({ request }: { request: Request }) {
                   .select(
                     "id,name,license_plate,transmission,fuel_type,seat_capacity,large_luggage_capacity,daily_rate,image_url,branch:branches(id,name),category:vehicle_categories(id,name)",
                   )
-                  .in(
-                    "id",
-                    [
-                      ...new Set(
-                        rows
-                          .flatMap((booking: any) => [
-                            booking.rental?.vehicle_id,
-                            booking.assigned_vehicle?.id,
-                            booking.requested_vehicle?.id,
-                          ])
-                          .filter(Boolean),
-                      ),
-                    ],
-                  )
+                  .in("id", [
+                    ...new Set(
+                      rows
+                        .flatMap((booking: any) => [
+                          booking.rental?.vehicle_id,
+                          booking.assigned_vehicle?.id,
+                          booking.requested_vehicle?.id,
+                        ])
+                        .filter(Boolean),
+                    ),
+                  ])
               : { data: [], error: null },
           ]);
         if (
@@ -337,7 +404,9 @@ async function mutateBooking({ request }: { request: Request }) {
     const bookingId = text(body?.bookingId);
     if (
       !bookingId ||
-      !["assign", "confirm", "cancel", "reject", "release", "return"].includes(action)
+      !["assign", "confirm", "cancel", "reject", "release", "return"].includes(
+        action,
+      )
     )
       return errorResponse("Invalid booking action.");
     let expectedVehicleId = text(body?.expectedAssignedVehicleId);
@@ -358,7 +427,10 @@ async function mutateBooking({ request }: { request: Request }) {
     }
     if (action === "cancel") {
       if (!text(body?.expectedConfirmedAt))
-        return errorResponse("Reload the confirmed booking before cancelling.", 409);
+        return errorResponse(
+          "Reload the confirmed booking before cancelling.",
+          409,
+        );
       if (!text(body?.cancellationReason))
         return errorResponse("A cancellation reason is required.");
     }
@@ -413,9 +485,11 @@ async function mutateBooking({ request }: { request: Request }) {
         const message =
           assigned.error.code === "23505"
             ? "Requested vehicle already has an active rental."
-            : assigned.error.message === "vehicle_conflict"
-              ? "The requested vehicle conflicts with another confirmed booking."
-              : "Unable to reserve the requested vehicle.";
+            : assigned.error.message === "vehicle_inspection_pending"
+              ? "Complete the vehicle return inspection in Fleet before confirming this rental."
+              : assigned.error.message === "vehicle_conflict"
+                ? "The requested vehicle conflicts with another confirmed booking."
+                : "Unable to reserve the requested vehicle.";
         return errorResponse(message, 409);
       }
     }
@@ -451,52 +525,43 @@ async function mutateBooking({ request }: { request: Request }) {
                 p_expected_confirmed_at: text(body?.expectedConfirmedAt),
                 p_cancellation_reason: text(body?.cancellationReason),
               })
-          : action === "reject"
-            ? await client.rpc("reject_unconfirmed_booking_atomic", {
-                p_booking_id: bookingId,
-                p_actor_id: principal.userId,
-                p_reason: text(body?.resolutionReason),
-              })
-          : action === "release"
-            ? await client.rpc("release_vehicle_start_rental", {
-                p_booking_id: bookingId,
-                p_actor_id: principal.userId,
-                p_expected_vehicle_id: expectedVehicleId,
-                p_expected_confirmed_at: text(body?.expectedConfirmedAt),
-                p_release_odometer:
-                  body?.releaseOdometer == null || body.releaseOdometer === ""
-                    ? null
-                    : Number(body.releaseOdometer),
-                p_release_fuel_level:
-                  text(body?.releaseFuelLevel) || "Other/Unknown",
-                p_release_condition_summary: text(
-                  body?.releaseConditionSummary,
-                ),
-                p_existing_damage_notes: optionalText(
-                  body?.existingDamageNotes,
-                ),
-                p_agreement_acknowledged: body?.agreementAcknowledged === true,
-                p_condition_acknowledged: body?.conditionAcknowledged === true,
-                p_return_schedule_acknowledged:
-                  body?.returnScheduleAcknowledged === true,
-              })
-            : await client.rpc("return_vehicle_close_rental", {
-                p_rental_id: text(body?.rentalId),
-                p_actor_id: principal.userId,
-                p_expected_booking_id: text(body?.expectedBookingId),
-                p_expected_vehicle_id: text(body?.expectedVehicleId),
-                p_expected_started_at: text(body?.expectedStartedAt),
-                p_return_odometer: returnOdometer,
-                p_return_fuel_level:
-                  text(body?.returnFuelLevel) || "Other/Unknown",
-                p_return_condition_summary: text(body?.returnConditionSummary),
-                p_observed_damage_notes: optionalText(
-                  body?.observedDamageNotes,
-                ),
-                p_return_remarks: optionalText(body?.returnRemarks),
-              });
+            : action === "reject"
+              ? await client.rpc("reject_unconfirmed_booking_atomic", {
+                  p_booking_id: bookingId,
+                  p_actor_id: principal.userId,
+                  p_reason: text(body?.resolutionReason),
+                })
+              : action === "release"
+                ? await client.rpc("release_rental_with_collection", {
+                    p_booking_id: bookingId,
+                    p_actor_id: principal.userId,
+                    p_payload: body,
+                  })
+                : await client.rpc("close_rental_with_settlement", {
+                    p_booking_id: bookingId,
+                    p_actor_id: principal.userId,
+                    p_payload: body,
+                  });
     if (rpc.error) {
       const map: Record<string, string> = {
+        release_day_not_reached:
+          "Release is available from the scheduled pickup or delivery day. Review any date change with the customer first.",
+        rental_window_elapsed:
+          "The scheduled rental period has ended. Review the dates before release.",
+        quote_required_for_release:
+          "A saved rental quote is required before release.",
+        handover_collection_required:
+          "Confirm collection of the remaining rental balance and security deposit before release.",
+        collection_details_required:
+          "Select a collection method and record a reference for electronic payments.",
+        release_acknowledgements_required:
+          "Complete all handover acknowledgements before release.",
+        invalid_deposit_settlement:
+          "Check the deposit deduction, its reason, and the refund amount.",
+        refund_acknowledgement_required:
+          "Confirm the deposit refund or documented deduction before closing the rental.",
+        refund_details_required:
+          "Select a refund method and record a reference for electronic refunds.",
         forbidden: "Forbidden.",
         booking_not_found: "Booking not found.",
         booking_not_submitted: "Booking is no longer submitted.",
@@ -506,9 +571,10 @@ async function mutateBooking({ request }: { request: Request }) {
           "Booking confirmation changed; reload before cancelling.",
         cancellation_reason_required: "A cancellation reason is required.",
         resolution_reason_required: "A rejection reason is required.",
-        booking_not_unconfirmed:
-          "Only unfinished requests can be rejected.",
+        booking_not_unconfirmed: "Only unfinished requests can be rejected.",
         vehicle_unavailable: "Assigned vehicle is unavailable.",
+        vehicle_inspection_pending:
+          "Complete the vehicle return inspection in Fleet before confirming or releasing this rental.",
         vehicle_maintenance_unready:
           "Assigned vehicle is blocked by maintenance or a due service requirement.",
         vehicle_conflict: "Vehicle conflicts with another confirmed booking.",
@@ -531,6 +597,8 @@ async function mutateBooking({ request }: { request: Request }) {
         payment_not_verified: "Payment must be Verified before confirmation.",
         pickup_window_elapsed:
           "The pickup time has passed. Review the schedule with the customer.",
+        pickup_arrangement_required:
+          "Save the agreed pickup and return meeting points and instructions before confirming this rental.",
         assignment_required: "Assign an active vehicle before confirmation.",
         assignment_expectation_required:
           "Reload the current assignment before confirming.",
@@ -564,10 +632,14 @@ async function withdrawBooking({ request }: { request: Request }) {
     const principal = await requirePrincipal();
     if (principal.role !== "Customer/Renter")
       return errorResponse("Customer access is required.", 403);
-    const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+    const body = (await request.json().catch(() => null)) as Record<
+      string,
+      unknown
+    > | null;
     const bookingId = text(body?.bookingId);
     const reason = text(body?.resolutionReason);
-    if (!bookingId || !reason) return errorResponse("A withdrawal reason is required.");
+    if (!bookingId || !reason)
+      return errorResponse("A withdrawal reason is required.");
     const client = getSupabaseServerClient() as any;
     const result = await client.rpc("withdraw_customer_booking_atomic", {
       p_booking_id: bookingId,
@@ -577,18 +649,24 @@ async function withdrawBooking({ request }: { request: Request }) {
     if (result.error) {
       const messages: Record<string, string> = {
         booking_not_found: "Booking not found.",
-        booking_not_withdrawable: "This request can no longer be withdrawn online.",
+        booking_not_withdrawable:
+          "This request can no longer be withdrawn online.",
         payment_resolution_required:
           "Contact Briah to resolve a payment before withdrawing this request.",
         booking_already_released: "This rental has already started.",
         resolution_reason_required: "A withdrawal reason is required.",
       };
-      return errorResponse(messages[result.error.message] ?? "Unable to withdraw this request.", 409);
+      return errorResponse(
+        messages[result.error.message] ?? "Unable to withdraw this request.",
+        409,
+      );
     }
     return Response.json({ booking: result.data });
   } catch (error) {
     return errorResponse(
-      error instanceof Error && error.message === "forbidden" ? "Forbidden." : "Authentication required.",
+      error instanceof Error && error.message === "forbidden"
+        ? "Forbidden."
+        : "Authentication required.",
       error instanceof Error && error.message === "forbidden" ? 403 : 401,
     );
   }
@@ -671,7 +749,8 @@ async function editDraftBooking({ request }: { request: Request }) {
         vehicle_change_not_supported:
           "Choose a different car by starting a new rental request.",
         vehicle_not_available: "The selected car is no longer available.",
-        branch_not_available: "One of the selected branches is no longer available.",
+        branch_not_available:
+          "One of the selected branches is no longer available.",
         invalid_dates: "Return must be after pickup.",
         invalid_pickup_option: "Invalid pickup or delivery option.",
         delivery_locations_required:
@@ -921,4 +1000,66 @@ function isUuid(value: string) {
 
 function bookingCreationFingerprint(value: Record<string, unknown>) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
+}
+
+async function savePickupArrangement({ request }: { request: Request }) {
+  try {
+    const principal = await requirePrincipal();
+    if (principal.role !== "Owner/Admin")
+      return errorResponse("Owner/Admin access is required.", 403);
+    const body = await request.json().catch(() => null);
+    const bookingId = text(body?.bookingId);
+    const expected = text(body?.expectedUpdatedAt);
+    const addresses = [text(body?.pickupAddress), text(body?.returnAddress)];
+    const instructions = [
+      text(body?.pickupInstructions),
+      text(body?.returnInstructions),
+    ];
+    if (
+      !isUuid(bookingId) ||
+      !expected ||
+      !Number.isFinite(Date.parse(expected)) ||
+      addresses.some((v) => !v || v.length > 500) ||
+      instructions.some((v) => !v || v.length > 1500)
+    )
+      return errorResponse(
+        "Enter both meeting addresses and instructions, then save again.",
+      );
+    const client = getSupabaseServerClient() as unknown as {
+      rpc: (
+        name: string,
+        args: Record<string, unknown>,
+      ) => Promise<{
+        data: unknown;
+        error: { message: string } | null;
+      }>;
+    };
+    const result = await client.rpc("save_booking_pickup_arrangement", {
+      p_booking_id: bookingId,
+      p_actor_id: principal.userId,
+      p_expected_updated_at: expected,
+      p_pickup_address: addresses[0],
+      p_return_address: addresses[1],
+      p_pickup_instructions: instructions[0],
+      p_return_instructions: instructions[1],
+    });
+    if (result.error) {
+      const messages: Record<string, string> = {
+        stale_booking:
+          "This booking changed. Reload it before saving the meeting details.",
+        arrangement_not_editable:
+          "Meeting details cannot be changed after release or for this booking state.",
+        booking_not_found: "Booking not found.",
+        pickup_arrangement_required:
+          "Enter both meeting addresses and instructions.",
+      };
+      return errorResponse(
+        messages[result.error.message] ?? "Unable to save pickup arrangements.",
+        409,
+      );
+    }
+    return Response.json({ booking: result.data });
+  } catch {
+    return errorResponse("Authentication required.", 401);
+  }
 }

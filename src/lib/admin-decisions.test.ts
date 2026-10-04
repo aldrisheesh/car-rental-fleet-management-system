@@ -292,7 +292,7 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
   assert.match(page, /setSupportVersion\(\(version\) => version \+ 1\)/);
   assert.match(
     page,
-    /\[analyticsRange\.end, analyticsRange\.start, supportVersion\]/,
+    /\[\s*analyticsRange\.start,\s*analyticsRange\.end,\s*vehicleRefreshVersion,\s*supportVersion,?\s*\]/,
   );
   assert.match(page, /latestForecastIds/);
   assert.match(page, /currentSupplyRows/);
@@ -305,7 +305,11 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
   assert.match(page, /Unresolved shortage evidence/);
   assert.match(page, /Auditable decision trace/);
   assert.match(page, /External context/);
-  assert.match(page, /do not change the WMA demand forecast/);
+  const review = await readFile(
+    new URL("../components/admin/allocation-review.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(review, /do not change WMA demand/);
   assert.match(page, /No compatible donor is available/);
   assert.match(page, /blocked by a booking, rental, maintenance/);
   assert.match(page, /forecastError \|\| allocationError \|\| forecastNotice/);
@@ -318,10 +322,10 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
   assert.match(page, /selectedBranchId === "all"/);
   assert.match(page, /Forecast horizon:/);
   assert.match(page, /Auditable WMA example/);
-  assert.match(page, /planning requirement rounds up to/);
+  assert.match(page, /planning\s+requirement rounds up to/);
   assert.match(page, /supplyWeekSummaries\.map\(\(summary\) =>/);
   assert.match(page, /Automatic readiness snapshots/);
-  assert.match(page, /approvedUnits/);
+  assert.match(review, /approvedUnits/);
   assert.doesNotMatch(page, /window\.prompt/);
   assert.doesNotMatch(page, /High priority|expected unmet rental|revenue/i);
   assert.doesNotMatch(

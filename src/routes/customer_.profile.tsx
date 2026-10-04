@@ -11,7 +11,6 @@ import {
   CircleHelp,
   LockKeyhole,
   Save,
-  ShieldCheck,
   UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -106,13 +105,12 @@ function CustomerProfilePage() {
       .finally(() => setProfileLoading(false));
   }, [navigate]);
 
-  if (session === undefined || profileLoading) return <ProfileWorkspaceSkeleton />;
+  if (session === undefined || profileLoading)
+    return <ProfileWorkspaceSkeleton />;
 
   if (session === null) return null;
 
-  const hasChanges =
-    savedForm !== null &&
-    profileFieldsDiffer(form, savedForm);
+  const hasChanges = savedForm !== null && profileFieldsDiffer(form, savedForm);
 
   function updateField(field: keyof ProfileForm, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -180,19 +178,18 @@ function CustomerProfilePage() {
               <p>{form.email}</p>
             </div>
 
-            <nav className="profile-workspace-nav" aria-label="Account settings">
+            <nav
+              className="profile-workspace-nav"
+              aria-label="Account settings"
+            >
               <span className="is-current" aria-current="page">
                 <UserRound aria-hidden="true" />
                 Profile details
               </span>
-              <span>
+              <Link to="/customer/notifications">
                 <Bell aria-hidden="true" />
-                Contact preferences
-              </span>
-              <span>
-                <ShieldCheck aria-hidden="true" />
-                Security
-              </span>
+                Email preferences
+              </Link>
             </nav>
 
             <div className="profile-workspace-help">
@@ -200,7 +197,9 @@ function CustomerProfilePage() {
                 <CircleHelp aria-hidden="true" />
                 <h3>Need a hand?</h3>
               </div>
-              <p>Our team is here to help with your account, bookings and more.</p>
+              <p>
+                Our team is here to help with your account, bookings and more.
+              </p>
               <Link to="/contact" className="profile-workspace-help-link">
                 Contact the team
                 <ArrowRight aria-hidden="true" />
@@ -216,8 +215,13 @@ function CustomerProfilePage() {
                 <strong>Profile</strong>
               </nav>
               <h1>Profile details</h1>
-              <p className="profile-workspace-lead">Your booking details, kept in one place.</p>
-              <p>This helps Briah&apos;s coordinate your bookings and keep you updated about your rentals.</p>
+              <p className="profile-workspace-lead">
+                Your booking details, kept in one place.
+              </p>
+              <p>
+                This helps Briah&apos;s coordinate your bookings and keep you
+                updated about your rentals.
+              </p>
             </div>
 
             <section className="profile-workspace-section">
@@ -231,14 +235,23 @@ function CustomerProfilePage() {
                     <span>{form.name || "Customer"}</span>
                     <LockKeyhole aria-label="Account managed" />
                   </div>
-                  <small>This is the name on your account and will be used for your bookings.</small>
+                  <small>
+                    This is the name on your account and will be used for your
+                    bookings.
+                  </small>
                 </Field>
                 <Field label="Email" id="profile-email">
-                  <div id="profile-email" className="profile-workspace-readonly">
+                  <div
+                    id="profile-email"
+                    className="profile-workspace-readonly"
+                  >
                     <span>{form.email}</span>
                     <LockKeyhole aria-label="Account managed" />
                   </div>
-                  <small>Your email is account-managed and can&apos;t be changed here.</small>
+                  <small>
+                    Your email is account-managed and can&apos;t be changed
+                    here.
+                  </small>
                 </Field>
               </div>
             </section>
@@ -246,14 +259,19 @@ function CustomerProfilePage() {
             <section className="profile-workspace-section">
               <header>
                 <h2>How we can reach you</h2>
-                <p>We&apos;ll use this to send booking updates and important reminders.</p>
+                <p>
+                  We&apos;ll use this to send booking updates and important
+                  reminders.
+                </p>
               </header>
               <div className="profile-workspace-contact-field">
                 <Field label="Contact number" id="profile-phone">
                   <input
                     id="profile-phone"
                     value={form.phone}
-                    onChange={(event) => updateField("phone", event.target.value)}
+                    onChange={(event) =>
+                      updateField("phone", event.target.value)
+                    }
                     className="profile-workspace-input"
                     autoComplete="tel"
                     placeholder="e.g. 0917 123 4567"
@@ -264,31 +282,75 @@ function CustomerProfilePage() {
 
             <section className="profile-workspace-section">
               <header>
-                <h2>Saved delivery address <span>(optional)</span></h2>
-                <p>This helps with delivery, pickup and official documents, when needed.</p>
+                <h2>
+                  Saved delivery address <span>(optional)</span>
+                </h2>
+                <p>
+                  This helps with delivery, pickup and official documents, when
+                  needed.
+                </p>
               </header>
               <div className="profile-workspace-address-grid">
-                <Field label="House no. / Street / Subdivision" id="profile-street">
+                <Field
+                  label="House no. / Street / Subdivision"
+                  id="profile-street"
+                >
                   <input
                     id="profile-street"
                     value={form.streetAddress}
-                    onChange={(event) => updateField("streetAddress", event.target.value)}
+                    onChange={(event) =>
+                      updateField("streetAddress", event.target.value)
+                    }
                     className="profile-workspace-input"
                     autoComplete="street-address"
                     placeholder="e.g. 123 Rizal Street, Greenwoods Subdivision"
                   />
                 </Field>
                 <Field label="Barangay" id="profile-barangay">
-                  <input id="profile-barangay" value={form.barangay} onChange={(event) => updateField("barangay", event.target.value)} className="profile-workspace-input" placeholder="e.g. San Isidro" />
+                  <input
+                    id="profile-barangay"
+                    value={form.barangay}
+                    onChange={(event) =>
+                      updateField("barangay", event.target.value)
+                    }
+                    className="profile-workspace-input"
+                    placeholder="e.g. San Isidro"
+                  />
                 </Field>
                 <Field label="City / Municipality" id="profile-city">
-                  <input id="profile-city" value={form.cityMunicipality} onChange={(event) => updateField("cityMunicipality", event.target.value)} className="profile-workspace-input" placeholder="e.g. Makati" />
+                  <input
+                    id="profile-city"
+                    value={form.cityMunicipality}
+                    onChange={(event) =>
+                      updateField("cityMunicipality", event.target.value)
+                    }
+                    className="profile-workspace-input"
+                    placeholder="e.g. Makati"
+                  />
                 </Field>
                 <Field label="Province" id="profile-province">
-                  <input id="profile-province" value={form.province} onChange={(event) => updateField("province", event.target.value)} className="profile-workspace-input" placeholder="e.g. Metro Manila" />
+                  <input
+                    id="profile-province"
+                    value={form.province}
+                    onChange={(event) =>
+                      updateField("province", event.target.value)
+                    }
+                    className="profile-workspace-input"
+                    placeholder="e.g. Metro Manila"
+                  />
                 </Field>
                 <Field label="Postal code" id="profile-postal">
-                  <input id="profile-postal" value={form.postalCode} onChange={(event) => updateField("postalCode", event.target.value)} className="profile-workspace-input" inputMode="numeric" autoComplete="postal-code" placeholder="e.g. 1200" />
+                  <input
+                    id="profile-postal"
+                    value={form.postalCode}
+                    onChange={(event) =>
+                      updateField("postalCode", event.target.value)
+                    }
+                    className="profile-workspace-input"
+                    inputMode="numeric"
+                    autoComplete="postal-code"
+                    placeholder="e.g. 1200"
+                  />
                 </Field>
               </div>
             </section>

@@ -1,5 +1,27 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  redirect,
+  useRouterState,
+} from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { VehicleUtilizationScreen } from "@/components/admin/vehicle-utilization-screen";
+import {
+  reportingRangeError,
+  type VehicleAnalyticsRow,
+} from "@/lib/utilization-workspace";
+import { FleetAllocationScreen } from "@/components/admin/fleet-allocation-screen";
+import {
+  allocationGenerationBlock,
+  filterAllocationRows,
+  filterAllocationGaps,
+  selectAllocationId,
+  type AllocationSummary,
+} from "@/lib/allocation-workspace";
+import { buildFocusedForecastChart } from "@/lib/forecast-chart";
+import { DemandForecastScreen } from "@/components/admin/demand-forecast-screen";
+import { dssView, parseDssSearch } from "@/lib/dss-navigation";
 import {
   CartesianGrid,
   Line,
@@ -19,11 +41,12 @@ import {
   CircleDot,
   Info,
 } from "lucide-react";
-import { Badge, Btn } from "@/components/admin/ui";
 import {
-  OperationalContextPanel,
-  type OperationalContextView,
-} from "@/components/admin/operational-context-panel";
+  AllocationReview,
+  type AllocationReviewContext,
+} from "@/components/admin/allocation-review";
+import { selectedContext, type AllocationRow } from "@/lib/allocation-review";
+import { Badge, Btn } from "@/components/admin/ui";
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 import {
   buildWmaCalculation,
@@ -37,6 +60,7 @@ import {
   type CanonicalForecastRun,
   type CanonicalSupplyEvaluation,
 } from "@/lib/admin-decisions";
+import { formatWeekRange, weekEndFromStart } from "@/lib/planning-week";
 import { addDays, dayKey } from "@/lib/vehicle-analytics-intervals";
 
 export const Route = createFileRoute("/admin/decisions")({
@@ -49,6 +73,7 @@ export const Route = createFileRoute("/admin/decisions")({
     // resolved; this route does not broaden access.
     if (isStaffRole(session.role)) throw redirect({ to: "/admin" });
   },
+  validateSearch: parseDssSearch,
   component: DecisionPage,
 });
 
@@ -72,82 +97,11 @@ type ForecastResponse = {
   finalizableForecasts?: number;
 };
 
-type VehicleAnalyticsRow = {
-  vehicleId: string;
-  name: string;
-  licensePlate: string | null;
-  branch: string | null;
-  reportingStart: string;
-  reportingEnd: string;
-  coverage: "Complete" | "Partial/Insufficient Historical Eligibility Data";
-  rentalDays: number;
-  eligibleOperationalDays: number | null;
-  utilizationPercent: number | null;
-  idleDays: number | null;
-  idleClassification: "Idle" | "Not Idle" | "Unable to Determine";
-};
-
 type SupplyResponse = { evaluations: CanonicalSupplyEvaluation[] };
 type VehicleAnalyticsResponse = { vehicles: VehicleAnalyticsRow[] };
-type AllocationSummary = {
-  evaluatedPositions: number;
-  shortagePositions: number;
-  surplusPositions: number;
-  generatedRecommendations: number;
-  unresolvedShortages: Array<{
-    evaluationId: string;
-    branchId: string;
-    categoryId: string;
-    horizon: number;
-    targetWeekStart: string;
-    targetWeekEnd: string;
-    shortageUnits: number;
-    recommendedUnits: number;
-    unresolvedUnits: number;
-    compatibleSourceCount: number;
-    eligibleCandidateCount: number;
-    reason:
-      | "NoCompatibleSurplus"
-      | "NoEligibleCandidates"
-      | "InsufficientEligibleCandidates"
-      | "NoRemainingCapacity";
-  }>;
-};
 type AllocationResponse = {
   recommendations?: AllocationRow[];
   summary?: AllocationSummary;
-};
-type AllocationCandidateRow = {
-  id: string;
-  vehicle_id: string;
-  vehicle_name_snapshot: string;
-  license_plate_snapshot: string | null;
-  candidate_rank: number;
-  idle_days_snapshot: number | null;
-};
-type AllocationRow = {
-  id: string;
-  batch_id: string;
-  created_at: string;
-  source_supply_evaluation_id: string;
-  destination_supply_evaluation_id: string;
-  destination_branch_name: string;
-  source_branch_name: string;
-  vehicle_category_name: string;
-  target_week_start: string;
-  target_week_end: string;
-  forecast_horizon: number;
-  decision_state: "Pending" | "Approved" | "Rejected";
-  destination_shortage_snapshot: number;
-  source_surplus_snapshot: number;
-  recommended_transfer_units: number;
-  destination_required_units_snapshot: number;
-  destination_projected_supply_snapshot: number;
-  source_required_units_snapshot: number;
-  source_projected_supply_snapshot: number;
-  destination_evaluated_at: string | null;
-  source_evaluated_at: string | null;
-  candidates: AllocationCandidateRow[];
 };
 
 async function readApi<T>(input: RequestInfo | URL, init?: RequestInit) {
@@ -243,119 +197,6 @@ function scrollToSection(id: string) {
   target.focus({ preventScroll: true });
 }
 
-function weekEndFromStart(day: string) {
-  const value = new Date(`${day}T00:00:00+08:00`);
-  value.setUTCDate(value.getUTCDate() + 7);
-  return value.toISOString().slice(0, 10);
-}
-
-function formatWeekRange(start: string, end: string) {
-  const inclusiveEnd = new Date(`${end}T00:00:00+08:00`);
-  inclusiveEnd.setUTCDate(inclusiveEnd.getUTCDate() - 1);
-  return `${formatDay(start)} – ${formatDay(inclusiveEnd.toISOString().slice(0, 10))}`;
-}
-
-type ForecastChartPoint = {
-  d: string;
-  weekEnd: string;
-  [key: string]: string | number | undefined;
-};
-
-type ForecastChartSeries = {
-  branchId: string;
-  label: string;
-  actualKey: string;
-  forecastKey: string;
-  color: string;
-};
-
-function buildFocusedForecastChart(rows: CanonicalForecast[]) {
-  const points = new Map<string, ForecastChartPoint>();
-  const branches = [
-    ...new Map(
-      rows.map((row) => [row.branch_id, row.branch?.name ?? row.branch_id]),
-    ),
-  ];
-  const isMultiBranch = branches.length > 1;
-  // Teal and violet remain distinct for common color-vision differences and
-  // make branch comparisons legible at a glance.
-  const palette = ["#007c70", "#6650a4", "#b54708", "#0f6cbd"];
-  const series: ForecastChartSeries[] = branches.map(
-    ([branchId, label], index) => ({
-      branchId,
-      label,
-      actualKey: isMultiBranch ? `actual-${branchId}` : "actual",
-      forecastKey: isMultiBranch ? `forecast-${branchId}` : "forecast",
-      color: palette[index % palette.length],
-    }),
-  );
-  const seriesByBranchId = new Map(series.map((item) => [item.branchId, item]));
-  const actualsByWeek = new Map<string, Map<string, number>>();
-
-  for (const forecast of rows) {
-    for (const input of forecast.inputs ?? []) {
-      if (input.source_type === "Forecast") continue;
-      const numeric = Number(input.source_value);
-      if (!Number.isFinite(numeric)) continue;
-      const weeklyActuals =
-        actualsByWeek.get(input.source_week_start) ?? new Map();
-      weeklyActuals.set(forecast.branch_id, numeric);
-      actualsByWeek.set(input.source_week_start, weeklyActuals);
-    }
-  }
-  for (const [weekStart, branchActuals] of actualsByWeek) {
-    const point: ForecastChartPoint = {
-      d: weekStart,
-      weekEnd: weekEndFromStart(weekStart),
-    };
-    for (const [branchId, demand] of branchActuals) {
-      const branchSeries = seriesByBranchId.get(branchId);
-      if (branchSeries) point[branchSeries.actualKey] = demand;
-    }
-    points.set(weekStart, point);
-  }
-
-  for (const forecast of rows) {
-    const branchSeries = seriesByBranchId.get(forecast.branch_id);
-    const numeric = Number(forecast.forecasted_demand);
-    if (branchSeries && Number.isFinite(numeric)) {
-      const existing = points.get(forecast.target_week_start);
-      points.set(forecast.target_week_start, {
-        ...(existing ?? {
-          d: forecast.target_week_start,
-          weekEnd: forecast.target_week_end,
-        }),
-        [branchSeries.forecastKey]: numeric,
-        weekEnd: forecast.target_week_end,
-      });
-    }
-  }
-
-  // Each forecast is a separate dashed series. Seed it with the latest
-  // observed demand so the handoff from actuals to the first WMA value is a
-  // continuous visual path instead of an unexplained gap.
-  const sortedPoints = [...points.values()].sort((left, right) =>
-    left.d.localeCompare(right.d),
-  );
-  for (const branchSeries of series) {
-    const firstForecastIndex = sortedPoints.findIndex((point) =>
-      Number.isFinite(point[branchSeries.forecastKey]),
-    );
-    if (firstForecastIndex < 1) continue;
-    for (let index = firstForecastIndex - 1; index >= 0; index -= 1) {
-      const observed = sortedPoints[index][branchSeries.actualKey];
-      if (!Number.isFinite(observed)) continue;
-      sortedPoints[index][branchSeries.forecastKey] = observed;
-      break;
-    }
-  }
-
-  return {
-    points: sortedPoints,
-    series,
-  };
-}
-
 function DecisionBriefItem({
   tone,
   icon: Icon,
@@ -395,12 +236,40 @@ function DecisionBriefItem({
 }
 
 function DecisionPage() {
+  const location = useRouterState({ select: (state) => state.location });
+  const view = dssView(location.pathname, location.hash);
+  const isForecast = view === "forecast";
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  function openAllocation(row?: CanonicalForecast) {
+    if (row) {
+      setSelectedBranchId(row.branch_id);
+      setSelectedCategoryId(row.vehicle_category_id);
+      setBalanceWeek(row.target_week_start);
+    }
+    void navigate({
+      to: "/admin/decisions/allocation",
+      search: {
+        branch: row?.branch_id ?? selectedBranchId,
+        category: row?.vehicle_category_id ?? selectedCategoryId,
+        week: row?.target_week_start ?? balanceWeek,
+        recommendation: row ? undefined : search.recommendation,
+      },
+    });
+  }
+
   const session = getAdminSession();
   const staffView = isStaffRole(session?.role);
   const analyticsRange = useMemo(() => {
-    const end = dayKey(new Date());
-    return { start: addDays(end, -29), end };
-  }, []);
+    const today = dayKey(new Date());
+    if (
+      search.start &&
+      search.end &&
+      !reportingRangeError(search.start, search.end, today)
+    )
+      return { start: search.start, end: search.end };
+    return { start: addDays(today, -29), end: today };
+  }, [search.start, search.end]);
 
   const [forecastData, setForecastData] = useState<ForecastResponse | null>(
     null,
@@ -420,50 +289,73 @@ function DecisionPage() {
   >([]);
   const [vehicleLoading, setVehicleLoading] = useState(true);
   const [vehicleError, setVehicleError] = useState("");
+  const [vehicleLoadedAt, setVehicleLoadedAt] = useState<string | null>(null);
+  const [vehicleRefreshVersion, setVehicleRefreshVersion] = useState(0);
   const [supportVersion, setSupportVersion] = useState(0);
   const [allocationRows, setAllocationRows] = useState<AllocationRow[]>([]);
   const [allocationSummary, setAllocationSummary] =
     useState<AllocationSummary | null>(null);
+  const [allocationReloadVersion, setAllocationReloadVersion] = useState(0);
   const [allocationLoading, setAllocationLoading] = useState(true);
   const [allocationError, setAllocationError] = useState("");
   const [allocationBusy, setAllocationBusy] = useState(false);
-  const [contextRecommendationId, setContextRecommendationId] = useState("");
-  const [allocationContext, setAllocationContext] = useState<
-    | (OperationalContextView & {
-        recommendation?: {
-          recommendedTransferUnits: number;
-          candidates: Array<{
-            vehicleId: string;
-            candidateRank: number;
-            referenceEfficiencyKmPerLiter: number | null;
-            estimatedFuelLiters: number | null;
-          }>;
-        };
-      })
-    | null
-  >(null);
+  const [contextRecommendationId, setContextRecommendationId] = useState(
+    search.recommendation ?? "",
+  );
+  const [allocationContext, setAllocationContext] =
+    useState<AllocationReviewContext | null>(null);
+  const [allocationContextId, setAllocationContextId] = useState("");
   const [allocationContextLoading, setAllocationContextLoading] =
     useState(false);
   const [allocationContextError, setAllocationContextError] = useState("");
   const [allocationContextVersion, setAllocationContextVersion] = useState(0);
-  const [selectedBranchId, setSelectedBranchId] = useState("all");
-  const [selectedCategoryId, setSelectedCategoryId] = useState("");
-  const [balanceWeek, setBalanceWeek] = useState("");
-  const [approvedUnits, setApprovedUnits] = useState(1);
+  const [selectedBranchId, setSelectedBranchId] = useState(
+    search.branch ?? "all",
+  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState(
+    search.category ?? "",
+  );
+  const [balanceWeek, setBalanceWeek] = useState(search.week ?? "");
+  useEffect(() => {
+    setSelectedBranchId(search.branch ?? "all");
+    setSelectedCategoryId(search.category ?? "");
+    setBalanceWeek(search.week ?? "");
+  }, [search.branch, search.category, search.week]);
+  function chooseBranch(branch: string) {
+    setSelectedBranchId(branch);
+    void navigate({
+      to: isForecast ? "/admin/decisions/forecast" : "/admin/decisions",
+      search: (previous) => ({ ...previous, branch, category: undefined }),
+      replace: true,
+    });
+  }
+  function chooseCategory(category: string) {
+    setSelectedCategoryId(category);
+    void navigate({
+      to: isForecast ? "/admin/decisions/forecast" : "/admin/decisions",
+      search: (previous) => ({
+        ...previous,
+        branch: selectedBranchId,
+        category,
+      }),
+      replace: true,
+    });
+  }
+
   const synchronizedSupplyRuns = useRef(new Set<string>());
   const requestedForecast = useRef(false);
   const generatedAllocationRuns = useRef(new Set<string>());
   const hasForecastSnapshot = useRef(false);
+  const hasSupplySnapshot = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
     const initialForecastLoad = !hasForecastSnapshot.current;
     if (initialForecastLoad) setForecastLoading(true);
-    setSupplyLoading(true);
-    setVehicleLoading(true);
+    if (!hasSupplySnapshot.current) setSupplyLoading(true);
+
     setForecastError("");
     setSupplyError("");
-    setVehicleError("");
 
     Promise.allSettled([
       readApi<ForecastResponse>("/api/forecasts", {
@@ -472,11 +364,7 @@ function DecisionPage() {
       readApi<SupplyResponse>("/api/supply-evaluations", {
         signal: controller.signal,
       }),
-      readApi<VehicleAnalyticsResponse>(
-        `/api/vehicle-analytics?start=${analyticsRange.start}&end=${analyticsRange.end}`,
-        { signal: controller.signal },
-      ),
-    ]).then(([forecastResult, supplyResult, vehicleResult]) => {
+    ]).then(([forecastResult, supplyResult]) => {
       if (controller.signal.aborted) return;
       if (forecastResult.status === "fulfilled") {
         setForecastData(forecastResult.value);
@@ -492,6 +380,7 @@ function DecisionPage() {
         );
       }
       if (supplyResult.status === "fulfilled") {
+        hasSupplySnapshot.current = true;
         setSupplyEvaluations(supplyResult.value.evaluations ?? []);
       } else {
         setSupplyEvaluations([]);
@@ -502,27 +391,48 @@ function DecisionPage() {
           ),
         );
       }
-      if (vehicleResult.status === "fulfilled") {
-        setVehicleAnalytics(vehicleResult.value.vehicles ?? []);
-      } else {
-        setVehicleAnalytics([]);
-        setVehicleError(
-          errorMessage(
-            vehicleResult.reason,
-            "Unable to load canonical vehicle analytics.",
-          ),
-        );
-      }
       if (initialForecastLoad) setForecastLoading(false);
       setSupplyLoading(false);
-      setVehicleLoading(false);
     });
 
     return () => controller.abort();
-  }, [analyticsRange.end, analyticsRange.start, supportVersion]);
+  }, [supportVersion]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setVehicleLoading(true);
+    setVehicleError("");
+    readApi<VehicleAnalyticsResponse>(
+      `/api/vehicle-analytics?start=${analyticsRange.start}&end=${analyticsRange.end}`,
+      { signal: controller.signal },
+    )
+      .then((body) => {
+        if (controller.signal.aborted) return;
+        setVehicleAnalytics(body.vehicles ?? []);
+        setVehicleLoadedAt(new Date().toISOString());
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        setVehicleAnalytics([]);
+        setVehicleError(
+          errorMessage(error, "Unable to load vehicle analytics."),
+        );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setVehicleLoading(false);
+      });
+    return () => controller.abort();
+  }, [
+    analyticsRange.start,
+    analyticsRange.end,
+    vehicleRefreshVersion,
+    supportVersion,
+  ]);
 
   useEffect(() => {
     let active = true;
+    setAllocationLoading(true);
+    setAllocationError("");
     readApi<AllocationResponse>("/api/allocation-recommendations")
       .then((body) => {
         if (!active) return;
@@ -543,7 +453,7 @@ function DecisionPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [allocationReloadVersion]);
 
   useEffect(() => {
     if (staffView || !contextRecommendationId) {
@@ -553,6 +463,8 @@ function DecisionPage() {
       return;
     }
     const controller = new AbortController();
+    setAllocationContext(null);
+    setAllocationContextId("");
     setAllocationContextLoading(true);
     setAllocationContextError("");
     readApi<typeof allocationContext>("/api/operational-context", {
@@ -565,14 +477,26 @@ function DecisionPage() {
       signal: controller.signal,
     })
       .then((body) => {
+        if (controller.signal.aborted) return;
+        setAllocationContextId(
+          `${contextRecommendationId}:${allocationContextVersion}`,
+        );
         setAllocationContext(body);
         setAllocationContextLoading(false);
       })
       .catch((error) => {
-        if (error instanceof DOMException && error.name === "AbortError")
+        if (
+          controller.signal.aborted ||
+          (error instanceof DOMException && error.name === "AbortError")
+        )
           return;
         setAllocationContext(null);
-        setAllocationContextError("Operational context could not be verified.");
+        setAllocationContextId(
+          `${contextRecommendationId}:${allocationContextVersion}`,
+        );
+        setAllocationContextError(
+          "Operational context could not be verified. Retry the check or acknowledge the missing evidence before recording a decision.",
+        );
         setAllocationContextLoading(false);
       });
     return () => controller.abort();
@@ -664,6 +588,7 @@ function DecisionPage() {
     idempotencyKey: string = crypto.randomUUID(),
   ): Promise<boolean> {
     setAllocationBusy(true);
+    setAllocationError("");
     try {
       const body = await readApi<AllocationResponse>(
         "/api/allocation-recommendations",
@@ -780,10 +705,58 @@ function DecisionPage() {
   const surplusEvaluations = currentSupplyRows.filter(
     (row) => Number(row.surplus_units) > 0,
   );
+  const allocationReviewRows =
+    view === "allocation"
+      ? filterAllocationRows(
+          currentAllocationRows,
+          actionableForecastRows,
+          currentSupplyRows,
+          balanceWeek,
+          selectedCategoryId,
+        )
+      : currentAllocationRows;
   const selectedRecommendation =
-    currentAllocationRows.find((row) => row.id === contextRecommendationId) ??
-    currentAllocationRows[0] ??
+    allocationReviewRows.find((row) => row.id === contextRecommendationId) ??
     null;
+
+  function selectRecommendation(row: AllocationRow) {
+    setContextRecommendationId(row.id);
+    setBalanceWeek(row.target_week_start);
+    const evaluation = supplyRows.find(
+      (item) => item.id === row.destination_supply_evaluation_id,
+    );
+    const forecast = evaluation
+      ? forecastById.get(evaluation.forecast_id)
+      : undefined;
+    if (forecast) {
+      setSelectedBranchId(forecast.branch_id);
+      setSelectedCategoryId(forecast.vehicle_category_id);
+    }
+    void navigate({
+      to:
+        view === "allocation"
+          ? "/admin/decisions/allocation"
+          : "/admin/decisions",
+      search: (previous) => ({
+        ...previous,
+        branch: forecast?.branch_id ?? selectedBranchId,
+        category: forecast?.vehicle_category_id ?? selectedCategoryId,
+        week: row.target_week_start,
+        recommendation: row.id,
+      }),
+      replace: true,
+    });
+  }
+  const reviewContext = selectedContext(
+    `${contextRecommendationId}:${allocationContextVersion}`,
+    allocationContextId,
+    allocationContext,
+  );
+  const reviewContextLoading =
+    !!selectedRecommendation &&
+    (allocationContextLoading ||
+      allocationContextId !==
+        `${contextRecommendationId}:${allocationContextVersion}`);
 
   const branchOptions = [
     ...new Map(
@@ -816,7 +789,11 @@ function DecisionPage() {
       row.vehicle_category_id === selectedCategoryId &&
       (selectedBranchId === "all" || row.branch_id === selectedBranchId),
   );
-  const focusedForecast = buildFocusedForecastChart(focusedForecastRows);
+  const focusedForecast = buildFocusedForecastChart(
+    focusedForecastRows,
+    forecastData?.forecasts ?? [],
+    forecastData?.runs ?? [],
+  );
   const focusedForecastChart = focusedForecast.points;
   const focusedForecastSeries = focusedForecast.series;
   const focusedForecastLabel = focusedForecastRows[0]
@@ -918,6 +895,11 @@ function DecisionPage() {
   useEffect(() => {
     if (!selectedBranchId || !forecastRows.length) return;
     if (
+      view === "allocation" &&
+      forecastRows.some((row) => row.vehicle_category_id === selectedCategoryId)
+    )
+      return;
+    if (
       forecastRows.some(
         (row) =>
           row.vehicle_category_id === selectedCategoryId &&
@@ -929,7 +911,7 @@ function DecisionPage() {
       (row) => selectedBranchId === "all" || row.branch_id === selectedBranchId,
     );
     setSelectedCategoryId(first?.vehicle_category_id ?? "");
-  }, [selectedBranchId, selectedCategoryId, forecastData]);
+  }, [selectedBranchId, selectedCategoryId, forecastData, view]);
 
   useEffect(() => {
     const interval = window.setInterval(
@@ -1017,16 +999,9 @@ function DecisionPage() {
 
   useEffect(() => {
     setContextRecommendationId((current) =>
-      current && currentAllocationRows.some((row) => row.id === current)
-        ? current
-        : (currentAllocationRows[0]?.id ?? ""),
+      selectAllocationId(allocationReviewRows, search.recommendation, current),
     );
-  }, [currentAllocationRows]);
-
-  useEffect(() => {
-    if (!selectedRecommendation) return;
-    setApprovedUnits(selectedRecommendation.recommended_transfer_units);
-  }, [selectedRecommendation?.id]);
+  }, [allocationReviewRows, search.recommendation]);
 
   const allCategories = [
     ...new Map(
@@ -1064,10 +1039,10 @@ function DecisionPage() {
     {
       label: "External context",
       detail: selectedRecommendation
-        ? allocationContextLoading
+        ? reviewContextLoading
           ? "Checking current weather, road, route, and fuel context"
-          : allocationContext
-            ? `${allocationContext.status.replaceAll("_", " ")} review-time context`
+          : reviewContext
+            ? `${reviewContext.status.replaceAll("_", " ")} review-time context`
             : "Select or refresh the recommendation context"
         : "Available when a transfer recommendation is reviewed",
     },
@@ -1079,12 +1054,312 @@ function DecisionPage() {
     },
   ];
 
+  const forecastChart = (
+    <>
+      {forecastLoading && !forecastData ? (
+        <div className="admin-decision-chart-state" role="status">
+          Loading demand forecast…
+        </div>
+      ) : forecastError && !forecastData ? (
+        <div className="admin-decision-chart-state is-error" role="alert">
+          {forecastError} Refresh the page or generate a new forecast.
+        </div>
+      ) : !focusedForecastChart.length ? (
+        <div className="admin-decision-chart-state">
+          <BarChart3 aria-hidden="true" />
+          <strong>No forecast values available</strong>
+          <span>
+            Generate a WMA forecast after sufficient booking history is
+            recorded.
+          </span>
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={focusedForecastChart}
+            margin={{ top: 12, right: 18, bottom: 14, left: 0 }}
+          >
+            <CartesianGrid stroke={decisionGrid} vertical={false} />
+            <XAxis
+              dataKey="d"
+              tickFormatter={formatChartDay}
+              tick={{ fill: "#52635f", fontSize: 11 }}
+              axisLine={{ stroke: decisionGrid }}
+              tickLine={false}
+            />
+            <YAxis
+              tick={{ fill: "#52635f", fontSize: 11 }}
+              axisLine={{ stroke: decisionGrid }}
+              tickLine={false}
+              width={32}
+              allowDecimals
+            />
+            <Tooltip
+              content={({ active, label }) => {
+                if (!active) return null;
+                const point = focusedForecastChart.find(
+                  (item) => item.d === String(label),
+                );
+                if (!point) return null;
+                return (
+                  <div
+                    style={{
+                      background: "#fff",
+                      border: "1px solid #d8d5cc",
+                      borderRadius: 10,
+                      padding: 12,
+                      color: "#182321",
+                      fontSize: 12,
+                    }}
+                  >
+                    <strong>
+                      Week of {formatWeekRange(point.d, point.weekEnd)}
+                    </strong>
+                    {focusedForecastSeries.map((series) => (
+                      <div key={series.branchId} style={{ marginTop: 10 }}>
+                        <strong style={{ color: series.color }}>
+                          {series.label}
+                        </strong>
+                        <div>
+                          Actual demand:{" "}
+                          {Number.isFinite(point[series.actualKey])
+                            ? formatQuantity(Number(point[series.actualKey]))
+                            : "Not available yet"}
+                        </div>
+                        <div>
+                          Forecast:{" "}
+                          {Number.isFinite(point[series.forecastKey])
+                            ? formatQuantity(Number(point[series.forecastKey]))
+                            : "No saved forecast available"}
+                        </div>
+                        {point[`kind-${series.branchId}`] ? (
+                          <div>{point[`kind-${series.branchId}`]}</div>
+                        ) : null}
+                        {point[`generated-${series.branchId}`] ? (
+                          <div>
+                            Saved{" "}
+                            {formatDateTime(
+                              String(point[`generated-${series.branchId}`]),
+                            )}
+                          </div>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                );
+              }}
+            />
+            {focusedForecastStart ? (
+              <ReferenceLine
+                x={focusedForecastStart}
+                stroke="#2e647b"
+                strokeDasharray="3 4"
+                label={{
+                  value: "Latest outlook begins",
+                  fill: "#2e647b",
+                  fontSize: 11,
+                  position: "insideTopRight",
+                }}
+              />
+            ) : null}
+            {focusedForecastSeries.flatMap((series) => [
+              <Line
+                key={`${series.branchId}-connector`}
+                type="bumpX"
+                dataKey={series.connectorKey}
+                stroke={series.color}
+                strokeWidth={3}
+                strokeDasharray="7 6"
+                dot={false}
+                activeDot={false}
+                tooltipType="none"
+                legendType="none"
+                connectNulls={false}
+                isAnimationActive={false}
+              />,
+              <Line
+                key={`${series.branchId}-actual`}
+                type="monotoneX"
+                dataKey={series.actualKey}
+                name={`${series.label} — actual weekly demand`}
+                stroke={series.color}
+                strokeWidth={3}
+                dot={{ r: 3.5, fill: series.color }}
+                connectNulls={false}
+                isAnimationActive={false}
+              />,
+              <Line
+                key={`${series.branchId}-forecast`}
+                type="monotoneX"
+                dataKey={series.forecastKey}
+                name={`${series.label} — weekly WMA forecast`}
+                stroke={series.color}
+                strokeWidth={3}
+                strokeDasharray="7 6"
+                dot={{ r: 3.5, fill: series.color }}
+                connectNulls={false}
+                isAnimationActive={false}
+              />,
+            ])}
+          </LineChart>
+        </ResponsiveContainer>
+      )}
+    </>
+  );
+  const forecastCalculation =
+    focusedWmaForecast && focusedWmaCalculation ? (
+      <section
+        className="admin-decision-calculation"
+        aria-labelledby="forecast-calculation-heading"
+      >
+        <header>
+          <div>
+            <span>Auditable WMA example</span>
+            <h3 id="forecast-calculation-heading">
+              {forecastLabel(focusedWmaForecast)}
+            </h3>
+          </div>
+          <small>
+            Horizon 1 · target week{" "}
+            {formatWeekRange(
+              focusedWmaForecast.target_week_start,
+              focusedWmaForecast.target_week_end,
+            )}
+          </small>
+        </header>
+        <div className="admin-decision-calculation-table" role="table">
+          <div className="is-heading" role="row">
+            <span role="columnheader">Input week</span>
+            <span role="columnheader">Demand</span>
+            <span role="columnheader">Weight</span>
+            <span role="columnheader">Contribution</span>
+          </div>
+          {focusedWmaCalculation.terms.map((term) => (
+            <div
+              role="row"
+              key={`${term.sourceType}-${term.sourceWeekStart}-${term.weight}`}
+            >
+              <span role="cell">
+                {formatDay(term.sourceWeekStart)} · {term.sourceType}
+              </span>
+              <strong role="cell">{formatDecimal(term.sourceValue)}</strong>
+              <strong role="cell">{formatDecimal(term.weight)}</strong>
+              <strong role="cell">
+                {formatDecimal(term.weightedContribution)}
+              </strong>
+            </div>
+          ))}
+        </div>
+        <div className="admin-decision-calculation-result">
+          <code>
+            {focusedWmaCalculation.terms
+              .map(
+                (term) =>
+                  `${formatDecimal(term.weight)} × ${formatDecimal(term.sourceValue)}`,
+              )
+              .join(" + ")}
+            {` = ${formatDecimal(focusedWmaCalculation.forecastDemand)}`}
+          </code>
+          <p>
+            Forecast demand:{" "}
+            {formatDecimal(focusedWmaCalculation.forecastDemand)}. The planning
+            requirement rounds up to{" "}
+            <strong>
+              {focusedWmaCalculation.requiredVehicles}{" "}
+              {focusedWmaCalculation.requiredVehicles === 1
+                ? "vehicle"
+                : "vehicles"}
+            </strong>
+            .
+          </p>
+          <small>
+            This estimates weekly booking demand. Fleet movement remains an
+            advisory decision reviewed by the Owner/Admin.
+          </small>
+        </div>
+      </section>
+    ) : null;
+
+  const transferReview = selectedRecommendation ? (
+    <AllocationReview
+      key={selectedRecommendation.id}
+      recommendation={selectedRecommendation}
+      context={reviewContext}
+      contextLoading={reviewContextLoading}
+      contextKey={`${contextRecommendationId}:${allocationContextVersion}`}
+      contextError={
+        allocationContextId ===
+        `${contextRecommendationId}:${allocationContextVersion}`
+          ? allocationContextError
+          : ""
+      }
+      busy={allocationBusy || allocationLoading || supplyBusy || supplyLoading}
+      readOnly={staffView}
+      onRefreshContext={() =>
+        setAllocationContextVersion((version) => version + 1)
+      }
+      onDecision={decideAllocation}
+      reviewSearch={{
+        branch: selectedBranchId,
+        category: selectedCategoryId,
+        week: balanceWeek,
+        recommendation: selectedRecommendation.id,
+      }}
+    />
+  ) : null;
+
+  const allocationErrorMessage =
+    forecastError || supplyError || allocationError;
+  const allocationLoadingState =
+    forecastLoading || supplyLoading || allocationLoading;
+  const allocationBusyState = forecastBusy || supplyBusy || allocationBusy;
+  const allocationBlock = allocationGenerationBlock({
+    loading: allocationLoadingState,
+    busy: allocationBusyState,
+    readOnly: staffView,
+    error: !!allocationErrorMessage,
+    forecasts: actionableForecastRows.length,
+    unevaluated: unevaluatedForecasts.length,
+    shortages: shortageEvaluations.length,
+    surpluses: surplusEvaluations.length,
+  });
+  function chooseAllocationFilters(week: string, category: string) {
+    setBalanceWeek(week);
+    setSelectedCategoryId(category);
+    void navigate({
+      to: "/admin/decisions/allocation",
+      search: (previous) => ({
+        ...previous,
+        week,
+        category,
+        recommendation: undefined,
+      }),
+      replace: true,
+    });
+  }
+
   return (
-    <div className="admin-decision-workspace">
+    <div className={`admin-decision-workspace dss-view-${view}`}>
       <header className="admin-decision-heading">
         <div>
-          <h1>Decision support</h1>
-          <p>Forecast demand, identify shortages, and review fleet moves.</p>
+          <h1>
+            {isForecast
+              ? "Demand Forecast"
+              : view === "allocation"
+                ? "Fleet Allocation"
+                : view === "utilization"
+                  ? "Vehicle Utilization"
+                  : "Decision support"}
+          </h1>
+          <p>
+            {isForecast
+              ? "Review weekly rental demand and plan supply."
+              : view === "allocation"
+                ? "Compare supply and review recommended fleet moves."
+                : view === "utilization"
+                  ? "Review rental activity and vehicles needing attention."
+                  : "Forecast demand, identify shortages, and review fleet moves."}
+          </p>
         </div>
         <div className="admin-decision-advisory" role="note">
           <Info aria-hidden="true" />
@@ -1095,979 +1370,962 @@ function DecisionPage() {
         </div>
       </header>
 
-      <section
-        className="admin-decision-trace"
-        aria-labelledby="decision-trace-heading"
-      >
-        <header>
-          <strong id="decision-trace-heading">Auditable decision trace</strong>
-          <span>
-            Each recommendation connects recorded demand to a human-reviewed
-            operational decision.
-          </span>
-        </header>
-        <ol>
-          {decisionTrace.map((stage, index) => (
-            <li key={stage.label}>
-              <span aria-hidden="true">{index + 1}</span>
-              <div>
-                <strong>{stage.label}</strong>
-                <small>{stage.detail}</small>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <div className="admin-decision-overview">
-        <section
-          className="admin-decision-panel admin-decision-forecast"
-          aria-labelledby="decision-demand-heading"
-        >
-          <header className="admin-decision-panel-heading">
-            <div>
-              <h2 id="decision-demand-heading">Demand outlook</h2>
-              <p>
-                3-week WMA outlook
-                {latestRun
-                  ? ` · updated ${formatDateTime(latestRun.generated_at)}`
-                  : " · no persisted run"}
-              </p>
-            </div>
-            <div className="admin-decision-forecast-filters">
-              {!staffView ? (
-                <Btn
-                  variant="default"
-                  disabled={forecastBusy}
-                  onClick={() => void generateForecast()}
-                >
-                  {forecastBusy ? "Working…" : "Refresh forecast"}
-                </Btn>
-              ) : null}
-              <label>
-                <span>Branch</span>
-                <select
-                  value={selectedBranchId}
-                  onChange={(event) => setSelectedBranchId(event.target.value)}
-                  disabled={!branchOptions.length}
-                >
-                  <option value="all">All branches</option>
-                  {branchOptions.map((branch) => (
-                    <option key={branch.id} value={branch.id}>
-                      {branch.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span>Category</span>
-                <select
-                  value={selectedCategoryId}
-                  onChange={(event) =>
-                    setSelectedCategoryId(event.target.value)
-                  }
-                  disabled={!categoryOptions.length}
-                >
-                  {categoryOptions.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </header>
-
-          <div className="admin-decision-chart">
-            {forecastLoading && !forecastData ? (
-              <div className="admin-decision-chart-state" role="status">
-                Loading demand forecast…
-              </div>
-            ) : forecastError && !forecastData ? (
-              <div className="admin-decision-chart-state is-error" role="alert">
-                {forecastError} Refresh the page or generate a new forecast.
-              </div>
-            ) : !focusedForecastChart.length ? (
-              <div className="admin-decision-chart-state">
-                <BarChart3 aria-hidden="true" />
-                <strong>No forecast values available</strong>
-                <span>
-                  Generate a WMA forecast after sufficient booking history is
-                  recorded.
+      {isForecast ? (
+        <DemandForecastScreen
+          branch={selectedBranchId}
+          category={selectedCategoryId}
+          branches={branchOptions}
+          categories={categoryOptions}
+          rows={focusedForecastRows}
+          evaluations={supplyByForecastId}
+          runs={forecastData?.runs ?? []}
+          latestRunId={latestRun?.id}
+          loading={forecastLoading}
+          busy={forecastBusy}
+          error={forecastError}
+          notice={forecastNotice}
+          supplyLoading={supplyLoading || supplyBusy}
+          supplyError={supplyError}
+          mape={forecastData?.mape ?? null}
+          eligible={forecastData?.accuracy?.eligibleForecasts}
+          excluded={forecastData?.accuracy?.excludedZeroActuals}
+          finalizable={forecastData?.finalizableForecasts ?? 0}
+          chart={forecastChart}
+          calculation={forecastCalculation}
+          legend={
+            <>
+              <strong>{focusedForecastLabel}</strong>
+              {focusedForecastSeries.map((series) => (
+                <span key={series.branchId}>
+                  <i style={{ background: series.color }} />
+                  {series.label} — actual solid, forecast dashed
                 </span>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={focusedForecastChart}
-                  margin={{ top: 12, right: 18, bottom: 14, left: 0 }}
-                >
-                  <CartesianGrid stroke={decisionGrid} vertical={false} />
-                  <XAxis
-                    dataKey="d"
-                    tickFormatter={formatChartDay}
-                    tick={{ fill: "#52635f", fontSize: 11 }}
-                    axisLine={{ stroke: decisionGrid }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fill: "#52635f", fontSize: 11 }}
-                    axisLine={{ stroke: decisionGrid }}
-                    tickLine={false}
-                    width={32}
-                    allowDecimals
-                  />
-                  <Tooltip
-                    labelFormatter={(label) => {
-                      const point = focusedForecastChart.find(
-                        (item) => item.d === String(label),
-                      );
-                      return `Week of ${formatWeekRange(
-                        String(label),
-                        point?.weekEnd ?? weekEndFromStart(String(label)),
-                      )}`;
-                    }}
-                    formatter={(value, name) => [
-                      formatQuantity(value as number),
-                      String(name),
-                    ]}
-                    contentStyle={{
-                      background: "#ffffff",
-                      border: "1px solid #d8d5cc",
-                      borderRadius: 10,
-                      color: "#182321",
-                      fontSize: 12,
-                    }}
-                  />
-                  {focusedForecastStart ? (
-                    <ReferenceLine
-                      x={focusedForecastStart}
-                      stroke="#2e647b"
-                      strokeDasharray="3 4"
-                      label={{
-                        value: "Forecast begins",
-                        fill: "#2e647b",
-                        fontSize: 11,
-                        position: "insideTopRight",
-                      }}
-                    />
-                  ) : null}
-                  {focusedForecastSeries.flatMap((series) => [
-                    <Line
-                      key={`${series.branchId}-actual`}
-                      type="linear"
-                      dataKey={series.actualKey}
-                      name={`${series.label} — actual weekly demand`}
-                      stroke={series.color}
-                      strokeWidth={3}
-                      dot={{ r: 3.5, fill: series.color }}
-                      connectNulls
-                      isAnimationActive={false}
-                    />,
-                    <Line
-                      key={`${series.branchId}-forecast`}
-                      type="linear"
-                      dataKey={series.forecastKey}
-                      name={`${series.label} — weekly WMA forecast`}
-                      stroke={series.color}
-                      strokeWidth={3}
-                      strokeDasharray="7 6"
-                      dot={{ r: 3.5, fill: series.color }}
-                      connectNulls
-                      isAnimationActive={false}
-                    />,
-                  ])}
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-          {focusedWmaForecast && focusedWmaCalculation ? (
-            <section
-              className="admin-decision-calculation"
-              aria-labelledby="forecast-calculation-heading"
-            >
-              <header>
-                <div>
-                  <span>Auditable WMA example</span>
-                  <h3 id="forecast-calculation-heading">
-                    {forecastLabel(focusedWmaForecast)}
-                  </h3>
-                </div>
-                <small>
-                  Horizon 1 · target week{" "}
-                  {formatWeekRange(
-                    focusedWmaForecast.target_week_start,
-                    focusedWmaForecast.target_week_end,
-                  )}
-                </small>
-              </header>
-              <div className="admin-decision-calculation-table" role="table">
-                <div className="is-heading" role="row">
-                  <span role="columnheader">Input week</span>
-                  <span role="columnheader">Demand</span>
-                  <span role="columnheader">Weight</span>
-                  <span role="columnheader">Contribution</span>
-                </div>
-                {focusedWmaCalculation.terms.map((term) => (
-                  <div
-                    role="row"
-                    key={`${term.sourceType}-${term.sourceWeekStart}-${term.weight}`}
-                  >
-                    <span role="cell">
-                      {formatDay(term.sourceWeekStart)} · {term.sourceType}
-                    </span>
-                    <strong role="cell">
-                      {formatDecimal(term.sourceValue)}
-                    </strong>
-                    <strong role="cell">{formatDecimal(term.weight)}</strong>
-                    <strong role="cell">
-                      {formatDecimal(term.weightedContribution)}
-                    </strong>
-                  </div>
-                ))}
-              </div>
-              <div className="admin-decision-calculation-result">
-                <code>
-                  {focusedWmaCalculation.terms
-                    .map(
-                      (term) =>
-                        `${formatDecimal(term.weight)} × ${formatDecimal(term.sourceValue)}`,
-                    )
-                    .join(" + ")}
-                  {` = ${formatDecimal(focusedWmaCalculation.forecastDemand)}`}
-                </code>
-                <p>
-                  Forecast demand:{" "}
-                  {formatDecimal(focusedWmaCalculation.forecastDemand)}. The
-                  planning requirement rounds up to{" "}
-                  <strong>
-                    {focusedWmaCalculation.requiredVehicles} vehicles
-                  </strong>
-                  .
-                </p>
-                <small>
-                  This estimates weekly booking demand. Fleet movement remains
-                  an advisory decision reviewed by the Owner/Admin.
-                </small>
-              </div>
-            </section>
-          ) : null}
-          <footer className="admin-decision-chart-footer">
-            <strong>{focusedForecastLabel}</strong>
-            {focusedForecastSeries.map((series) => (
-              <span key={series.branchId}>
-                <i style={{ background: series.color }} /> {series.label} —
-                actual solid, forecast dashed
-              </span>
-            ))}
-            {focusedForecastStart && focusedForecastEnd ? (
-              <small>
-                Forecast horizon:{" "}
-                {formatWeekRange(focusedForecastStart, focusedForecastEnd)}
-              </small>
-            ) : null}
-            {forecastData?.mape == null ? (
-              <small>
-                Accuracy becomes available after actual demand is finalized.
-              </small>
-            ) : (
-              <small>
-                Finalized horizon-1 MAPE: {formatPercent(forecastData.mape)} ·{" "}
-                {forecastData.accuracy?.eligibleForecasts ?? 0} eligible
-                observation
-                {forecastData.accuracy?.eligibleForecasts === 1 ? "" : "s"}
-              </small>
-            )}
-            {!staffView && (forecastData?.finalizableForecasts ?? 0) > 0 ? (
-              <Btn
-                variant="default"
-                disabled={forecastBusy}
-                onClick={() => void finalizeForecasts()}
-              >
-                Finalize {forecastData?.finalizableForecasts} completed
-              </Btn>
-            ) : null}
-          </footer>
-        </section>
-
-        <aside
-          className="admin-decision-panel admin-decision-brief"
-          aria-labelledby="decision-brief-heading"
-        >
-          <header className="admin-decision-panel-heading">
-            <div>
-              <h2 id="decision-brief-heading">Decision brief</h2>
-              <p>Actions supported by the latest persisted records.</p>
-            </div>
-          </header>
-          <ol>
-            {!forecastLoading && !forecastRows.length ? (
-              <DecisionBriefItem
-                tone="info"
-                icon={BarChart3}
-                title="Generate the demand forecast"
-                detail="No persisted WMA forecast is available for the next 3 weeks."
-                basis="A forecast is required before supply can be evaluated."
-                actionLabel={forecastBusy ? "Generating…" : "Generate forecast"}
-                disabled={forecastBusy || staffView}
-                onAction={() => void generateForecast()}
-              />
-            ) : null}
-
-            {pendingAllocations.slice(0, 3).map((row) => (
-              <DecisionBriefItem
-                key={row.id}
-                tone="attention"
-                icon={ArrowRightLeft}
-                title={`Review transfer of ${row.recommended_transfer_units} ${row.vehicle_category_name}`}
-                detail={`${row.destination_branch_name} needs ${row.destination_shortage_snapshot}; ${row.source_branch_name} has ${row.source_surplus_snapshot} surplus.`}
-                basis={`Target week ${formatDay(row.target_week_start)} · ${row.candidates.length} eligible candidate${row.candidates.length === 1 ? "" : "s"}`}
-                actionLabel="Review transfer"
-                onAction={() => {
-                  setContextRecommendationId(row.id);
-                  window.setTimeout(
-                    () => scrollToSection("transfer-review"),
-                    0,
-                  );
-                }}
-              />
-            ))}
-
-            {unevaluatedForecasts.length ? (
-              <DecisionBriefItem
-                tone="info"
-                icon={CircleDot}
-                title={`Evaluate ${unevaluatedForecasts.length} supply gap${unevaluatedForecasts.length === 1 ? "" : "s"}`}
-                detail="These branch and category forecasts do not have a current supply snapshot."
-                basis="Supply evaluation checks availability, commitments, and maintenance readiness."
-                actionLabel="Review supply gaps"
-                onAction={() => scrollToSection("supply-analysis")}
-              />
-            ) : null}
-
-            {!pendingAllocations.length &&
-            shortageEvaluations.length &&
-            surplusEvaluations.length ? (
-              <DecisionBriefItem
-                tone="attention"
-                icon={ArrowRightLeft}
-                title="Generate transfer recommendations"
-                detail={`${shortageEvaluations.length} shortage${shortageEvaluations.length === 1 ? "" : "s"} and ${surplusEvaluations.length} surplus position${surplusEvaluations.length === 1 ? "" : "s"} are ready to compare.`}
-                basis="The generator only pairs matching categories and eligible vehicles."
-                actionLabel={
-                  allocationBusy ? "Generating…" : "Generate recommendations"
-                }
-                disabled={allocationBusy || staffView}
-                onAction={() => void generateAllocations()}
-              />
-            ) : null}
-
-            {idleRows.length ? (
-              <DecisionBriefItem
-                tone="neutral"
-                icon={CarFront}
-                title={`Review ${idleRows.length} idle vehicle${idleRows.length === 1 ? "" : "s"}`}
-                detail="Canonical vehicle analysis classified these vehicles as idle in the current reporting period."
-                basis={`${formatDay(analyticsRange.start)} – ${formatDay(analyticsRange.end)}`}
-                actionLabel="Review vehicles"
-                onAction={() => scrollToSection("vehicle-attention")}
-              />
-            ) : null}
-
-            {forecastRows.length &&
-            !pendingAllocations.length &&
-            !unevaluatedForecasts.length &&
-            !shortageEvaluations.length &&
-            !idleRows.length ? (
-              <DecisionBriefItem
-                tone="success"
-                icon={CheckCircle2}
-                title="No decisions need attention"
-                detail="The latest forecasts and supply evaluations show no unresolved shortage or idle-vehicle signal."
-                basis="Continue monitoring as new bookings and fleet activity are recorded."
-                actionLabel="Review analysis"
-                onAction={() => scrollToSection("branch-balance")}
-              />
-            ) : null}
-          </ol>
-          {forecastNotice || forecastError || allocationError ? (
-            <div
-              className={`admin-decision-brief-feedback ${forecastError || allocationError ? "is-error" : ""}`}
-              role={forecastError || allocationError ? "alert" : "status"}
-              aria-live="polite"
-            >
-              {forecastError || allocationError || forecastNotice}
-            </div>
-          ) : null}
-        </aside>
-      </div>
-
-      <section
-        id="branch-balance"
-        tabIndex={-1}
-        className="admin-decision-panel admin-decision-balance"
-        aria-labelledby="branch-balance-heading"
-      >
-        <header className="admin-decision-panel-heading">
-          <div>
-            <h2 id="branch-balance-heading">Branch balance</h2>
-            <p>Required and projected vehicles for the selected target week.</p>
-          </div>
-          <div className="admin-decision-balance-controls">
-            <div className="admin-decision-legend" aria-label="Balance states">
-              <span>
-                <i className="is-shortage" /> Shortage
-              </span>
-              <span>
-                <i className="is-balanced" /> Balanced
-              </span>
-              <span>
-                <i className="is-surplus" /> Surplus
-              </span>
-              <span>
-                <i className="is-pending" /> Not evaluated
-              </span>
-            </div>
-            <label>
-              <span className="sr-only">Target week</span>
-              <select
-                value={balanceWeek}
-                onChange={(event) => setBalanceWeek(event.target.value)}
-                disabled={!weekOptions.length}
-                aria-label="Target week"
-              >
-                {weekOptions.map((week) => (
-                  <option key={week} value={week}>
-                    Week of {formatChartDay(week)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </header>
-        <div className="admin-decision-table-wrap admin-scroll-region">
-          <table className="admin-decision-balance-table">
-            <thead>
-              <tr>
-                <th scope="col">Branch</th>
-                {allCategories.map((category) => (
-                  <th key={category.id} scope="col">
-                    {category.name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {branchOptions.map((branch) => (
-                <tr key={branch.id}>
-                  <th scope="row">{branch.name}</th>
-                  {allCategories.map((category) => {
-                    const forecast = visibleSupplyForecasts.find(
-                      (row) =>
-                        row.branch_id === branch.id &&
-                        row.vehicle_category_id === category.id,
-                    );
-                    const evaluation = forecast
-                      ? supplyByForecastId.get(forecast.id)
-                      : undefined;
-                    const state = evaluation
-                      ? supplyBalanceState(evaluation).toLowerCase()
-                      : "pending";
-                    return (
-                      <td key={category.id} className={`is-${state}`}>
-                        {forecast ? (
-                          <>
-                            <strong>
-                              {evaluation
-                                ? `${formatQuantity(evaluation.required_units_snapshot)} / ${formatQuantity(evaluation.projected_supply)}`
-                                : `${formatQuantity(forecast.required_vehicle_units)} / —`}
-                            </strong>
-                            <span>
-                              <i />
-                              {evaluation
-                                ? supplyBalanceState(evaluation)
-                                : "Not evaluated"}
-                            </span>
-                          </>
-                        ) : (
-                          <span>No forecast</span>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
-        <footer className="admin-decision-balance-note">
-          Values show required / projected vehicles from the latest supply
-          snapshot for this forecast run.
-        </footer>
-      </section>
-
-      <section
-        id="vehicle-attention"
-        tabIndex={-1}
-        className="admin-decision-panel admin-decision-vehicles"
-        aria-labelledby="vehicle-attention-heading"
-      >
-        <header className="admin-decision-panel-heading">
-          <div>
-            <h2 id="vehicle-attention-heading">Vehicle attention</h2>
-            <p>
-              Canonical idle classifications and the lowest utilization values
-              from the last 30 days.
-            </p>
-          </div>
-          <Link to="/admin/fleet" className="admin-decision-text-link">
-            Open fleet <ArrowRight aria-hidden="true" />
-          </Link>
-        </header>
-        {vehicleLoading ? (
-          <p className="admin-decision-empty" role="status">
-            Loading vehicle analysis…
-          </p>
-        ) : vehicleError ? (
-          <p className="admin-decision-empty is-error" role="alert">
-            {vehicleError} Refresh the page to try again.
-          </p>
-        ) : !vehicleAttentionRows.length ? (
-          <p className="admin-decision-empty">
-            No vehicle analysis is available.
-          </p>
-        ) : (
-          <div className="admin-decision-table-wrap admin-scroll-region">
-            <table className="admin-decision-data-table">
-              <thead>
-                <tr>
-                  <th scope="col">Vehicle</th>
-                  <th scope="col">Branch</th>
-                  <th scope="col">Utilization</th>
-                  <th scope="col">Canonical state</th>
-                  <th scope="col">Next review</th>
-                </tr>
-              </thead>
-              <tbody>
-                {vehicleAttentionRows.map((row) => (
-                  <tr key={row.vehicleId}>
-                    <td>
-                      <strong>{row.name}</strong>
-                      <small>{row.licensePlate ?? "No plate recorded"}</small>
-                    </td>
-                    <td>{row.branch ?? "Unknown / unassigned"}</td>
-                    <td className="is-numeric">
-                      {formatPercent(row.utilizationPercent)}
-                    </td>
-                    <td>
-                      <span
-                        className={`admin-decision-state is-${row.idleClassification === "Idle" ? "shortage" : row.idleClassification === "Unable to Determine" ? "pending" : "balanced"}`}
-                      >
-                        <i /> {row.idleClassification}
-                      </span>
-                    </td>
-                    <td>
-                      {row.idleClassification === "Idle"
-                        ? "Compare with branch demand"
-                        : row.utilizationPercent == null
-                          ? "Review historical coverage"
-                          : "Monitor utilization"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
-      <section
-        id="supply-analysis"
-        tabIndex={-1}
-        className="admin-decision-panel admin-decision-supply"
-        aria-labelledby="supply-analysis-heading"
-        aria-busy={supplyLoading}
-      >
-        <header className="admin-decision-panel-heading">
-          <div>
-            <h2 id="supply-analysis-heading">Supply analysis</h2>
-            <p>
-              Automatic readiness snapshots account for active vehicles,
-              confirmed bookings, rentals, and maintenance.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge>
-              {supplyLoading || supplyBusy
-                ? "Synchronizing…"
-                : `${currentSupplyRows.length}/${actionableForecastRows.length} ready`}
-            </Badge>
-            {!staffView && actionableForecastRows.length ? (
-              <Btn
-                variant="default"
-                disabled={supplyBusy || forecastBusy}
-                onClick={() =>
-                  void evaluateSupply(
-                    actionableForecastRows.map((forecast) => forecast.id),
-                  )
-                }
-              >
-                {supplyBusy ? "Evaluating…" : "Refresh supply"}
-              </Btn>
-            ) : null}
-          </div>
-        </header>
-        {supplyError ? (
-          <p className="admin-decision-feedback is-error" role="alert">
-            {supplyError}
-          </p>
-        ) : null}
-        <div className="admin-decision-supply-summary" aria-live="polite">
-          {supplyWeekSummaries.map((summary) => {
-            const isReady = summary.evaluated === summary.total;
-            const hasImbalance = summary.shortageCount || summary.surplusCount;
-            return (
-              <article key={summary.week}>
-                <div>
-                  <strong>{formatDay(summary.week)}</strong>
-                  <span>
-                    {summary.total} forecast position
-                    {summary.total === 1 ? "" : "s"}
-                  </span>
-                </div>
-                <div>
-                  <span
-                    className={`admin-decision-state is-${isReady ? (hasImbalance ? "shortage" : "balanced") : "pending"}`}
-                  >
-                    <i />
-                    {isReady
-                      ? hasImbalance
-                        ? `${summary.shortageCount} shortage · ${summary.surplusCount} surplus`
-                        : "Balanced or covered"
-                      : `${summary.evaluated}/${summary.total} snapshots ready`}
-                  </span>
-                  <small>
-                    {summary.completedAt
-                      ? `Last checked ${formatDateTime(summary.completedAt)}`
-                      : "Preparing the first readiness snapshot"}
-                  </small>
-                </div>
-                <Btn
-                  variant="default"
-                  onClick={() => {
-                    setBalanceWeek(summary.week);
-                    window.setTimeout(
-                      () => scrollToSection("branch-balance"),
-                      0,
-                    );
-                  }}
-                >
-                  View balance
-                </Btn>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section
-        id="transfer-review"
-        tabIndex={-1}
-        className="admin-decision-panel admin-decision-transfers"
-        aria-labelledby="transfer-review-heading"
-      >
-        <header className="admin-decision-panel-heading">
-          <div>
-            <h2 id="transfer-review-heading">Transfer recommendations</h2>
-            <p>Shortage and surplus matches that require Owner/Admin review.</p>
-          </div>
-          {!staffView ? (
-            <Btn
-              variant="primary"
-              disabled={
-                allocationBusy ||
-                supplyBusy ||
-                !!unevaluatedForecasts.length ||
-                !shortageEvaluations.length ||
-                !surplusEvaluations.length
-              }
-              onClick={() => void generateAllocations()}
-            >
-              {allocationBusy
-                ? "Preparing recommendations…"
-                : "Refresh recommendations"}
-            </Btn>
-          ) : (
-            <Badge>Read only</Badge>
+              <small>
+                Historical forecasts use saved horizon-1 values. Missing values
+                remain blank. Curves only guide the eye between weekly points.{" "}
+                The dashed connector links the last actual to the latest
+                outlook.
+                {focusedForecast.hasSimulatedHistory
+                  ? " Historical forecasts in this demo are simulated."
+                  : ""}
+              </small>
+              {focusedForecastStart && focusedForecastEnd ? (
+                <small>
+                  Forecast horizon:{" "}
+                  {formatWeekRange(focusedForecastStart, focusedForecastEnd)}
+                </small>
+              ) : null}
+            </>
+          }
+          formatDateTime={formatDateTime}
+          formatQuantity={formatQuantity}
+          onBranch={chooseBranch}
+          onCategory={chooseCategory}
+          onGenerate={() => void generateForecast()}
+          onFinalize={() => void finalizeForecasts()}
+          onReload={() => setSupportVersion((version) => version + 1)}
+          onAllocation={openAllocation}
+          onUtilization={() =>
+            void navigate({
+              to: "/admin/decisions/utilization",
+              search: {
+                branch: selectedBranchId,
+                category: selectedCategoryId,
+                week: balanceWeek,
+              },
+            })
+          }
+        />
+      ) : null}
+      {view === "allocation" ? (
+        <FleetAllocationScreen
+          week={balanceWeek}
+          category={selectedCategoryId}
+          weeks={weekOptions}
+          categories={allCategories}
+          branches={branchOptions}
+          forecasts={actionableForecastRows}
+          evaluations={currentSupplyRows}
+          rows={allocationReviewRows}
+          history={allocationRows}
+          selected={selectedRecommendation}
+          gaps={filterAllocationGaps(
+            allocationSummary?.unresolvedShortages ?? [],
+            currentSupplyRows,
+            balanceWeek,
+            selectedCategoryId,
           )}
-        </header>
-        {allocationError ? (
-          <p className="admin-decision-feedback is-error" role="alert">
-            {allocationError}
-          </p>
-        ) : null}
-        {allocationSummary?.unresolvedShortages.length ? (
-          <div
-            className="admin-decision-unresolved"
-            aria-label="Unresolved shortage explanations"
+          review={transferReview}
+          loading={allocationLoadingState}
+          busy={allocationBusyState}
+          error={allocationErrorMessage}
+          generationBlock={allocationBlock}
+          forecastCount={actionableForecastRows.length}
+          evaluatedCount={currentSupplyRows.length}
+          refreshDisabled={
+            staffView ||
+            allocationLoadingState ||
+            allocationBusyState ||
+            !actionableForecastRows.length ||
+            !!forecastError
+          }
+          formatQuantity={formatQuantity}
+          formatDateTime={formatDateTime}
+          gapCopy={unresolvedShortageCopy}
+          onFilter={chooseAllocationFilters}
+          onSelect={selectRecommendation}
+          onRefresh={() =>
+            void evaluateSupply(actionableForecastRows.map((row) => row.id))
+          }
+          onReload={() => {
+            setSupportVersion((version) => version + 1);
+            setAllocationReloadVersion((version) => version + 1);
+          }}
+          onGenerate={() => {
+            if (!allocationBlock) void generateAllocations();
+          }}
+          onForecast={() =>
+            void navigate({ to: "/admin/decisions/forecast", search: true })
+          }
+        />
+      ) : null}
+      {view === "utilization" ? (
+        <VehicleUtilizationScreen
+          key={`${analyticsRange.start}:${analyticsRange.end}`}
+          rows={vehicleAnalytics}
+          loading={
+            vehicleLoading ||
+            vehicleAnalytics.some(
+              (row) =>
+                row.reportingStart !== analyticsRange.start ||
+                row.reportingEnd !== analyticsRange.end,
+            )
+          }
+          error={vehicleError}
+          loadedAt={vehicleLoadedAt}
+          range={analyticsRange}
+          search={search}
+          formatDateTime={formatDateTime}
+          onRefresh={() => setVehicleRefreshVersion((value) => value + 1)}
+          onContext={(context) => {
+            void navigate({
+              to: "/admin/decisions/utilization",
+              search: (previous) => ({ ...previous, ...context }),
+              replace: true,
+              resetScroll: false,
+            });
+          }}
+          onAllocation={(row) => {
+            void navigate({
+              to: "/admin/decisions/allocation",
+              search: {
+                branch: row.branchId ?? "all",
+                category: row.categoryId ?? undefined,
+                week: balanceWeek,
+                recommendation: undefined,
+              },
+            });
+          }}
+        />
+      ) : null}
+      {view === "overview" ? (
+        <>
+          <section
+            className="admin-decision-trace"
+            aria-labelledby="decision-trace-heading"
           >
             <header>
-              <strong>Unresolved shortage evidence</strong>
+              <strong id="decision-trace-heading">
+                Auditable decision trace
+              </strong>
               <span>
-                {allocationSummary.unresolvedShortages.length} position
-                {allocationSummary.unresolvedShortages.length === 1
-                  ? ""
-                  : "s"}{" "}
-                still need an operational response
+                The forecast figures describe the selected chart series. Each
+                transfer has its own saved supply snapshots in the review below.
               </span>
             </header>
-            <ul>
-              {allocationSummary.unresolvedShortages.map((gap) => {
-                const evaluation = supplyRows.find(
-                  (row) => row.id === gap.evaluationId,
-                );
-                const forecast = evaluation
-                  ? forecastById.get(evaluation.forecast_id)
-                  : undefined;
-                return (
-                  <li key={gap.evaluationId}>
-                    <div>
-                      <strong>
-                        {forecast?.branch?.name ?? gap.branchId} ·{" "}
-                        {forecast?.category?.name ?? gap.categoryId}
-                      </strong>
-                      <span>
-                        {formatWeekRange(
-                          gap.targetWeekStart,
-                          gap.targetWeekEnd,
-                        )}{" "}
-                        · {gap.unresolvedUnits} of {gap.shortageUnits} unit
-                        {gap.shortageUnits === 1 ? "" : "s"} unresolved
-                      </span>
-                    </div>
-                    <p>{unresolvedShortageCopy(gap.reason)}</p>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ) : null}
-        <div className="admin-decision-transfer-layout">
-          <nav
-            aria-label="Transfer recommendations"
-            className="admin-decision-transfer-list"
-          >
-            {!currentAllocationRows.length ? (
-              <div className="admin-decision-empty">
-                <ArrowRightLeft aria-hidden="true" />
-                <strong>
-                  {supplyBusy || unevaluatedForecasts.length
-                    ? "Preparing transfer options"
-                    : shortageEvaluations.length && !surplusEvaluations.length
-                      ? "No matching surplus is available"
-                      : surplusEvaluations.length && !shortageEvaluations.length
-                        ? "No branch needs a transfer"
-                        : allocationSummary?.unresolvedShortages.some(
-                              (gap) => gap.reason === "NoCompatibleSurplus",
-                            )
-                          ? "No compatible donor is available"
-                          : allocationSummary?.generatedRecommendations === 0
-                            ? "No eligible transfer match was found"
-                            : "No transfer is needed"}
-                </strong>
-                <span>
-                  {supplyBusy || unevaluatedForecasts.length
-                    ? "The latest forecast run is being checked automatically before transfer options are shown."
-                    : shortageEvaluations.length && !surplusEvaluations.length
-                      ? "The current run has a shortage, but no matching branch/category surplus to move."
-                      : surplusEvaluations.length && !shortageEvaluations.length
-                        ? "The current run has spare capacity, but no matching shortage to resolve."
-                        : allocationSummary?.unresolvedShortages.some(
-                              (gap) => gap.reason === "NoCompatibleSurplus",
-                            )
-                          ? "Available surpluses do not match this shortage's category, target week, and forecast horizon."
-                          : allocationSummary?.generatedRecommendations === 0
-                            ? "Compatible surplus exists, but current bookings, rentals, maintenance, or inactive state leave no eligible vehicle to transfer."
-                            : "The current supply snapshots have no unresolved branch imbalance."}
-                </span>
-              </div>
-            ) : (
-              currentAllocationRows.map((row) => (
-                <button
-                  key={row.id}
-                  type="button"
-                  className={
-                    contextRecommendationId === row.id ? "is-selected" : ""
-                  }
-                  onClick={() => setContextRecommendationId(row.id)}
-                >
-                  <span>
-                    <strong>
-                      {row.destination_branch_name} ← {row.source_branch_name}
-                    </strong>
-                    <small>
-                      {row.vehicle_category_name} ·{" "}
-                      {formatDay(row.target_week_start)}
-                    </small>
-                  </span>
-                  <span
-                    className={`admin-decision-recommendation-state is-${row.decision_state.toLowerCase()}`}
-                  >
-                    {row.decision_state}
-                  </span>
-                </button>
-              ))
-            )}
-          </nav>
-
-          <div className="admin-decision-transfer-detail">
-            {selectedRecommendation ? (
-              <>
-                <div className="admin-decision-transfer-title">
+            <ol>
+              {decisionTrace.map((stage, index) => (
+                <li key={stage.label}>
+                  <span aria-hidden="true">{index + 1}</span>
                   <div>
-                    <span>
-                      <ArrowRightLeft aria-hidden="true" />
-                    </span>
-                    <div>
-                      <h3>
-                        Transfer{" "}
-                        {selectedRecommendation.recommended_transfer_units}{" "}
-                        {selectedRecommendation.vehicle_category_name} to{" "}
-                        {selectedRecommendation.destination_branch_name}
-                      </h3>
-                      <p>
-                        {selectedRecommendation.source_branch_name} →{" "}
-                        {selectedRecommendation.destination_branch_name}
-                      </p>
-                    </div>
+                    <strong>{stage.label}</strong>
+                    <small>{stage.detail}</small>
                   </div>
-                  <Badge>{selectedRecommendation.decision_state}</Badge>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <div className="admin-decision-overview">
+            <section
+              className="admin-decision-panel admin-decision-forecast"
+              aria-labelledby="decision-demand-heading"
+            >
+              <header className="admin-decision-panel-heading">
+                <div>
+                  <h2 id="decision-demand-heading">Demand outlook</h2>
+                  <p>
+                    3-week WMA outlook
+                    {latestRun
+                      ? ` · updated ${formatDateTime(latestRun.generated_at)}`
+                      : " · no persisted run"}
+                  </p>
                 </div>
-
-                <dl className="admin-decision-transfer-evidence">
-                  <div>
-                    <dt>Destination shortage</dt>
-                    <dd>
-                      {selectedRecommendation.destination_shortage_snapshot}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Source surplus</dt>
-                    <dd>{selectedRecommendation.source_surplus_snapshot}</dd>
-                  </div>
-                  <div>
-                    <dt>Recommended quantity</dt>
-                    <dd>{selectedRecommendation.recommended_transfer_units}</dd>
-                  </div>
-                  <div>
-                    <dt>Target week</dt>
-                    <dd>
-                      {formatDay(selectedRecommendation.target_week_start)}
-                    </dd>
-                  </div>
-                </dl>
-
-                <div className="admin-decision-candidates">
-                  <h4>Eligible candidates</h4>
-                  {selectedRecommendation.candidates.length ? (
-                    <ol>
-                      {selectedRecommendation.candidates.map((candidate) => (
-                        <li key={candidate.id}>
-                          <span>{candidate.candidate_rank}</span>
-                          <div>
-                            <strong>{candidate.vehicle_name_snapshot}</strong>
-                            <small>
-                              {candidate.license_plate_snapshot ??
-                                "No plate recorded"}
-                            </small>
-                          </div>
-                          <small>
-                            {candidate.idle_days_snapshot == null
-                              ? "Idle days unavailable"
-                              : `${candidate.idle_days_snapshot} days idle`}
-                          </small>
-                        </li>
+                <div className="admin-decision-forecast-filters">
+                  {!staffView ? (
+                    <Btn
+                      variant="default"
+                      disabled={forecastBusy}
+                      onClick={() => void generateForecast()}
+                    >
+                      {forecastBusy ? "Working…" : "Generate new forecast"}
+                    </Btn>
+                  ) : null}
+                  <label>
+                    <span>Branch</span>
+                    <select
+                      value={selectedBranchId}
+                      onChange={(event) =>
+                        setSelectedBranchId(event.target.value)
+                      }
+                      disabled={!branchOptions.length}
+                    >
+                      <option value="all">All branches</option>
+                      {branchOptions.map((branch) => (
+                        <option key={branch.id} value={branch.id}>
+                          {branch.name}
+                        </option>
                       ))}
-                    </ol>
-                  ) : (
-                    <p>No eligible candidate vehicles were persisted.</p>
-                  )}
+                    </select>
+                  </label>
+                  <label>
+                    <span>Category</span>
+                    <select
+                      value={selectedCategoryId}
+                      onChange={(event) =>
+                        setSelectedCategoryId(event.target.value)
+                      }
+                      disabled={!categoryOptions.length}
+                    >
+                      {categoryOptions.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                 </div>
+              </header>
 
-                {!staffView ? (
-                  <OperationalContextPanel
-                    title="Current route context"
-                    context={allocationContext}
-                    loading={allocationContextLoading}
-                    error={allocationContextError}
-                    embedded
-                    advisoryNote="The Owner/Admin considers current weather, road, route, distance, travel-time, and fuel evidence before approving or rejecting. These factors do not change the WMA demand forecast or approve a transfer automatically."
+              <div className="admin-decision-chart">{forecastChart}</div>
+              {forecastCalculation}
+              <footer className="admin-decision-chart-footer">
+                <strong>{focusedForecastLabel}</strong>
+                {focusedForecastSeries.map((series) => (
+                  <span key={series.branchId}>
+                    <i style={{ background: series.color }} /> {series.label} —
+                    actual solid, forecast dashed
+                  </span>
+                ))}
+                {focusedForecastStart && focusedForecastEnd ? (
+                  <small>
+                    Forecast horizon:{" "}
+                    {formatWeekRange(focusedForecastStart, focusedForecastEnd)}
+                  </small>
+                ) : null}
+                {forecastData?.mape == null ? (
+                  <small>
+                    Accuracy becomes available after actual demand is finalized.
+                  </small>
+                ) : (
+                  <small>
+                    Finalized horizon-1 MAPE: {formatPercent(forecastData.mape)}{" "}
+                    · {forecastData.accuracy?.eligibleForecasts ?? 0} eligible
+                    observation
+                    {forecastData.accuracy?.eligibleForecasts === 1 ? "" : "s"}
+                  </small>
+                )}
+                {!staffView && (forecastData?.finalizableForecasts ?? 0) > 0 ? (
+                  <Btn
+                    variant="default"
+                    disabled={forecastBusy}
+                    onClick={() => void finalizeForecasts()}
+                  >
+                    Finalize {forecastData?.finalizableForecasts} completed
+                  </Btn>
+                ) : null}
+              </footer>
+              <details className="admin-transfer-evidence admin-forecast-accuracy">
+                <summary>Forecast accuracy scope and exclusions</summary>
+                <p>
+                  MAPE uses finalized horizon-1 forecasts with nonzero actual
+                  weekly demand across all eligible branch/category series,
+                  rather than only the chart selection. It does not measure
+                  transfer quality or verify real-world accuracy from synthetic
+                  records.
+                </p>
+                <p>
+                  {forecastData?.accuracy?.eligibleForecasts ?? "Unavailable"}{" "}
+                  eligible observations;{" "}
+                  {forecastData?.accuracy?.excludedZeroActuals ?? "Unavailable"}{" "}
+                  zero-actual observations excluded. Later recursive horizons
+                  and unfinished weeks are not included in this horizon-1
+                  metric.
+                </p>
+              </details>
+            </section>
+
+            <aside
+              className="admin-decision-panel admin-decision-brief"
+              aria-labelledby="decision-brief-heading"
+            >
+              <header className="admin-decision-panel-heading">
+                <div>
+                  <h2 id="decision-brief-heading">Decision brief</h2>
+                  <p>Actions supported by the latest persisted records.</p>
+                </div>
+              </header>
+              <ol>
+                {!forecastLoading && !forecastRows.length ? (
+                  <DecisionBriefItem
+                    tone="info"
+                    icon={BarChart3}
+                    title="Generate the demand forecast"
+                    detail="No persisted WMA forecast is available for the next 3 weeks."
+                    basis="A forecast is required before supply can be evaluated."
+                    actionLabel={
+                      forecastBusy ? "Generating…" : "Generate forecast"
+                    }
+                    disabled={forecastBusy || staffView}
+                    onAction={() => void generateForecast()}
                   />
                 ) : null}
 
-                {!staffView &&
-                selectedRecommendation.decision_state === "Pending" ? (
-                  <div className="admin-decision-review-actions">
-                    <label>
-                      <span>Approved quantity</span>
-                      <input
-                        type="number"
-                        inputMode="numeric"
-                        min={1}
-                        max={selectedRecommendation.recommended_transfer_units}
-                        value={approvedUnits}
-                        onChange={(event) =>
-                          setApprovedUnits(Number(event.target.value))
-                        }
-                      />
-                    </label>
-                    <Btn
-                      variant="primary"
-                      disabled={
-                        allocationBusy ||
-                        !Number.isInteger(approvedUnits) ||
-                        approvedUnits < 1 ||
-                        approvedUnits >
-                          selectedRecommendation.recommended_transfer_units
-                      }
-                      onClick={() =>
-                        void decideAllocation(
-                          selectedRecommendation.id,
-                          "Approved",
-                          approvedUnits,
-                        )
-                      }
-                    >
-                      Approve {approvedUnits || ""}
-                    </Btn>
-                    <Btn
-                      variant="danger"
-                      disabled={allocationBusy}
-                      onClick={() =>
-                        void decideAllocation(
-                          selectedRecommendation.id,
-                          "Rejected",
-                        )
-                      }
-                    >
-                      Reject recommendation
-                    </Btn>
-                  </div>
+                {pendingAllocations.slice(0, 3).map((row) => (
+                  <DecisionBriefItem
+                    key={row.id}
+                    tone="attention"
+                    icon={ArrowRightLeft}
+                    title={`Review transfer of ${row.recommended_transfer_units} ${row.vehicle_category_name}`}
+                    detail={`${row.destination_branch_name} needs ${row.destination_shortage_snapshot}; ${row.source_branch_name} has ${row.source_surplus_snapshot} surplus.`}
+                    basis={`Target week ${formatDay(row.target_week_start)} · ${row.candidates.length} eligible candidate${row.candidates.length === 1 ? "" : "s"}`}
+                    actionLabel="Review transfer"
+                    onAction={() => {
+                      selectRecommendation(row);
+                      window.setTimeout(
+                        () => scrollToSection("selected-transfer-review"),
+                        0,
+                      );
+                    }}
+                  />
+                ))}
+
+                {unevaluatedForecasts.length ? (
+                  <DecisionBriefItem
+                    tone="info"
+                    icon={CircleDot}
+                    title={`Evaluate ${unevaluatedForecasts.length} supply gap${unevaluatedForecasts.length === 1 ? "" : "s"}`}
+                    detail="These branch and category forecasts do not have a current supply snapshot."
+                    basis="Supply evaluation checks availability, commitments, and maintenance readiness."
+                    actionLabel="Review supply gaps"
+                    onAction={() => scrollToSection("supply-analysis")}
+                  />
                 ) : null}
-              </>
+
+                {!pendingAllocations.length &&
+                !allocationLoading &&
+                !allocationError &&
+                shortageEvaluations.length &&
+                surplusEvaluations.length ? (
+                  <DecisionBriefItem
+                    tone="attention"
+                    icon={ArrowRightLeft}
+                    title="Generate transfer recommendations"
+                    detail={`${shortageEvaluations.length} shortage${shortageEvaluations.length === 1 ? "" : "s"} and ${surplusEvaluations.length} surplus position${surplusEvaluations.length === 1 ? "" : "s"} are ready to compare.`}
+                    basis="The generator only pairs matching categories and eligible vehicles."
+                    actionLabel={
+                      allocationBusy
+                        ? "Generating…"
+                        : "Generate recommendations"
+                    }
+                    disabled={allocationBusy || allocationLoading || staffView}
+                    onAction={() => void generateAllocations()}
+                  />
+                ) : null}
+
+                {idleRows.length ? (
+                  <DecisionBriefItem
+                    tone="neutral"
+                    icon={CarFront}
+                    title={`Review ${idleRows.length} idle vehicle${idleRows.length === 1 ? "" : "s"}`}
+                    detail="Canonical vehicle analysis classified these vehicles as idle in the current reporting period."
+                    basis={`${formatDay(analyticsRange.start)} – ${formatDay(analyticsRange.end)}`}
+                    actionLabel="Review vehicles"
+                    onAction={() => scrollToSection("vehicle-attention")}
+                  />
+                ) : null}
+
+                {forecastRows.length &&
+                !pendingAllocations.length &&
+                !unevaluatedForecasts.length &&
+                !shortageEvaluations.length &&
+                !idleRows.length ? (
+                  <DecisionBriefItem
+                    tone="success"
+                    icon={CheckCircle2}
+                    title="No decisions need attention"
+                    detail="The latest forecasts and supply evaluations show no unresolved shortage or idle-vehicle signal."
+                    basis="Continue monitoring as new bookings and fleet activity are recorded."
+                    actionLabel="Review analysis"
+                    onAction={() => scrollToSection("branch-balance")}
+                  />
+                ) : null}
+              </ol>
+              {forecastNotice || forecastError || allocationError ? (
+                <div
+                  className={`admin-decision-brief-feedback ${forecastError || allocationError ? "is-error" : ""}`}
+                  role={forecastError || allocationError ? "alert" : "status"}
+                  aria-live="polite"
+                >
+                  {forecastError || allocationError || forecastNotice}
+                </div>
+              ) : null}
+            </aside>
+          </div>
+        </>
+      ) : null}
+      {view === "overview" ? (
+        <>
+          <section
+            id="branch-balance"
+            tabIndex={-1}
+            className="admin-decision-panel admin-decision-balance"
+            aria-labelledby="branch-balance-heading"
+          >
+            <header className="admin-decision-panel-heading">
+              <div>
+                <h2 id="branch-balance-heading">Branch balance</h2>
+                <p>
+                  Required and projected vehicles for the selected target week.
+                </p>
+              </div>
+              <div className="admin-decision-balance-controls">
+                <div
+                  className="admin-decision-legend"
+                  aria-label="Balance states"
+                >
+                  <span>
+                    <i className="is-shortage" /> Shortage
+                  </span>
+                  <span>
+                    <i className="is-balanced" /> Balanced
+                  </span>
+                  <span>
+                    <i className="is-surplus" /> Surplus
+                  </span>
+                  <span>
+                    <i className="is-pending" /> Not evaluated
+                  </span>
+                </div>
+                <label>
+                  <span className="sr-only">Target week</span>
+                  <select
+                    value={balanceWeek}
+                    onChange={(event) => {
+                      setBalanceWeek(event.target.value);
+                      void navigate({
+                        search: (previous) => ({
+                          ...previous,
+                          week: event.target.value,
+                        }),
+                        replace: true,
+                      });
+                    }}
+                    disabled={!weekOptions.length}
+                    aria-label="Target week"
+                  >
+                    {weekOptions.map((week) => (
+                      <option key={week} value={week}>
+                        Week of {formatChartDay(week)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </header>
+            <div className="admin-decision-table-wrap admin-scroll-region">
+              <table className="admin-decision-balance-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Branch</th>
+                    {allCategories.map((category) => (
+                      <th key={category.id} scope="col">
+                        {category.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {branchOptions.map((branch) => (
+                    <tr key={branch.id}>
+                      <th scope="row">{branch.name}</th>
+                      {allCategories.map((category) => {
+                        const forecast = visibleSupplyForecasts.find(
+                          (row) =>
+                            row.branch_id === branch.id &&
+                            row.vehicle_category_id === category.id,
+                        );
+                        const evaluation = forecast
+                          ? supplyByForecastId.get(forecast.id)
+                          : undefined;
+                        const state = evaluation
+                          ? supplyBalanceState(evaluation).toLowerCase()
+                          : "pending";
+                        return (
+                          <td key={category.id} className={`is-${state}`}>
+                            {forecast ? (
+                              <>
+                                <strong>
+                                  {evaluation
+                                    ? `${formatQuantity(evaluation.required_units_snapshot)} / ${formatQuantity(evaluation.projected_supply)}`
+                                    : `${formatQuantity(forecast.required_vehicle_units)} / —`}
+                                </strong>
+                                <span>
+                                  <i />
+                                  {evaluation
+                                    ? supplyBalanceState(evaluation)
+                                    : "Not evaluated"}
+                                </span>
+                              </>
+                            ) : (
+                              <span>No forecast</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <footer className="admin-decision-balance-note">
+              Values show required / projected vehicles from the latest supply
+              snapshot for this forecast run.
+            </footer>
+          </section>
+        </>
+      ) : null}
+      {view === "overview" ? (
+        <>
+          <section
+            id="vehicle-attention"
+            tabIndex={-1}
+            className="admin-decision-panel admin-decision-vehicles"
+            aria-labelledby="vehicle-attention-heading"
+          >
+            <header className="admin-decision-panel-heading">
+              <div>
+                <h2 id="vehicle-attention-heading">Vehicle attention</h2>
+                <p>
+                  Canonical idle classifications and the lowest utilization
+                  values from the selected reporting period.
+                </p>
+              </div>
+              <Link to="/admin/fleet" className="admin-decision-text-link">
+                Open fleet <ArrowRight aria-hidden="true" />
+              </Link>
+            </header>
+            {vehicleLoading ? (
+              <p className="admin-decision-empty" role="status">
+                Loading vehicle analysis…
+              </p>
+            ) : vehicleError ? (
+              <p className="admin-decision-empty is-error" role="alert">
+                {vehicleError} Refresh the page to try again.
+              </p>
+            ) : !vehicleAttentionRows.length ? (
+              <p className="admin-decision-empty">
+                No vehicle analysis is available.
+              </p>
             ) : (
-              <div className="admin-decision-empty">
-                <CircleDot aria-hidden="true" />
-                <strong>Select a recommendation to review</strong>
-                <span>
-                  Its evidence, candidates, route context, and decision controls
-                  will appear here.
-                </span>
+              <div className="admin-decision-table-wrap admin-scroll-region">
+                <table className="admin-decision-data-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Vehicle</th>
+                      <th scope="col">Branch</th>
+                      <th scope="col">Utilization</th>
+                      <th scope="col">Canonical state</th>
+                      <th scope="col">Next review</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {vehicleAttentionRows.map((row) => (
+                      <tr key={row.vehicleId}>
+                        <td>
+                          <strong>{row.name}</strong>
+                          <small>
+                            {row.licensePlate ?? "No plate recorded"}
+                          </small>
+                        </td>
+                        <td>{row.branch ?? "Unknown / unassigned"}</td>
+                        <td className="is-numeric">
+                          {formatPercent(row.utilizationPercent)}
+                        </td>
+                        <td>
+                          <span
+                            className={`admin-decision-state is-${row.idleClassification === "Idle" ? "shortage" : row.idleClassification === "Unable to Determine" ? "pending" : "balanced"}`}
+                          >
+                            <i /> {row.idleClassification}
+                          </span>
+                        </td>
+                        <td>
+                          {row.idleClassification === "Idle"
+                            ? "Compare with branch demand"
+                            : row.utilizationPercent == null
+                              ? "Review historical coverage"
+                              : "Monitor utilization"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
-          </div>
-        </div>
-      </section>
+          </section>
+        </>
+      ) : null}
+      {view === "overview" ? (
+        <>
+          <section
+            id="supply-analysis"
+            tabIndex={-1}
+            className="admin-decision-panel admin-decision-supply"
+            aria-labelledby="supply-analysis-heading"
+            aria-busy={supplyLoading}
+          >
+            <header className="admin-decision-panel-heading">
+              <div>
+                <h2 id="supply-analysis-heading">Supply analysis</h2>
+                <p>
+                  Automatic readiness snapshots account for active vehicles,
+                  confirmed bookings, rentals, and maintenance.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge>
+                  {supplyLoading || supplyBusy
+                    ? "Synchronizing…"
+                    : `${currentSupplyRows.length}/${actionableForecastRows.length} ready`}
+                </Badge>
+                {!staffView && actionableForecastRows.length ? (
+                  <Btn
+                    variant="default"
+                    disabled={supplyBusy || forecastBusy}
+                    onClick={() =>
+                      void evaluateSupply(
+                        actionableForecastRows.map((forecast) => forecast.id),
+                      )
+                    }
+                  >
+                    {supplyBusy ? "Evaluating…" : "Refresh supply"}
+                  </Btn>
+                ) : null}
+              </div>
+            </header>
+            {supplyError ? (
+              <p className="admin-decision-feedback is-error" role="alert">
+                {supplyError}
+              </p>
+            ) : null}
+            <div className="admin-decision-supply-summary" aria-live="polite">
+              {supplyWeekSummaries.map((summary) => {
+                const isReady = summary.evaluated === summary.total;
+                const hasImbalance =
+                  summary.shortageCount || summary.surplusCount;
+                return (
+                  <article key={summary.week}>
+                    <div>
+                      <strong>{formatDay(summary.week)}</strong>
+                      <span>
+                        {summary.total} forecast position
+                        {summary.total === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                    <div>
+                      <span
+                        className={`admin-decision-state is-${isReady ? (hasImbalance ? "shortage" : "balanced") : "pending"}`}
+                      >
+                        <i />
+                        {isReady
+                          ? hasImbalance
+                            ? `${summary.shortageCount} shortage · ${summary.surplusCount} surplus`
+                            : "Balanced or covered"
+                          : `${summary.evaluated}/${summary.total} snapshots ready`}
+                      </span>
+                      <small>
+                        {summary.completedAt
+                          ? `Last checked ${formatDateTime(summary.completedAt)}`
+                          : "Preparing the first readiness snapshot"}
+                      </small>
+                    </div>
+                    <Btn
+                      variant="default"
+                      onClick={() => {
+                        setBalanceWeek(summary.week);
+                        window.setTimeout(
+                          () => scrollToSection("branch-balance"),
+                          0,
+                        );
+                      }}
+                    >
+                      View balance
+                    </Btn>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+
+          <section
+            id="transfer-review"
+            tabIndex={-1}
+            className="admin-decision-panel admin-decision-transfers"
+            aria-labelledby="transfer-review-heading"
+          >
+            <header className="admin-decision-panel-heading">
+              <div>
+                <h2 id="transfer-review-heading">Transfer recommendations</h2>
+                <p>
+                  Review one saved match at a time. Generating recommendations
+                  creates a new analysis batch; it does not move vehicles.
+                </p>
+              </div>
+              {!staffView ? (
+                <div className="flex flex-wrap gap-2">
+                  <Btn
+                    disabled={allocationLoading || allocationBusy || supplyBusy}
+                    onClick={() => {
+                      setSupportVersion((version) => version + 1);
+                      setAllocationReloadVersion((version) => version + 1);
+                    }}
+                  >
+                    Reload saved analysis
+                  </Btn>
+                  <Btn
+                    variant="primary"
+                    disabled={
+                      allocationBusy ||
+                      supplyBusy ||
+                      !!unevaluatedForecasts.length ||
+                      !shortageEvaluations.length ||
+                      !surplusEvaluations.length
+                    }
+                    onClick={() => void generateAllocations()}
+                  >
+                    {allocationBusy
+                      ? "Preparing recommendations…"
+                      : "Generate recommendations"}
+                  </Btn>
+                </div>
+              ) : (
+                <Badge>Read only</Badge>
+              )}
+            </header>
+            <p className="admin-transfer-coverage">
+              Analysis coverage: {currentSupplyRows.length} evaluated
+              branch/category/week positions; {unevaluatedForecasts.length}{" "}
+              awaiting supply evaluation. {currentAllocationRows.length} current
+              recommendations. Forecast, supply, and vehicle data reload every
+              minute. Use Reload saved analysis for recommendations; generation
+              creates new results.
+            </p>
+            {allocationError ? (
+              <p className="admin-decision-feedback is-error" role="alert">
+                {allocationError}
+              </p>
+            ) : null}
+            <div className="admin-decision-transfer-layout">
+              <nav
+                aria-label="Transfer recommendations"
+                className="admin-decision-transfer-list"
+              >
+                {allocationLoading ||
+                supplyLoading ||
+                forecastLoading ||
+                allocationBusy ? (
+                  <div className="admin-decision-empty" role="status">
+                    <strong>Preparing transfer options…</strong>
+                    <span>
+                      Loading saved analysis and checking supply coverage.
+                    </span>
+                  </div>
+                ) : allocationError || supplyError || forecastError ? (
+                  <div className="admin-decision-empty">
+                    <strong>Transfer analysis could not be verified</strong>
+                    <span>
+                      Resolve the analysis error above before treating an empty
+                      list as no transfer needed.
+                    </span>
+                    <Btn
+                      onClick={() => {
+                        setSupportVersion((version) => version + 1);
+                        setAllocationReloadVersion((version) => version + 1);
+                      }}
+                    >
+                      Reload analysis
+                    </Btn>
+                  </div>
+                ) : !currentAllocationRows.length ? (
+                  <div className="admin-decision-empty">
+                    <ArrowRightLeft aria-hidden="true" />
+                    <strong>
+                      {supplyBusy || unevaluatedForecasts.length
+                        ? "Preparing transfer options"
+                        : shortageEvaluations.length &&
+                            !surplusEvaluations.length
+                          ? "No matching surplus is available"
+                          : surplusEvaluations.length &&
+                              !shortageEvaluations.length
+                            ? "No branch needs a transfer"
+                            : allocationSummary?.unresolvedShortages.some(
+                                  (gap) => gap.reason === "NoCompatibleSurplus",
+                                )
+                              ? "No compatible donor is available"
+                              : allocationSummary?.generatedRecommendations ===
+                                  0
+                                ? "No eligible transfer match was found"
+                                : shortageEvaluations.length
+                                  ? "Shortages remain without a saved transfer match"
+                                  : "No transfer is needed"}
+                    </strong>
+                    <span>
+                      {supplyBusy || unevaluatedForecasts.length
+                        ? "The latest forecast run is being checked automatically before transfer options are shown."
+                        : shortageEvaluations.length &&
+                            !surplusEvaluations.length
+                          ? "The current run has a shortage, but no matching branch/category surplus to move."
+                          : surplusEvaluations.length &&
+                              !shortageEvaluations.length
+                            ? "The current run has spare capacity, but no matching shortage to resolve."
+                            : allocationSummary?.unresolvedShortages.some(
+                                  (gap) => gap.reason === "NoCompatibleSurplus",
+                                )
+                              ? "Available surpluses do not match this shortage's category, target week, and forecast horizon."
+                              : allocationSummary?.generatedRecommendations ===
+                                  0
+                                ? "Compatible surplus exists, but current bookings, rentals, maintenance, or inactive state leave no eligible vehicle to transfer."
+                                : shortageEvaluations.length
+                                  ? "Review the shortage evidence or generate recommendations. An empty match list does not resolve the shortage."
+                                  : "The current supply snapshots have no unresolved branch imbalance."}
+                    </span>
+                  </div>
+                ) : (
+                  currentAllocationRows.map((row) => (
+                    <button
+                      key={row.id}
+                      type="button"
+                      className={
+                        contextRecommendationId === row.id ? "is-selected" : ""
+                      }
+                      aria-pressed={contextRecommendationId === row.id}
+                      onClick={() => selectRecommendation(row)}
+                    >
+                      <span>
+                        <strong>
+                          {row.destination_branch_name} ←{" "}
+                          {row.source_branch_name}
+                        </strong>
+                        <small>
+                          {row.vehicle_category_name} ·{" "}
+                          {formatDay(row.target_week_start)}
+                        </small>
+                      </span>
+                      <span
+                        className={`admin-decision-recommendation-state is-${row.decision_state.toLowerCase()}`}
+                      >
+                        {row.decision_state}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </nav>
+
+              <div
+                id="selected-transfer-review"
+                tabIndex={-1}
+                className="admin-decision-transfer-detail"
+                aria-label="Selected transfer review"
+              >
+                {selectedRecommendation ? (
+                  transferReview
+                ) : (
+                  <div className="admin-decision-empty">
+                    <CircleDot aria-hidden="true" />
+                    <strong>
+                      {allocationLoading || supplyLoading
+                        ? "Loading recommendations…"
+                        : "Select a recommendation to review"}
+                    </strong>
+                    <span>
+                      Its route, target week, advisory evidence, and decision
+                      controls will appear here.
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            {allocationSummary?.unresolvedShortages.length ? (
+              <details
+                className="admin-decision-unresolved"
+                aria-label="Unresolved shortage explanations"
+              >
+                <summary>
+                  <strong>Unresolved shortage evidence</strong>
+                  <span>
+                    {allocationSummary.unresolvedShortages.length} position
+                    {allocationSummary.unresolvedShortages.length === 1
+                      ? ""
+                      : "s"}{" "}
+                    still need an operational response
+                  </span>
+                </summary>
+                <ul>
+                  {allocationSummary.unresolvedShortages.map((gap) => {
+                    const evaluation = supplyRows.find(
+                      (row) => row.id === gap.evaluationId,
+                    );
+                    const forecast = evaluation
+                      ? forecastById.get(evaluation.forecast_id)
+                      : undefined;
+                    return (
+                      <li key={gap.evaluationId}>
+                        <div>
+                          <strong>
+                            {forecast?.branch?.name ?? gap.branchId} ·{" "}
+                            {forecast?.category?.name ?? gap.categoryId}
+                          </strong>
+                          <span>
+                            {formatWeekRange(
+                              gap.targetWeekStart,
+                              gap.targetWeekEnd,
+                            )}{" "}
+                            · {gap.unresolvedUnits} of {gap.shortageUnits} unit
+                            {gap.shortageUnits === 1 ? "" : "s"} unresolved
+                          </span>
+                        </div>
+                        <p>{unresolvedShortageCopy(gap.reason)}</p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </details>
+            ) : null}
+          </section>
+        </>
+      ) : null}
+      <Outlet />
     </div>
   );
 }

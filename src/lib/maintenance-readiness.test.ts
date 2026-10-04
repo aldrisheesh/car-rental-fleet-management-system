@@ -72,7 +72,7 @@ test("canonical readiness reports every deterministic blocking reason", () => {
       condition_blocks_rental_use: true,
     },
     [
-      record({ status: "Open" }),
+      record({ status: "Open", blocks_rental_use: true }),
       record({ status: "Scheduled", blocks_rental_use: true }),
       record({
         next_service_date: "2026-08-31",

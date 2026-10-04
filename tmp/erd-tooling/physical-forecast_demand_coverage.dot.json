@@ -1,0 +1,418 @@
+{
+  "name": "ERD",
+  "directed": true,
+  "strict": false,
+  "_draw_": 
+  [
+    {
+      "op": "c",
+      "grad": "none",
+      "color": "#fffffe00"
+    },
+    {
+      "op": "C",
+      "grad": "none",
+      "color": "#ffffff"
+    },
+    {
+      "op": "P",
+      "points": [[-28.800,-28.800],[-28.800,193.600],[752.910,193.600],[752.910,-28.800]]
+    }
+  ],
+  "_ldraw_": 
+  [
+    {
+      "op": "F",
+      "size": 20.000,
+      "face": "Arial"
+    },
+    {
+      "op": "c",
+      "grad": "none",
+      "color": "#000000"
+    },
+    {
+      "op": "T",
+      "pt": [362.050,142.800],
+      "align": "c",
+      "width": 247.940,
+      "text": "forecast_demand_coverage"
+    },
+    {
+      "op": "F",
+      "size": 20.000,
+      "face": "Arial"
+    },
+    {
+      "op": "c",
+      "grad": "none",
+      "color": "#000000"
+    },
+    {
+      "op": "T",
+      "pt": [362.050,118.800],
+      "align": "c",
+      "width": 708.110,
+      "text": "PK = primary key; FK = foreign key. Labels show database-enforced multiplicity."
+    }
+  ],
+  "bb": "0,0,724.11,164.8",
+  "bgcolor": "white",
+  "fontname": "Arial",
+  "fontsize": "20",
+  "label": "forecast_demand_coverage\\nPK = primary key; FK = foreign key. Labels show database-enforced multiplicity.",
+  "labelloc": "t",
+  "lheight": "0.67",
+  "lp": "362.05,136.8",
+  "lwidth": "9.83",
+  "nodesep": "0.5",
+  "overlap": "false",
+  "pad": "0.4",
+  "rankdir": "LR",
+  "ranksep": "1.5",
+  "splines": "ortho",
+  "xdotversion": "1.7",
+  "_subgraph_cnt": 0,
+  "objects": [
+    {
+      "_gvid": 0,
+      "name": "forecast_demand_coverage",
+      "_ldraw_": 
+      [
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#fffffe00"
+        },
+        {
+          "op": "C",
+          "grad": "none",
+          "color": "#163e5b"
+        },
+        {
+          "op": "P",
+          "points": [[237.430,81.600],[237.430,108.800],[486.670,108.800],[486.670,81.600]]
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[237.430,81.600],[237.430,108.800],[486.670,108.800],[486.670,81.600]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#ffffff"
+        },
+        {
+          "op": "t",
+          "fontchar": 1
+        },
+        {
+          "op": "T",
+          "pt": [289.300,92.900],
+          "align": "l",
+          "width": 145.510,
+          "text": "forecast_demand_coverage"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[237.430,54.400],[237.430,81.600],[344.980,81.600],[344.980,54.400]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "t",
+          "fontchar": 0
+        },
+        {
+          "op": "T",
+          "pt": [244.430,63.600],
+          "align": "l",
+          "width": 26.290,
+          "text": "PK id"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[344.980,54.400],[344.980,81.600],[418.280,81.600],[418.280,54.400]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [351.980,63.600],
+          "align": "l",
+          "width": 17.740,
+          "text": "int2"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[418.280,54.400],[418.280,81.600],[486.670,81.600],[486.670,54.400]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [425.280,63.600],
+          "align": "l",
+          "width": 54.400,
+          "text": "NOT NULL"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[237.430,27.200],[237.430,54.400],[344.980,54.400],[344.980,27.200]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [244.430,36.400],
+          "align": "l",
+          "width": 93.550,
+          "text": "tracking_started_at"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[344.980,27.200],[344.980,54.400],[418.280,54.400],[418.280,27.200]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [351.980,36.400],
+          "align": "l",
+          "width": 59.290,
+          "text": "timestamptz"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[418.280,27.200],[418.280,54.400],[486.670,54.400],[486.670,27.200]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [425.280,36.400],
+          "align": "l",
+          "width": 54.400,
+          "text": "NOT NULL"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[237.430,0.000],[237.430,27.200],[344.980,27.200],[344.980,0.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [244.430,9.200],
+          "align": "l",
+          "width": 51.980,
+          "text": "created_at"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[344.980,0.000],[344.980,27.200],[418.280,27.200],[418.280,0.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [351.980,9.200],
+          "align": "l",
+          "width": 59.290,
+          "text": "timestamptz"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[418.280,0.000],[418.280,27.200],[486.670,27.200],[486.670,0.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [425.280,9.200],
+          "align": "l",
+          "width": 54.400,
+          "text": "NOT NULL"
+        }
+      ],
+      "fontname": "Arial",
+      "fontsize": "11",
+      "height": "1.5111",
+      "label": "<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"6\"><TR><TD COLSPAN=\"3\" BGCOLOR=\"#163e5b\"><FONT COLOR=\"white\"><B>forecast_demand_coverage<\/B><\/FONT><\/TD><\/TR><TR><TD ALIGN=\"LEFT\">PK id<\/TD><TD ALIGN=\"LEFT\">int2<\/TD><TD>NOT NULL<\/TD><\/TR><TR><TD ALIGN=\"LEFT\">tracking_started_at<\/TD><TD ALIGN=\"LEFT\">timestamptz<\/TD><TD>NOT NULL<\/TD><\/TR><TR><TD ALIGN=\"LEFT\">created_at<\/TD><TD ALIGN=\"LEFT\">timestamptz<\/TD><TD>NOT NULL<\/TD><\/TR><\/TABLE>",
+      "pos": "362.05,54.4",
+      "shape": "plain",
+      "width": "3.4617"
+    }
+  ]
+}

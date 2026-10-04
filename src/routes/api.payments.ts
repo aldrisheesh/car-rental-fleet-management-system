@@ -268,6 +268,10 @@ async function mutate({ request }: { request: Request }) {
       await client.storage.from("payment-proofs").remove([path]);
       uploadedPath = null;
       const paymentMessages: Record<string, string> = {
+        payment_quote_required:
+          "Please wait for the team to send your rental quote before payment.",
+        pickup_arrangement_required:
+          "The team needs to confirm your pickup and return points before payment. Please contact the team.",
         not_submittable: "Payment proof is already pending verification.",
         payment_requirement_not_set:
           "The required payment amount has not been recorded for this booking yet.",
@@ -281,6 +285,8 @@ async function mutate({ request }: { request: Request }) {
       return error(
         message,
         [
+          "payment_quote_required",
+          "pickup_arrangement_required",
           "not_submittable",
           "payment_requirement_not_set",
           "insufficient_amount",

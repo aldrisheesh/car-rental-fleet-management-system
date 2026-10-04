@@ -1,3 +1,4 @@
+import type { HandoverQuote, RentalFinancialRecord } from "./rental-finance";
 export type AdminStatusTone =
   | "success"
   | "warning"
@@ -57,6 +58,8 @@ export type AdminFinderContext = {
 };
 
 export type AdminBooking = {
+  payment_quote?: HandoverQuote | null;
+  financial_record?: RentalFinancialRecord | null;
   id: string;
   customer_id?: string;
   requested_vehicle_id?: string;
@@ -68,6 +71,10 @@ export type AdminBooking = {
   destination?: string | null;
   purpose_of_use?: string | null;
   pickup_delivery_option?: string | null;
+  pickup_meeting_address?: string | null;
+  pickup_meeting_instructions?: string | null;
+  return_meeting_address?: string | null;
+  return_meeting_instructions?: string | null;
   pickup_location?: string | null;
   dropoff_location?: string | null;
   preferred_seat_count?: number | null;
@@ -259,9 +266,7 @@ export function formatAdminMoney(value: number | string | null | undefined) {
   }).format(amount);
 }
 
-export function bookingReference(id: string) {
-  return id ? `#${id.slice(0, 8).toUpperCase()}` : "Reference unavailable";
-}
+export { bookingReference } from "./booking-reference.ts";
 
 export function rentalState(booking: Pick<AdminBooking, "rental">) {
   if (!booking.rental) return "Not started";
@@ -275,6 +280,7 @@ export function statusTone(status: string | null | undefined): AdminStatusTone {
     case "Verified":
     case "Confirmed":
     case "Active rental":
+    case "Returned":
       return "success";
     case "Pending Review":
     case "Pending Verification":

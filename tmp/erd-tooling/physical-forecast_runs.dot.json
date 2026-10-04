@@ -1,0 +1,936 @@
+{
+  "name": "ERD",
+  "directed": true,
+  "strict": false,
+  "_draw_": 
+  [
+    {
+      "op": "c",
+      "grad": "none",
+      "color": "#fffffe00"
+    },
+    {
+      "op": "C",
+      "grad": "none",
+      "color": "#ffffff"
+    },
+    {
+      "op": "P",
+      "points": [[-28.800,-28.800],[-28.800,275.200],[752.910,275.200],[752.910,-28.800]]
+    }
+  ],
+  "_ldraw_": 
+  [
+    {
+      "op": "F",
+      "size": 20.000,
+      "face": "Arial"
+    },
+    {
+      "op": "c",
+      "grad": "none",
+      "color": "#000000"
+    },
+    {
+      "op": "T",
+      "pt": [362.050,224.400],
+      "align": "c",
+      "width": 121.170,
+      "text": "forecast_runs"
+    },
+    {
+      "op": "F",
+      "size": 20.000,
+      "face": "Arial"
+    },
+    {
+      "op": "c",
+      "grad": "none",
+      "color": "#000000"
+    },
+    {
+      "op": "T",
+      "pt": [362.050,200.400],
+      "align": "c",
+      "width": 708.110,
+      "text": "PK = primary key; FK = foreign key. Labels show database-enforced multiplicity."
+    }
+  ],
+  "bb": "0,0,724.11,246.4",
+  "bgcolor": "white",
+  "fontname": "Arial",
+  "fontsize": "20",
+  "label": "forecast_runs\\nPK = primary key; FK = foreign key. Labels show database-enforced multiplicity.",
+  "labelloc": "t",
+  "lheight": "0.67",
+  "lp": "362.05,218.4",
+  "lwidth": "9.83",
+  "nodesep": "0.5",
+  "overlap": "false",
+  "pad": "0.4",
+  "rankdir": "LR",
+  "ranksep": "1.5",
+  "splines": "ortho",
+  "xdotversion": "1.7",
+  "_subgraph_cnt": 0,
+  "objects": [
+    {
+      "_gvid": 0,
+      "name": "forecast_runs",
+      "_ldraw_": 
+      [
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#fffffe00"
+        },
+        {
+          "op": "C",
+          "grad": "none",
+          "color": "#163e5b"
+        },
+        {
+          "op": "P",
+          "points": [[107.110,163.200],[107.110,190.400],[348.400,190.400],[348.400,163.200]]
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[107.110,163.200],[107.110,190.400],[348.400,190.400],[348.400,163.200]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#ffffff"
+        },
+        {
+          "op": "t",
+          "fontchar": 1
+        },
+        {
+          "op": "T",
+          "pt": [191.380,174.500],
+          "align": "l",
+          "width": 72.750,
+          "text": "forecast_runs"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[107.110,136.000],[107.110,163.200],[206.710,163.200],[206.710,136.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "t",
+          "fontchar": 0
+        },
+        {
+          "op": "T",
+          "pt": [114.110,145.200],
+          "align": "l",
+          "width": 26.290,
+          "text": "PK id"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[206.710,136.000],[206.710,163.200],[280.000,163.200],[280.000,136.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [213.710,145.200],
+          "align": "l",
+          "width": 20.800,
+          "text": "uuid"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[280.000,136.000],[280.000,163.200],[348.400,163.200],[348.400,136.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [287.000,145.200],
+          "align": "l",
+          "width": 54.400,
+          "text": "NOT NULL"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[107.110,108.800],[107.110,136.000],[206.710,136.000],[206.710,108.800]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [114.110,118.000],
+          "align": "l",
+          "width": 64.830,
+          "text": "generated_at"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[206.710,108.800],[206.710,136.000],[280.000,136.000],[280.000,108.800]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [213.710,118.000],
+          "align": "l",
+          "width": 59.290,
+          "text": "timestamptz"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[280.000,108.800],[280.000,136.000],[348.400,136.000],[348.400,108.800]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [287.000,118.000],
+          "align": "l",
+          "width": 54.400,
+          "text": "NOT NULL"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[107.110,81.600],[107.110,108.800],[206.710,108.800],[206.710,81.600]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [114.110,90.800],
+          "align": "l",
+          "width": 84.390,
+          "text": "FK generated_by"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[206.710,81.600],[206.710,108.800],[280.000,108.800],[280.000,81.600]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [213.710,90.800],
+          "align": "l",
+          "width": 20.800,
+          "text": "uuid"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[280.000,81.600],[280.000,108.800],[348.400,108.800],[348.400,81.600]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [287.000,90.800],
+          "align": "l",
+          "width": 54.400,
+          "text": "NOT NULL"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[107.110,54.400],[107.110,81.600],[206.710,81.600],[206.710,54.400]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [114.110,63.600],
+          "align": "l",
+          "width": 36.690,
+          "text": "method"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[206.710,54.400],[206.710,81.600],[280.000,81.600],[280.000,54.400]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [213.710,63.600],
+          "align": "l",
+          "width": 17.730,
+          "text": "text"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[280.000,54.400],[280.000,81.600],[348.400,81.600],[348.400,54.400]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [287.000,63.600],
+          "align": "l",
+          "width": 54.400,
+          "text": "NOT NULL"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[107.110,27.200],[107.110,54.400],[206.710,54.400],[206.710,27.200]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [114.110,36.400],
+          "align": "l",
+          "width": 85.600,
+          "text": "idempotency_key"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[206.710,27.200],[206.710,54.400],[280.000,54.400],[280.000,27.200]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [213.710,36.400],
+          "align": "l",
+          "width": 17.730,
+          "text": "text"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[280.000,27.200],[280.000,54.400],[348.400,54.400],[348.400,27.200]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [287.000,36.400],
+          "align": "l",
+          "width": 54.400,
+          "text": "NOT NULL"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[107.110,0.000],[107.110,27.200],[206.710,27.200],[206.710,0.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [114.110,9.200],
+          "align": "l",
+          "width": 72.760,
+          "text": "coverage_start"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[206.710,0.000],[206.710,27.200],[280.000,27.200],[280.000,0.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [213.710,9.200],
+          "align": "l",
+          "width": 21.410,
+          "text": "date"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[280.000,0.000],[280.000,27.200],[348.400,27.200],[348.400,0.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [300.140,9.200],
+          "align": "l",
+          "width": 28.120,
+          "text": "NULL"
+        }
+      ],
+      "fontname": "Arial",
+      "fontsize": "11",
+      "height": "2.6444",
+      "label": "<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"6\"><TR><TD COLSPAN=\"3\" BGCOLOR=\"#163e5b\"><FONT COLOR=\"white\"><B>forecast_runs<\/B><\/FONT><\/TD><\/TR><TR><TD ALIGN=\"LEFT\">PK id<\/TD><TD ALIGN=\"LEFT\">uuid<\/TD><TD>NOT NULL<\/TD><\/TR><TR><TD ALIGN=\"LEFT\">generated_at<\/TD><TD ALIGN=\"LEFT\">timestamptz<\/TD><TD>NOT NULL<\/TD><\/TR><TR><TD ALIGN=\"LEFT\">FK generated_by<\/TD><TD ALIGN=\"LEFT\">uuid<\/TD><TD>NOT NULL<\/TD><\/TR><TR><TD ALIGN=\"LEFT\">method<\/TD><TD ALIGN=\"LEFT\">text<\/TD><TD>NOT NULL<\/TD><\/TR><TR><TD ALIGN=\"LEFT\">idempotency_key<\/TD><TD ALIGN=\"LEFT\">text<\/TD><TD>NOT NULL<\/TD><\/TR><TR><TD ALIGN=\"LEFT\">coverage_start<\/TD><TD ALIGN=\"LEFT\">date<\/TD><TD>NULL<\/TD><\/TR><\/TABLE>",
+      "pos": "227.75,95.2",
+      "shape": "plain",
+      "width": "3.3513"
+    },
+    {
+      "_gvid": 1,
+      "name": "profiles",
+      "_ldraw_": 
+      [
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#fffffe00"
+        },
+        {
+          "op": "C",
+          "grad": "none",
+          "color": "#e2e8f0"
+        },
+        {
+          "op": "P",
+          "points": [[456.400,95.200],[456.400,122.400],[617.000,122.400],[617.000,95.200]]
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[456.400,95.200],[456.400,122.400],[617.000,122.400],[617.000,95.200]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#263746"
+        },
+        {
+          "op": "t",
+          "fontchar": 1
+        },
+        {
+          "op": "T",
+          "pt": [488.410,106.500],
+          "align": "l",
+          "width": 39.730,
+          "text": "profiles"
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#263746"
+        },
+        {
+          "op": "t",
+          "fontchar": 0
+        },
+        {
+          "op": "T",
+          "pt": [528.140,106.500],
+          "align": "l",
+          "width": 56.850,
+          "text": " (reference)"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[456.400,68.000],[456.400,95.200],[513.800,95.200],[513.800,68.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [463.400,77.200],
+          "align": "l",
+          "width": 43.400,
+          "text": "PK FK id"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[513.800,68.000],[513.800,95.200],[548.600,95.200],[548.600,68.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [520.800,77.200],
+          "align": "l",
+          "width": 20.800,
+          "text": "uuid"
+        },
+        {
+          "op": "S",
+          "style": "solid"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "p",
+          "points": [[548.600,68.000],[548.600,95.200],[617.000,95.200],[617.000,68.000]]
+        },
+        {
+          "op": "F",
+          "size": 11.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#000000"
+        },
+        {
+          "op": "T",
+          "pt": [555.600,77.200],
+          "align": "l",
+          "width": 54.400,
+          "text": "NOT NULL"
+        }
+      ],
+      "fontname": "Arial",
+      "fontsize": "11",
+      "height": "0.75556",
+      "label": "<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"6\"><TR><TD COLSPAN=\"3\" BGCOLOR=\"#e2e8f0\"><FONT COLOR=\"#263746\"><B>profiles<\/B> (reference)<\/FONT><\/TD><\/TR><TR><TD ALIGN=\"LEFT\">PK FK id<\/TD><TD ALIGN=\"LEFT\">uuid<\/TD><TD>NOT NULL<\/TD><\/TR><\/TABLE>",
+      "pos": "536.7,95.2",
+      "shape": "plain",
+      "width": "2.2305"
+    }
+  ],
+  "edges": [
+    {
+      "_gvid": 0,
+      "tail": 0,
+      "head": 1,
+      "_draw_": 
+      [
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#64748b"
+        },
+        {
+          "op": "b",
+          "points": [[348.080,95.200],[384.510,95.200],[423.610,95.200],[456.700,95.200]]
+        }
+      ],
+      "_hldraw_": 
+      [
+        {
+          "op": "F",
+          "size": 9.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#334155"
+        },
+        {
+          "op": "T",
+          "pt": [438.580,100.950],
+          "align": "c",
+          "width": 5.010,
+          "text": "1"
+        }
+      ],
+      "_tldraw_": 
+      [
+        {
+          "op": "F",
+          "size": 9.000,
+          "face": "Arial"
+        },
+        {
+          "op": "c",
+          "grad": "none",
+          "color": "#334155"
+        },
+        {
+          "op": "T",
+          "pt": [366.210,84.050],
+          "align": "c",
+          "width": 16.510,
+          "text": "0..N"
+        }
+      ],
+      "arrowsize": "0.6",
+      "color": "#64748b",
+      "dir": "none",
+      "fontcolor": "#334155",
+      "fontname": "Arial",
+      "fontsize": "9",
+      "head_lp": "438.58,103.65",
+      "headlabel": "1",
+      "labeldistance": "2",
+      "pos": "348.08,95.2 384.51,95.2 423.61,95.2 456.7,95.2",
+      "tail_lp": "366.21,86.748",
+      "taillabel": "0..N"
+    }
+  ]
+}

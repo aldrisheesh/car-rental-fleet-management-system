@@ -1,0 +1,8 @@
+digraph ERD {
+graph [rankdir=LR, bgcolor="white", nodesep=0.5, ranksep=1.5, pad=0.4, splines=ortho, overlap=false, fontname="Arial", fontsize=20, labelloc=t, label="vehicle_images\nPK = primary key; FK = foreign key. Labels show database-enforced multiplicity."];
+node [shape=plain,fontname="Arial",fontsize=11];
+edge [fontname="Arial",fontsize=9,color="#64748b",fontcolor="#334155",arrowsize=0.6];
+"vehicle_images" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>vehicle_images</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK vehicle_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">storage_path</TD><TD ALIGN="LEFT">text</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">public_url</TD><TD ALIGN="LEFT">text</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">alt_text</TD><TD ALIGN="LEFT">text</TD><TD>NULL</TD></TR><TR><TD ALIGN="LEFT">sort_order</TD><TD ALIGN="LEFT">int2</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">is_cover</TD><TD ALIGN="LEFT">bool</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">created_at</TD><TD ALIGN="LEFT">timestamptz</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"vehicles" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#e2e8f0"><FONT COLOR="#263746"><B>vehicles</B> (reference)</FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"vehicle_images" -> "vehicles" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+}

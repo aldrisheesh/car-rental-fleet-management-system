@@ -1,0 +1,11 @@
+{
+  "deploymentId": "dpl_7RgVgYeogJVyBzvcJnhCtvEcEm6T",
+  "url": "briah-car-rental-pzw7sm9w7-aldrisheeshs-projects.vercel.app",
+  "target": "production",
+  "readyState": "READY",
+  "createdAtUtc": "2026-10-01T04:12:23.085000+00:00",
+  "gitBranch": "main",
+  "gitCommit": "02705878169422ae1d7a01d937a9a9680c99bf95",
+  "localChangesDeployed": false,
+  "observedDifference": "Production still labels the Sep 28 target week as Sep 28-Oct 3 and uses Refresh forecast; local labels Sep 28-Oct 4 and Generate new forecast."
+}

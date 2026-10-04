@@ -1,0 +1,186 @@
+[
+  {
+    "number": 59,
+    "title": "Fleet and identity",
+    "part": 1,
+    "parts": 1,
+    "file": "output/erd-editable/portrait/figure-59.png",
+    "svg": "output/erd-editable/portrait/figure-59.svg",
+    "width": 800,
+    "height": 708,
+    "printWidth": 424.9,
+    "printHeight": 376.0365,
+    "printFieldFont": 8.498,
+    "tables": [
+      "profiles",
+      "branches",
+      "vehicle_categories",
+      "vehicles",
+      "vehicle_images",
+      "vehicle_operational_state_events"
+    ],
+    "relationships": 6
+  },
+  {
+    "number": 60,
+    "title": "Bookings and requirements",
+    "part": 1,
+    "parts": 2,
+    "file": "output/erd-editable/portrait/figure-60-1.png",
+    "svg": "output/erd-editable/portrait/figure-60-1.svg",
+    "width": 800,
+    "height": 634,
+    "printWidth": 424.9,
+    "printHeight": 336.73325,
+    "printFieldFont": 8.498,
+    "tables": [
+      "booking_requests",
+      "booking_creation_idempotency",
+      "booking_finder_context"
+    ],
+    "relationships": 13
+  },
+  {
+    "number": 60,
+    "title": "Bookings and requirements",
+    "part": 2,
+    "parts": 2,
+    "file": "output/erd-editable/portrait/figure-60-2.png",
+    "svg": "output/erd-editable/portrait/figure-60-2.svg",
+    "width": 800,
+    "height": 606,
+    "printWidth": 424.9,
+    "printHeight": 321.86175,
+    "printFieldFont": 8.498,
+    "tables": [
+      "renter_requirement_sets",
+      "renter_requirement_documents",
+      "renter_requirement_reviews"
+    ],
+    "relationships": 11
+  },
+  {
+    "number": 61,
+    "title": "Payments and retained quotations",
+    "part": 1,
+    "parts": 1,
+    "file": "output/erd-editable/portrait/figure-61.png",
+    "svg": "output/erd-editable/portrait/figure-61.svg",
+    "width": 800,
+    "height": 988,
+    "printWidth": 424.9,
+    "printHeight": 524.7515,
+    "printFieldFont": 8.498,
+    "tables": [
+      "payment_methods",
+      "payments",
+      "payment_proofs",
+      "booking_payment_quotes",
+      "rate_cards",
+      "booking_rate_quotes"
+    ],
+    "relationships": 15
+  },
+  {
+    "number": 62,
+    "title": "Rental and maintenance",
+    "part": 1,
+    "parts": 1,
+    "file": "output/erd-editable/portrait/figure-62.png",
+    "svg": "output/erd-editable/portrait/figure-62.svg",
+    "width": 800,
+    "height": 488,
+    "printWidth": 424.9,
+    "printHeight": 259.18899999999996,
+    "printFieldFont": 8.498,
+    "tables": [
+      "rental_transactions",
+      "maintenance_records"
+    ],
+    "relationships": 10
+  },
+  {
+    "number": 63,
+    "title": "Demand forecasting",
+    "part": 1,
+    "parts": 1,
+    "file": "output/erd-editable/portrait/figure-63.png",
+    "svg": "output/erd-editable/portrait/figure-63.svg",
+    "width": 800,
+    "height": 534,
+    "printWidth": 424.9,
+    "printHeight": 283.62075,
+    "printFieldFont": 8.498,
+    "tables": [
+      "forecast_runs",
+      "forecasts",
+      "forecast_inputs",
+      "forecast_demand_coverage"
+    ],
+    "relationships": 5
+  },
+  {
+    "number": 64,
+    "title": "Supply and allocation",
+    "part": 1,
+    "parts": 1,
+    "file": "output/erd-editable/portrait/figure-64.png",
+    "svg": "output/erd-editable/portrait/figure-64.svg",
+    "width": 800,
+    "height": 886,
+    "printWidth": 424.9,
+    "printHeight": 470.57674999999995,
+    "printFieldFont": 8.498,
+    "tables": [
+      "supply_evaluations",
+      "supply_evaluation_vehicles",
+      "allocation_recommendation_batches",
+      "allocation_recommendations",
+      "allocation_recommendation_candidates"
+    ],
+    "relationships": 14
+  },
+  {
+    "number": 65,
+    "title": "Notifications and audit",
+    "part": 1,
+    "parts": 1,
+    "file": "output/erd-editable/portrait/figure-65.png",
+    "svg": "output/erd-editable/portrait/figure-65.svg",
+    "width": 800,
+    "height": 646,
+    "printWidth": 424.9,
+    "printHeight": 343.10675,
+    "printFieldFont": 8.498,
+    "tables": [
+      "notifications",
+      "notification_preferences",
+      "operational_notification_conditions",
+      "email_deliveries",
+      "audit_events"
+    ],
+    "relationships": 6
+  },
+  {
+    "number": 66,
+    "title": "Recovery and public contact",
+    "part": 1,
+    "parts": 1,
+    "file": "output/erd-editable/portrait/figure-66.png",
+    "svg": "output/erd-editable/portrait/figure-66.svg",
+    "width": 800,
+    "height": 708,
+    "printWidth": 424.9,
+    "printHeight": 376.0365,
+    "printFieldFont": 8.498,
+    "tables": [
+      "backup_runs",
+      "backup_artifacts",
+      "recovery_drills",
+      "public_contact_settings",
+      "public_contact_locations",
+      "contact_inquiries"
+    ],
+    "relationships": 5
+  }
+]

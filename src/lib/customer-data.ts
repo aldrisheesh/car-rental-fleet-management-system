@@ -1,3 +1,4 @@
+import type { HandoverQuote, RentalFinancialRecord } from "./rental-finance";
 import {
   instantToManilaDateTimeLocal,
   manilaDateTimeLocalToInstant,
@@ -80,6 +81,8 @@ export type FinderResponse = {
 };
 
 export type CustomerBooking = {
+  payment_quote?: HandoverQuote | null;
+  financial_record?: RentalFinancialRecord | null;
   id: string;
   booking_status: string;
   resolution_reason?: string | null;
@@ -92,6 +95,10 @@ export type CustomerBooking = {
   purpose_of_use?: string | null;
   destination?: string | null;
   pickup_delivery_option?: string | null;
+  pickup_meeting_address?: string | null;
+  pickup_meeting_instructions?: string | null;
+  return_meeting_address?: string | null;
+  return_meeting_instructions?: string | null;
   pickup_location?: string | null;
   dropoff_location?: string | null;
   preferred_seat_count?: number | null;

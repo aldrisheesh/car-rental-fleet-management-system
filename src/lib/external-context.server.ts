@@ -1,3 +1,4 @@
+import { routePointNote, type DssRoutePoint } from "./dss-location.ts";
 export type ExternalContextFailureCategory =
   | "timeout"
   | "not_configured"
@@ -1065,6 +1066,7 @@ export type TripContextRequest = {
   targetTime: string;
   vehicleId?: string;
   trafficAwareRoute?: boolean;
+  destinationBranchId?: string;
 };
 export type TripContext = {
   destinationGeocode: ProviderResult<NormalizedGeocode>;
@@ -1073,6 +1075,7 @@ export type TripContext = {
   weather: ProviderResult<NormalizedWeather>;
   trafficIncidents: ProviderResult<NormalizedTrafficIncident[]>;
   fuelEstimate?: FuelEstimate;
+  routePointNote?: string;
 };
 
 function unavailable<T>(
@@ -1085,23 +1088,69 @@ export async function getTrustedTripContext(
   request: TripContextRequest,
   service = new ExternalContextService(),
 ): Promise<TripContext> {
-  const destinationGeocode = await service.geocode({
+  let destinationGeocode = await service.geocode({
     query: request.destination,
   });
   const { getSupabaseServerClient } = await import("./supabase/server.ts");
   let client: ReturnType<typeof getSupabaseServerClient> | undefined;
+  let pointNote = request.destinationBranchId ? routePointNote() : undefined;
   let originGeocode: ProviderResult<NormalizedGeocode> =
     unavailable("coverage");
   try {
     client = getSupabaseServerClient();
-    const branch = await client
-      .from("branches")
-      .select("address")
-      .eq("id", request.pickupBranchId)
-      .eq("is_active", true)
-      .maybeSingle();
-    if (!branch.error && branch.data?.address) {
-      originGeocode = await service.geocode({ query: branch.data.address });
+    if (request.destinationBranchId) {
+      const result = await client
+        .from("branch_route_points")
+        .select("*")
+        .in("branch_id", [request.pickupBranchId, request.destinationBranchId]);
+      if (result.error) throw new Error("confirmed_points_unavailable");
+      const pointFor = (id: string) => {
+        const row = result.data?.find((p) => p.branch_id === id);
+        return row
+          ? ({
+              latitude: row.latitude,
+              longitude: row.longitude,
+              label: row.label,
+              query: row.query,
+              provider: row.provider,
+              resultType: row.result_type,
+              kind: row.kind,
+              confirmedAt: row.confirmed_at,
+            } as DssRoutePoint)
+          : null;
+      };
+      const start = pointFor(request.pickupBranchId);
+      const end = pointFor(request.destinationBranchId);
+      pointNote = routePointNote(start, end);
+      const fromPoint = (
+        point: DssRoutePoint,
+      ): ProviderResult<NormalizedGeocode> => ({
+        status: "available",
+        data: {
+          latitude: point.latitude,
+          longitude: point.longitude,
+          label: point.label,
+          originalQuery: point.query,
+          countryCode: "PH",
+          providerMetadata: { resultType: point.resultType },
+        },
+        providerUsed: point.provider as ProviderName,
+        fallbackUsed: false,
+        fetchedAt: point.confirmedAt,
+      });
+      if (start) originGeocode = fromPoint(start);
+      if (end) destinationGeocode = fromPoint(end);
+      if (!start || !end) originGeocode = unavailable("coverage");
+    } else {
+      const branch = await client
+        .from("branches")
+        .select("address")
+        .eq("id", request.pickupBranchId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!branch.error && branch.data?.address) {
+        originGeocode = await service.geocode({ query: branch.data.address });
+      }
     }
   } catch {
     // A canonical-origin read failure must not discard independent context.
@@ -1148,5 +1197,6 @@ export async function getTrustedTripContext(
     weather,
     trafficIncidents,
     fuelEstimate,
+    ...(pointNote ? { routePointNote: pointNote } : {}),
   };
 }

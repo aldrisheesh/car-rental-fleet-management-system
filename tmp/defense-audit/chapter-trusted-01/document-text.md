@@ -1,0 +1,16792 @@
+# Revised Database Schema and Dictionary
+
+- Document ID: 1cFZhN-b0NAopEX3CzUlIvOgefVMTTXbi2eietaZWEbY
+- Revision ID: ANLCKQnXNUEgPLiHJLyUEILLsGqYMEi129T-Sdxmi8kzEB5hg22A1RkxTWARVcA6pZioeOJMscz3hY_Cra6IojukEhivi2a0RteTFaxffuk
+- Selected tab: t.kanl7aklma2z
+- Protected controls: 0
+- Opaque controls: 0
+- Authoritative dropdowns: 0
+
+Protected-control annotations are preservation instructions. Do not insert their displayed placeholder text to recreate a native control.
+
+## Chapters 1-3 (t.kanl7aklma2z)
+
+[P00001 | 1:141 | NORMAL_TEXT]
+A WEB-BASED CAR RENTAL MANAGEMENT SYSTEM WITH DEMAND FORECASTING AND CONTEXT-AWARE FLEET ALLOCATION FOR SMALL-SCALE MULTI-BRANCH BUSINESSES
+
+[P00002 | 141:142 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00003 | 142:143 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00004 | 143:144 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00005 | 144:145 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00006 | 145:166 | NORMAL_TEXT]
+A Capstone Project  
+
+[P00007 | 166:243 | NORMAL_TEXT]
+Presented to the Faculty of the College of Computer and Information Sciences
+
+[P00008 | 243:285 | NORMAL_TEXT]
+Polytechnic University of the Philippines
+
+[P00009 | 285:303 | NORMAL_TEXT]
+Sta. Mesa, Manila
+
+[P00010 | 303:304 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00011 | 304:305 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00012 | 305:362 | NORMAL_TEXT]
+In Partial Fulfilment of the Requirements for the Degree
+
+[P00013 | 362:408 | NORMAL_TEXT]
+Bachelor of Science in Information Technology
+
+[P00014 | 408:409 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00015 | 409:410 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00016 | 410:413 | NORMAL_TEXT]
+by
+
+[P00017 | 413:414 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00018 | 414:415 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00019 | 415:438 | NORMAL_TEXT]
+Sebastian Dane D. Bien
+
+[P00020 | 438:463 | NORMAL_TEXT]
+Shane Richmond A. Binuya
+
+[P00021 | 463:481 | NORMAL_TEXT]
+Micaela M. Depaur
+
+[P00022 | 481:502 | NORMAL_TEXT]
+John Arron P. Mojico
+
+[P00023 | 502:524 | NORMAL_TEXT]
+Roi Aldrich S. Santos
+
+[P00024 | 524:525 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00025 | 525:526 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00026 | 526:527 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00027 | 527:528 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00028 | 528:538 | NORMAL_TEXT]
+May 2026
+
+[P00029 | 538:556 | NORMAL_TEXT]
+TABLE OF CONTENTS
+
+[P00030 | 556:557 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00031 | 557:558 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00032 | 561:562 | NORMAL_TEXT | TABLE row=0 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00033 | 563:564 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00034 | 565:566 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00035 | 567:572 | NORMAL_TEXT | TABLE row=0 col=3]
+Page
+
+[P00036 | 574:585 | NORMAL_TEXT | TABLE row=1 col=0]
+Title Page
+
+[P00037 | 586:587 | NORMAL_TEXT | TABLE row=1 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00038 | 588:589 | NORMAL_TEXT | TABLE row=1 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00039 | 590:592 | NORMAL_TEXT | TABLE row=1 col=3]
+i
+
+[P00040 | 594:612 | NORMAL_TEXT | TABLE row=2 col=0]
+Table of Contents
+
+[P00041 | 613:614 | NORMAL_TEXT | TABLE row=2 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00042 | 615:616 | NORMAL_TEXT | TABLE row=2 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00043 | 617:620 | NORMAL_TEXT | TABLE row=2 col=3]
+ii
+
+[P00044 | 622:637 | NORMAL_TEXT | TABLE row=3 col=0]
+List of Tables
+
+[P00045 | 638:639 | NORMAL_TEXT | TABLE row=3 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00046 | 640:641 | NORMAL_TEXT | TABLE row=3 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00047 | 642:645 | NORMAL_TEXT | TABLE row=3 col=3]
+iv
+
+[P00048 | 647:663 | NORMAL_TEXT | TABLE row=4 col=0]
+List of Figures
+
+[P00049 | 664:665 | NORMAL_TEXT | TABLE row=4 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00050 | 666:667 | NORMAL_TEXT | TABLE row=4 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00051 | 668:671 | NORMAL_TEXT | TABLE row=4 col=3]
+vi
+
+[P00052 | 673:674 | NORMAL_TEXT | TABLE row=5 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00053 | 674:689 | NORMAL_TEXT | TABLE row=5 col=0]
+1 INTRODUCTION
+
+[P00054 | 690:691 | NORMAL_TEXT | TABLE row=5 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00055 | 692:693 | NORMAL_TEXT | TABLE row=5 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00056 | 694:695 | NORMAL_TEXT | TABLE row=5 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P00057 | 697:713 | NORMAL_TEXT | TABLE row=6 col=0]
+Project Context
+
+[P00058 | 714:715 | NORMAL_TEXT | TABLE row=6 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00059 | 716:717 | NORMAL_TEXT | TABLE row=6 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00060 | 718:720 | NORMAL_TEXT | TABLE row=6 col=3]
+1
+
+[P00061 | 722:743 | NORMAL_TEXT | TABLE row=7 col=0]
+Technical Background
+
+[P00062 | 744:745 | NORMAL_TEXT | TABLE row=7 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00063 | 746:747 | NORMAL_TEXT | TABLE row=7 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00064 | 748:750 | NORMAL_TEXT | TABLE row=7 col=3]
+4
+
+[P00065 | 752:753 | NORMAL_TEXT | TABLE row=8 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00066 | 754:773 | NORMAL_TEXT | TABLE row=8 col=1]
+Equipment/Hardware
+
+[P00067 | 774:775 | NORMAL_TEXT | TABLE row=8 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00068 | 776:778 | NORMAL_TEXT | TABLE row=8 col=3]
+5
+
+[P00069 | 780:781 | NORMAL_TEXT | TABLE row=9 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00070 | 782:791 | NORMAL_TEXT | TABLE row=9 col=1]
+Software
+
+[P00071 | 792:793 | NORMAL_TEXT | TABLE row=9 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00072 | 794:796 | NORMAL_TEXT | TABLE row=9 col=3]
+6
+
+[P00073 | 798:799 | NORMAL_TEXT | TABLE row=10 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00074 | 800:820 | NORMAL_TEXT | TABLE row=10 col=1]
+Peopleware/Manpower
+
+[P00075 | 821:822 | NORMAL_TEXT | TABLE row=10 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00076 | 823:825 | NORMAL_TEXT | TABLE row=10 col=3]
+7
+
+[P00077 | 827:828 | NORMAL_TEXT | TABLE row=11 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00078 | 829:865 | NORMAL_TEXT | TABLE row=11 col=1]
+Network Infrastructure/Architecture
+
+[P00079 | 866:867 | NORMAL_TEXT | TABLE row=11 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00080 | 868:870 | NORMAL_TEXT | TABLE row=11 col=3]
+9
+
+[P00081 | 872:873 | NORMAL_TEXT | TABLE row=12 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00082 | 874:913 | NORMAL_TEXT | TABLE row=12 col=1]
+Storage, Backup and Recovery Procedure
+
+[P00083 | 914:915 | NORMAL_TEXT | TABLE row=12 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00084 | 916:918 | NORMAL_TEXT | TABLE row=12 col=3]
+9
+
+[P00085 | 920:921 | NORMAL_TEXT | TABLE row=13 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00086 | 922:942 | NORMAL_TEXT | TABLE row=13 col=1]
+Security Procedures
+
+[P00087 | 943:944 | NORMAL_TEXT | TABLE row=13 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00088 | 945:948 | NORMAL_TEXT | TABLE row=13 col=3]
+10
+
+[P00089 | 950:951 | NORMAL_TEXT | TABLE row=14 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00090 | 952:976 | NORMAL_TEXT | TABLE row=14 col=1]
+Policies and Procedures
+
+[P00091 | 977:978 | NORMAL_TEXT | TABLE row=14 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00092 | 979:982 | NORMAL_TEXT | TABLE row=14 col=3]
+10
+
+[P00093 | 984:1001 | NORMAL_TEXT | TABLE row=15 col=0]
+Problem Analysis
+
+[P00094 | 1002:1003 | NORMAL_TEXT | TABLE row=15 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00095 | 1004:1005 | NORMAL_TEXT | TABLE row=15 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00096 | 1006:1009 | NORMAL_TEXT | TABLE row=15 col=3]
+16
+
+[P00097 | 1011:1012 | NORMAL_TEXT | TABLE row=16 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00098 | 1013:1030 | NORMAL_TEXT | TABLE row=16 col=1]
+Fishbone Diagram
+
+[P00099 | 1031:1032 | NORMAL_TEXT | TABLE row=16 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00100 | 1033:1036 | NORMAL_TEXT | TABLE row=16 col=3]
+20
+
+[P00101 | 1038:1039 | NORMAL_TEXT | TABLE row=17 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00102 | 1040:1071 | NORMAL_TEXT | TABLE row=17 col=1]
+Problem and Solution Statement
+
+[P00103 | 1072:1073 | NORMAL_TEXT | TABLE row=17 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00104 | 1074:1077 | NORMAL_TEXT | TABLE row=17 col=3]
+23
+
+[P00105 | 1079:1080 | NORMAL_TEXT | TABLE row=18 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00106 | 1081:1109 | NORMAL_TEXT | TABLE row=18 col=1]
+Problem-Requirements Matrix
+
+[P00107 | 1110:1111 | NORMAL_TEXT | TABLE row=18 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00108 | 1112:1115 | NORMAL_TEXT | TABLE row=18 col=3]
+25
+
+[P00109 | 1117:1141 | NORMAL_TEXT | TABLE row=19 col=0]
+Purpose and Description
+
+[P00110 | 1142:1143 | NORMAL_TEXT | TABLE row=19 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00111 | 1144:1145 | NORMAL_TEXT | TABLE row=19 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00112 | 1146:1149 | NORMAL_TEXT | TABLE row=19 col=3]
+27
+
+[P00113 | 1151:1171 | NORMAL_TEXT | TABLE row=20 col=0]
+Specific Objectives
+
+[P00114 | 1172:1173 | NORMAL_TEXT | TABLE row=20 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00115 | 1174:1175 | NORMAL_TEXT | TABLE row=20 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00116 | 1176:1179 | NORMAL_TEXT | TABLE row=20 col=3]
+28
+
+[P00117 | 1181:1204 | NORMAL_TEXT | TABLE row=21 col=0]
+Scope and Limitations 
+
+[P00118 | 1205:1206 | NORMAL_TEXT | TABLE row=21 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00119 | 1207:1208 | NORMAL_TEXT | TABLE row=21 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00120 | 1209:1212 | NORMAL_TEXT | TABLE row=21 col=3]
+30
+
+[P00121 | 1214:1234 | NORMAL_TEXT | TABLE row=22 col=0]
+Definition of Terms
+
+[P00122 | 1235:1236 | NORMAL_TEXT | TABLE row=22 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00123 | 1237:1238 | NORMAL_TEXT | TABLE row=22 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00124 | 1239:1242 | NORMAL_TEXT | TABLE row=22 col=3]
+34
+
+[P00125 | 1244:1245 | NORMAL_TEXT | TABLE row=23 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00126 | 1246:1247 | NORMAL_TEXT | TABLE row=23 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00127 | 1248:1249 | NORMAL_TEXT | TABLE row=23 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00128 | 1250:1251 | NORMAL_TEXT | TABLE row=23 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P00129 | 1253:1298 | NORMAL_TEXT | TABLE row=24 col=0]
+2 REVIEW OF LITERATURE, STUDIES, AND SYSTEMS
+
+[P00130 | 1299:1300 | NORMAL_TEXT | TABLE row=24 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00131 | 1301:1302 | NORMAL_TEXT | TABLE row=24 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00132 | 1303:1304 | NORMAL_TEXT | TABLE row=24 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P00133 | 1306:1350 | NORMAL_TEXT | TABLE row=25 col=0]
+Car Rental Industry and Operational Context
+
+[P00134 | 1351:1352 | NORMAL_TEXT | TABLE row=25 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00135 | 1353:1354 | NORMAL_TEXT | TABLE row=25 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00136 | 1355:1358 | NORMAL_TEXT | TABLE row=25 col=3]
+42
+
+[P00137 | 1360:1409 | NORMAL_TEXT | TABLE row=26 col=0]
+Fleet Management and Operational Decision-Making
+
+[P00138 | 1410:1411 | NORMAL_TEXT | TABLE row=26 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00139 | 1412:1413 | NORMAL_TEXT | TABLE row=26 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00140 | 1414:1417 | NORMAL_TEXT | TABLE row=26 col=3]
+56
+
+[P00141 | 1419:1477 | NORMAL_TEXT | TABLE row=27 col=0]
+Context-Aware Transportation and Operational Intelligence
+
+[P00142 | 1478:1479 | NORMAL_TEXT | TABLE row=27 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00143 | 1480:1481 | NORMAL_TEXT | TABLE row=27 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00144 | 1482:1485 | NORMAL_TEXT | TABLE row=27 col=3]
+69
+
+[P00145 | 1487:1521 | NORMAL_TEXT | TABLE row=28 col=0]
+Related Systems and Research Gaps
+
+[P00146 | 1522:1523 | NORMAL_TEXT | TABLE row=28 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00147 | 1524:1525 | NORMAL_TEXT | TABLE row=28 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00148 | 1526:1529 | NORMAL_TEXT | TABLE row=28 col=3]
+79
+
+[P00149 | 1531:1554 | NORMAL_TEXT | TABLE row=29 col=0]
+Synthesis of the Study
+
+[P00150 | 1555:1556 | NORMAL_TEXT | TABLE row=29 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00151 | 1557:1558 | NORMAL_TEXT | TABLE row=29 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00152 | 1559:1562 | NORMAL_TEXT | TABLE row=29 col=3]
+83
+
+[P00153 | 1564:1565 | NORMAL_TEXT | TABLE row=30 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00154 | 1565:1579 | NORMAL_TEXT | TABLE row=30 col=0]
+3 METHODOLOGY
+
+[P00155 | 1580:1581 | NORMAL_TEXT | TABLE row=30 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00156 | 1582:1583 | NORMAL_TEXT | TABLE row=30 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00157 | 1584:1585 | NORMAL_TEXT | TABLE row=30 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P00158 | 1587:1609 | NORMAL_TEXT | TABLE row=31 col=0]
+Requirements Analysis
+
+[P00159 | 1610:1611 | NORMAL_TEXT | TABLE row=31 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00160 | 1612:1613 | NORMAL_TEXT | TABLE row=31 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00161 | 1614:1617 | NORMAL_TEXT | TABLE row=31 col=3]
+90
+
+[P00162 | 1619:1620 | NORMAL_TEXT | TABLE row=32 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00163 | 1621:1652 | NORMAL_TEXT | TABLE row=32 col=1]
+Requirements – Features Matrix
+
+[P00164 | 1653:1654 | NORMAL_TEXT | TABLE row=32 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00165 | 1655:1658 | NORMAL_TEXT | TABLE row=32 col=3]
+93
+
+[P00166 | 1660:1661 | NORMAL_TEXT | TABLE row=33 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00167 | 1662:1679 | NORMAL_TEXT | TABLE row=33 col=1]
+Use Case Diagram
+
+[P00168 | 1680:1681 | NORMAL_TEXT | TABLE row=33 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00169 | 1682:1685 | NORMAL_TEXT | TABLE row=33 col=3]
+95
+
+[P00170 | 1687:1688 | NORMAL_TEXT | TABLE row=34 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00171 | 1689:1705 | NORMAL_TEXT | TABLE row=34 col=1]
+Use Case Report
+
+[P00172 | 1706:1707 | NORMAL_TEXT | TABLE row=34 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00173 | 1708:1712 | NORMAL_TEXT | TABLE row=34 col=3]
+121
+
+[P00174 | 1714:1736 | NORMAL_TEXT | TABLE row=35 col=0]
+Design Specifications
+
+[P00175 | 1737:1738 | NORMAL_TEXT | TABLE row=35 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00176 | 1739:1740 | NORMAL_TEXT | TABLE row=35 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00177 | 1741:1745 | NORMAL_TEXT | TABLE row=35 col=3]
+154
+
+[P00178 | 1747:1748 | NORMAL_TEXT | TABLE row=36 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00179 | 1749:1766 | NORMAL_TEXT | TABLE row=36 col=1]
+Activity Diagram
+
+[P00180 | 1767:1768 | NORMAL_TEXT | TABLE row=36 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00181 | 1769:1773 | NORMAL_TEXT | TABLE row=36 col=3]
+154
+
+[P00182 | 1775:1776 | NORMAL_TEXT | TABLE row=37 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00183 | 1777:1793 | NORMAL_TEXT | TABLE row=37 col=1]
+Database Schema
+
+[P00184 | 1794:1795 | NORMAL_TEXT | TABLE row=37 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00185 | 1796:1800 | NORMAL_TEXT | TABLE row=37 col=3]
+184
+
+[P00186 | 1802:1803 | NORMAL_TEXT | TABLE row=38 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00187 | 1804:1820 | NORMAL_TEXT | TABLE row=38 col=1]
+Data Dictionary
+
+[P00188 | 1821:1822 | NORMAL_TEXT | TABLE row=38 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00189 | 1823:1827 | NORMAL_TEXT | TABLE row=38 col=3]
+185
+
+[P00190 | 1829:1853 | NORMAL_TEXT | TABLE row=39 col=0]
+Development Methodology
+
+[P00191 | 1854:1855 | NORMAL_TEXT | TABLE row=39 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00192 | 1856:1857 | NORMAL_TEXT | TABLE row=39 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00193 | 1858:1862 | NORMAL_TEXT | TABLE row=39 col=3]
+222
+
+[P00194 | 1864:1865 | NORMAL_TEXT | TABLE row=40 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00195 | 1866:1880 | NORMAL_TEXT | TABLE row=40 col=1]
+Process Model
+
+[P00196 | 1881:1882 | NORMAL_TEXT | TABLE row=40 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00197 | 1883:1887 | NORMAL_TEXT | TABLE row=40 col=3]
+225
+
+[P00198 | 1889:1890 | NORMAL_TEXT | TABLE row=41 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00199 | 1891:1909 | NORMAL_TEXT | TABLE row=41 col=1]
+Development Tools
+
+[P00200 | 1910:1911 | NORMAL_TEXT | TABLE row=41 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00201 | 1912:1916 | NORMAL_TEXT | TABLE row=41 col=3]
+227
+
+[P00202 | 1918:1946 | NORMAL_TEXT | TABLE row=42 col=0]
+Test Methodology/Procedures
+
+[P00203 | 1947:1948 | NORMAL_TEXT | TABLE row=42 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00204 | 1949:1950 | NORMAL_TEXT | TABLE row=42 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00205 | 1951:1955 | NORMAL_TEXT | TABLE row=42 col=3]
+232
+
+[P00206 | 1957:1977 | NORMAL_TEXT | TABLE row=43 col=0]
+System Requirements
+
+[P00207 | 1978:1979 | NORMAL_TEXT | TABLE row=43 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00208 | 1980:1981 | NORMAL_TEXT | TABLE row=43 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00209 | 1982:1986 | NORMAL_TEXT | TABLE row=43 col=3]
+241
+
+[P00210 | 1988:2001 | NORMAL_TEXT | TABLE row=44 col=0]
+Quality Plan
+
+[P00211 | 2002:2003 | NORMAL_TEXT | TABLE row=44 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00212 | 2004:2005 | NORMAL_TEXT | TABLE row=44 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00213 | 2006:2010 | NORMAL_TEXT | TABLE row=44 col=3]
+244
+
+[P00214 | 2012:2032 | NORMAL_TEXT | TABLE row=45 col=0]
+Implementation Plan
+
+[P00215 | 2033:2034 | NORMAL_TEXT | TABLE row=45 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00216 | 2035:2036 | NORMAL_TEXT | TABLE row=45 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00217 | 2037:2041 | NORMAL_TEXT | TABLE row=45 col=3]
+246
+
+[P00218 | 2043:2059 | NORMAL_TEXT | TABLE row=46 col=0]
+Evaluation Plan
+
+[P00219 | 2060:2061 | NORMAL_TEXT | TABLE row=46 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00220 | 2062:2063 | NORMAL_TEXT | TABLE row=46 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00221 | 2064:2068 | NORMAL_TEXT | TABLE row=46 col=3]
+250
+
+[P00222 | 2070:2093 | NORMAL_TEXT | TABLE row=47 col=0]
+Ethical Considerations
+
+[P00223 | 2094:2095 | NORMAL_TEXT | TABLE row=47 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00224 | 2096:2097 | NORMAL_TEXT | TABLE row=47 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00225 | 2098:2102 | NORMAL_TEXT | TABLE row=47 col=3]
+265
+
+[P00226 | 2104:2144 | NORMAL_TEXT | TABLE row=48 col=0]
+Data Analysis (Procedure and Treatment)
+
+[P00227 | 2145:2146 | NORMAL_TEXT | TABLE row=48 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00228 | 2147:2148 | NORMAL_TEXT | TABLE row=48 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00229 | 2149:2153 | NORMAL_TEXT | TABLE row=48 col=3]
+266
+
+[P00230 | 2155:2178 | NORMAL_TEXT | TABLE row=49 col=0]
+Statistical Treatments
+
+[P00231 | 2179:2180 | NORMAL_TEXT | TABLE row=49 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00232 | 2181:2182 | NORMAL_TEXT | TABLE row=49 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00233 | 2183:2187 | NORMAL_TEXT | TABLE row=49 col=3]
+268
+
+[P00234 | 2189:2190 | NORMAL_TEXT | TABLE row=50 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00235 | 2190:2201 | NORMAL_TEXT | TABLE row=50 col=0]
+REFERENCES
+
+[P00236 | 2202:2203 | NORMAL_TEXT | TABLE row=50 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00237 | 2204:2205 | NORMAL_TEXT | TABLE row=50 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00238 | 2206:2207 | NORMAL_TEXT | TABLE row=50 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P00239 | 2207:2211 | NORMAL_TEXT | TABLE row=50 col=3]
+274
+
+[P00240 | 2212:2214 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00241 | 2214:2229 | NORMAL_TEXT]
+LIST OF TABLES
+
+[P00242 | 2229:2230 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00243 | 2233:2243 | NORMAL_TEXT | TABLE row=0 col=0]
+Table No.
+
+[P00244 | 2244:2256 | NORMAL_TEXT | TABLE row=0 col=1]
+Description
+
+[P00245 | 2257:2262 | NORMAL_TEXT | TABLE row=0 col=2]
+Page
+
+[P00246 | 2262:2263 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00247 | 2265:2267 | NORMAL_TEXT | TABLE row=1 col=0]
+1
+
+[P00248 | 2268:2302 | NORMAL_TEXT | TABLE row=1 col=1]
+Existing Hardware of the Business
+
+[P00249 | 2303:2305 | NORMAL_TEXT | TABLE row=1 col=2]
+5
+
+[P00250 | 2307:2309 | NORMAL_TEXT | TABLE row=2 col=0]
+2
+
+[P00251 | 2310:2367 | NORMAL_TEXT | TABLE row=2 col=1]
+Existing Software and Digital Tools Used by the Business
+
+[P00252 | 2368:2370 | NORMAL_TEXT | TABLE row=2 col=2]
+6
+
+[P00253 | 2372:2374 | NORMAL_TEXT | TABLE row=3 col=0]
+3
+
+[P00254 | 2375:2426 | NORMAL_TEXT | TABLE row=3 col=1]
+System Users and Operational Roles of the Business
+
+[P00255 | 2427:2429 | NORMAL_TEXT | TABLE row=3 col=2]
+8
+
+[P00256 | 2431:2433 | NORMAL_TEXT | TABLE row=4 col=0]
+4
+
+[P00257 | 2434:2464 | NORMAL_TEXT | TABLE row=4 col=1]
+Problem – Requirements Matrix
+
+[P00258 | 2465:2468 | NORMAL_TEXT | TABLE row=4 col=2]
+25
+
+[P00259 | 2470:2472 | NORMAL_TEXT | TABLE row=5 col=0]
+5
+
+[P00260 | 2473:2503 | NORMAL_TEXT | TABLE row=5 col=1]
+Requirement – Features Matrix
+
+[P00261 | 2504:2507 | NORMAL_TEXT | TABLE row=5 col=2]
+93
+
+[P00262 | 2509:2511 | NORMAL_TEXT | TABLE row=6 col=0]
+6
+
+[P00263 | 2512:2566 | NORMAL_TEXT | TABLE row=6 col=1]
+Use Case Report - Register / Log in Customer Account 
+
+[P00264 | 2567:2571 | NORMAL_TEXT | TABLE row=6 col=2]
+121
+
+[P00265 | 2573:2575 | NORMAL_TEXT | TABLE row=7 col=0]
+7
+
+[P00266 | 2576:2620 | NORMAL_TEXT | TABLE row=7 col=1]
+Use Case Report - Authenticate User / Login
+
+[P00267 | 2621:2625 | NORMAL_TEXT | TABLE row=7 col=2]
+122
+
+[P00268 | 2627:2629 | NORMAL_TEXT | TABLE row=8 col=0]
+8
+
+[P00269 | 2630:2674 | NORMAL_TEXT | TABLE row=8 col=1]
+Use Case Report - Manage Access Permissions
+
+[P00270 | 2675:2679 | NORMAL_TEXT | TABLE row=8 col=2]
+123
+
+[P00271 | 2681:2683 | NORMAL_TEXT | TABLE row=9 col=0]
+9
+
+[P00272 | 2684:2726 | NORMAL_TEXT | TABLE row=9 col=1]
+Use Case Report - Manage Customer Records
+
+[P00273 | 2727:2731 | NORMAL_TEXT | TABLE row=9 col=2]
+125
+
+[P00274 | 2733:2736 | NORMAL_TEXT | TABLE row=10 col=0]
+10
+
+[P00275 | 2737:2789 | NORMAL_TEXT | TABLE row=10 col=1]
+Use Case Report - Manage Vehicle and Branch Records
+
+[P00276 | 2790:2794 | NORMAL_TEXT | TABLE row=10 col=2]
+126
+
+[P00277 | 2796:2799 | NORMAL_TEXT | TABLE row=11 col=0]
+11
+
+[P00278 | 2800:2845 | NORMAL_TEXT | TABLE row=11 col=1]
+Use Case Report - Manage Maintenance Records
+
+[P00279 | 2846:2850 | NORMAL_TEXT | TABLE row=11 col=2]
+127
+
+[P00280 | 2852:2855 | NORMAL_TEXT | TABLE row=12 col=0]
+12
+
+[P00281 | 2856:2895 | NORMAL_TEXT | TABLE row=12 col=1]
+Use Case Report - View Vehicle Catalog
+
+[P00282 | 2896:2900 | NORMAL_TEXT | TABLE row=12 col=2]
+128
+
+[P00283 | 2902:2905 | NORMAL_TEXT | TABLE row=13 col=0]
+13
+
+[P00284 | 2906:2957 | NORMAL_TEXT | TABLE row=13 col=1]
+Use Case Report - View Rental Policy and Agreement
+
+[P00285 | 2958:2962 | NORMAL_TEXT | TABLE row=13 col=2]
+130
+
+[P00286 | 2964:2967 | NORMAL_TEXT | TABLE row=14 col=0]
+14
+
+[P00287 | 2968:3016 | NORMAL_TEXT | TABLE row=14 col=1]
+Use Case Report - Create and Manage Reservation
+
+[P00288 | 3017:3021 | NORMAL_TEXT | TABLE row=14 col=2]
+131
+
+[P00289 | 3023:3026 | NORMAL_TEXT | TABLE row=15 col=0]
+15
+
+[P00290 | 3027:3067 | NORMAL_TEXT | TABLE row=15 col=1]
+Use Case Report - View Booking Calendar
+
+[P00291 | 3068:3072 | NORMAL_TEXT | TABLE row=15 col=2]
+132
+
+[P00292 | 3074:3077 | NORMAL_TEXT | TABLE row=16 col=0]
+16
+
+[P00293 | 3078:3123 | NORMAL_TEXT | TABLE row=16 col=1]
+Use Case Report - Check Vehicle Availability
+
+[P00294 | 3124:3128 | NORMAL_TEXT | TABLE row=16 col=2]
+134
+
+[P00295 | 3130:3133 | NORMAL_TEXT | TABLE row=17 col=0]
+17
+
+[P00296 | 3134:3172 | NORMAL_TEXT | TABLE row=17 col=1]
+Use Case Report - Verify Requirements
+
+[P00297 | 3173:3177 | NORMAL_TEXT | TABLE row=17 col=2]
+135
+
+[P00298 | 3179:3182 | NORMAL_TEXT | TABLE row=18 col=0]
+18
+
+[P00299 | 3183:3225 | NORMAL_TEXT | TABLE row=18 col=1]
+Use Case Report - Validate Payment Record
+
+[P00300 | 3226:3230 | NORMAL_TEXT | TABLE row=18 col=2]
+137
+
+[P00301 | 3232:3235 | NORMAL_TEXT | TABLE row=19 col=0]
+19
+
+[P00302 | 3236:3300 | NORMAL_TEXT | TABLE row=19 col=1]
+Use Case Report - Forecast Demand using Weighted Moving Average
+
+[P00303 | 3301:3305 | NORMAL_TEXT | TABLE row=19 col=2]
+138
+
+[P00304 | 3307:3310 | NORMAL_TEXT | TABLE row=20 col=0]
+20
+
+[P00305 | 3311:3360 | NORMAL_TEXT | TABLE row=20 col=1]
+Use Case Report - Evaluate Context-Aware Factors
+
+[P00306 | 3361:3365 | NORMAL_TEXT | TABLE row=20 col=2]
+139
+
+[P00307 | 3367:3370 | NORMAL_TEXT | TABLE row=21 col=0]
+21
+
+[P00308 | 3371:3416 | NORMAL_TEXT | TABLE row=21 col=1]
+Use Case Report - Recommend Fleet Allocation
+
+[P00309 | 3417:3421 | NORMAL_TEXT | TABLE row=21 col=2]
+141
+
+[P00310 | 3423:3426 | NORMAL_TEXT | TABLE row=22 col=0]
+22
+
+[P00311 | 3427:3460 | NORMAL_TEXT | TABLE row=22 col=1]
+Use Case Report - Assign Vehicle
+
+[P00312 | 3461:3465 | NORMAL_TEXT | TABLE row=22 col=2]
+142
+
+[P00313 | 3467:3470 | NORMAL_TEXT | TABLE row=23 col=0]
+23
+
+[P00314 | 3471:3515 | NORMAL_TEXT | TABLE row=23 col=1]
+Use Case Report - Manage Rental Transaction
+
+[P00315 | 3516:3520 | NORMAL_TEXT | TABLE row=23 col=2]
+143
+
+[P00316 | 3522:3525 | NORMAL_TEXT | TABLE row=24 col=0]
+24
+
+[P00317 | 3526:3565 | NORMAL_TEXT | TABLE row=24 col=1]
+Use Case Report - Track Booking Status
+
+[P00318 | 3566:3570 | NORMAL_TEXT | TABLE row=24 col=2]
+145
+
+[P00319 | 3572:3575 | NORMAL_TEXT | TABLE row=25 col=0]
+25
+
+[P00320 | 3576:3624 | NORMAL_TEXT | TABLE row=25 col=1]
+Use Case Report - Receive Booking Notifications
+
+[P00321 | 3625:3629 | NORMAL_TEXT | TABLE row=25 col=2]
+146
+
+[P00322 | 3631:3634 | NORMAL_TEXT | TABLE row=26 col=0]
+26
+
+[P00323 | 3635:3674 | NORMAL_TEXT | TABLE row=26 col=1]
+Use Case Report - Monitor Fleet Status
+
+[P00324 | 3675:3679 | NORMAL_TEXT | TABLE row=26 col=2]
+147
+
+[P00325 | 3681:3684 | NORMAL_TEXT | TABLE row=27 col=0]
+27
+
+[P00326 | 3685:3741 | NORMAL_TEXT | TABLE row=27 col=1]
+Use Case Report - Process Vehicle Return and Settlement
+
+[P00327 | 3742:3746 | NORMAL_TEXT | TABLE row=27 col=2]
+148
+
+[P00328 | 3748:3751 | NORMAL_TEXT | TABLE row=28 col=0]
+28
+
+[P00329 | 3752:3799 | NORMAL_TEXT | TABLE row=28 col=1]
+Use Case Report - Record Penalties and Damages
+
+[P00330 | 3800:3804 | NORMAL_TEXT | TABLE row=28 col=2]
+150
+
+[P00331 | 3806:3809 | NORMAL_TEXT | TABLE row=29 col=0]
+29
+
+[P00332 | 3810:3860 | NORMAL_TEXT | TABLE row=29 col=1]
+Use Case Report - Manage Notifications and Alerts
+
+[P00333 | 3861:3865 | NORMAL_TEXT | TABLE row=29 col=2]
+151
+
+[P00334 | 3867:3870 | NORMAL_TEXT | TABLE row=30 col=0]
+30
+
+[P00335 | 3871:3906 | NORMAL_TEXT | TABLE row=30 col=1]
+Use Case Report - Generate Reports
+
+[P00336 | 3907:3911 | NORMAL_TEXT | TABLE row=30 col=2]
+152
+
+[P00337 | 3913:3916 | NORMAL_TEXT | TABLE row=31 col=0]
+31
+
+[P00338 | 3917:3972 | NORMAL_TEXT | TABLE row=31 col=1]
+Use Case Report - View Dashboard / Operational Summary
+
+[P00339 | 3973:3977 | NORMAL_TEXT | TABLE row=31 col=2]
+153
+
+[P00340 | 3979:3982 | NORMAL_TEXT | TABLE row=32 col=0]
+32
+
+[P00341 | 3983:4007 | NORMAL_TEXT | TABLE row=32 col=1]
+Data Dictionary - Users
+
+[P00342 | 4008:4012 | NORMAL_TEXT | TABLE row=32 col=2]
+185
+
+[P00343 | 4014:4017 | NORMAL_TEXT | TABLE row=33 col=0]
+33
+
+[P00344 | 4018:4045 | NORMAL_TEXT | TABLE row=33 col=1]
+Data Dictionary - Branches
+
+[P00345 | 4046:4050 | NORMAL_TEXT | TABLE row=33 col=2]
+186
+
+[P00346 | 4052:4055 | NORMAL_TEXT | TABLE row=34 col=0]
+34
+
+[P00347 | 4056:4082 | NORMAL_TEXT | TABLE row=34 col=1]
+Data Dictionary - Renters
+
+[P00348 | 4083:4087 | NORMAL_TEXT | TABLE row=34 col=2]
+187
+
+[P00349 | 4089:4092 | NORMAL_TEXT | TABLE row=35 col=0]
+35
+
+[P00350 | 4093:4131 | NORMAL_TEXT | TABLE row=35 col=1]
+Data Dictionary - Authorized Drivers 
+
+[P00351 | 4132:4136 | NORMAL_TEXT | TABLE row=35 col=2]
+189
+
+[P00352 | 4138:4141 | NORMAL_TEXT | TABLE row=36 col=0]
+36
+
+[P00353 | 4142:4180 | NORMAL_TEXT | TABLE row=36 col=1]
+Data Dictionary - Vehicle Categories 
+
+[P00354 | 4181:4185 | NORMAL_TEXT | TABLE row=36 col=2]
+190
+
+[P00355 | 4187:4190 | NORMAL_TEXT | TABLE row=37 col=0]
+37
+
+[P00356 | 4191:4219 | NORMAL_TEXT | TABLE row=37 col=1]
+Data Dictionary - Vehicles 
+
+[P00357 | 4220:4224 | NORMAL_TEXT | TABLE row=37 col=2]
+191
+
+[P00358 | 4226:4229 | NORMAL_TEXT | TABLE row=38 col=0]
+38
+
+[P00359 | 4230:4263 | NORMAL_TEXT | TABLE row=38 col=1]
+Data Dictionary - Vehicle Photos
+
+[P00360 | 4264:4268 | NORMAL_TEXT | TABLE row=38 col=2]
+194
+
+[P00361 | 4270:4273 | NORMAL_TEXT | TABLE row=39 col=0]
+39
+
+[P00362 | 4274:4319 | NORMAL_TEXT | TABLE row=39 col=1]
+Data Dictionary - Vehicle Availability Logs 
+
+[P00363 | 4320:4324 | NORMAL_TEXT | TABLE row=39 col=2]
+194
+
+[P00364 | 4326:4329 | NORMAL_TEXT | TABLE row=40 col=0]
+40
+
+[P00365 | 4330:4371 | NORMAL_TEXT | TABLE row=40 col=1]
+Data Dictionary - Vehicle Branch History
+
+[P00366 | 4372:4376 | NORMAL_TEXT | TABLE row=40 col=2]
+195
+
+[P00367 | 4378:4381 | NORMAL_TEXT | TABLE row=41 col=0]
+41
+
+[P00368 | 4382:4417 | NORMAL_TEXT | TABLE row=41 col=1]
+Data Dictionary - Booking Requests
+
+[P00369 | 4418:4422 | NORMAL_TEXT | TABLE row=41 col=2]
+196
+
+[P00370 | 4424:4427 | NORMAL_TEXT | TABLE row=42 col=0]
+42
+
+[P00371 | 4428:4466 | NORMAL_TEXT | TABLE row=42 col=1]
+Data Dictionary - Renter Requirements
+
+[P00372 | 4467:4471 | NORMAL_TEXT | TABLE row=42 col=2]
+198
+
+[P00373 | 4473:4476 | NORMAL_TEXT | TABLE row=43 col=0]
+43
+
+[P00374 | 4477:4513 | NORMAL_TEXT | TABLE row=43 col=1]
+Data Dictionary - Booking Approvals
+
+[P00375 | 4514:4518 | NORMAL_TEXT | TABLE row=43 col=2]
+200
+
+[P00376 | 4520:4523 | NORMAL_TEXT | TABLE row=44 col=0]
+44
+
+[P00377 | 4524:4562 | NORMAL_TEXT | TABLE row=44 col=1]
+Data Dictionary - Booking Status Logs
+
+[P00378 | 4563:4567 | NORMAL_TEXT | TABLE row=44 col=2]
+201
+
+[P00379 | 4569:4572 | NORMAL_TEXT | TABLE row=45 col=0]
+45
+
+[P00380 | 4573:4602 | NORMAL_TEXT | TABLE row=45 col=1]
+Data Dictionary - Quotations
+
+[P00381 | 4603:4607 | NORMAL_TEXT | TABLE row=45 col=2]
+201
+
+[P00382 | 4609:4612 | NORMAL_TEXT | TABLE row=46 col=0]
+46
+
+[P00383 | 4613:4647 | NORMAL_TEXT | TABLE row=46 col=1]
+Data Dictionary - Quotation Items
+
+[P00384 | 4648:4652 | NORMAL_TEXT | TABLE row=46 col=2]
+203
+
+[P00385 | 4654:4657 | NORMAL_TEXT | TABLE row=47 col=0]
+47
+
+[P00386 | 4658:4686 | NORMAL_TEXT | TABLE row=47 col=1]
+Data Dictionary - Payments 
+
+[P00387 | 4687:4691 | NORMAL_TEXT | TABLE row=47 col=2]
+203
+
+[P00388 | 4693:4696 | NORMAL_TEXT | TABLE row=48 col=0]
+48
+
+[P00389 | 4697:4723 | NORMAL_TEXT | TABLE row=48 col=1]
+Data Dictionary - Rentals
+
+[P00390 | 4724:4728 | NORMAL_TEXT | TABLE row=48 col=2]
+205
+
+[P00391 | 4730:4733 | NORMAL_TEXT | TABLE row=49 col=0]
+49
+
+[P00392 | 4734:4767 | NORMAL_TEXT | TABLE row=49 col=1]
+Data Dictionary - Rental Charges
+
+[P00393 | 4768:4772 | NORMAL_TEXT | TABLE row=49 col=2]
+206
+
+[P00394 | 4774:4777 | NORMAL_TEXT | TABLE row=50 col=0]
+50
+
+[P00395 | 4778:4817 | NORMAL_TEXT | TABLE row=50 col=1]
+Data Dictionary - Operational Expenses
+
+[P00396 | 4818:4826 | NORMAL_TEXT | TABLE row=50 col=2]
+    208
+
+[P00397 | 4828:4831 | NORMAL_TEXT | TABLE row=51 col=0]
+51
+
+[P00398 | 4832:4876 | NORMAL_TEXT | TABLE row=51 col=1]
+Data Dictionary - Rental Return Inspections
+
+[P00399 | 4877:4881 | NORMAL_TEXT | TABLE row=51 col=2]
+209
+
+[P00400 | 4883:4886 | NORMAL_TEXT | TABLE row=52 col=0]
+52
+
+[P00401 | 4887:4925 | NORMAL_TEXT | TABLE row=52 col=1]
+Data Dictionary - Maintenance Records
+
+[P00402 | 4926:4930 | NORMAL_TEXT | TABLE row=52 col=2]
+210
+
+[P00403 | 4932:4935 | NORMAL_TEXT | TABLE row=53 col=0]
+53
+
+[P00404 | 4936:4973 | NORMAL_TEXT | TABLE row=53 col=1]
+Data Dictionary - Monitoring Records
+
+[P00405 | 4974:4978 | NORMAL_TEXT | TABLE row=53 col=2]
+211
+
+[P00406 | 4980:4983 | NORMAL_TEXT | TABLE row=54 col=0]
+54
+
+[P00407 | 4984:5016 | NORMAL_TEXT | TABLE row=54 col=1]
+Data Dictionary - Trip Contexts
+
+[P00408 | 5017:5021 | NORMAL_TEXT | TABLE row=54 col=2]
+212
+
+[P00409 | 5023:5026 | NORMAL_TEXT | TABLE row=55 col=0]
+55
+
+[P00410 | 5027:5063 | NORMAL_TEXT | TABLE row=55 col=1]
+Data Dictionary - Demand Forecasts 
+
+[P00411 | 5064:5068 | NORMAL_TEXT | TABLE row=55 col=2]
+214
+
+[P00412 | 5070:5073 | NORMAL_TEXT | TABLE row=56 col=0]
+56
+
+[P00413 | 5074:5109 | NORMAL_TEXT | TABLE row=56 col=1]
+Data Dictionary - Forecast Details
+
+[P00414 | 5110:5114 | NORMAL_TEXT | TABLE row=56 col=2]
+215
+
+[P00415 | 5116:5119 | NORMAL_TEXT | TABLE row=57 col=0]
+57
+
+[P00416 | 5120:5164 | NORMAL_TEXT | TABLE row=57 col=1]
+Data Dictionary - Allocation Recommendation
+
+[P00417 | 5165:5169 | NORMAL_TEXT | TABLE row=57 col=2]
+216
+
+[P00418 | 5171:5174 | NORMAL_TEXT | TABLE row=58 col=0]
+58
+
+[P00419 | 5175:5225 | NORMAL_TEXT | TABLE row=58 col=1]
+Data Dictionary - Allocation Recommendation Items
+
+[P00420 | 5226:5230 | NORMAL_TEXT | TABLE row=58 col=2]
+217
+
+[P00421 | 5232:5235 | NORMAL_TEXT | TABLE row=59 col=0]
+59
+
+[P00422 | 5236:5271 | NORMAL_TEXT | TABLE row=59 col=1]
+Data Dictionary - Rental Policies 
+
+[P00423 | 5272:5276 | NORMAL_TEXT | TABLE row=59 col=2]
+218
+
+[P00424 | 5278:5281 | NORMAL_TEXT | TABLE row=60 col=0]
+60
+
+[P00425 | 5282:5316 | NORMAL_TEXT | TABLE row=60 col=1]
+Data Dictionary - System Settings
+
+[P00426 | 5317:5321 | NORMAL_TEXT | TABLE row=60 col=2]
+219
+
+[P00427 | 5323:5326 | NORMAL_TEXT | TABLE row=61 col=0]
+61
+
+[P00428 | 5327:5359 | NORMAL_TEXT | TABLE row=61 col=1]
+Data Dictionary - Notifications
+
+[P00429 | 5360:5364 | NORMAL_TEXT | TABLE row=61 col=2]
+220
+
+[P00430 | 5366:5369 | NORMAL_TEXT | TABLE row=62 col=0]
+62
+
+[P00431 | 5370:5399 | NORMAL_TEXT | TABLE row=62 col=1]
+Data Dictionary - Audit Logs
+
+[P00432 | 5400:5404 | NORMAL_TEXT | TABLE row=62 col=2]
+221
+
+[P00433 | 5406:5409 | NORMAL_TEXT | TABLE row=63 col=0]
+63
+
+[P00434 | 5410:5440 | NORMAL_TEXT | TABLE row=63 col=1]
+Data Dictionary - Backup Logs
+
+[P00435 | 5441:5445 | NORMAL_TEXT | TABLE row=63 col=2]
+222
+
+[P00436 | 5447:5450 | NORMAL_TEXT | TABLE row=64 col=0]
+64
+
+[P00437 | 5451:5487 | NORMAL_TEXT | TABLE row=64 col=1]
+Data Dictionary - Development Tools
+
+[P00438 | 5488:5492 | NORMAL_TEXT | TABLE row=64 col=2]
+227
+
+[P00439 | 5494:5497 | NORMAL_TEXT | TABLE row=65 col=0]
+65
+
+[P00440 | 5498:5557 | NORMAL_TEXT | TABLE row=65 col=1]
+Desktop and Tablet System Requirements for Staff and Admin
+
+[P00441 | 5558:5562 | NORMAL_TEXT | TABLE row=65 col=2]
+241
+
+[P00442 | 5564:5567 | NORMAL_TEXT | TABLE row=66 col=0]
+66
+
+[P00443 | 5568:5606 | NORMAL_TEXT | TABLE row=66 col=1]
+Mobile System Requirements for Renter
+
+[P00444 | 5607:5611 | NORMAL_TEXT | TABLE row=66 col=2]
+243
+
+[P00445 | 5613:5616 | NORMAL_TEXT | TABLE row=67 col=0]
+67
+
+[P00446 | 5617:5652 | NORMAL_TEXT | TABLE row=67 col=1]
+Likert Scale Interpretation Table 
+
+[P00447 | 5653:5657 | NORMAL_TEXT | TABLE row=67 col=2]
+269
+
+[P00448 | 5659:5662 | NORMAL_TEXT | TABLE row=68 col=0]
+68
+
+[P00449 | 5663:5709 | NORMAL_TEXT | TABLE row=68 col=1]
+Statistical Technique Used for Data Analysis 
+
+[P00450 | 5710:5714 | NORMAL_TEXT | TABLE row=68 col=2]
+269
+
+[P00451 | 5715:5716 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00452 | 5716:5718 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00453 | 5718:5734 | NORMAL_TEXT]
+LIST OF FIGURES
+
+[P00454 | 5734:5735 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00455 | 5738:5749 | NORMAL_TEXT | TABLE row=0 col=0]
+Figure No.
+
+[P00456 | 5750:5762 | NORMAL_TEXT | TABLE row=0 col=1]
+Description
+
+[P00457 | 5763:5768 | NORMAL_TEXT | TABLE row=0 col=2]
+Page
+
+[P00458 | 5768:5769 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00459 | 5771:5773 | NORMAL_TEXT | TABLE row=1 col=0]
+1
+
+[P00460 | 5774:5800 | NORMAL_TEXT | TABLE row=1 col=1]
+Context Diagram - Level 0
+
+[P00461 | 5801:5804 | NORMAL_TEXT | TABLE row=1 col=2]
+12
+
+[P00462 | 5806:5808 | NORMAL_TEXT | TABLE row=2 col=0]
+2
+
+[P00463 | 5809:5837 | NORMAL_TEXT | TABLE row=2 col=1]
+Data Flow Diagram - Level 1
+
+[P00464 | 5838:5841 | NORMAL_TEXT | TABLE row=2 col=2]
+14
+
+[P00465 | 5843:5845 | NORMAL_TEXT | TABLE row=3 col=0]
+3
+
+[P00466 | 5846:5863 | NORMAL_TEXT | TABLE row=3 col=1]
+Fishbone Diagram
+
+[P00467 | 5864:5867 | NORMAL_TEXT | TABLE row=3 col=2]
+20
+
+[P00468 | 5869:5871 | NORMAL_TEXT | TABLE row=4 col=0]
+4
+
+[P00469 | 5872:5926 | NORMAL_TEXT | TABLE row=4 col=1]
+Use Case Diagram - Register / Log in Customer Account
+
+[P00470 | 5927:5930 | NORMAL_TEXT | TABLE row=4 col=2]
+95
+
+[P00471 | 5932:5934 | NORMAL_TEXT | TABLE row=5 col=0]
+5
+
+[P00472 | 5935:5980 | NORMAL_TEXT | TABLE row=5 col=1]
+Use Case Diagram - Authenticate User / Login
+
+[P00473 | 5981:5984 | NORMAL_TEXT | TABLE row=5 col=2]
+96
+
+[P00474 | 5986:5988 | NORMAL_TEXT | TABLE row=6 col=0]
+6
+
+[P00475 | 5989:6034 | NORMAL_TEXT | TABLE row=6 col=1]
+Use Case Diagram - Manage Access Permissions
+
+[P00476 | 6035:6038 | NORMAL_TEXT | TABLE row=6 col=2]
+97
+
+[P00477 | 6040:6042 | NORMAL_TEXT | TABLE row=7 col=0]
+7
+
+[P00478 | 6043:6086 | NORMAL_TEXT | TABLE row=7 col=1]
+Use Case Diagram - Manage Customer Records
+
+[P00479 | 6087:6090 | NORMAL_TEXT | TABLE row=7 col=2]
+98
+
+[P00480 | 6092:6094 | NORMAL_TEXT | TABLE row=8 col=0]
+8
+
+[P00481 | 6095:6148 | NORMAL_TEXT | TABLE row=8 col=1]
+Use Case Diagram - Manage Vehicle and Branch Records
+
+[P00482 | 6149:6152 | NORMAL_TEXT | TABLE row=8 col=2]
+99
+
+[P00483 | 6154:6156 | NORMAL_TEXT | TABLE row=9 col=0]
+9
+
+[P00484 | 6157:6203 | NORMAL_TEXT | TABLE row=9 col=1]
+Use Case Diagram - Manage Maintenance Records
+
+[P00485 | 6204:6208 | NORMAL_TEXT | TABLE row=9 col=2]
+100
+
+[P00486 | 6210:6213 | NORMAL_TEXT | TABLE row=10 col=0]
+10
+
+[P00487 | 6214:6254 | NORMAL_TEXT | TABLE row=10 col=1]
+Use Case Diagram - View Vehicle Catalog
+
+[P00488 | 6255:6259 | NORMAL_TEXT | TABLE row=10 col=2]
+101
+
+[P00489 | 6261:6264 | NORMAL_TEXT | TABLE row=11 col=0]
+11
+
+[P00490 | 6265:6317 | NORMAL_TEXT | TABLE row=11 col=1]
+Use Case Diagram - View Rental Policy and Agreement
+
+[P00491 | 6318:6322 | NORMAL_TEXT | TABLE row=11 col=2]
+102
+
+[P00492 | 6324:6327 | NORMAL_TEXT | TABLE row=12 col=0]
+12
+
+[P00493 | 6328:6377 | NORMAL_TEXT | TABLE row=12 col=1]
+Use Case Diagram - Create and Manage Reservation
+
+[P00494 | 6378:6382 | NORMAL_TEXT | TABLE row=12 col=2]
+103
+
+[P00495 | 6384:6387 | NORMAL_TEXT | TABLE row=13 col=0]
+13
+
+[P00496 | 6388:6429 | NORMAL_TEXT | TABLE row=13 col=1]
+Use Case Diagram - View Booking Calendar
+
+[P00497 | 6430:6434 | NORMAL_TEXT | TABLE row=13 col=2]
+104
+
+[P00498 | 6436:6439 | NORMAL_TEXT | TABLE row=14 col=0]
+14
+
+[P00499 | 6440:6486 | NORMAL_TEXT | TABLE row=14 col=1]
+Use Case Diagram - Check Vehicle Availability
+
+[P00500 | 6487:6491 | NORMAL_TEXT | TABLE row=14 col=2]
+105
+
+[P00501 | 6493:6496 | NORMAL_TEXT | TABLE row=15 col=0]
+15
+
+[P00502 | 6497:6536 | NORMAL_TEXT | TABLE row=15 col=1]
+Use Case Diagram - Verify Requirements
+
+[P00503 | 6537:6541 | NORMAL_TEXT | TABLE row=15 col=2]
+106
+
+[P00504 | 6543:6546 | NORMAL_TEXT | TABLE row=16 col=0]
+16
+
+[P00505 | 6547:6590 | NORMAL_TEXT | TABLE row=16 col=1]
+Use Case Diagram - Validate Payment Record
+
+[P00506 | 6591:6595 | NORMAL_TEXT | TABLE row=16 col=2]
+107
+
+[P00507 | 6597:6600 | NORMAL_TEXT | TABLE row=17 col=0]
+17
+
+[P00508 | 6601:6666 | NORMAL_TEXT | TABLE row=17 col=1]
+Use Case Diagram - Forecast Demand using Weighted Moving Average
+
+[P00509 | 6667:6671 | NORMAL_TEXT | TABLE row=17 col=2]
+108
+
+[P00510 | 6673:6676 | NORMAL_TEXT | TABLE row=18 col=0]
+18
+
+[P00511 | 6677:6727 | NORMAL_TEXT | TABLE row=18 col=1]
+Use Case Diagram - Evaluate Context-Aware Factors
+
+[P00512 | 6728:6732 | NORMAL_TEXT | TABLE row=18 col=2]
+109
+
+[P00513 | 6734:6737 | NORMAL_TEXT | TABLE row=19 col=0]
+19
+
+[P00514 | 6738:6784 | NORMAL_TEXT | TABLE row=19 col=1]
+Use Case Diagram - Recommend Fleet Allocation
+
+[P00515 | 6785:6789 | NORMAL_TEXT | TABLE row=19 col=2]
+110
+
+[P00516 | 6791:6794 | NORMAL_TEXT | TABLE row=20 col=0]
+20
+
+[P00517 | 6795:6829 | NORMAL_TEXT | TABLE row=20 col=1]
+Use Case Diagram - Assign Vehicle
+
+[P00518 | 6830:6834 | NORMAL_TEXT | TABLE row=20 col=2]
+111
+
+[P00519 | 6836:6839 | NORMAL_TEXT | TABLE row=21 col=0]
+21
+
+[P00520 | 6840:6885 | NORMAL_TEXT | TABLE row=21 col=1]
+Use Case Diagram - Manage Rental Transaction
+
+[P00521 | 6886:6890 | NORMAL_TEXT | TABLE row=21 col=2]
+112
+
+[P00522 | 6892:6895 | NORMAL_TEXT | TABLE row=22 col=0]
+22
+
+[P00523 | 6896:6936 | NORMAL_TEXT | TABLE row=22 col=1]
+Use Case Diagram - Track Booking Status
+
+[P00524 | 6937:6941 | NORMAL_TEXT | TABLE row=22 col=2]
+113
+
+[P00525 | 6943:6946 | NORMAL_TEXT | TABLE row=23 col=0]
+23
+
+[P00526 | 6947:6996 | NORMAL_TEXT | TABLE row=23 col=1]
+Use Case Diagram - Receive Booking Notifications
+
+[P00527 | 6997:7001 | NORMAL_TEXT | TABLE row=23 col=2]
+114
+
+[P00528 | 7003:7006 | NORMAL_TEXT | TABLE row=24 col=0]
+24
+
+[P00529 | 7007:7047 | NORMAL_TEXT | TABLE row=24 col=1]
+Use Case Diagram - Monitor Fleet Status
+
+[P00530 | 7048:7052 | NORMAL_TEXT | TABLE row=24 col=2]
+115
+
+[P00531 | 7054:7057 | NORMAL_TEXT | TABLE row=25 col=0]
+25
+
+[P00532 | 7058:7115 | NORMAL_TEXT | TABLE row=25 col=1]
+Use Case Diagram - Process Vehicle Return and Settlement
+
+[P00533 | 7116:7120 | NORMAL_TEXT | TABLE row=25 col=2]
+116
+
+[P00534 | 7122:7125 | NORMAL_TEXT | TABLE row=26 col=0]
+26
+
+[P00535 | 7126:7174 | NORMAL_TEXT | TABLE row=26 col=1]
+Use Case Diagram - Record Penalties and Damages
+
+[P00536 | 7175:7179 | NORMAL_TEXT | TABLE row=26 col=2]
+117
+
+[P00537 | 7181:7184 | NORMAL_TEXT | TABLE row=27 col=0]
+27
+
+[P00538 | 7185:7236 | NORMAL_TEXT | TABLE row=27 col=1]
+Use Case Diagram - Manage Notifications and Alerts
+
+[P00539 | 7237:7241 | NORMAL_TEXT | TABLE row=27 col=2]
+118
+
+[P00540 | 7243:7246 | NORMAL_TEXT | TABLE row=28 col=0]
+28
+
+[P00541 | 7247:7283 | NORMAL_TEXT | TABLE row=28 col=1]
+Use Case Diagram - Generate Reports
+
+[P00542 | 7284:7288 | NORMAL_TEXT | TABLE row=28 col=2]
+119
+
+[P00543 | 7290:7293 | NORMAL_TEXT | TABLE row=29 col=0]
+29
+
+[P00544 | 7294:7350 | NORMAL_TEXT | TABLE row=29 col=1]
+Use Case Diagram - View Dashboard / Operational Summary
+
+[P00545 | 7351:7355 | NORMAL_TEXT | TABLE row=29 col=2]
+120
+
+[P00546 | 7357:7360 | NORMAL_TEXT | TABLE row=30 col=0]
+30
+
+[P00547 | 7361:7396 | NORMAL_TEXT | TABLE row=30 col=1]
+Owner Sign In and Dashboard Access
+
+[P00548 | 7397:7401 | NORMAL_TEXT | TABLE row=30 col=2]
+155
+
+[P00549 | 7403:7406 | NORMAL_TEXT | TABLE row=31 col=0]
+31
+
+[P00550 | 7407:7448 | NORMAL_TEXT | TABLE row=31 col=1]
+Owner Dashboard Review and Report Export
+
+[P00551 | 7449:7453 | NORMAL_TEXT | TABLE row=31 col=2]
+156
+
+[P00552 | 7455:7458 | NORMAL_TEXT | TABLE row=32 col=0]
+32
+
+[P00553 | 7459:7490 | NORMAL_TEXT | TABLE row=32 col=1]
+Booking Approval and Rejection
+
+[P00554 | 7491:7495 | NORMAL_TEXT | TABLE row=32 col=2]
+157
+
+[P00555 | 7497:7500 | NORMAL_TEXT | TABLE row=33 col=0]
+33
+
+[P00556 | 7501:7534 | NORMAL_TEXT | TABLE row=33 col=1]
+Customer Verification Management
+
+[P00557 | 7535:7539 | NORMAL_TEXT | TABLE row=33 col=2]
+158
+
+[P00558 | 7541:7544 | NORMAL_TEXT | TABLE row=34 col=0]
+34
+
+[P00559 | 7545:7586 | NORMAL_TEXT | TABLE row=34 col=1]
+Fleet Search, Filter, and Service Action
+
+[P00560 | 7587:7591 | NORMAL_TEXT | TABLE row=34 col=2]
+159
+
+[P00561 | 7593:7596 | NORMAL_TEXT | TABLE row=35 col=0]
+35
+
+[P00562 | 7597:7642 | NORMAL_TEXT | TABLE row=35 col=1]
+Maintenance Scheduling and Service Recording
+
+[P00563 | 7643:7647 | NORMAL_TEXT | TABLE row=35 col=2]
+160
+
+[P00564 | 7649:7652 | NORMAL_TEXT | TABLE row=36 col=0]
+36
+
+[P00565 | 7653:7674 | NORMAL_TEXT | TABLE row=36 col=1]
+Payment Verification
+
+[P00566 | 7675:7679 | NORMAL_TEXT | TABLE row=36 col=2]
+161
+
+[P00567 | 7681:7684 | NORMAL_TEXT | TABLE row=37 col=0]
+37
+
+[P00568 | 7685:7705 | NORMAL_TEXT | TABLE row=37 col=1]
+Notification Triage
+
+[P00569 | 7706:7710 | NORMAL_TEXT | TABLE row=37 col=2]
+162
+
+[P00570 | 7712:7715 | NORMAL_TEXT | TABLE row=38 col=0]
+38
+
+[P00571 | 7716:7745 | NORMAL_TEXT | TABLE row=38 col=1]
+Reports and Analytics Review
+
+[P00572 | 7746:7750 | NORMAL_TEXT | TABLE row=38 col=2]
+163
+
+[P00573 | 7752:7755 | NORMAL_TEXT | TABLE row=39 col=0]
+39
+
+[P00574 | 7756:7781 | NORMAL_TEXT | TABLE row=39 col=1]
+Decision Support Actions
+
+[P00575 | 7782:7786 | NORMAL_TEXT | TABLE row=39 col=2]
+164
+
+[P00576 | 7788:7791 | NORMAL_TEXT | TABLE row=40 col=0]
+40
+
+[P00577 | 7792:7810 | NORMAL_TEXT | TABLE row=40 col=1]
+Branch Management
+
+[P00578 | 7811:7815 | NORMAL_TEXT | TABLE row=40 col=2]
+165
+
+[P00579 | 7817:7820 | NORMAL_TEXT | TABLE row=41 col=0]
+41
+
+[P00580 | 7821:7848 | NORMAL_TEXT | TABLE row=41 col=1]
+Users and Roles Management
+
+[P00581 | 7849:7853 | NORMAL_TEXT | TABLE row=41 col=2]
+166
+
+[P00582 | 7855:7858 | NORMAL_TEXT | TABLE row=42 col=0]
+42
+
+[P00583 | 7859:7879 | NORMAL_TEXT | TABLE row=42 col=1]
+Settings Management
+
+[P00584 | 7880:7884 | NORMAL_TEXT | TABLE row=42 col=2]
+167
+
+[P00585 | 7886:7889 | NORMAL_TEXT | TABLE row=43 col=0]
+43
+
+[P00586 | 7890:7926 | NORMAL_TEXT | TABLE row=43 col=1]
+Staff Sign In and Restricted Access
+
+[P00587 | 7927:7931 | NORMAL_TEXT | TABLE row=43 col=2]
+168
+
+[P00588 | 7933:7936 | NORMAL_TEXT | TABLE row=44 col=0]
+44
+
+[P00589 | 7937:7968 | NORMAL_TEXT | TABLE row=44 col=1]
+Staff Booking Queue Management
+
+[P00590 | 7969:7973 | NORMAL_TEXT | TABLE row=44 col=2]
+169
+
+[P00591 | 7975:7978 | NORMAL_TEXT | TABLE row=45 col=0]
+45
+
+[P00592 | 7979:8001 | NORMAL_TEXT | TABLE row=45 col=1]
+Staff Calendar Review
+
+[P00593 | 8002:8006 | NORMAL_TEXT | TABLE row=45 col=2]
+170
+
+[P00594 | 8008:8011 | NORMAL_TEXT | TABLE row=46 col=0]
+46
+
+[P00595 | 8012:8034 | NORMAL_TEXT | TABLE row=46 col=1]
+Customer Registration
+
+[P00596 | 8035:8039 | NORMAL_TEXT | TABLE row=46 col=2]
+171
+
+[P00597 | 8041:8044 | NORMAL_TEXT | TABLE row=47 col=0]
+47
+
+[P00598 | 8045:8062 | NORMAL_TEXT | TABLE row=47 col=1]
+Customer Sign In
+
+[P00599 | 8063:8067 | NORMAL_TEXT | TABLE row=47 col=2]
+172
+
+[P00600 | 8069:8072 | NORMAL_TEXT | TABLE row=48 col=0]
+48
+
+[P00601 | 8073:8097 | NORMAL_TEXT | TABLE row=48 col=1]
+Customer Vehicle Search
+
+[P00602 | 8098:8102 | NORMAL_TEXT | TABLE row=48 col=2]
+173
+
+[P00603 | 8104:8107 | NORMAL_TEXT | TABLE row=49 col=0]
+49
+
+[P00604 | 8108:8136 | NORMAL_TEXT | TABLE row=49 col=1]
+Browse Vehicles and Reserve
+
+[P00605 | 8137:8141 | NORMAL_TEXT | TABLE row=49 col=2]
+174
+
+[P00606 | 8143:8146 | NORMAL_TEXT | TABLE row=50 col=0]
+50
+
+[P00607 | 8147:8163 | NORMAL_TEXT | TABLE row=50 col=1]
+Booking Request
+
+[P00608 | 8164:8168 | NORMAL_TEXT | TABLE row=50 col=2]
+175
+
+[P00609 | 8170:8173 | NORMAL_TEXT | TABLE row=51 col=0]
+51
+
+[P00610 | 8174:8197 | NORMAL_TEXT | TABLE row=51 col=1]
+Requirement Submission
+
+[P00611 | 8198:8202 | NORMAL_TEXT | TABLE row=51 col=2]
+176
+
+[P00612 | 8204:8207 | NORMAL_TEXT | TABLE row=52 col=0]
+52
+
+[P00613 | 8208:8233 | NORMAL_TEXT | TABLE row=52 col=1]
+Payment Proof Submission
+
+[P00614 | 8234:8238 | NORMAL_TEXT | TABLE row=52 col=2]
+177
+
+[P00615 | 8240:8243 | NORMAL_TEXT | TABLE row=53 col=0]
+53
+
+[P00616 | 8244:8263 | NORMAL_TEXT | TABLE row=53 col=1]
+Dashboard Tracking
+
+[P00617 | 8264:8268 | NORMAL_TEXT | TABLE row=53 col=2]
+178
+
+[P00618 | 8270:8273 | NORMAL_TEXT | TABLE row=54 col=0]
+54
+
+[P00619 | 8274:8290 | NORMAL_TEXT | TABLE row=54 col=1]
+Contact Inquiry
+
+[P00620 | 8291:8295 | NORMAL_TEXT | TABLE row=54 col=2]
+179
+
+[P00621 | 8297:8300 | NORMAL_TEXT | TABLE row=55 col=0]
+55
+
+[P00622 | 8301:8332 | NORMAL_TEXT | TABLE row=55 col=1]
+Session and Role Authorization
+
+[P00623 | 8333:8337 | NORMAL_TEXT | TABLE row=55 col=2]
+180
+
+[P00624 | 8339:8342 | NORMAL_TEXT | TABLE row=56 col=0]
+56
+
+[P00625 | 8343:8368 | NORMAL_TEXT | TABLE row=56 col=1]
+Oauth Sign In or Sign Up
+
+[P00626 | 8369:8373 | NORMAL_TEXT | TABLE row=56 col=2]
+181
+
+[P00627 | 8375:8378 | NORMAL_TEXT | TABLE row=57 col=0]
+57
+
+[P00628 | 8379:8386 | NORMAL_TEXT | TABLE row=57 col=1]
+Logout
+
+[P00629 | 8387:8391 | NORMAL_TEXT | TABLE row=57 col=2]
+182
+
+[P00630 | 8393:8396 | NORMAL_TEXT | TABLE row=58 col=0]
+58
+
+[P00631 | 8397:8426 | NORMAL_TEXT | TABLE row=58 col=1]
+Error and Not Found Recovery
+
+[P00632 | 8427:8431 | NORMAL_TEXT | TABLE row=58 col=2]
+183
+
+[P00633 | 8433:8436 | NORMAL_TEXT | TABLE row=59 col=0]
+59
+
+[P00634 | 8437:8453 | NORMAL_TEXT | TABLE row=59 col=1]
+Database Schema
+
+[P00635 | 8454:8458 | NORMAL_TEXT | TABLE row=59 col=2]
+184
+
+[P00636 | 8460:8463 | NORMAL_TEXT | TABLE row=60 col=0]
+60
+
+[P00637 | 8464:8489 | NORMAL_TEXT | TABLE row=60 col=1]
+Iterative Waterfall Mode
+
+[P00638 | 8490:8494 | NORMAL_TEXT | TABLE row=60 col=2]
+226
+
+[P00639 | 8496:8497 | NORMAL_TEXT | TABLE row=61 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00640 | 8498:8499 | NORMAL_TEXT | TABLE row=61 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P00641 | 8500:8501 | NORMAL_TEXT | TABLE row=61 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P00642 | 8502:8503 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00643 | 8503:8505 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00644 | 8506:8516 | NORMAL_TEXT]
+Chapter 1
+
+[P00645 | 8516:8529 | NORMAL_TEXT]
+INTRODUCTION
+
+[P00646 | 8529:8530 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00647 | 8530:8546 | NORMAL_TEXT]
+Project Context
+
+[P00648 | 8546:9545 | NORMAL_TEXT]
+The car rental industry provides flexible transportation services for individuals, businesses, travelers, and customers who need temporary access to vehicles. As customer demand varies by location, vehicle type, rental schedule, travel purpose, and seasonal condition, car rental businesses must manage vehicle availability efficiently to maintain service quality and operational sustainability. This becomes more challenging for small-scale car rental businesses operating across multiple branches because vehicles are not always evenly distributed. One branch may experience high demand or vehicle shortages, while another branch may have idle or underutilized units. Recent studies on vehicle rental and fleet management confirm that demand fluctuations, supply-demand mismatch, and branch-level fleet imbalance remain persistent issues in transportation-related operations, affecting both service quality and resource utilization (Brar et al., 2022; Schroer et al., 2021; Suganya et al., 2026).
+
+[P00649 | 9545:10434 | NORMAL_TEXT]
+In small-scale car rental operations, these challenges are often worsened by manual or semi-manual management practices. Existing studies show that manual booking, paperwork-based transactions, fragmented records, and limited vehicle monitoring may result in delayed processing, inaccurate records, overlapping reservations, and poor visibility of vehicle availability (Linghuraj et al., 2024; Marafo et al., 2025). Although web-based car rental management systems have been developed to support reservations, customer registration, vehicle booking, payment processing, and inventory tracking, many of these systems remain focused on transaction management rather than decision support. As a result, operational data such as rental history, vehicle usage, and branch-level demand may be recorded but not fully analyzed to support forecasting, vehicle allocation, and operational planning.
+
+[P00650 | 10434:11641 | NORMAL_TEXT]
+These conditions are evident in the current operations of the participating car rental business, the target client and operational context of this study. The business operates through its Manila and Antipolo operations and manages customer inquiries, booking coordination, rental schedules, payment validation, renter verification, vehicle monitoring, and branch coordination using several separate tools. Based on the client interview, customer inquiries and booking discussions are primarily handled through Facebook Messenger and other communication channels, while rental schedules are monitored through Google Calendar. Some operational records may also be handled through spreadsheets, mobile devices, and communication histories. Vehicle monitoring is supported through external tools such as Apple Find My, AirTags, and GPS-related applications; however, these tools remain separate from reservation records, payment validation, customer records, maintenance information, and reports. This setup shows that the business still depends heavily on manual coordination and owner judgment when verifying renters, confirming payments, checking schedules, assigning vehicles, and monitoring rental status.
+
+[P00651 | 11641:12337 | NORMAL_TEXT]
+The current workflow also shows the need for proper access control. Owners require access to payment information, rental approvals, vehicle allocation decisions, reports, maintenance monitoring, and operational records, while staff or administrators may only need limited access to booking schedules, calendar-related information, customer coordination, and operational updates. Customers or renters, on the other hand, should only access their own booking requests, submitted requirements, payment proof, booking status, and rental-related notifications. This need for separated access levels supports the inclusion of secure authentication and role-based access control in the proposed system.
+
+[P00652 | 12337:13256 | NORMAL_TEXT]
+Beyond record centralization, multi-branch car rental operations also require decision-support features for vehicle allocation and operational planning. Without analytical support, vehicle assignment and branch allocation decisions are commonly based on manual judgment, which may lead to reactive planning. This means that businesses respond to shortages or idle units only after they occur instead of anticipating demand in advance. Recent studies emphasize that demand forecasting can help transportation and rental-related systems estimate future demand using historical usage or rental data. In addition, rule-based and threshold-based decision strategies can support allocation decisions by translating operational priorities into structured and interpretable decision rules. These findings support the proposed system’s use of Weighted Moving Average forecasting and rule-based fleet allocation recommendations.
+
+[P00653 | 13256:13923 | NORMAL_TEXT]
+Selected operational and external context inputs may also support administrative vehicle-assignment and branch-allocation decisions. These inputs may include weather condition, road condition, route feasibility, route accessibility, travel distance, reference fuel efficiency, and estimated fuel consumption. In the proposed system, these factors will serve as supporting information for the Owner/Admin and will not independently determine vehicle assignment or branch allocation. The Customer-Side Vehicle Recommendation remains primarily based on customer-provided rental requirements, vehicle availability, maintenance readiness, and encoded vehicle information.
+
+[P00654 | 13923:15169 | NORMAL_TEXT]
+Given these gaps, this study proposes A Web-Based Car Rental Management System with Demand Forecasting and Context-Aware Fleet Allocation for Small-Scale Multi-Branch Businesses. The proposed system aims to centralize customer records, vehicle records, reservations, rental transactions, payment validation records, fleet status, maintenance records, notifications, and report generation for the participating car rental business. It also extends beyond basic transaction processing by incorporating demand forecasting using Weighted Moving Average, rule-based fleet allocation recommendations, vehicle utilization analysis, idle vehicle detection, and selected operational context inputs such as fuel efficiency, estimated fuel consumption, travel distance, road accessibility, route feasibility, and weather condition, depending on data availability and development feasibility. Through these features, the system seeks to transform routine operational data into actionable insights that can help managers anticipate demand, reduce idle units, improve vehicle allocation, support branch coordination, and make more cost-aware and context-informed decisions while keeping final operational decisions under the owner or authorized administrator.
+
+[P00655 | 15169:15170 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00656 | 15170:15191 | NORMAL_TEXT]
+Technical Background
+
+[P00657 | 15191:15642 | NORMAL_TEXT]
+This section discusses the existing operational environment, hardware resources, software tools, network access, data storage practices, security procedures, and business workflow of the target client. It focuses on the current tools, devices, and procedures used in daily car rental operations, particularly in handling customer inquiries, reservation coordination, payment checking, vehicle monitoring, recordkeeping, and operational communication.
+
+[P00658 | 15642:15643 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00659 | 15643:15662 | NORMAL_TEXT]
+Equipment/Hardware
+
+[P00660 | 15662:15704 | NORMAL_TEXT]
+Table 1Existing Hardware of the Business
+
+[P00661 | 15707:15717 | NORMAL_TEXT | TABLE row=0 col=0]
+Equipment
+
+[P00662 | 15718:15727 | NORMAL_TEXT | TABLE row=0 col=1]
+Quantity
+
+[P00663 | 15729:15736 | NORMAL_TEXT | TABLE row=1 col=0]
+Laptop
+
+[P00664 | 15737:15739 | NORMAL_TEXT | TABLE row=1 col=1]
+2
+
+[P00665 | 15741:15746 | NORMAL_TEXT | TABLE row=2 col=0]
+iPad
+
+[P00666 | 15747:15749 | NORMAL_TEXT | TABLE row=2 col=1]
+2
+
+[P00667 | 15751:15759 | NORMAL_TEXT | TABLE row=3 col=0]
+iPhones
+
+[P00668 | 15760:15762 | NORMAL_TEXT | TABLE row=3 col=1]
+5
+
+[P00669 | 15764:15787 | NORMAL_TEXT | TABLE row=4 col=0]
+GPS Trackers / AirTags
+
+[P00670 | 15788:15791 | NORMAL_TEXT | TABLE row=4 col=1]
+20
+
+[P00671 | 15792:15793 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00672 | 15793:16240 | NORMAL_TEXT]
+Table 1 presents the existing hardware used by the target client in its daily operations. Based on the client interview, the business primarily uses iPhones, iPads, and laptops to handle customer inquiries, booking coordination, schedule monitoring, payment checking, and branch-related communication. These devices support the business’s home-based and mobile workflow, especially when coordinating vehicle release, return, and customer updates.
+
+[P00673 | 16240:16709 | NORMAL_TEXT]
+The business also uses GPS-related tracking devices and Apple AirTags to monitor selected rental vehicles during active rentals. These tools help the owners maintain visibility over the vehicles; however, they operate separately from booking records, payment validation, customer information, vehicle records, maintenance records, and reports. As a result, vehicle monitoring information is not automatically connected to the other operational records of the business.
+
+[P00674 | 16709:16710 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00675 | 16710:16719 | NORMAL_TEXT]
+Software
+
+[P00676 | 16719:16784 | NORMAL_TEXT]
+Table 2Existing Software and Digital Tools Used by the Business
+
+[P00677 | 16787:16810 | NORMAL_TEXT | TABLE row=0 col=0]
+Software / Application
+
+[P00678 | 16811:16825 | NORMAL_TEXT | TABLE row=0 col=1]
+Purpose / Use
+
+[P00679 | 16827:16832 | NORMAL_TEXT | TABLE row=1 col=0]
+iOS 
+
+[P00680 | 16833:16873 | NORMAL_TEXT | TABLE row=1 col=1]
+Operating system for iPhones and iPads 
+
+[P00681 | 16875:16887 | NORMAL_TEXT | TABLE row=2 col=0]
+Windows OS 
+
+[P00682 | 16888:16925 | NORMAL_TEXT | TABLE row=2 col=1]
+Operating system for laptop devices 
+
+[P00683 | 16927:16953 | NORMAL_TEXT | TABLE row=3 col=0]
+Facebook / Facebook Page 
+
+[P00684 | 16954:16997 | NORMAL_TEXT | TABLE row=3 col=1]
+Customer inquiries and business promotion 
+
+[P00685 | 16999:17019 | NORMAL_TEXT | TABLE row=4 col=0]
+Facebook Messenger 
+
+[P00686 | 17020:17073 | NORMAL_TEXT | TABLE row=4 col=1]
+Customer communication and reservation coordination 
+
+[P00687 | 17075:17082 | NORMAL_TEXT | TABLE row=5 col=0]
+Viber 
+
+[P00688 | 17083:17136 | NORMAL_TEXT | TABLE row=5 col=1]
+Internal communication and operational coordination 
+
+[P00689 | 17138:17162 | NORMAL_TEXT | TABLE row=6 col=0]
+Safari / Google Chrome 
+
+[P00690 | 17163:17214 | NORMAL_TEXT | TABLE row=6 col=1]
+Access to web-based platforms and online services 
+
+[P00691 | 17216:17231 | NORMAL_TEXT | TABLE row=7 col=0]
+Apple Find My 
+
+[P00692 | 17232:17277 | NORMAL_TEXT | TABLE row=7 col=1]
+Monitoring of AirTags installed in vehicles 
+
+[P00693 | 17279:17289 | NORMAL_TEXT | TABLE row=8 col=0]
+AKSH GPS 
+
+[P00694 | 17290:17323 | NORMAL_TEXT | TABLE row=8 col=1]
+Vehicle monitoring and tracking 
+
+[P00695 | 17325:17342 | NORMAL_TEXT | TABLE row=9 col=0]
+Google Calendar 
+
+[P00696 | 17343:17389 | NORMAL_TEXT | TABLE row=9 col=1]
+Booking schedule monitoring and coordination 
+
+[P00697 | 17391:17406 | NORMAL_TEXT | TABLE row=10 col=0]
+Google Sheets 
+
+[P00698 | 17407:17492 | NORMAL_TEXT | TABLE row=10 col=1]
+Storage and monitoring of selected customer, booking, sales, or operational records 
+
+[P00699 | 17493:17494 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00700 | 17494:17837 | NORMAL_TEXT]
+Table 2 presents the existing software and digital tools used by the target client. The business currently uses iOS and Windows devices, Facebook Messenger for customer communication, Google Calendar for booking schedules, Google Sheets for selected operational records, and vehicle monitoring applications such as Apple Find My and AKSH GPS.
+
+[P00701 | 17837:18217 | NORMAL_TEXT]
+Apple Find My is used to monitor AirTags installed in selected vehicles, while AKSH GPS is an existing GPS-related monitoring tool used by the business to help track vehicle location or movement during active rentals. These applications are external monitoring tools and are not directly connected to the business’s booking, payment, customer, maintenance, and reporting records.
+
+[P00702 | 18217:18637 | NORMAL_TEXT]
+Although these software tools support day-to-day operations, they are used separately. Customer inquiries, rental schedules, payment references, renter information, vehicle monitoring details, and selected operational records are handled through different applications. This setup may result in fragmented information, repeated manual coordination, and difficulty in retrieving complete and updated records when needed.
+
+[P00703 | 18637:18638 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00704 | 18638:18658 | NORMAL_TEXT]
+Peopleware/Manpower
+
+[P00705 | 18658:19136 | NORMAL_TEXT]
+The daily operations of the target client involve business owners, administrators or staff, and customers or renters. The business owners oversee major operational decisions, including booking approval, payment verification, vehicle assignment, maintenance monitoring, vehicle monitoring, and report review. Administrators or staff assist with reservation coordination, booking schedule monitoring, customer communication, calendar management, and selected operational updates.
+
+[P00706 | 19136:19747 | NORMAL_TEXT]
+Customers or renters participate in the rental process by sending inquiries, submitting booking requests, providing rental requirements, submitting proof of payment, and receiving booking confirmations or rental-related updates. Since these users have different roles in the current business workflow, their access to operational information also differs. Owners handle sensitive payment, approval, and vehicle-related decisions, while staff members assist in daily coordination tasks. Customers are only involved in their own booking requests, submitted requirements, payment proof, and rental status updates.
+
+[P00707 | 19747:19807 | NORMAL_TEXT]
+Table 3System Users and Operational Roles of the Business 
+
+[P00708 | 19810:19827 | NORMAL_TEXT | TABLE row=0 col=0]
+Operational Role
+
+[P00709 | 19828:19845 | NORMAL_TEXT | TABLE row=0 col=1]
+Responsibilities
+
+[P00710 | 19847:19871 | NORMAL_TEXT | TABLE row=1 col=0]
+Admin / Business Owners
+
+[P00711 | 19872:20111 | NORMAL_TEXT | TABLE row=1 col=1]
+Has full access to operational records, payment information, rental approvals, vehicle allocation decisions, maintenance monitoring, and report viewing. Responsible for overseeing branch operations and making final operational decisions. 
+
+[P00712 | 20113:20131 | NORMAL_TEXT | TABLE row=2 col=0]
+Operational Staff
+
+[P00713 | 20132:20356 | NORMAL_TEXT | TABLE row=2 col=1]
+Responsible for reservation coordination, booking schedule monitoring, customer communication, calendar management, and operational updates. Access to sensitive financial records and payment-related information is limited. 
+
+[P00714 | 20358:20367 | NORMAL_TEXT | TABLE row=3 col=0]
+Renters 
+
+[P00715 | 20368:20538 | NORMAL_TEXT | TABLE row=3 col=1]
+Individuals who inquire about vehicle availability, submit reservation requests, provide rental requirements, and receive booking confirmations and operational updates. 
+
+[P00716 | 20539:20540 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00717 | 20540:20576 | NORMAL_TEXT]
+Network Infrastructure/Architecture
+
+[P00718 | 20576:21021 | NORMAL_TEXT]
+The target client does not operate through a formal enterprise network infrastructure. Its current operations rely on home internet, mobile data, phones, tablets, laptops, messaging applications, and browser-accessible tools. This setup supports flexible rental coordination across the Manila and Antipolo operations, but it may also cause scattered records and communication delays because information is distributed across multiple platforms.
+
+[P00719 | 21021:21491 | NORMAL_TEXT]
+Since the business relies on different devices and internet connections, operational updates are usually coordinated manually through messaging applications, calendar tools, mobile devices, and spreadsheets. This current setup allows the owners and staff to communicate and monitor operations remotely, but it does not provide a unified network or centralized access point for all rental records, vehicle information, payment details, schedules, and monitoring updates.
+
+[P00720 | 21491:21492 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00721 | 21492:21532 | NORMAL_TEXT]
+Storage, Backup, and Recovery Procedure
+
+[P00722 | 21532:21985 | NORMAL_TEXT]
+The target client currently stores operational information through a combination of mobile devices, messaging applications, Google Calendar, Google Sheets, and manual records. Booking details, customer information, payment references, vehicle schedules, and rental-related notes may be stored in separate locations. Because of this, retrieving complete, accurate, and updated records may require checking multiple applications or communication threads.
+
+[P00723 | 21985:22411 | NORMAL_TEXT]
+The current storage practice does not appear to follow a formal centralized backup and recovery procedure. Records may depend on the availability of individual devices, messaging histories, spreadsheets, and calendar entries. This setup may increase the risk of missing information, duplicated records, accidental deletion, or difficulty in recovering complete records when a device, file, or application becomes unavailable.
+
+[P00724 | 22411:22412 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00725 | 22412:22432 | NORMAL_TEXT]
+Security Procedures
+
+[P00726 | 22432:22785 | NORMAL_TEXT]
+The target client currently applies manual security procedures before confirming rental transactions. Customers are required to submit valid identification, driver’s license information, and other rental requirements for verification. These submitted requirements are manually checked by the owners or authorized personnel before a booking is approved.
+
+[P00727 | 22785:23263 | NORMAL_TEXT]
+Payment confirmation is also manually verified by checking payment references, screenshots, and the business’s bank or e-wallet account. If the submitted payment proof or reference number does not match the actual transaction record, the payment may be marked as invalid, rejected, or requiring resubmission. These practices help reduce rental and payment risks, but they also require careful handling of sensitive customer information, uploaded documents, and payment details.
+
+[P00728 | 23263:23649 | NORMAL_TEXT]
+Because customer documents, payment proof, and operational records contain sensitive information, access to these records is currently handled through the owners and authorized personnel. However, since many records are managed through separate applications and manual checking, maintaining privacy, accuracy, and controlled access remains an important concern in the current workflow.
+
+[P00729 | 23649:23650 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00730 | 23650:23674 | NORMAL_TEXT]
+Policies and Procedures
+
+[P00731 | 23674:24169 | NORMAL_TEXT]
+The target client follows a controlled rental process to ensure that customers are properly verified, payments are confirmed, and vehicles are prepared before release. The usual workflow begins when a customer sends a rental inquiry through Facebook Messenger or other communication channels. The owner or staff then gathers the necessary rental details, such as the rental date, rental duration, preferred vehicle, number of passengers or seats needed, and branch-related vehicle availability.
+
+[P00732 | 24169:24549 | NORMAL_TEXT]
+After the initial inquiry, the customer is required to submit the necessary rental documents for verification. These may include valid identification, driver’s license information, and other requirements needed by the business before approving the rental request. Once the submitted requirements are reviewed and approved, the customer may proceed with the required down payment.
+
+[P00733 | 24549:24998 | NORMAL_TEXT]
+Payment confirmation is performed manually by the owner or authorized personnel. The customer provides proof of payment, such as a screenshot and reference number, and the payment is checked against the business’s bank or e-wallet account. If the payment details are valid, the reservation may proceed. If the proof of payment or reference number does not match the actual transaction record, the payment may be rejected or marked for resubmission.
+
+[P00734 | 24998:25405 | NORMAL_TEXT]
+Before vehicle turnover, the selected vehicle is prepared and checked by the owner or staff. This includes checking the vehicle’s availability, physical condition, existing damages, fuel status, and other rental-related conditions. The rental agreement, possible penalties, existing damages, return schedule, and important rental reminders are also explained to the customer before the vehicle is released.
+
+[P00735 | 25405:25894 | NORMAL_TEXT]
+During the rental period, the business monitors selected vehicles using existing GPS-related tools and tracking devices. These monitoring tools are used separately from the rental records and are not directly connected to customer records, payment validation, maintenance records, or operational reports. Upon return, the vehicle is inspected for damages, fuel level, late return issues, remaining balance, penalties, and other settlement concerns before the rental transaction is closed.
+
+[P00736 | 25894:26402 | NORMAL_TEXT]
+These procedures show that the current rental workflow involves several manual and semi-manual activities, including customer inquiry handling, requirement verification, payment checking, vehicle preparation, vehicle monitoring, return inspection, and settlement processing. Since these activities are handled through separate tools and manual coordination, the business needs accurate recordkeeping, controlled approval procedures, and proper handling of customer, payment, and vehicle-related information.
+
+[P00737 | 26402:26403 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00738 | 26403:26404 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00739 | 26404:26405 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00740 | 26405:26406 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00741 | 26406:26422 | NORMAL_TEXT]
+Context Diagram
+
+[P00742 | 26422:26459 | NORMAL_TEXT]
+Figure 1. Context Diagram - Level 0 
+
+[P00743 | 26459:26461 | NORMAL_TEXT]
+[INLINE_OBJECT kix.ko6patxkukdh]
+
+[P00744 | 26461:27019 | NORMAL_TEXT]
+Figure 1 presents the Level 0 Context Diagram of the current car rental business process of the target rental business. The diagram illustrates the interaction between the current rental operations and its external entities, namely the Customer or Renter, Owner or Administrator, Payment Channel or Bank or E-Wallet, and Vehicle Monitoring Tools. It shows how rental information, payment-related information, vehicle monitoring information, operational decisions, and operational records flow between the business process and the involved external entities.
+
+[P00745 | 27019:27357 | NORMAL_TEXT]
+The Customer or Renter provides rental requests and related rental information to the business process, while the business provides status updates regarding reservations and rental transactions. These interactions support the coordination of rental inquiries, booking requests, and customer-related updates throughout the rental process.
+
+[P00746 | 27357:27638 | NORMAL_TEXT]
+Payment Channel or Bank or E-Wallet services support payment verification activities by receiving payment references and providing payment confirmation information. These services assist the business in validating customer payments before reservation approval and vehicle release.
+
+[P00747 | 27638:27924 | NORMAL_TEXT]
+Vehicle Monitoring Tools provide vehicle location and status information during active rental periods and receive monitoring-related requests from the business process. These tools support the monitoring of rented vehicles using existing tracking technologies utilized by the business.
+
+[P00748 | 27924:28215 | NORMAL_TEXT]
+The Owner or Administrator provides operational decisions related to reservation approval, payment validation, vehicle assignment, and other rental management activities. In return, the business process provides operational records and information needed for monitoring and decision-making.
+
+[P00749 | 28215:28467 | NORMAL_TEXT]
+Overall, the context diagram presents the current manual and semi-manual workflow of the target rental business and shows how customers, management personnel, payment services, and vehicle monitoring tools interact with the existing rental operations.
+
+[P00750 | 28467:28468 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00751 | 28468:28469 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00752 | 28469:28470 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00753 | 28470:28488 | NORMAL_TEXT]
+Data Flow Diagram
+
+[P00754 | 28488:28527 | NORMAL_TEXT]
+Figure 2. Data Flow Diagram - Level 1 
+
+[P00755 | 28527:28529 | NORMAL_TEXT]
+[INLINE_OBJECT kix.3g2smrd9lvbp]
+
+[P00756 | 28529:29026 | NORMAL_TEXT]
+Figure 2 presents the Level 1 Data Flow Diagram of the current car rental business process of the target rental business. The diagram illustrates the major operational processes, external entities, and records involved in the current manual and semi-manual rental operations. It shows how rental-related information flows between the Customer or Renter, Owner or Administrator, Payment Channel or Bank or E-Wallet, Vehicle Monitoring Tools, and the operational records maintained by the business.
+
+[P00757 | 29026:29258 | NORMAL_TEXT]
+Process 1.0: Receive Customer Inquiry handles the initial receipt and recording of customer rental requests and inquiry information. Customer-provided rental details are collected and stored to support succeeding rental activities.
+
+[P00758 | 29258:29545 | NORMAL_TEXT]
+Process 2.0: Check Vehicle Availability manages the checking of vehicle availability and reservation schedules based on the customer's requested rental details. Availability information is reviewed to determine whether a suitable vehicle can be assigned for the requested rental period.
+
+[P00759 | 29545:29781 | NORMAL_TEXT]
+Process 3.0: Verify Requirements handles the collection and verification of customer-submitted requirements and supporting documents. Verification activities are performed before reservation approval and payment processing can proceed.
+
+[P00760 | 29781:30042 | NORMAL_TEXT]
+Process 4.0: Confirm Reservation and Payment manages reservation confirmation and payment validation activities after customer requirements have been verified. Payment proof and payment confirmation information are reviewed before the reservation is finalized.
+
+[P00761 | 30042:30295 | NORMAL_TEXT]
+Process 5.0: Prepare and Release Vehicle handles the preparation of the assigned rental vehicle prior to turnover. This process includes vehicle readiness checking, availability confirmation, and release authorization before vehicle pickup or delivery.
+
+[P00762 | 30295:30555 | NORMAL_TEXT]
+Process 6.0: Monitor Active Rental manages rental monitoring activities during the active rental period. Vehicle location and status information obtained from existing monitoring tools are used to support operational monitoring and rental tracking activities.
+
+[P00763 | 30555:30869 | NORMAL_TEXT]
+Process 7.0: Process Return and Settlement handles vehicle return inspection and settlement activities after the rental period. This process includes the review of vehicle condition, fuel status, penalties, damages, remaining balances, and other settlement-related concerns before operational records are updated.
+
+[P00764 | 30869:31215 | NORMAL_TEXT]
+Overall, the Level 1 Data Flow Diagram illustrates the current operational workflow of the target rental business by showing how customer inquiries, availability checking, requirement verification, payment confirmation, vehicle preparation, rental monitoring, and settlement activities are manually and semi-manually managed within the business.
+
+[P00765 | 31215:31216 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00766 | 31216:31233 | NORMAL_TEXT]
+Problem Analysis
+
+[P00767 | 31233:31924 | NORMAL_TEXT]
+This section presents the analysis of the major operational problems encountered in small-scale multi-branch car rental operations, particularly in the context of the target client. It identifies the root causes of existing inefficiencies, explains their operational effects, and aligns the identified problems with the proposed system requirements. The analysis focuses on issues related to fragmented record management, manual operational processes, limited fleet visibility, weak utilization of historical operational data, maintenance monitoring concerns, and the absence of structured decision-support mechanisms for vehicle recommendation, branch allocation, and operational planning.
+
+[P00768 | 31924:33242 | NORMAL_TEXT]
+Based on the client interview conducted, the target client currently relies on multiple separate tools and manual coordination practices to manage reservations, scheduling, vehicle monitoring, renter verification, payment validation, maintenance updates, and operational communication across its Manila and Antipolo operations. Customer inquiries and booking coordination are primarily handled through Facebook Messenger and other communication platforms, while reservation schedules are monitored through Google Calendar. Vehicle monitoring is conducted using existing external tools such as AKSH GPS, Apple Find My, installed tracking devices, and AirTags. AKSH GPS refers to a GPS-related vehicle monitoring tool currently used by the client to help track selected rental vehicles during active rentals. Apple Find My and AirTags are also used as external monitoring tools for selected vehicles. However, these tools operate separately from the client’s booking records, customer information, payment validation, maintenance records, and operational reports. Therefore, the concern addressed in this study is not the absence of GPS tracking, but the lack of a centralized platform where rental records, vehicle status, maintenance information, and monitoring-related updates can be organized and accessed together.
+
+[P00769 | 33242:34253 | NORMAL_TEXT]
+The current setup shows that the business still depends heavily on manual and semi-manual coordination when handling inquiries, checking vehicle availability, verifying renter requirements, validating payments, updating schedules, and monitoring rental status. Although these tools support daily operations, the use of separate applications may lead to fragmented records, repeated manual checking, inconsistent updates, and difficulty in retrieving complete and updated information. Studies on web-based car rental management systems show that manual or fragmented processes may cause delays in reservation handling, inaccurate recordkeeping, limited visibility of vehicle availability, and inefficient transaction monitoring (Harissa, 2025; Khan, 2020; K. S., 2025; Pawestri & Putro, 2024). These findings support the need for a centralized system that can organize customer records, booking details, payment validation records, vehicle information, maintenance data, and operational reports in one platform.
+
+[P00770 | 34253:35178 | NORMAL_TEXT]
+In multi-branch rental operations, vehicle demand may vary depending on branch location, rental schedule, vehicle type, and customer needs. One branch may experience high demand or vehicle shortage, while another branch may have idle or underutilized vehicles. If vehicle assignment and branch allocation are based mainly on manual judgment, the business may respond to shortages only after they occur instead of preparing for possible demand changes. Studies on rental vehicle and carsharing operations show that fleet imbalance, idle vehicles, relocation concerns, and uneven demand distribution can affect vehicle availability, utilization, and service quality (Favier et al., 2024; Fernández et al., 2020; Moein & Awasthi, 2020). These concerns support the need for decision-support features that can help the owner or administrator assess branch-level demand and vehicle availability before making allocation decisions.
+
+[P00771 | 35178:36877 | NORMAL_TEXT]
+Another concern involves the limited use of historical rental and operational data for planning. The demand forecasting component of the proposed system will use qualifying historical booking records as the basis for estimating short-term vehicle demand. Qualifying bookings will be aggregated according to calendar week, branch, and vehicle category to determine the recorded demand for each completed weekly period. These weekly demand observations will serve as inputs to the Weighted Moving Average method, which will generate short-term demand forecasts for up to three succeeding weekly periods. Other rental and vehicle records, such as rental duration and vehicle usage, may support related operational analyses such as vehicle utilization monitoring but will not directly define the demand count used in the forecasting computation. Demand forecasting studies in carsharing, transportation, and rental-related operations show that historical demand and usage data can be used to estimate short-term demand and support planning decisions (Adhyapak, 2020; Alencar et al., 2021; Maghfur & Tranggono, 2025; Moein & Awasthi, 2020). In addition, studies using the Weighted Moving Average method show that it can be applied to short-term forecasting by assigning greater importance to more recent observations (Ariantini & Supartha, 2022; Yuliani et al., 2022). If sufficient historical observations are unavailable, the system will indicate insufficient historical data rather than generate a forecast from incomplete inputs. The resulting forecasts will be treated as short-term decision-support estimates rather than as artificial intelligence-based or guaranteed predictions of future demand.
+
+[P00772 | 36877:38241 | NORMAL_TEXT]
+Vehicle assignment and fleet allocation may also be affected by selected operational context inputs. These include fuel efficiency, estimated fuel consumption, travel distance, weather condition, road condition, route feasibility, and route accessibility. Fuel efficiency refers to how far a vehicle can travel per unit of fuel, while estimated fuel consumption refers to the projected fuel use for a trip based on travel distance and the vehicle’s fuel efficiency. Route feasibility and route accessibility refer to whether a route is practical, reachable, and suitable based on available operational information. These factors will be presented as supporting information during administrative review of eligible vehicles and proposed branch allocations. They will not alter the Weighted Moving Average forecast or automatically determine candidate ranking, vehicle assignment, or transfer approval; the final decision will remain with the owner or authorized administrator. Studies on context-aware vehicle services and fleet optimization show that operational factors such as travel conditions, fuel-related factors, route-related information, maintenance, and cost-related variables can support transportation and fleet decision-making when used as decision-support inputs (Agarwal & Shinde, 2022; Chavhan et al., 2022; Labib et al., 2026; Naim et al., 2025).
+
+[P00773 | 38241:39207 | NORMAL_TEXT]
+Vehicle maintenance is also an important part of fleet visibility and vehicle recommendation. In the current setup, maintenance updates may depend on manual checking and separate records, which can make it difficult to review a vehicle’s maintenance status, mileage, preventive maintenance schedule, and service history. This is important because vehicles under maintenance, vehicles with high mileage, or vehicles with poor condition should not be recommended for rental assignment without proper review. Studies on fleet monitoring and maintenance information systems emphasize that maintenance records, vehicle condition, diagnostics, and service history are important for operational safety, efficiency, and fleet decision-making (Fauzi et al., 2025; Gurusinghe, 2021; Lopez et al., 2025). Therefore, maintenance-related data should be considered in the problem analysis because it affects vehicle availability, rental readiness, and recommendation suitability.
+
+[P00774 | 39207:40222 | NORMAL_TEXT]
+Overall, the identified operational issues demonstrate the need for a centralized web-based car rental management and decision-support system capable of organizing reservation management, customer records, payment validation, vehicle status, maintenance records, reports, demand forecasting, and rule-based fleet allocation in one platform. By centralizing operational records and providing forecasting and recommendation support, the system aims to assist the target client in improving operational visibility, reducing fragmented records, supporting vehicle utilization monitoring, and making more informed vehicle assignment and branch allocation decisions. However, the system will not replace existing GPS-related tools or perform live GPS tracking. Existing monitoring tools such as AKSH GPS, Apple Find My, AirTags, and installed tracking devices will remain external to the system, while the proposed system will focus on centralizing rental, vehicle, maintenance, monitoring, and decision-support records.
+
+[P00775 | 40222:40239 | NORMAL_TEXT]
+Fishbone Diagram
+
+[P00776 | 40239:40266 | NORMAL_TEXT]
+Figure 3. Fishbone Diagram
+
+[P00777 | 40266:40268 | NORMAL_TEXT]
+[INLINE_OBJECT kix.axpvohts8pre]
+
+[P00778 | 40268:40849 | NORMAL_TEXT]
+	The Fishbone Diagram shows that the main problem is operational inefficiency in small-scale multi-branch car rental operations. The root causes are grouped into six major categories: People/Manpower, Process, Technology/System, Data/Information, Fleet/Operations, and External/Environment. These categories show that the problem is not caused by a single issue only, but by the combined effects of manual workflows, fragmented information, separate monitoring tools, limited forecasting, maintenance visibility concerns, and the absence of structured decision-support mechanisms.
+
+[P00779 | 40849:41396 | NORMAL_TEXT]
+Under People/Manpower, one of the main causes is the reliance of staff and owners on manual judgment when checking reservations, assigning vehicles, verifying payments, and coordinating branch operations. Since decisions are often based on immediate availability rather than organized historical data or structured analysis, vehicle assignment becomes reactive. Manual handling also increases the possibility of human error, especially in recording customer details, rental schedules, payment information, vehicle status, and maintenance updates.
+
+[P00780 | 41396:42022 | NORMAL_TEXT]
+Under Process, the problem is caused by manual or semi-manual booking, delayed reservation processing, and unstructured rental workflows. When reservations and vehicle assignments are handled through messaging applications, calls, walk-in inquiries, or informal communication, staff may experience difficulty in checking vehicle availability accurately. This may lead to delayed approvals, missed updates, repeated checking, and scheduling conflicts. These issues show the need for a more structured rental process that can organize booking, verification, payment checking, vehicle release, return, and settlement activities.
+
+[P00781 | 42022:42612 | NORMAL_TEXT]
+Under Technology/System, the absence of a centralized web-based system limits the ability of staff and managers to access updated information across branches. Although the business uses digital tools such as messaging applications, Google Calendar, spreadsheets, Apple Find My, AKSH GPS, and AirTags, these tools operate separately. The issue is not the lack of GPS-related monitoring tools, but the lack of integration between vehicle monitoring information and other operational records such as booking records, payment validation, customer information, maintenance records, and reports.
+
+[P00782 | 42612:43121 | NORMAL_TEXT]
+Under Data/Information, fragmented and scattered records prevent the business from using operational data effectively. Rental transactions, vehicle usage, customer records, payment references, vehicle status, maintenance updates, and branch-level demand may be recorded but are not organized in one centralized platform. This limits the ability of managers to retrieve complete records, forecast demand, identify peak periods, monitor vehicle utilization, detect idle vehicles, and generate reliable reports.
+
+[P00783 | 43121:43747 | NORMAL_TEXT]
+Under Fleet/Operations, the main concerns are idle vehicles, vehicle shortages, uneven utilization, limited maintenance visibility, and branch-level allocation difficulties. One branch may experience a shortage of available vehicles while another may have idle or underutilized units. In addition, if maintenance records, mileage, preventive maintenance schedules, and vehicle condition are not properly monitored, vehicles that are not suitable for rental may still be considered during manual assignment. These issues show the need for fleet monitoring, maintenance record management, and rule-based recommendation support.
+
+[P00784 | 43747:44239 | NORMAL_TEXT]
+Under External/Environment, vehicle assignment may also be affected by selected operational context inputs such as fuel efficiency, estimated fuel consumption, travel distance, weather condition, road condition, route feasibility, and route accessibility. These factors may help the owner or administrator assess whether a vehicle is suitable for a rental request. However, these inputs should be treated as supporting criteria only and should depend on available and reliable data sources. 
+
+[P00785 | 44239:44880 | NORMAL_TEXT]
+Among the identified causes, the most critical issues are fragmented records, manual booking coordination, separate vehicle monitoring tools, limited vehicle availability visibility, limited use of historical rental data, and weak maintenance record monitoring. These were prioritized because they directly affect booking accuracy, requirement verification, payment validation, vehicle assignment, branch coordination, vehicle readiness, and fleet visibility. Addressing these issues through a centralized system can help reduce scattered records, missed updates, inconsistent information, idle vehicles, and reactive operational decisions.
+
+[P00786 | 44880:44881 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00787 | 44881:44912 | NORMAL_TEXT]
+Problem and Solution Statement
+
+[P00788 | 44912:45659 | NORMAL_TEXT]
+Small-scale multi-branch car rental businesses experience operational inefficiencies due to manual or semi-manual booking processes, fragmented records, delayed rental transactions, limited centralized vehicle availability monitoring, and weak branch-level coordination. These issues increase the risk of human error, double-booking, inaccurate reports, missed updates, and slow transaction processing. In addition, vehicle allocation decisions are often based on manual judgment rather than historical data or structured analysis, making it difficult for managers to anticipate branch-level demand and distribute vehicles efficiently. As a result, some branches may experience vehicle shortages while others may have idle or underutilized units.
+
+[P00789 | 45659:46233 | NORMAL_TEXT]
+The target client already uses existing vehicle monitoring tools such as AKSH GPS, Apple Find My, AirTags, and other tracking devices during active rentals. However, these tools operate separately from reservation records, customer records, payment validation records, maintenance records, and operational reports. Therefore, the operational problem is not the absence of live GPS tracking, but the lack of a centralized platform where booking records, vehicle status, maintenance information, monitoring-related updates, and reports can be organized and accessed together.
+
+[P00790 | 46233:47154 | NORMAL_TEXT]
+Furthermore, existing car rental management systems often focus mainly on reservations, customer records, rental transactions, and inventory tracking. While these features improve basic operations, they provide limited support for demand forecasting, fleet allocation, maintenance-based vehicle recommendation, and rule-based decision support using selected operational context inputs. This limitation becomes a concern because vehicle assignment may also be affected by passenger capacity, vehicle availability, vehicle condition, maintenance status, fuel efficiency, estimated fuel consumption, travel distance, weather condition, road condition, route feasibility, and route accessibility. Without a centralized and decision-support-driven system, small-scale multi-branch car rental businesses may continue to experience fragmented records, delayed operations, limited fleet visibility, and reactive decision-making.
+
+[P00791 | 47154:47748 | NORMAL_TEXT]
+To address these problems, this study proposes a web-based car rental management and decision-support system for small-scale multi-branch car rental businesses. The system will centralize customer records, vehicle records, booking requests, rental transactions, payment validation records, fleet monitoring records, maintenance records, and report generation in one browser-accessible platform. Through centralized data management, the system will help organize scattered records, support transaction processing, provide updated vehicle availability monitoring, and assist branch coordination.
+
+[P00792 | 47748:48685 | NORMAL_TEXT]
+The proposed system will also include short-term demand forecasting using the Weighted Moving Average method and two distinct rule-based decision-support functions. The Customer-Side Vehicle Recommendation will assist customers in identifying suitable available vehicles according to their stated rental requirements before booking submission. The administrative Branch Allocation Recommendation will use forecasted vehicle requirements, projected available supply, maintenance readiness, vehicle availability, idle-vehicle information, and applicable operational context to identify possible redistribution of vehicles between branches. Applicable contextual information such as weather condition, road condition, route feasibility, route accessibility, travel distance, reference fuel efficiency, and estimated fuel consumption will serve as supporting information for administrative review rather than as automatic decision criteria.
+
+[P00793 | 48685:49185 | NORMAL_TEXT]
+The system will not replace the client’s existing GPS-related tools or perform live GPS tracking. Existing tools such as AKSH GPS, Apple Find My, AirTags, and installed tracking devices will remain external to the system. Instead, the proposed system will focus on centralizing rental, vehicle, maintenance, monitoring, and decision-support records. Final vehicle assignment, branch allocation, payment verification, and operational decisions will remain under the owner or authorized administrator.
+
+[P00794 | 49185:49193 | NORMAL_TEXT]
+Table 4
+
+[P00795 | 49193:49223 | NORMAL_TEXT]
+Problem – Requirements Matrix
+
+[P00796 | 49226:49234 | NORMAL_TEXT | TABLE row=0 col=0]
+Problem
+
+[P00797 | 49235:49238 | NORMAL_TEXT | TABLE row=0 col=1]
+ID
+
+[P00798 | 49239:49262 | NORMAL_TEXT | TABLE row=0 col=2]
+Solution / Requirement
+
+[P00799 | 49264:49439 | NORMAL_TEXT | TABLE row=1 col=0]
+1. Reservation, customer, payment, and rental records are handled through separate tools and manual coordination, causing fragmented and inconsistent operational information.
+
+[P00800 | 49440:49443 | NORMAL_TEXT | TABLE row=1 col=1]
+R1
+
+[P00801 | 49444:49633 | NORMAL_TEXT | TABLE row=1 col=2]
+The system shall provide a centralized reservation and rental management module for recording booking requests, customer details, rental schedules, payment status, and transaction history.
+
+[P00802 | 49635:49636 | NORMAL_TEXT | TABLE row=2 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00803 | 49637:49640 | NORMAL_TEXT | TABLE row=2 col=1]
+R2
+
+[P00804 | 49641:49817 | NORMAL_TEXT | TABLE row=2 col=2]
+The system shall provide online booking request management that allows administrators to review, approve, reject, and monitor reservations while checking vehicle availability.
+
+[P00805 | 49819:49985 | NORMAL_TEXT | TABLE row=3 col=0]
+2. Renter verification, requirement submission, and rental policy handling are manually performed, making the approval process time-consuming and difficult to track.
+
+[P00806 | 49986:49989 | NORMAL_TEXT | TABLE row=3 col=1]
+R3
+
+[P00807 | 49990:50161 | NORMAL_TEXT | TABLE row=3 col=2]
+The system shall provide a requirement submission and verification module where customers can upload required documents and administrators can review verification status.
+
+[P00808 | 50163:50164 | NORMAL_TEXT | TABLE row=4 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00809 | 50165:50168 | NORMAL_TEXT | TABLE row=4 col=1]
+R4
+
+[P00810 | 50169:50321 | NORMAL_TEXT | TABLE row=4 col=2]
+The system shall provide access to rental policies, agreements, penalties, and booking conditions for customer reference and administrative validation.
+
+[P00811 | 50323:50477 | NORMAL_TEXT | TABLE row=5 col=0]
+3. Vehicle records, availability, branch assignment, condition, and maintenance information are difficult to monitor when managed through separate tools.
+
+[P00812 | 50478:50481 | NORMAL_TEXT | TABLE row=5 col=1]
+R5
+
+[P00813 | 50482:50663 | NORMAL_TEXT | TABLE row=5 col=2]
+The system shall provide a vehicle and fleet management module for managing vehicle records, availability status, branch assignment, condition details, and maintenance information.
+
+[P00814 | 50665:50666 | NORMAL_TEXT | TABLE row=6 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00815 | 50667:50670 | NORMAL_TEXT | TABLE row=6 col=1]
+R6
+
+[P00816 | 50671:51021 | NORMAL_TEXT | TABLE row=6 col=2]
+The system shall provide operational fleet-status monitoring for tracking active rentals, idle vehicles, vehicle availability, branch assignment, vehicle condition, maintenance status, and other recorded fleet-status information. This functionality shall not include live GPS tracking or direct integration with external vehicle-monitoring hardware.
+
+[P00817 | 51022:51023 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00818 | 51023:51078 | NORMAL_TEXT]
+Continuation of Table 4. Problem – Requirements Matrix
+
+[P00819 | 51081:51089 | NORMAL_TEXT | TABLE row=0 col=0]
+Problem
+
+[P00820 | 51090:51093 | NORMAL_TEXT | TABLE row=0 col=1]
+ID
+
+[P00821 | 51094:51117 | NORMAL_TEXT | TABLE row=0 col=2]
+Solution / Requirement
+
+[P00822 | 51119:51264 | NORMAL_TEXT | TABLE row=1 col=0]
+4. Vehicle allocation decisions are mostly based on manual judgment, which may result in idle vehicles in one location and shortages in another.
+
+[P00823 | 51265:51268 | NORMAL_TEXT | TABLE row=1 col=1]
+R7
+
+[P00824 | 51269:51782 | NORMAL_TEXT | TABLE row=1 col=2]
+The system shall implement demand forecasting using a three-period Weighted Moving Average method with fixed weights of 0.50, 0.30, and 0.20 to estimate vehicle demand for up to three succeeding weekly periods per branch and vehicle category based on qualifying historical booking records. The first forecasted week shall use the three most recent completed actual-demand observations, while succeeding forecast periods shall be generated recursively using the most recent available actual and forecasted values.
+
+[P00825 | 51784:51785 | NORMAL_TEXT | TABLE row=2 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00826 | 51786:51789 | NORMAL_TEXT | TABLE row=2 col=1]
+R8
+
+[P00827 | 51790:52230 | NORMAL_TEXT | TABLE row=2 col=2]
+The system shall provide rule-based branch allocation recommendations for the Owner/Admin by comparing forecasted vehicle requirements with projected available vehicle supply per branch and vehicle category and by considering vehicle availability, maintenance readiness, idle-vehicle information, and applicable operational context. The generated recommendations shall be advisory and shall not automatically transfer or reassign vehicles.
+
+[P00828 | 52232:52363 | NORMAL_TEXT | TABLE row=3 col=0]
+5. The business lacks analytical tools for evaluating vehicle utilization, idle units, branch demand, and operational performance.
+
+[P00829 | 52364:52367 | NORMAL_TEXT | TABLE row=3 col=1]
+R9
+
+[P00830 | 52368:52668 | NORMAL_TEXT | TABLE row=3 col=2]
+The system shall provide analytical reports for vehicle utilization, idle vehicle detection, branch demand, forecasted vehicle shortage and surplus, booking records, payment records, maintenance information, and fleet performance to support operational monitoring and administrative decision-making.
+
+[P00831 | 52670:52960 | NORMAL_TEXT | TABLE row=4 col=0]
+6. Customers have limited structured support for identifying available vehicles that match their rental needs, while administrators lack a systematic mechanism for considering applicable operational and contextual information when making vehicle assignment and branch allocation decisions.
+
+[P00832 | 52961:52965 | NORMAL_TEXT | TABLE row=4 col=1]
+R10
+
+[P00833 | 52966:53647 | NORMAL_TEXT | TABLE row=4 col=2]
+The system shall provide a Customer-Side Find Your Ride feature that uses rule-based eligibility filtering and deterministic ranking to identify suitable available vehicles based on rental dates and times, passenger capacity, large-bag capacity, total rental budget, vehicle availability, and maintenance readiness. The Finder shall use vehicle capacities maintained by the Owner/Administrator and present explainable matches, including why a vehicle fits the customer’s group and luggage requirements. The generated matches shall assist customers in vehicle selection before submitting a booking request and shall not constitute booking approval or guaranteed vehicle assignment.
+
+[P00834 | 53649:53650 | NORMAL_TEXT | TABLE row=5 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00835 | 53651:53655 | NORMAL_TEXT | TABLE row=5 col=1]
+R11
+
+[P00836 | 53656:54156 | NORMAL_TEXT | TABLE row=5 col=2]
+The system shall provide context-aware decision support for the Owner/Admin using applicable operational and external context information, including weather condition, road condition, route feasibility, route accessibility, travel distance, reference fuel efficiency, and estimated fuel consumption. These contextual inputs shall serve as supporting information for administrative vehicle-assignment and branch-allocation decisions and shall not independently determine the final operational action.
+
+[P00837 | 54157:54158 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00838 | 54158:54159 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00839 | 54159:54214 | NORMAL_TEXT]
+Continuation of Table 4. Problem – Requirements Matrix
+
+[P00840 | 54217:54225 | NORMAL_TEXT | TABLE row=0 col=0]
+Problem
+
+[P00841 | 54226:54229 | NORMAL_TEXT | TABLE row=0 col=1]
+ID
+
+[P00842 | 54230:54253 | NORMAL_TEXT | TABLE row=0 col=2]
+Solution / Requirement
+
+[P00843 | 54255:54438 | NORMAL_TEXT | TABLE row=1 col=0]
+7. Operational updates such as booking status, payment reminders, verification results, return schedules, and maintenance alerts may be missed when communication is handled manually.
+
+[P00844 | 54439:54443 | NORMAL_TEXT | TABLE row=1 col=1]
+R12
+
+[P00845 | 54444:54642 | NORMAL_TEXT | TABLE row=1 col=2]
+The system shall provide notification and alert features for booking updates, payment reminders, verification results, vehicle return schedules, maintenance reminders, and low vehicle availability.
+
+[P00846 | 54644:54746 | NORMAL_TEXT | TABLE row=2 col=0]
+8. Sensitive customer, payment, and operational records require secure handling and reliable storage.
+
+[P00847 | 54747:54751 | NORMAL_TEXT | TABLE row=2 col=1]
+R13
+
+[P00848 | 54752:54941 | NORMAL_TEXT | TABLE row=2 col=2]
+The system shall implement secure authentication, role-based access control, and restricted access to customer records, payment information, uploaded requirements, and operational reports.
+
+[P00849 | 54943:54944 | NORMAL_TEXT | TABLE row=3 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P00850 | 54945:54949 | NORMAL_TEXT | TABLE row=3 col=1]
+R14
+
+[P00851 | 54950:55116 | NORMAL_TEXT | TABLE row=3 col=2]
+The system shall provide centralized database storage with backup and recovery procedures to support data integrity, record availability, and operational continuity.
+
+[P00852 | 55117:55118 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00853 | 55118:55142 | NORMAL_TEXT]
+Purpose and Description
+
+[P00854 | 55142:55618 | NORMAL_TEXT]
+This study aims to develop a web-based car rental management and decision-support system for the target client, a small-scale car rental business operating through its Manila and Antipolo operations. The proposed system is intended to centralize the management of customer records, vehicle records, booking requests, rental transactions, payment validation records, maintenance records, fleet status, notifications, and operational reports in one browser-accessible platform.
+
+[P00855 | 55618:56306 | NORMAL_TEXT]
+The system will support both customer-side and administrative-side functions. Customers or renters will be able to view available vehicles, submit booking requests, upload rental requirements, provide proof of payment, view rental policies, track booking status, and receive notifications. Owners and authorized administrators will be able to manage reservations, verify customer requirements, manually validate payments, assign vehicles, monitor fleet status, record maintenance information, record physical vehicle returns and operational inspection outcomes (financial settlement remains outside the current workflow), generate reports, and manage user access based on assigned roles.
+
+[P00856 | 56306:57378 | NORMAL_TEXT]
+Beyond basic rental transaction management, the system will include a demand forecasting feature using the Weighted Moving Average method to estimate short-term vehicle demand per branch and vehicle category for up to three succeeding weekly periods. Qualifying historical booking records will be aggregated by calendar week, and the three most recently completed weekly observations will be assigned fixed descending weights of 0.50, 0.30, and 0.20. The first forecasted week will be calculated using the three most recent actual weekly demand observations, while the second and third forecasted weeks will be generated recursively using the most recent available actual and previously forecasted values. The three-period window defines the inputs required for each calculation; it does not represent the total evidence needed to establish predictive accuracy or seasonal behavior. The resulting forecasts are short-term planning estimates. They do not explain the causes of demand changes and do not constitute an artificial intelligence or autonomous prediction model.
+
+[P00857 | 57378:58326 | NORMAL_TEXT]
+The system will provide two separate rule-based recommendation functions. The Customer-Side Vehicle Recommendation will assist customers before booking by filtering and ranking eligible vehicles according to passenger capacity, total rental budget, rental duration, vehicle preference, availability, and maintenance readiness. Separately, the administrative Branch Allocation Recommendation will compare forecasted vehicle requirements with projected available supply to identify branch shortages and surpluses and determine whether an eligible vehicle transfer may be recommended. Applicable contextual information, including weather condition, road condition, route feasibility, route accessibility, travel distance, reference fuel efficiency, and estimated fuel consumption, will serve as supporting information for administrative review. All recommendation outputs remain advisory, and final operational decisions remain under the Owner/Admin.
+
+[P00858 | 58326:58723 | NORMAL_TEXT]
+The maintenance-related functions of the system will include the recording of vehicle maintenance status, mileage, preventive maintenance schedule, service history, and related maintenance updates. These details may help the owner or authorized administrator determine whether a vehicle is available, suitable for assignment, or should be excluded from recommendation due to maintenance concerns.
+
+[P00859 | 58723:59119 | NORMAL_TEXT]
+The system will not replace the client’s existing GPS-related monitoring tools or provide live GPS tracking. Existing tools such as AKSH GPS, Apple Find My, AirTags, and other tracking devices will remain external to the system. Instead, the proposed system will focus on centralizing rental records, vehicle status, maintenance records, monitoring-related updates, and decision-support records.
+
+[P00860 | 59119:59585 | NORMAL_TEXT]
+Overall, the system is intended to assist the owner or authorized administrator in managing rental operations, organizing records, monitoring vehicle status, reviewing maintenance information, generating reports, and making more informed vehicle assignment and branch allocation decisions. Final approval, payment validation, vehicle assignment, branch allocation, and other business decisions will remain under the control of the owner or authorized administrator.
+
+[P00861 | 59585:59586 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00862 | 59586:59606 | NORMAL_TEXT]
+Specific Objectives
+
+[P00863 | 59606:60087 | NORMAL_TEXT]
+To address the identified operational problems of the participating car rental business, particularly fragmented rental records, manual booking coordination, limited fleet visibility, separated vehicle monitoring tools, and the need for structured decision-support features, this study establishes the following specific objectives. These objectives serve as the basis for the development and evaluation of the proposed web-based car rental management and decision-support system.
+
+[P00864 | 60087:60130 | NORMAL_TEXT]
+The specific objectives of this study are:
+
+[P00865 | 60130:60358 | NORMAL_TEXT | LIST id=kix.1axmtiy07zpa level=0]
+To assess the existing car rental management process of the target client in terms of reservation handling, rental transactions, vehicle availability monitoring, fleet utilization, payment verification, and vehicle maintenance.
+
+[P00866 | 60358:60612 | NORMAL_TEXT | LIST id=kix.1axmtiy07zpa level=0]
+To develop a centralized web-based car rental management system for managing customer records, vehicle records, booking requests, rental transactions, payment validation records, maintenance records, fleet status, notifications, and operational reports.
+
+[P00867 | 60612:61041 | NORMAL_TEXT | LIST id=kix.1axmtiy07zpa level=0]
+To implement a Customer-Side Vehicle Recommendation feature that filters and ranks vehicles using passenger and large-luggage capacity, a stated total rental budget compared with a provisional daily-rate reference estimate, the requested rental period, vehicle preference, availability, and maintenance readiness. An optional destination is retained for administrative review and does not affect customer recommendation ranking.
+
+[P00868 | 61041:61340 | NORMAL_TEXT | LIST id=kix.1axmtiy07zpa level=0]
+To implement a demand forecasting feature using the Weighted Moving Average method to estimate short-term weekly booking demand per branch and vehicle category from confirmed booking starts. These booking-count forecasts are planning inputs and do not directly measure concurrent vehicle occupancy.
+
+[P00869 | 61340:61644 | NORMAL_TEXT | LIST id=kix.1axmtiy07zpa level=0]
+To implement an administrative rule-based branch allocation feature that compares forecast-based planning requirements with projected eligible supply, identifies branch shortages and transferable surpluses, and recommends eligible candidate vehicles for review without automatically executing transfers.
+
+[P00870 | 61644:61962 | NORMAL_TEXT | LIST id=kix.1axmtiy07zpa level=0]
+To incorporate weather, incident-based road information, route availability, travel distance, reference fuel efficiency, and estimated fuel consumption into administrative review of vehicle assignments and proposed branch allocations, with source, freshness, coverage, and missing-data limitations clearly identified.
+
+[P00871 | 61962:62259 | NORMAL_TEXT | LIST id=kix.1axmtiy07zpa level=0]
+To support vehicle maintenance monitoring by recording maintenance status, preventive maintenance schedule, mileage or odometer reading, vehicle condition, maintenance history, repair history, maintenance cost, remarks, and related updates that may affect vehicle availability and recommendation.
+
+[P00872 | 62259:62475 | NORMAL_TEXT | LIST id=kix.1axmtiy07zpa level=0]
+To provide administrative reports and dashboard summaries for booking records, payment records, vehicle utilization, idle vehicle detection, maintenance records, branch demand, and branch allocation recommendations.
+
+[P00873 | 62475:62739 | NORMAL_TEXT | LIST id=kix.1axmtiy07zpa level=0]
+To evaluate the developed system based on selected ISO/IEC 25010 software quality characteristics, specifically functional suitability, performance efficiency, compatibility, interaction capability, reliability, security, maintainability, flexibility, and safety.
+
+[P00874 | 62739:62740 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00875 | 62740:62762 | NORMAL_TEXT]
+Scope and Limitations
+
+[P00876 | 62762:63290 | NORMAL_TEXT]
+This study focuses on the design and development of a web-based car rental management and decision-support system for a small-scale, multi-branch car rental business. The system is developed for the target car rental business, specifically covering its Manila and Antipolo operations, and is intended to support the centralized management of customer records, vehicle records, booking requests, rental transactions, payment verification, vehicle availability, maintenance records, branch assignments, and operational reporting.
+
+[P00877 | 63290:63868 | NORMAL_TEXT]
+The proposed system will provide a centralized web-based platform accessible through standard desktop and mobile browsers. It will support customer-side functions such as account registration, vehicle catalog viewing, Customer-Side Vehicle Recommendation, booking request submission, requirement upload, proof-of-payment submission, booking status tracking, rental policy viewing, and customer notifications. These features are intended to provide customers with a more organized way of viewing vehicles, submitting rental requests, and monitoring the status of their bookings.
+
+[P00878 | 63868:64682 | NORMAL_TEXT]
+The Customer-Side Vehicle Recommendation is a customer-side vehicle selection support feature. It allows customers to provide passenger and large-bag counts, a total rental budget for comparison with the daily-rate reference estimate, rental dates and times, and an optional vehicle-category preference. The optional destination is retained for administrative review and does not change customer-side eligibility or ranking. The system applies predefined rule-based recommendation logic to match these customer inputs with suitable available vehicles based on passenger capacity, vehicle availability, rental constraints, vehicle preference, and other defined customer-matching rules. The recommended vehicles are then displayed to the customer for consideration and selection before submitting a booking request.
+
+[P00879 | 64682:65096 | NORMAL_TEXT]
+The Customer-Side Vehicle Recommendation does not automatically approve reservations, guarantee vehicle assignment, or replace administrative review. It is intended only to assist customers in identifying vehicles that may be suitable for their stated rental needs. Final booking approval, vehicle assignment, payment validation, and other rental decisions will remain under the owner or authorized administrator.
+
+[P00880 | 65096:65707 | NORMAL_TEXT]
+For the administrative side, the system will include modules for booking management, customer management, vehicle and fleet management, payment verification, maintenance monitoring, calendar and scheduling, report generation, notification management, user role management, demand forecasting, operational fleet-status monitoring, and branch allocation recommendation. These modules are intended to assist owners and authorized staff in managing daily operations, monitoring vehicle availability and status, verifying customer submissions, maintaining vehicle records, and organizing branch-related information.
+
+[P00881 | 65707:67645 | NORMAL_TEXT]
+The administrative decision-support features will include demand forecasting using the Weighted Moving Average method, vehicle utilization analysis, idle vehicle detection, branch demand and supply analysis, maintenance-based vehicle readiness review, and rule-based branch allocation recommendation. For forecasting, qualifying historical booking records will be aggregated by calendar week, branch, and vehicle category. The three most recently completed weekly demand observations will be assigned fixed descending weights of 0.50, 0.30, and 0.20 to generate forecasts for up to three succeeding weekly periods. The first forecasted week will be calculated using actual completed weekly demand, while the second and third forecasted weeks will be generated recursively using the most recent available actual and previously forecasted values. At least three complete historical weekly observations will be required before an initial forecast is generated. This minimum permits the WMA calculation only; it is not treated as sufficient evidence of stable forecast accuracy or seasonal behavior. In the current study, multiple eligible target weeks from the labeled synthetic time series will be used only to verify forecast generation and error computation. Real-world forecast performance will require a separate future evaluation using sufficient verified client or post-implementation observations. For each forecasted week, the Branch Allocation Recommendation shall compare the rounded-up booking-count forecast, used as a planning proxy, with projected eligible supply. Proposed transfer quantities shall not exceed the destination shortage, the source surplus after reserving its own requirement, or the number of eligible candidates. Actual booking and maintenance schedules shall be checked before an operational decision because weekly booking counts do not measure concurrent occupancy. All resulting outputs remain advisory.
+
+[P00882 | 67645:68331 | NORMAL_TEXT]
+The decision-support component is strictly limited to rule-based logic and statistical forecasting. The system does not employ artificial intelligence, machine learning algorithms, autonomous optimization models, dynamic pricing algorithms, automated fraud detection, computer vision, automated license plate recognition, or automated decision execution. System-generated recommendations and analytical outputs are intended only to support human decision-making. Final decisions regarding booking approval, payment validation, vehicle assignment, vehicle transfer, branch allocation, and other operational actions will remain under the control of the owner or authorized administrator.
+
+[P00883 | 68331:69318 | NORMAL_TEXT]
+The context-aware decision-support component is limited to selected operational and external context inputs that may support administrative vehicle-assignment and branch-allocation decisions. These inputs may include weather condition, road condition, route feasibility, route accessibility, travel distance, estimated or reference fuel efficiency expressed in kilometers per liter (km/L), and estimated fuel consumption. For weather information, the system will primarily use the Open-Meteo Forecast API, with the OpenWeather One Call API 3.0 serving as the fallback provider. Destination geocoding uses Geoapify as the primary provider and LocationIQ as the fallback, subject to Philippine location-quality checks. Route distance and travel-time estimates use TomTom Orbis Routing with HERE Routing as fallback. Incident information uses TomTom Traffic with HERE Traffic as fallback. These outputs support administrative review and do not establish vehicle-specific travel permission.
+
+[P00884 | 69318:69989 | NORMAL_TEXT]
+If a designated primary provider is unavailable or fails to return sufficiently usable information, the system may attempt to obtain comparable information from the designated fallback provider. If neither provider supplies reliable information, authorized manual contextual information may be recorded where available; otherwise, the affected contextual factor will be classified as Unavailable or Unknown rather than being assigned an assumed favorable value. External contextual information remains separate from the primary customer-need criteria used by the Customer-Side Vehicle Recommendation and serves primarily as supporting information for Owner/Admin review.
+
+[P00885 | 69989:70543 | NORMAL_TEXT]
+External weather and incident information will only be evaluated for periods where sufficiently current provider data are available. Because the system's three-week demand-forecast horizon may extend beyond the supported forecast period of an external weather provider, weather information is not guaranteed to be available for every forecasted weekly period. The demand forecast, projected-supply analysis, shortage and surplus calculations, and other internal operational analyses shall continue independently of external contextual-data availability.
+
+[P00886 | 70543:71388 | NORMAL_TEXT]
+Fuel-efficiency information used by the system will be treated as estimated or reference information rather than continuously measured actual fuel performance. Reference fuel-efficiency values may be based on manufacturer specifications or owner-provided vehicle information and will be expressed in kilometers per liter (km/L). Estimated fuel consumption may be derived from the available travel-distance and reference fuel-efficiency information when applicable. Actual fuel consumption may vary depending on driving behavior, passenger or cargo load, traffic, terrain, road and weather conditions, and vehicle maintenance condition. Therefore, fuel-related information will serve only as supporting information for operational decision-making and will not guarantee actual trip fuel consumption or automatically determine vehicle assignment.
+
+[P00887 | 71388:72190 | NORMAL_TEXT]
+The system does not include direct GPS tracking integration or live vehicle location monitoring. External tools currently used by the target car rental business, such as AKSH GPS, Apple Find My, AirTags, and other tracking devices, will remain independent systems and will not be connected directly to the proposed platform. The proposed system will not retrieve live coordinates, perform geofencing, display real-time map tracking, connect directly to GPS hardware, or replace the client's existing vehicle-monitoring tools. Instead, operational fleet-status monitoring within the proposed system will focus on vehicle records, availability, branch assignment, rental status, vehicle condition, return status, maintenance records, and monitoring-related notes or updates recorded by authorized users.
+
+[P00888 | 72190:72814 | NORMAL_TEXT]
+Payment-related features are limited to payment-status tracking, proof-of-payment upload, transaction-reference recording, and administrative verification. The system does not include built-in automated payment gateway integration within the current scope. All payment validation will be performed manually by an authorized owner or administrator using the uploaded proof of payment and transaction reference, which will be checked against the business's external bank or e-wallet records. Automated payment gateway integration is outside the scope of the present study and may be considered as a future system enhancement.
+
+[P00889 | 72814:73181 | NORMAL_TEXT]
+The system is designed specifically for small-scale, multi-branch car rental operations and is not intended for enterprise-level fleet management, logistics optimization systems, or real-time dispatch platforms. It does not include advanced route optimization engines, automatic dispatching, full telematics integration, or large-scale fleet relocation optimization.
+
+[P00890 | 73181:74462 | NORMAL_TEXT]
+Forecasting is limited to the Weighted Moving Average method because of its simplicity, interpretability, and suitability for limited historical operational data. The three-week input window and rolling three-week output horizon define the calculation procedure; they do not by themselves validate predictive accuracy or establish seasonal patterns. Forecast uncertainty is expected to increase for succeeding periods because the second- and third-week projections partially depend on previously forecasted values. In the current study, Mean Absolute Percentage Error (MAPE) will be computed from original one-week-ahead forecasts and corresponding realized values in the labeled synthetic time series solely to verify forecast-error computation. Periods with zero realized synthetic demand will be reported separately and excluded from MAPE because percentage error is undefined when the denominator is zero. The evaluation will report the synthetic coverage period and number of valid observations. Lower MAPE values indicate smaller errors within the test series, but they will not be interpreted as empirical predictive accuracy or assigned qualitative accuracy classifications. The second- and third-week forecasts will serve primarily as longer-horizon planning projections.
+
+[P00891 | 74462:75047 | NORMAL_TEXT]
+Recommendation outputs are rule-based and depend on the accuracy and completeness of the information used by the corresponding recommendation process. Customer-side recommendations depend primarily on customer-provided rental requirements, vehicle availability, and encoded vehicle information. Administrative allocation recommendations depend on forecasted demand, branch and vehicle records, vehicle availability, condition and maintenance information, and applicable contextual inputs. Incomplete, inaccurate, outdated, or unavailable data may affect the resulting recommendations.
+
+[P00892 | 75047:75465 | NORMAL_TEXT]
+The system requires stable internet connectivity because it is a web-based application. Performance may vary depending on device capability, browser compatibility, internet speed, server availability, and the responsiveness of external data sources used for applicable contextual information. Although the system supports both desktop and mobile browsers, the user experience may vary across devices and screen sizes.
+
+[P00893 | 75465:76742 | NORMAL_TEXT]
+At the current stage of the study, no real historical client records are available. All booking, rental, vehicle, maintenance, utilization, forecasting, and allocation records used for development, testing, demonstration, and evaluation are synthetic dummy data created to represent plausible operating scenarios. The synthetic dataset may be used to verify WMA calculations, forecast finalization, utilization analysis, maintenance conflicts, shortage and surplus detection, Customer-Side Vehicle Recommendation, and Branch Allocation Recommendation, including controlled edge cases. Within the forecasting workflow, the term actual demand refers to the realized qualifying booking count for a completed week in the synthetic time series; it does not mean actual client demand. Synthetic MAPE results will therefore be labeled as functional-test results and will not be presented as evidence of real-world predictive accuracy, seasonal behavior, or long-term operational effectiveness. Each reported result will identify the dataset as synthetic, state its coverage period and valid observation count, and disclose relevant limitations. The study's present evaluation will primarily assess system functionality, rule conformance, software quality, usability, and feasibility.
+
+[P00894 | 76742:77120 | NORMAL_TEXT]
+Overall, the study aims to develop a centralized, practical, and decision-support-enabled car rental management system intended to support operational organization, booking coordination, fleet visibility, maintenance monitoring, and administrative decision-making for the target car rental business while ensuring that critical operational decisions remain under human control.
+
+[P00895 | 77120:77121 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00896 | 77121:77141 | NORMAL_TEXT]
+Definition of Terms
+
+[P00897 | 77141:77256 | NORMAL_TEXT]
+The following terms are operationally defined to provide a clear understanding of the concepts used in this study.
+
+[P00898 | 77256:77703 | NORMAL_TEXT]
+AKSH GPS. This refers to an existing vehicle tracking system and its companion mobile application used by the target car rental business for vehicle monitoring and security purposes. The tool supports vehicle location and other monitoring-related functions. In this study, AKSH GPS serves only as an external monitoring tool and is not directly integrated with the proposed system for real-time GPS tracking or automated vehicle location updates.
+
+[P00899 | 77703:78459 | NORMAL_TEXT]
+Application Programming Interface (API). This refers to a software interface that allows the proposed system to communicate with external services or data sources. In this study, APIs may be used to obtain selected contextual information for administrative decision support. Open-Meteo serves as the primary weather-data provider, with OpenWeather One Call API 3.0 as the fallback weather provider. Geoapify provides destination geocoding with LocationIQ as fallback. TomTom routing and traffic services provide route distance, travel-time estimates, and incident information, with corresponding HERE services as fallback. API-derived information remains supporting information and does not automatically determine vehicle assignment or branch allocation.
+
+[P00900 | 78459:78782 | NORMAL_TEXT]
+Booking Request. This refers to a rental request submitted by a customer through the proposed system. It includes essential rental details such as the preferred vehicle, rental date, rental duration, branch or service location, customer information, and other booking-related requirements needed for administrative review.
+
+[P00901 | 78782:79428 | NORMAL_TEXT]
+Branch Allocation Recommendation. This refers to the system-generated advisory output that identifies a possible redistribution of eligible vehicles between branches based on the Rule-Based Branch Allocation process. In this study, the recommendation may identify the source branch, destination branch, vehicle category, forecasted vehicle requirement, projected available supply, shortage, surplus, recommended transfer quantity, eligible candidate vehicles, and applicable operational or contextual reasons. The recommendation does not automatically modify vehicle branch assignments, and final transfer decisions remain under the Owner/Admin.
+
+[P00902 | 79428:79835 | NORMAL_TEXT]
+Car Rental Management System. This refers to a web-based information system designed to support major car rental operations, including customer records, vehicle records, booking requests, rental transactions, payment verification, maintenance monitoring, operational fleet-status monitoring, report generation, demand forecasting, customer-side vehicle recommendation, and branch allocation recommendation.
+
+[P00903 | 79835:80200 | NORMAL_TEXT]
+Centralized Database. This refers to a structured data storage component that stores and organizes system records in a unified location. In this study, it is used to manage customer records, vehicle records, booking information, rental transactions, payment records, maintenance data, forecasting records, recommendation records, and other operational information.
+
+[P00904 | 80200:80765 | NORMAL_TEXT]
+Context-Aware Decision Support. This refers to the use of selected operational and external context information to support administrative decision-making. In this study, applicable contextual information may include weather condition, road condition, route feasibility, route accessibility, travel distance, estimated or reference fuel efficiency, and estimated fuel consumption. These inputs serve only as supporting information for administrative vehicle assignment and branch allocation decisions and do not automatically determine the final operational action.
+
+[P00905 | 80765:81406 | NORMAL_TEXT]
+Context-Aware Fleet Allocation. This refers to the use of applicable operational and contextual information within the administrative branch allocation recommendation process. In this study, context-aware fleet allocation considers forecasted demand, vehicle availability, branch-level fleet status, vehicle condition, maintenance readiness, and applicable contextual information such as travel distance, road condition, route feasibility, route accessibility, weather condition, estimated or reference fuel efficiency, and estimated fuel consumption. The resulting output is advisory and does not automatically transfer or assign vehicles.
+
+[P00906 | 81406:81658 | NORMAL_TEXT]
+Customer Requirement Submission. This refers to the process by which customers upload or provide required rental documents, such as valid identification cards and driver's licenses, for administrative verification before a booking request can proceed.
+
+[P00907 | 81658:82604 | NORMAL_TEXT]
+Customer-Side Vehicle Recommendation. This refers to the customer-facing rule-based feature that assists customers in identifying suitable available vehicles based on their stated rental requirements. In this study, the feature applies eligibility filtering and deterministic ranking using passenger capacity, large-luggage capacity, a stated total rental budget, rental duration, vehicle preference, vehicle availability, maintenance readiness, and applicable vehicle information. Destination or travel-area information is retained for administrative context review and does not affect customer eligibility or ranking. Vehicles that do not satisfy required availability, maintenance-readiness, passenger-capacity, or budget conditions are excluded from the recommendation results. The resulting recommendations provide vehicle-selection guidance before booking submission and do not constitute booking approval or guaranteed vehicle assignment.
+
+[P00908 | 82604:83203 | NORMAL_TEXT]
+Decision-Support System. This refers to a system component that assists users in making decisions by organizing data, analyzing relevant information, and presenting useful analytical outputs or recommendations. In this study, the decision-support component assists owners and authorized administrators through demand forecasting, vehicle utilization analysis, idle vehicle detection, operational fleet-status information, maintenance-based vehicle readiness review, context-aware decision support, and branch allocation recommendation. Final operational decisions remain under authorized personnel.
+
+[P00909 | 83203:83978 | NORMAL_TEXT]
+Demand Forecasting. This refers to the process of estimating upcoming vehicle demand using historical qualifying booking records. In this study, qualifying bookings are aggregated by calendar week, branch, and vehicle category. A three-period Weighted Moving Average using fixed weights of 0.50, 0.30, and 0.20 is used to generate demand forecasts for up to three succeeding weekly periods. The first forecasted week is computed using the three most recently completed actual weekly demand observations, while the second and third forecasted weeks are generated recursively using the most recent available actual and previously forecasted demand values. The resulting forecasts serve as short-term decision-support information for operational and branch-allocation planning.
+
+[P00910 | 83978:84509 | NORMAL_TEXT]
+Estimated Fuel Consumption. This refers to the projected amount of fuel that may be required for a trip based on available travel-distance information and the vehicle's estimated or reference fuel-efficiency value. In this study, estimated fuel consumption is calculated by dividing the estimated travel distance in kilometers by the vehicle's reference fuel efficiency in kilometers per liter (km/L). The resulting value serves only as supporting operational information and does not represent guaranteed actual fuel consumption.
+
+[P00911 | 84509:85404 | NORMAL_TEXT]
+External Context Data Services. This refers to external services used to obtain selected contextual information required by the administrative decision-support component. In this study, Open-Meteo and OpenWeather One Call API 3.0 serve as the primary and fallback weather-data providers, respectively, while Geoapify and LocationIQ provide primary and fallback geocoding, respectively. TomTom routing and traffic services provide route and incident information, with corresponding HERE services as fallback. If a primary service is unavailable or fails to provide usable information, the system may request the corresponding information from the designated fallback provider. If neither source provides reliable information, authorized manual information may be recorded where available; otherwise, the affected contextual factor is recorded as Unavailable or Unknown rather than being assumed.
+
+[P00912 | 85404:85844 | NORMAL_TEXT]
+Fleet Allocation. This refers to the administrative process of assigning, retaining, or redistributing vehicles across branches according to operational requirements. In this study, fleet allocation may consider forecasted demand, vehicle availability, branch-level fleet status, vehicle condition, maintenance readiness, and applicable contextual information. Final allocation decisions remain under the owner or authorized administrator.
+
+[P00913 | 85844:86096 | NORMAL_TEXT]
+Fleet Management. This refers to the process of managing vehicle records, branch assignments, vehicle availability, maintenance status, rental activity, vehicle condition, and other fleet-related information to support organized car rental operations.
+
+[P00914 | 86096:86576 | NORMAL_TEXT]
+Fleet Monitoring. This refers to operational fleet-status monitoring within the proposed system, which allows authorized users to view vehicle availability, active rental status, idle vehicles, branch assignments, vehicle condition, maintenance status, return status, and other recorded fleet-related information. In this study, fleet monitoring does not refer to live GPS tracking, geofencing, real-time location monitoring, or direct integration with vehicle-tracking hardware.
+
+[P00915 | 86576:87344 | NORMAL_TEXT]
+Forecasted Demand. This refers to the estimated qualifying vehicle demand generated using the Weighted Moving Average method for a specific branch, vehicle category, and future weekly period. In this study, the system generates forecasted demand for up to three succeeding weekly periods. The first forecasted period is derived from completed actual-demand observations, while later forecast periods may incorporate previously generated forecast values through recursive computation. Forecasted demand may contain decimal values for analytical reporting and visualization. When a forecast is used to determine the number of vehicles potentially required for branch-allocation planning, the corresponding weekly forecast is rounded upward to the nearest whole vehicle.
+
+[P00916 | 87344:87892 | NORMAL_TEXT]
+Fuel Efficiency. This refers to an estimated or reference value representing the distance a vehicle can travel per unit of fuel, expressed in kilometers per liter (km/L). In this study, the recorded value may be based on manufacturer specifications or owner-provided vehicle information and is treated as reference information rather than continuously measured actual fuel performance. The value may be used together with estimated travel distance to calculate estimated fuel consumption and shall serve only as supporting operational information.
+
+[P00917 | 87892:88756 | NORMAL_TEXT]
+Historical Rental Data. This refers to past booking or rental records that a deployed system may use to analyze demand patterns, vehicle usage, branch activity, and rental frequency. At the current stage of this study, the participating business has not provided real historical client records; therefore, the implemented system is populated with a labeled synthetic dataset for development and functional evaluation. The three most recent completed weeks are used as inputs to each WMA calculation. Within the synthetic time series, completed-week observations are called actual demand only to distinguish realized test values from forecast values; they are not empirical client observations. Consequently, MAPE and other outputs derived from the current dataset demonstrate computational behavior and rule conformance rather than real-world predictive accuracy.
+
+[P00918 | 88756:89283 | NORMAL_TEXT]
+Idle Vehicle. This refers to an active and rental-ready vehicle that remains eligible for rental but has recorded no rental activity for at least fourteen consecutive days. In this study, a vehicle is not classified as idle when it is currently rented, unavailable because of maintenance, inactive, or otherwise prevented from being offered for rental. Idle-vehicle identification serves as an operational indicator for utilization monitoring and branch-allocation review and does not automatically result in vehicle transfer.
+
+[P00919 | 89283:89658 | NORMAL_TEXT]
+ISO/IEC 25010. This refers to a software product quality model used as a basis for evaluating relevant quality characteristics of the developed system. In this study, applicable ISO/IEC 25010 quality characteristics are used to structure the evaluation of system quality and acceptability (Monteverde et al., 2023; Bondoc, 2023; Mendoz et al., 2025; Adyaputra et al., 2025).
+
+[P00920 | 89658:89949 | NORMAL_TEXT]
+Maintenance Monitoring. This refers to the system feature used to record, view, and monitor vehicle maintenance information, including mileage or odometer readings, preventive maintenance schedules, maintenance history, vehicle condition, service records, and maintenance-related reminders.
+
+[P00921 | 89949:90630 | NORMAL_TEXT]
+Maintenance Readiness. This refers to the operational determination of whether a vehicle is suitable for rental, recommendation, assignment, or branch-allocation consideration based on its recorded maintenance information. In this study, a vehicle is treated as not maintenance-ready when an active maintenance activity is in progress, required preventive maintenance is due or overdue, its recorded condition indicates that it is unsafe or unsuitable for rental, or an unresolved maintenance or repair concern prevents operational use. Vehicles that are not maintenance-ready are excluded from Customer-Side Vehicle Recommendation results and branch-transfer candidate selection.
+
+[P00922 | 90630:91270 | NORMAL_TEXT]
+Mean Absolute Percentage Error (MAPE). This refers to a forecasting error measure used to evaluate the difference between forecasted demand and corresponding actual demand. In this study, MAPE is calculated only for valid forecast observations where actual demand is greater than zero because percentage error is undefined when actual demand is zero. The resulting value represents the average absolute forecasting error as a percentage of actual demand, with lower MAPE values indicating smaller forecasting errors. The study does not assign qualitative accuracy classifications unless a verified interpretation basis is formally adopted.
+
+[P00923 | 91270:91664 | NORMAL_TEXT]
+Multi-Branch Car Rental Operations. This refers to car rental business operations conducted across more than one branch or operating location. In this study, it refers to the Manila and Antipolo operations of the target car rental business, where vehicle availability, customer demand, maintenance information, and branch-level coordination are managed through the proposed centralized system.
+
+[P00924 | 91664:92108 | NORMAL_TEXT]
+Operational Efficiency. This refers to the organization and performance of rental-related processes in terms of transaction coordination, record management, fleet visibility, and administrative decision support. In this study, operational efficiency represents an intended area of support of the proposed system and is not treated as a proven long-term operational outcome unless supported by appropriate real-world effectiveness measurements.
+
+[P00925 | 92108:92525 | NORMAL_TEXT]
+Payment Verification. This refers to the manual administrative process of checking customer-submitted proof of payment and transaction references against the business's external bank or e-wallet records. In this study, payment verification is performed by an authorized owner or administrator, and the proposed system does not automatically process, approve, or verify payments through an integrated payment gateway.
+
+[P00926 | 92525:92801 | NORMAL_TEXT]
+Requirement Verification. This refers to the administrative process of reviewing customer-submitted documents and renter information to determine whether the customer satisfies the business's requirements before proceeding with the corresponding stage of the booking process.
+
+[P00927 | 92801:93112 | NORMAL_TEXT]
+Rental Transaction. This refers to the rental process recorded within the proposed system, including booking approval, requirement verification, payment verification, vehicle assignment, vehicle release, active rental-status monitoring, return processing, applicable charges or penalties, and final settlement.
+
+[P00928 | 93112:93558 | NORMAL_TEXT]
+Role-Based Access Control (RBAC). This refers to a security mechanism that restricts system access according to assigned user roles and responsibilities. In this study, RBAC is used to separate the access privileges of owners or administrators, operational staff, and customers, particularly for sensitive records such as customer documents, payment information, operational reports, and administrative functions (Dedhia, 2026; Lu et al., 2024).
+
+[P00929 | 93558:94367 | NORMAL_TEXT]
+Rule-Based Branch Allocation. This refers to the use of predefined operational rules to generate advisory vehicle-transfer recommendations between branches. In this study, the system compares the rounded-up forecasted vehicle requirement with projected available vehicle supply for each branch and vehicle category to identify shortages and surpluses. A potential transfer may be recommended when one branch has a forecasted shortage and another branch has a corresponding surplus, subject to vehicle availability, maintenance readiness, booking or rental commitments, idle-vehicle information, and applicable operational context. The recommended transfer quantity is limited by the destination shortage and source surplus. Final vehicle-transfer and branch-allocation decisions remain under the Owner/Admin.
+
+[P00930 | 94367:94699 | NORMAL_TEXT]
+System Acceptability. This refers to the degree to which intended users and evaluators consider the developed system suitable for its intended purpose based on the software quality characteristics selected for the study. In this study, system acceptability is assessed through the adopted ISO/IEC 25010-based evaluation instrument.
+
+[P00931 | 94699:94961 | NORMAL_TEXT]
+Vehicle Availability. This refers to the recorded operational status indicating whether a vehicle is available for rental or is otherwise reserved, rented, under maintenance, unavailable, or assigned to an existing rental transaction or branch-related activity.
+
+[P00932 | 94961:95565 | NORMAL_TEXT]
+Vehicle Utilization. This refers to the proportion of eligible operational days within a selected reporting period during which a vehicle was actually used for rental operations. In this study, vehicle utilization is calculated by dividing recorded rental days by eligible operational days and multiplying the result by 100. Days when the vehicle was inactive or unavailable because of maintenance are excluded from eligible operational days. Vehicle utilization serves as an analytical indicator for fleet monitoring and does not independently determine vehicle-transfer or branch-allocation decisions.
+
+[P00933 | 95565:95884 | NORMAL_TEXT]
+Web-Based System. This refers to an information system accessed through a web browser using compatible devices such as laptops, tablets, and mobile phones. In this study, the proposed system is web-based to support access across the target client's existing devices without requiring separate application installation.
+
+[P00934 | 95884:96594 | NORMAL_TEXT]
+Weighted Moving Average (WMA). This refers to a forecasting method that estimates future values by assigning different weights to recent observations, with greater importance generally assigned to more recent data. In this study, a three-period WMA with fixed weights of 0.50, 0.30, and 0.20 is used to generate short-term vehicle-demand forecasts per branch and vehicle category. The method is applied recursively when producing the second- and third-week projections within the system's three-week forecast horizon because of its simplicity, interpretability, and suitability for operations with limited historical data (Rahayu et al., 2022; Sariati et al., 2026; Paramitha & Saifuddin, 2023; Khalid, 2024).
+
+[P00935 | 96594:96595 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00936 | 96595:96596 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00937 | 96596:96597 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00938 | 96598:96608 | NORMAL_TEXT]
+Chapter 2
+
+[P00939 | 96608:96651 | NORMAL_TEXT]
+REVIEW OF LITERATURE, STUDIES, AND SYSTEMS
+
+[P00940 | 96651:96652 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00941 | 96652:97113 | NORMAL_TEXT]
+This chapter presents the review of related literature, studies, and systems that served as the foundation for the proposed web-based car rental management system with demand forecasting and context-aware fleet allocation for small-scale multi-branch businesses. It discusses relevant local and foreign literature on car rental operations, fleet management, web-based management systems, demand forecasting, rule-based allocation, and decision-support systems.
+
+[P00942 | 97113:97420 | NORMAL_TEXT]
+The review also examines existing systems and operational challenges related to reservation management, vehicle utilization, fleet monitoring, and branch coordination. These studies helped identify the research gaps addressed by the proposed system and served as the basis for the development of the study.
+
+[P00943 | 97420:97421 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00944 | 97421:97468 | NORMAL_TEXT]
+A. Car Rental Industry and Operational Context
+
+[P00945 | 97468:97525 | NORMAL_TEXT | LIST id=kix.1kivrrlb91aq level=0]
+Car Rental Operations and Existing Management Challenges
+
+[P00946 | 97525:98457 | NORMAL_TEXT]
+The car rental industry continues to serve an important role in modern transportation by providing temporary vehicle access for individuals, tourists, business travelers, and customers who need flexible mobility without long-term vehicle ownership. In the digital economy, car rental services are increasingly expected to provide faster booking, wider vehicle access, transparent availability, secure customer processing, and reliable transaction handling. Kumar and Singh (2024) explained that traditional car rental businesses previously depended on physical rental offices, paperwork, limited vehicle choices, and restricted availability, but online platforms have allowed customers to rent vehicles more conveniently from different locations and at different times. This shows that the current situation of car rental businesses is moving from purely manual service delivery toward digital reservation and management platforms.
+
+[P00947 | 98457:99039 | NORMAL_TEXT]
+Despite this shift, many small-scale and medium-sized rental businesses still rely on manual or semi-manual processes. Dhami et al. (2024) noted that many vehicle rental companies continue to depend on manual procedures for inventory, rental transactions, and customer records. These manual practices create difficulties because staff must repeatedly check vehicle availability, verify customer information, update schedules, and record transactions by hand. When these tasks are not supported by a centralized system, rental operations become slower and more prone to human error.
+
+[P00948 | 99039:99802 | NORMAL_TEXT]
+Manual booking is one of the most common problems in traditional car rental operations. Customers may need to inquire through phone calls, messaging applications, walk-in visits, or social media pages before confirming a reservation. While these channels may work for low transaction volumes, they become inefficient when several customers inquire about the same vehicle or rental date. Mhatre et al. (2026) stated that traditional vehicle rental systems that depend on manual booking may cause delays, booking conflicts, and inefficient vehicle availability management. This directly relates to small-scale car rental businesses because delays in confirming availability can result in missed reservations, customer frustration, or incorrect booking information.
+
+[P00949 | 99802:100490 | NORMAL_TEXT]
+Overlapping reservations are another operational issue caused by manual or disconnected booking records. When availability is recorded in notebooks, calendars, spreadsheets, or chat threads, staff may fail to update records immediately after confirming a reservation. This creates a risk that the same vehicle may be promised to more than one customer. Saritha et al. (2026) emphasized that distributed car rental systems are designed to manage vehicle availability, customer reservations, and billing workflows while reducing booking conflicts through a responsive web interface. This supports the need for reservation validation and vehicle availability locking in the proposed system.
+
+[P00950 | 100490:101410 | NORMAL_TEXT]
+Fragmented records also weaken car rental operations. In manual or semi-manual settings, customer details, vehicle records, payment references, rental agreements, maintenance schedules, and booking histories may be stored in separate devices, notebooks, spreadsheets, and messaging applications. Jyothi and Sheethal (2025) identified vehicle booking, maintenance automation, billing management, customer authentication, fleet optimization, reporting tools, and operational efficiency as key concerns in car rental systems. Similarly, Rahman and Mohd Rusli (2023) explained that manual car rental booking makes it difficult for owners to track customer data, booking history, vehicle information, and rental transactions efficiently. Their web-based car rental business management system was designed to help car owners manage rental records more systematically while providing customers with an easier booking process. 
+
+[P00951 | 101410:101970 | NORMAL_TEXT]
+Delayed rental transactions are also common when payment validation, requirement checking, vehicle assignment, and return settlement are handled manually. Ganeshkar et al. (2021) presented an online car rental management system that allows users to view vehicle listings, register, book cars online, and process payment through the system. Ogbiti and Aaron (2024) also developed a web-based car rental management system with customer registration, online car reservation, reservation management, and administrative functions to streamline the rental process. 
+
+[P00952 | 101970:102709 | NORMAL_TEXT]
+Poor monitoring of vehicle availability is another major challenge in car rental businesses. In a manual setup, staff may not immediately know whether a vehicle is available, reserved, rented out, under maintenance, assigned to another branch, or awaiting return. This weak visibility can cause wrong booking decisions, underutilized units, or customer dissatisfaction. Web-based rental systems address this problem by maintaining updated vehicle records and availability status. For example, Mhatre et al. (2026) study explained that web-based platforms allow customers to browse vehicles, check availability, and make reservations, while administrators can manage vehicle records and booking information through a centralized dashboard.
+
+[P00953 | 102709:102770 | NORMAL_TEXT | LIST id=kix.45sgwfd0uweq level=0]
+Manual and Fragmented Recordkeeping in Car Rental Operations
+
+[P00954 | 102770:103698 | NORMAL_TEXT]
+Manual and fragmented recordkeeping remains one of the common operational concerns in car rental businesses, especially in organizations that still rely on paperwork, spreadsheets, messaging applications, and separate digital tools for daily transactions. In traditional car rental operations, customers often need to visit rental offices, fill out forms, and wait for manual approval, making the process time-consuming and inconvenient. Ogbiti and Aaron (2024) emphasized that many car rental companies still depend on manual processes or basic non-web-based systems, which can limit operational efficiency, slow down rental processing, and create difficulties in managing customer data, rental history, payments, and customer preferences. This shows that manual recordkeeping does not only affect customer convenience but also weakens the internal ability of the business to maintain complete and updated operational records.
+
+[P00955 | 103698:103699 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00956 | 103699:104629 | NORMAL_TEXT]
+In car rental management, fragmented information occurs when important records are stored in different locations or systems instead of one centralized platform. Van der Aa et al. (2017) explained that process information becomes fragmented when information about the same business process is spread across several documents, systems, or artifacts. This fragmentation increases the effort needed to access the right information and may affect process execution and decision-making. In the context of car rental operations, this may happen when booking details are stored in chat histories, schedules are monitored through calendars, payments are checked through screenshots or banking applications, and vehicle status or maintenance records are kept in separate files. As a result, staff or owners may need to check multiple sources before confirming a reservation, validating payment, assigning a vehicle, or generating a report.
+
+[P00957 | 104629:105494 | NORMAL_TEXT]
+Manual recordkeeping also increases the possibility of errors and delays in rental operations. Keerthi and Kumar (2024) stated that traditional car rental processes involve several manual tasks, including booking management, vehicle allocation, tracking vehicle availability, and maintaining service schedules. These manual processes are prone to errors and inefficiencies and may also cause delays in billing and invoicing. Similarly, Abayon et al. (2023) identified manual or Excel-based booking management, maintenance reminders, payment tracking, and vehicle tracking as operational challenges in a car rental business. These findings are relevant to small-scale car rental businesses because manual handling of records can lead to inaccurate booking information, missed updates, delayed payment confirmation, and difficulty in monitoring vehicle availability.
+
+[P00958 | 105494:105495 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00959 | 105495:106293 | NORMAL_TEXT]
+Fragmented records can also affect the quality and reliability of business information. Van der Aa et al. (2017) found that fragmented process information may result in maintenance issues, inefficient process execution, and poor process outcomes. When information is outdated, incomplete, or difficult to locate, users may perform tasks based on incorrect information. In car rental operations, this may result in double-booking, incorrect vehicle assignment, missed maintenance schedules, inaccurate payment status, or unreliable reports. Since car rental transactions involve several connected activities, such as customer verification, booking approval, payment validation, vehicle release, monitoring, and return settlement, fragmented records can disrupt the continuity of the rental process.
+
+[P00960 | 106293:106294 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00961 | 106294:107152 | NORMAL_TEXT]
+The need for centralized recordkeeping is therefore important in improving car rental operations. Ogbiti and Aaron (2024) explained that a web-based car rental management system can address the inefficiencies of traditional manual systems by automating the rental process, improving data management, and allowing companies to manage fleets, track reservations and payments, and maintain comprehensive customer records. Keerthi and Kumar (2024) also emphasized that a car rental management system integrates key functions such as reservation management, vehicle tracking, maintenance scheduling, billing, invoicing, customer management, and reporting. These features support the need for a centralized platform where customer records, vehicle information, reservations, payments, maintenance records, and reports can be accessed and managed more efficiently.
+
+[P00962 | 107152:107153 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00963 | 107153:108100 | NORMAL_TEXT]
+In relation to the proposed system, the reviewed literature shows that manual and fragmented recordkeeping can negatively affect operational efficiency, booking accuracy, customer record management, payment monitoring, maintenance tracking, and decision-making. Although some car rental businesses already use digital tools, the use of separate and disconnected platforms may still cause fragmented information if records are not integrated into one system. Therefore, this theme supports the development of a centralized web-based car rental management system that can organize rental transactions, customer records, vehicle availability, payment validation, maintenance information, and operational reports in a single platform. By reducing fragmented records and manual coordination, the proposed system can help improve record accuracy, process visibility, and administrative decision-making in small-scale multi-branch car rental operations.
+
+[P00964 | 108100:108101 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00965 | 108101:108159 | NORMAL_TEXT | LIST id=kix.h6075ghafwat level=0]
+Multi-Branch Car Rental Operations and Fleet Coordination
+
+[P00966 | 108159:108724 | NORMAL_TEXT]
+The operational problem becomes more complex when a car rental business operates across more than one branch. In multi-branch operations, vehicles are not only rented and returned; they must also be assigned, monitored, relocated, and balanced across different locations. A branch may experience high demand while another branch may have idle vehicles. This creates a fleet coordination problem where the business must decide which vehicles should remain in a branch, which vehicles should be transferred, and how availability should be monitored across locations.
+
+[P00967 | 108724:109411 | NORMAL_TEXT]
+Research on vehicle-sharing and carsharing operations supports the importance of balancing vehicle supply and demand across service areas. Boysen et al. (2024) explained that regional imbalance occurs when actual vehicle supply does not match projected demand levels, making it necessary to align vehicle distribution with expected demand. Although their study focuses on carsharing, the concept is relevant to multi-branch car rental businesses because both settings deal with vehicle availability across different locations. If one branch has high demand but limited units, while another branch has idle vehicles, the business may lose potential bookings and reduce fleet utilization.
+
+[P00968 | 109411:110084 | NORMAL_TEXT]
+Eliyan and Kerbache (2024) also emphasized that fleet size is sensitive to demand in vehicle relocation problems. Their review shows that vehicle relocation and resource allocation are important because service quality depends on the ability to provide vehicles where customers need them. Brandizzi et al. (2022) similarly noted that vehicle-sharing services face management challenges involving relocation strategies and user clustering. These studies strengthen the argument that multi-branch car rental operations require more than simple booking records; they need a system that can support fleet visibility, branch-level monitoring, and informed allocation decisions.
+
+[P00969 | 110084:110853 | NORMAL_TEXT]
+For small-scale multi-branch businesses, coordination is often done through private messages, calls, shared calendars, or informal updates between owners and staff. This setup may work temporarily, but it becomes risky when reservations increase or when multiple users update records separately. Saritha et al. (2026) proposed a distributed car rental management suite that integrates reservation management, fleet allocation, and customer billing using a scalable and modular architecture. The study found that such systems can improve vehicle availability management, customer reservations, billing workflows, transaction management, and booking conflict reduction. This directly supports the proposed system’s multi-branch reservation and fleet allocation features.
+
+[P00970 | 110853:110854 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00971 | 110854:110894 | NORMAL_TEXT | LIST id=kix.dyfz2gmzn37v level=0]
+Web-Based Car Rental Management Systems
+
+[P00972 | 110894:111418 | NORMAL_TEXT]
+Web-based car rental management systems are developed to address the limitations of manual and semi-manual rental operations. These systems provide browser-based access to core rental functions such as customer registration, vehicle browsing, reservation processing, availability checking, payment monitoring, vehicle records, and administrative reporting. Since they are accessible through internet-connected devices, they are suitable for small businesses that use phones, tablets, and laptops across different locations.
+
+[P00973 | 111418:112120 | NORMAL_TEXT]
+Ogbiti and Aaron (2024) showed that a web-based car rental management system can allow customers to register, view available cars, select a vehicle, make reservations online, and manage reservations, while administrators handle system functions. This supports the proposed system’s reservation and customer management modules. Similarly, Rahman and Mohd Rusli (2023) developed a web-based car rental business management system that allows customers to search for available cars, make reservations, check booking status, and view rental history. At the same time, the system helps car owners manage vehicle details, booking requests, customer records, feedback, and reports in a more organized manner. 
+
+[P00974 | 112120:112776 | NORMAL_TEXT]
+Web-based systems also improve record organization. Bakale et al. (2023) described a MERN stack car rental platform that stores and manages customer information, vehicle information, and rental data while supporting payment processing and fast customer request handling. Karche et al. (2025) likewise noted that traditional booking systems often rely on manual processes, resulting in inefficiency, data redundancy, and customer dissatisfaction, while a digital platform supports real-time vehicle rental management. These studies support the need for centralized customer records, vehicle records, and rental transaction histories in the proposed system.
+
+[P00975 | 112776:113399 | NORMAL_TEXT]
+In terms of transaction monitoring, web-based systems make it easier for administrators to verify booking status, payment status, customer details, and vehicle assignment. Rahman and Mohd Rusli (2023) emphasized that a web-based car rental business management system can help owners monitor customer information, booking status, rental history, and reports in one platform. This is relevant to the proposed system because rental operations involve several connected activities: customer inquiry, requirement verification, payment confirmation, vehicle assignment, rental monitoring, return checking, and final settlement. 
+
+[P00976 | 113399:113469 | NORMAL_TEXT | LIST id=kix.9becp3fp1qn5 level=0]
+Vehicle Monitoring Tools and Limitations of Non-Integrated GPS System
+
+[P00977 | 113469:114155 | NORMAL_TEXT]
+Vehicle monitoring tools are widely used in fleet-based operations because they help owners and managers observe vehicle location, movement, and operational status during active use. In car rental businesses, vehicle monitoring is important because rented vehicles are temporarily controlled by customers; therefore, owners need tools that help them verify vehicle location, monitor active rentals, reduce risk, and support operational decision-making. However, the value of vehicle monitoring becomes stronger when tracking data is connected to other business records such as reservations, customer information, payment validation, vehicle condition, maintenance history, and reports.
+
+[P00978 | 114155:114156 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00979 | 114156:114730 | NORMAL_TEXT]
+Farahpoor, Esparza, and Soriano (2024) discussed fleet management as an area affected by operational concerns such as equipment breakdowns, rising maintenance costs, inefficient resource utilization, and outdated telematics systems. Their study proposed an IoT-driven fleet management system that supports real-time communication, data gathering, monitoring, and analysis. This shows that vehicle monitoring should not be treated only as a location-checking tool. Instead, monitoring data becomes more useful when it is part of a system that supports operational decisions.
+
+[P00980 | 114730:115307 | NORMAL_TEXT]
+Naim et al. (2025) also emphasized the importance of integrating GPS, artificial intelligence, and predictive maintenance in fleet management. Their study described how real-time GPS tracking, route optimization, and predictive maintenance may work together to improve fleet operations. This supports the idea that vehicle monitoring is more effective when it is connected to other decision-support processes. For a car rental business, GPS information becomes more useful when it can support vehicle assignment, route awareness, maintenance planning, and operational reports.
+
+[P00981 | 115307:115944 | NORMAL_TEXT]
+Sutabri et al. (2024) presented a GPS-based vehicle monitoring system integrated with operational vehicle maintenance. Their study showed that monitoring vehicle position and condition in real time can help optimize travel routes, reduce travel time, reduce operational costs, and support maintenance planning. The system did not focus only on vehicle location; it also considered vehicle-related indicators such as fuel percentage and tire pressure. This is relevant to the proposed system because car rental operations require not only vehicle tracking but also vehicle condition monitoring, maintenance history, and readiness status.
+
+[P00982 | 115944:116709 | NORMAL_TEXT]
+In the case of the participating car rental business, the client already uses external vehicle monitoring tools such as AKSH GPS, Apple Find My, and AirTags. These tools help the client monitor selected vehicles, but they are not directly connected to the proposed car rental management system. Therefore, these tools should be treated as existing external monitoring tools rather than system-integrated modules. The proposed system will not perform live GPS tracking or automatically retrieve location data from these external applications. Instead, it will centralize vehicle records, branch assignment, vehicle availability, rental status, maintenance records, vehicle condition, return status, and monitoring notes based on updates entered by authorized users.
+
+[P00983 | 116709:117404 | NORMAL_TEXT]
+The limitation of non-integrated GPS systems is that vehicle monitoring information remains separated from the main operational records of the business. When vehicle location is checked in one application while bookings, payment proof, customer requirements, rental schedules, and maintenance records are stored in other platforms, the owner or staff must manually compare data across several tools. This may cause delayed coordination, repeated checking, fragmented records, and limited fleet visibility. Although external GPS tools remain useful for location monitoring, they do not automatically update booking status, vehicle availability, maintenance status, or branch-level fleet reports.
+
+[P00984 | 117404:118112 | NORMAL_TEXT]
+This limitation supports the proposed system’s focus on centralized car rental management. The system does not replace AKSH GPS, Apple Find My, or AirTags. Instead, it organizes the operational records that are currently fragmented across messaging applications, calendar tools, spreadsheets, payment screenshots, and external monitoring applications. This approach is aligned with the current scope of the study because it improves record centralization, fleet visibility, and operational coordination without claiming direct GPS integration. Full GPS integration may be considered as a future enhancement when API access, device compatibility, cost, and implementation feasibility are already established.
+
+[P00985 | 118112:118184 | NORMAL_TEXT | LIST id=kix.ofdzntld1mde level=0]
+Vehicle Monitoring Tools and Limitations of Non-Integrated GPS Systems 
+
+[P00986 | 118184:118870 | NORMAL_TEXT]
+Vehicle monitoring and tracking systems commonly require the integration of positioning hardware, communication modules, and software applications to provide automatic or real-time vehicle location monitoring. Yu, Hlaing, and Aung (2026) developed a vehicle location and status tracking system that integrated GPS, GSM/GPRS, OBD technologies, and a web-based application to provide real-time location tracking, trip analysis, and telemetry monitoring. Their study shows that live vehicle tracking is not only a record-keeping function, but a technology-dependent process that requires GPS-enabled hardware, communication infrastructure, automated data updates, and supporting software.
+
+[P00987 | 118870:119659 | NORMAL_TEXT]
+Related literature also explains that vehicle tracking systems may be active or passive depending on how tracking data are collected, transmitted, and used. Alhwety and Elfadil (2024) described active vehicle tracking systems as systems that provide real-time tracking, geofencing, cellular tracking, or satellite-based tracking, while passive tracking systems store vehicle information for later retrieval and reporting. They also noted that vehicle tracking system implementation may involve concerns such as compatibility, scalability, cost-effectiveness, privacy, data transmission reliability, and technical issues. This supports the need to clearly define whether a proposed system performs direct GPS tracking or only uses vehicle monitoring records as supporting operational data.
+
+[P00988 | 119659:120574 | NORMAL_TEXT]
+In the case of Web-based Car Rental Management System, direct GPS integration is not treated as a core requirement because the business already uses AKSH GPS as an external vehicle monitoring tool. The proposed system will not replace AKSH GPS or directly retrieve live GPS coordinates from it. Instead, the system will support the business process by storing vehicle records, plate numbers, renter details, booking records, rental transactions, and manual monitoring notes. Through these records, authorized users can identify which renter or rental transaction is connected to a vehicle being monitored through AKSH GPS or other external tools. For example, when the owner checks a monitored vehicle through AKSH GPS using its plate number, the proposed system can be used to find the corresponding vehicle record, current rental transaction, renter information, booking details, and relevant monitoring remarks.
+
+[P00989 | 120574:121269 | NORMAL_TEXT]
+This limitation is appropriate because the main purpose of the proposed monitoring function is administrative tracking and record linkage, not direct live GPS tracking. The system will store monitoring sources, location notes, monitoring status, remarks, and recorded staff updates based on external tools such as AKSH GPS, Apple Find My, AirTags, or manual observations. However, it will not claim automatic geofencing, live map tracking, real-time GPS coordinate retrieval, or direct GPS hardware/API integration unless such integration is formally implemented in the future. This ensures that the system scope remains realistic and aligned with the actual operational practice of the client.
+
+[P00990 | 121269:121336 | NORMAL_TEXT | LIST id=kix.9becp3fp1qn5 level=0]
+Security, Data Privacy, and Role-Based Access in Web-Based Systems
+
+[P00991 | 121336:121944 | NORMAL_TEXT]
+Security, data privacy, and role-based access are important considerations in the development of web-based information systems because these systems commonly handle sensitive user records, transaction details, uploaded documents, and administrative data. In online management systems, unauthorized access may lead to privacy violations, data misuse, inaccurate records, and loss of user trust. For this reason, modern web-based systems require secure authentication, access restrictions, and proper handling of user information to ensure that only authorized users can access specific functions and records.
+
+[P00992 | 121944:121945 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P00993 | 121945:122837 | NORMAL_TEXT]
+Role-Based Access Control, or RBAC, is one of the most commonly used approaches for managing user permissions in web-based systems. RBAC restricts system access based on the role assigned to each user, such as administrator, staff, customer, or owner. Romadhan and Mansur (2026) developed a web-based educational payment information system using RBAC to protect financial transaction data. Their system assigned different access privileges to users such as Super Admin, Treasurer, Student Guardian, and Principal. The study found that RBAC effectively prevented unauthorized access to sensitive financial information and improved data accuracy and accountability. This is relevant to the proposed car rental management system because the system will also handle payment proof, booking records, customer information, and administrative data that should not be equally accessible to all users.
+
+[P00994 | 122837:123569 | NORMAL_TEXT]
+Similarly, Cardos et al. (2025) evaluated the impact of RBAC and data privacy measures on user satisfaction and security compliance in a digital evaluation and feedback system. Their findings showed that RBAC received favorable ratings in terms of usability and security compliance, although they also emphasized the need for clear role definitions and privacy communication. This indicates that RBAC is not only a technical security mechanism but also a factor that affects user confidence and satisfaction. In the proposed car rental system, this supports the need to clearly define access levels for owners, administrators, and customers so that users understand what information they can access and what records are restricted.
+
+[P00995 | 123569:124355 | NORMAL_TEXT]
+The use of RBAC has also been applied in inventory and management systems that handle sensitive operational data. Purba and Hidayasari (2026) implemented RBAC in a web-based drug stock management information system using Laravel and MySQL. Their system used RBAC to restrict access based on assigned roles and achieved a 100 percent pass rate in black-box testing. The study also reported a System Usability Scale score of 76, which was interpreted as good. This shows that RBAC can improve data security without preventing users from effectively using the system. The findings are relevant to the proposed car rental system because both systems involve the management of important records, such as inventory or fleet data, transaction data, and role-specific administrative functions.
+
+[P00996 | 124355:125218 | NORMAL_TEXT]
+Aside from access restriction, secure authentication and monitoring are also necessary in web-based systems. Kanagamalliga et al. (2026) proposed a web-based system with JSON Web Token authentication, RBAC, encrypted credential storage, audit logging, and real-time alerts for suspicious activities. Their study showed high accuracy in access enforcement, reliable threat detection, complete audit coverage, and low response latency. These findings suggest that sensitive web-based systems should not rely only on login credentials, but should also include mechanisms for monitoring access and detecting possible unauthorized activities. For the proposed car rental system, this supports the use of secure login, role-based access, and possible logging of important activities such as document viewing, payment verification, booking approval, and record updates.
+
+[P00997 | 125218:126052 | NORMAL_TEXT]
+Multi-layer security is also important when web systems transmit and store sensitive data. Manoj et al. (2025) designed a scalable RBAC-based system that integrated security safeguards against common web application vulnerabilities such as SQL injection, cross-site request forgery, and cross-site scripting. Their system also used encryption and one-time password authentication to improve data protection. The study found that the combination of RBAC, encryption, and authentication mechanisms improved protection of data in transit and at rest. This is relevant to the proposed car rental system because customer documents, payment proof, and rental records may be transmitted between users and the web platform. Therefore, the system should include appropriate security safeguards to reduce unauthorized access and data exposure.
+
+[P00998 | 126052:126781 | NORMAL_TEXT]
+Authentication security is also important in browser-based systems that support multiple users and access levels. Dedhia (2026) proposed a secure web authentication framework using JSON Web Tokens stored in HTTP-only cookies, role-based access control, and secure password hashing. The study found that the combination of JWT and RBAC improved authentication security, strengthened session management, and reduced risks related to common web vulnerabilities. For the proposed car rental system, this supports the need for secure session handling, especially because the system will be used by customers, administrators, and owners who access different modules such as booking, payment verification, vehicle records, and reports.
+
+[P00999 | 126781:127522 | NORMAL_TEXT]
+Data privacy is also essential in systems that process customer and transaction information. Lu et al. (2024) discussed the use of differential privacy for protecting sensitive transaction data while preserving the usefulness of aggregated information for analysis. Their study emphasized that privacy-preserving techniques can reduce the risk of unauthorized disclosure while still allowing systems to generate useful business insights. This is relevant to the proposed system because rental transaction data may be used for reports, demand forecasting, and branch-level analysis. The system should therefore protect individual customer records while still allowing authorized users to generate operational reports and forecasting outputs.
+
+[P01000 | 127522:128372 | NORMAL_TEXT]
+In relation to the proposed web-based car rental management system, security and privacy are necessary because the system will manage customer accounts, renter requirements, uploaded identification documents, proof of payment, booking records, rental history, vehicle records, and operational reports. The reviewed studies show that RBAC is an effective approach for restricting access based on user responsibilities, while secure authentication, encryption, audit logging, and privacy-preserving practices strengthen the protection of sensitive information. These concepts support the proposed system’s need for role-based access control, where owners may have access to financial and operational records, administrators may manage reservations and vehicle status, and customers may only access their own booking details and submitted requirements.
+
+[P01001 | 128372:128373 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01002 | 128373:128421 | NORMAL_TEXT | LIST id=kix.9becp3fp1qn5 level=0]
+Software Quality Evaluation Using ISO/IEC 25010
+
+[P01003 | 128421:129111 | NORMAL_TEXT]
+Software quality evaluation is an important part of system development because it determines whether a developed system meets its intended requirements and satisfies the needs of its users. For web-based information systems, evaluation is necessary to assess whether the system functions correctly, performs efficiently, is easy to use, protects data, and can be maintained or improved in the future. ISO/IEC 25010 is commonly used as a software quality model because it provides structured quality characteristics for evaluating software products, including functional suitability, performance efficiency, compatibility, usability, reliability, security, maintainability, and portability.
+
+[P01004 | 129111:129883 | NORMAL_TEXT]
+Monteverde et al. (2023) developed a web-based rental house smart finder system using Rapid Application Development and evaluated the system using ISO/IEC 25010. The study assessed the system based on quality characteristics such as functional suitability, performance efficiency, usability, reliability, security, maintainability, and portability. The evaluation result obtained an overall mean of 3.67 out of 4.00, which was interpreted as very effective. This study is relevant to the proposed car rental management system because both systems are web-based rental-related platforms. It shows that ISO/IEC 25010 can be used as an appropriate framework for evaluating whether a rental-domain system is functional, usable, reliable, secure, and ready for implementation.
+
+[P01005 | 129883:130612 | NORMAL_TEXT]
+Bondoc (2023) also used ISO/IEC 25010 to evaluate a web-based smart attendance monitoring system with QR code and SMS notification. The study used two respondent groups: IT experts and school personnel. IT experts evaluated the system using all eight ISO/IEC 25010 characteristics, while school personnel evaluated selected characteristics such as functional suitability, performance efficiency, and usability. The study found that the system conformed to the assessed ISO/IEC 25010 standards. This dual-respondent evaluation design is relevant to the proposed car rental system because the system may also be evaluated by both technical evaluators and actual or potential users, including owners, administrators, and customers.
+
+[P01006 | 130612:131405 | NORMAL_TEXT]
+Mendoz et al. (2025) evaluated a web-based system for maternal support and infant health tracking using ISO/IEC 25010. Their study involved 60 respondents, including 40 users and 20 technical evaluators, and used weighted mean and Likert scale analysis. The results showed that both user and technical respondent groups gave favorable ratings, with usability rated highest by users and functionality rated highest by technical respondents. This study supports the use of ISO/IEC 25010 in evaluating web-based systems with different user groups. For the proposed car rental system, this approach is useful because customer users may focus more on ease of use and booking experience, while technical evaluators may focus more on system functionality, security, reliability, and maintainability.
+
+[P01007 | 131405:132151 | NORMAL_TEXT]
+Adyaputra et al. (2025) combined ISO/IEC 25010 with the Technology Acceptance Model in assessing user satisfaction with local government websites. The study found that functional suitability, usability, and reliability significantly influenced perceived usefulness, while performance efficiency and security were identified as priority areas for improvement. These findings show that software quality is closely related to user satisfaction and acceptance. In the context of the proposed car rental management system, this means that the system should not only include the required features but should also be easy to use, reliable, responsive, and secure so that customers, administrators, and owners can confidently use it in daily operations.
+
+[P01008 | 132151:132835 | NORMAL_TEXT]
+Islam et al. (2021) evaluated an enterprise resource planning system using the ISO/IEC 25010 quality model. Their study involved users with different roles, including department heads, IT professionals, and daily users, and used all eight ISO/IEC 25010 quality characteristics. The study showed that ISO/IEC 25010 is suitable for evaluating multi-role and multi-module management systems. This is directly relevant to the proposed car rental system because it will include multiple user roles and modules, such as customer management, booking management, vehicle management, payment verification, maintenance monitoring, forecasting, allocation recommendation, and report generation.
+
+[P01009 | 132835:133558 | NORMAL_TEXT]
+Ismail et al. (2025) developed a web-based information system for food availability and production and evaluated it using ISO/IEC 25010 across all eight quality aspects. The study used an Agile development approach and involved expert and user evaluation. The findings showed that the system was feasible for implementation and conformed to the ISO/IEC 25010 quality characteristics. This study supports the idea that ISO/IEC 25010 can be applied to management information systems that support data processing, monitoring, and reporting. The proposed car rental system shares similar characteristics because it will process operational records, monitor vehicle and booking status, and generate reports for decision-making.
+
+[P01010 | 133558:134282 | NORMAL_TEXT]
+Nuzula and Rochimah (2023) evaluated a human resource information system using ISO/IEC 25010, focusing on functional suitability and usability sub-characteristics such as functional completeness, correctness, appropriateness, learnability, operability, and user interface aesthetics. Their study showed that ISO/IEC 25010 can be used not only for overall system evaluation but also for identifying specific strengths and weaknesses in system functions and interface design. This is useful for the proposed car rental system because the proponents may use ISO/IEC 25010 results to identify which modules need improvement, such as booking, payment verification, vehicle assignment, forecasting output, or dashboard usability.
+
+[P01011 | 134282:134920 | NORMAL_TEXT]
+Laudza and Sofyan (2024) evaluated an academic information system using all eight ISO/IEC 25010 standards and found that seven of the eight characteristics were fully met, while security only reached a medium level. This finding highlights that security may become a weak point in web-based system evaluation if it is not deliberately considered during design and development. For the proposed car rental management system, this reinforces the need to include security measures such as authentication, RBAC, restricted document access, and protection of payment-related records before conducting the final ISO/IEC 25010-based evaluation.
+
+[P01012 | 134920:134921 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01013 | 134921:134973 | NORMAL_TEXT | LIST id=kix.p2wznzg3yjmo level=0]
+Research Instrument Development Using ISO/IEC 25010
+
+[P01014 | 134973:135861 | NORMAL_TEXT]
+Aside from being used as a software quality evaluation framework, ISO/IEC 25010 can also serve as the basis for developing the research instrument of the study. The research instrument for evaluating the proposed system will be developed using the ISO/IEC 25010 software product quality model because it provides a recognized framework for assessing the quality of ICT and software products. ISO/IEC 25010 defines a product quality model composed of quality characteristics and sub-characteristics that serve as a reference for specifying, measuring, and evaluating software product quality (International Organization for Standardization & International Electrotechnical Commission [ISO/IEC], 2023). These quality characteristics may be translated into questionnaire indicators that can be used to evaluate whether the developed system satisfies the required software quality standards.
+
+[P01015 | 135861:136677 | NORMAL_TEXT]
+Recent studies support the use of ISO/IEC 25010 as a basis for system evaluation instruments. Ariningsih and Muhammad (2024) evaluated a Ticket Management System using ISO/IEC 25010, questionnaires, black-box testing, and Likert-scale scoring. Their study shows that ISO/IEC 25010 characteristics and sub-characteristics can be translated into questionnaire items for measuring the quality of an implemented information system. Similarly, Nugraha and Rachman (2024) evaluated the Ixitask web-based application using ISO/IEC 25010 through a descriptive quantitative method, focusing on functional suitability, reliability, interaction capability, and security, with validity and reliability testing. These studies show that ISO/IEC 25010 can be used as a practical basis for developing system evaluation instruments.
+
+[P01016 | 136677:137367 | NORMAL_TEXT]
+In relation to Web-based Car Rental Management System, ISO/IEC 25010 is appropriate as the basis for the research instrument because the system must be evaluated according to measurable software quality characteristics. The questionnaire items may be organized according to selected quality characteristics such as functional suitability, performance efficiency, compatibility, interaction capability or usability, reliability, security, maintainability, and flexibility or portability, depending on the finalized evaluation scope. This ensures that the evaluation instrument is aligned with an internationally recognized software quality model and with recent system evaluation practices.
+
+[P01017 | 137367:138419 | NORMAL_TEXT]
+Overall, the reviewed studies show that ISO/IEC 25010 is a suitable and widely used framework for evaluating web-based systems and management information systems. It provides a structured basis for measuring the quality of the proposed system in terms of functional suitability, performance efficiency, compatibility, usability or interaction capability, reliability, security, maintainability, and portability or flexibility, depending on the finalized evaluation scope. The reviewed studies also show that ISO/IEC 25010 can guide the development of research instruments by translating software quality characteristics into measurable questionnaire indicators. For the proposed car rental management system, ISO/IEC 25010 is appropriate because the system is multi-role, multi-module, web-based, and intended for actual operational use. Using ISO/IEC 25010 will allow the proponents to evaluate whether the system satisfies user needs, supports business operations, protects sensitive data, and remains usable and maintainable for future improvement.
+
+[P01018 | 138419:138420 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01019 | 138420:138477 | NORMAL_TEXT | LIST id=kix.btysphjsb60q level=0]
+Use of 4-Point Likert Scale in System Evaluation Studies
+
+[P01020 | 138477:138991 | NORMAL_TEXT]
+Likert-type scales are widely used psychometric instruments for measuring attitudes, opinions, perceptions, and evaluation judgments in research contexts. Koo and Yang (2025) explain that Likert-type scales allow respondents to indicate levels of agreement or disagreement and that Likert-type scale variations may use different numbers of points, including four to seven response options. They also note that even-numbered scales remove the neutral midpoint and compel respondents to take a more definite stance.
+
+[P01021 | 138991:139698 | NORMAL_TEXT]
+Kankaraš and Capecchi (2025) explain that the use of a neutral response option in Likert-type scales remains debated. While a neutral midpoint may be valid for respondents who are genuinely neutral, some respondents may also use the neutral option as an escape response, especially when they are uncertain or unwilling to provide a clear answer. Mariano et al. (2024) also examined whether Likert scales should include neutral response categories and emphasized that the inclusion or exclusion of a neutral option is a methodological decision in survey design. Their study made the researchers decide on the use of a neutral category based on the purpose of the instrument and the type of responses needed.
+
+[P01022 | 139698:140345 | NORMAL_TEXT]
+In relation to Web-based Car Rental Management System, the 4-point Likert scale is appropriate because the evaluation requires respondents to determine whether each system quality indicator is acceptable or not acceptable. Since the questionnaire will be based on ISO/IEC 25010 quality indicators, the respondents are expected to evaluate the system’s functional suitability, performance, usability or interaction capability, reliability, security, and maintainability through clear agreement or disagreement responses. The absence of a neutral midpoint helps reduce undecided answers and encourages respondents to provide a definite evaluation. 
+
+[P01023 | 140345:140409 | NORMAL_TEXT]
+The following scale will be used for the evaluation instrument:
+
+[P01024 | 140409:140473 | NORMAL_TEXT]
+4 - Strongly Agree3 - Agree2 - Disagree1 - Strongly Disagree
+
+[P01025 | 140473:140803 | NORMAL_TEXT]
+This scale is suitable for questionnaire statements such as “The system provides the required booking functions correctly” or “The system protects sensitive user and transaction information.” The results may then be interpreted using frequency, percentage, and weighted mean to summarize the evaluators’ assessment of the system.
+
+[P01026 | 140803:140804 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01027 | 140804:140856 | NORMAL_TEXT]
+B. Fleet Management and Operational Decision-Making
+
+[P01028 | 140856:140897 | NORMAL_TEXT | LIST id=kix.p1a98c3n4ot5 level=0]
+Fleet Management and Vehicle Utilization
+
+[P01029 | 140897:141369 | NORMAL_TEXT]
+Fleet management plays a major role in transportation and car rental operations because companies must ensure that vehicles are available in the right quantity, at the right locations, and at the right time. Effective fleet management helps businesses improve operational efficiency, reduce costs, and maintain customer satisfaction. However, transportation and rental companies often experience several operational problems that affect profitability and service quality.
+
+[P01030 | 141369:141983 | NORMAL_TEXT]
+One major problem in fleet management is the presence of idle vehicles. Idle vehicles are fleet units that remain unused for long periods in certain locations. These vehicles continue to generate maintenance, insurance, parking, and depreciation expenses even though they are not producing revenue. According to Brandizzi et al. (2022), vehicle-sharing systems must continuously monitor vehicle locations and usage patterns to avoid inefficiencies and improve utilization. When too many vehicles are allocated to low-demand areas, businesses experience financial losses because valuable resources remain inactive.
+
+[P01031 | 141983:142671 | NORMAL_TEXT]
+Another common challenge is vehicle shortages. Vehicle shortages occur when customer demand exceeds the number of available vehicles at a specific location. This problem is especially common at airports, tourist destinations, and busy urban areas during peak seasons. Customers may experience long waiting times, booking cancellations, or service dissatisfaction due to insufficient vehicle availability. Favier et al. (2024) explain that one-way rentals often create shortages in high-demand regions while causing an oversupply of vehicles in other areas. This imbalance creates operational pressure for fleet managers who must relocate vehicles efficiently to maintain service quality.
+
+[P01032 | 142671:143215 | NORMAL_TEXT]
+Closely connected to shortages is the issue of underutilized fleet units. In many transportation systems, some vehicles are used frequently while others remain inactive or are only partially utilized. This uneven utilization leads to inefficient use of company resources because businesses continue paying operational costs for vehicles that generate little or no revenue. Favier et al. (2024) note that successful fleet management requires balancing service levels, relocation costs, and utilization rates to maximize operational performance.
+
+[P01033 | 143215:144014 | NORMAL_TEXT]
+Transportation and car rental companies also face uneven demand across locations. Demand is not distributed equally because customer activity is heavily influenced by geography, tourism, population density, and economic activity. High-demand locations such as city centers, airports, shopping districts, and tourist attractions often experience heavy vehicle usage, while suburban or remote areas experience lower demand. Brandizzi et al. (2022) found that demand in Barcelona’s vehicle-sharing system was concentrated within a very small portion of the city, showing how customer demand tends to cluster geographically. Uneven demand creates difficulties for fleet managers because vehicles may accumulate in low-demand areas while becoming unavailable in locations where customers need them most.
+
+[P01034 | 144014:144656 | NORMAL_TEXT]
+As a result of these demand imbalances, companies frequently experience poor vehicle distribution. Vehicles may become concentrated in one location because of one-way trips, tourism patterns, or seasonal travel behavior. For example, tourists may rent vehicles in major cities and return them in rural or leisure destinations, leaving shortages in urban pickup locations. Favier et al. (2024) demonstrated this issue in New Zealand, where one-way rentals caused vehicles to accumulate in the South Island while shortages developed in other regions. Poor distribution increases relocation costs and reduces the efficiency of fleet operations.
+
+[P01035 | 144656:145166 | NORMAL_TEXT]
+To address these challenges, businesses increasingly rely on demand forecasting. Demand forecasting is the process of predicting future customer demand using historical data, statistical methods, and analytical models. Forecasting helps companies estimate how many vehicles will be required, where they will be needed, and when demand levels are expected to rise or fall. Accurate forecasting allows businesses to allocate vehicles proactively instead of reacting after shortages or oversupply problems occur.
+
+[P01036 | 145166:145981 | NORMAL_TEXT]
+Demand forecasting provides several operational advantages. It helps reduce idle vehicles by preventing oversupply in low-demand locations while also minimizing shortages in busy areas. Forecasting also improves relocation planning because fleet managers can move vehicles before imbalances become severe. In addition, forecasting improves customer satisfaction because customers are more likely to find available vehicles when and where they need them. Sangaraju et al. (2024) explain that forecasting models such as ARIMA, regression analysis, and machine learning techniques are increasingly used in rental vehicle systems to improve revenue prediction and resource allocation. Similarly, Akay (2024) identifies demand forecasting as one of the major themes in car rental and transportation management research.
+
+[P01037 | 145981:146556 | NORMAL_TEXT]
+Historical rental and vehicle usage data are essential for effective demand forecasting. Transportation companies collect data related to rental frequency, pickup and drop-off locations, booking patterns, trip durations, seasonal demand, and peak operating periods. By analyzing historical information, businesses can identify recurring trends and customer behavior patterns. For example, companies may discover that airport rentals increase during holiday seasons, that urban demand peaks during evenings, or that tourist destinations require more vehicles during weekends.
+
+[P01038 | 146556:147014 | NORMAL_TEXT]
+Brandizzi et al. (2022) demonstrated how historical usage data could support relocation planning and customer clustering strategies in vehicle-sharing systems. Similarly, Favier et al. (2024) used historical movement patterns to evaluate different fleet allocation and relocation models in rental vehicle operations. These studies show that historical data allows businesses to make more informed operational decisions and improve overall fleet performance.
+
+[P01039 | 147014:147015 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01040 | 147015:147460 | NORMAL_TEXT]
+Historical data analysis also supports dynamic pricing and revenue optimization. When companies can predict increases in demand, they can adjust prices and reposition vehicles strategically to maximize profitability. Sangaraju et al. (2024) argue that combining forecasting techniques with dynamic pricing and intelligent resource allocation can significantly improve both revenue generation and customer satisfaction in rental vehicle systems.
+
+[P01041 | 147460:147972 | NORMAL_TEXT]
+Modern fleet management systems also integrate forecasting technologies with intelligent transportation systems and traffic control systems. Kotsialos and Vassilakopoulou (2023) explain that real-time traffic information, GPS tracking, and collaborative information-sharing systems help transportation companies improve routing decisions, reduce delays, and increase operational efficiency. These technologies allow fleet operators to respond more effectively to changing traffic conditions and customer demand.
+
+[P01042 | 147972:148752 | NORMAL_TEXT]
+In conclusion, fleet management in transportation and car rental operations involves managing vehicle allocation, utilization, and customer demand across multiple locations. Problems such as idle vehicles, vehicle shortages, underutilized fleet units, uneven demand, and poor vehicle distribution can reduce operational efficiency and customer satisfaction. Demand forecasting and historical data analysis provide important solutions by helping businesses predict future demand, improve relocation strategies, optimize vehicle allocation, and maximize profitability. As transportation systems become increasingly data-driven, forecasting and intelligent fleet management technologies will continue to play a critical role in improving operational performance and service quality.
+
+[P01043 | 148752:148753 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01044 | 148753:148790 | NORMAL_TEXT | LIST id=kix.pgs1g8eq225f level=0]
+Customer-Side Vehicle Recommendation
+
+[P01045 | 148790:149406 | NORMAL_TEXT]
+Recommendation systems are commonly used to help users select suitable options based on their preferences, requirements, or contextual needs. In the transportation and tourism field, Sabet et al. (2022) developed THOR, a hybrid recommender system for personalized travel experiences. Their study supports the idea that recommendation systems can assist users by matching available options with user preferences and contextual requirements. Although THOR focuses on travel experiences rather than car rental operations, it provides conceptual support for customer-facing recommendation as a decision-support feature.
+
+[P01046 | 149406:149407 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01047 | 149407:150226 | NORMAL_TEXT]
+Vehicle recommendation has also been studied in relation to vehicle selection. Boteju and Munasinghe (2020) proposed a vehicle recommendation system using a hybrid recommender algorithm and natural language processing approach, while Prabowol, Nasrun, and Nugrahaeni (2019) developed a car selection recommendation system using item-based collaborative filtering. These studies show that vehicle selection can be supported through system-generated suggestions. However, the present study does not claim to use collaborative filtering, natural language processing, or machine learning. Instead, the proposed Customer-Side Vehicle Recommendation uses rule-based logic because the recommendation criteria must remain simple, transparent, and aligned with the operational requirements of a small-scale car rental business.
+
+[P01048 | 150226:150227 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01049 | 150227:150801 | NORMAL_TEXT]
+In this study, the Customer-Side Vehicle Recommendation is placed in the customer-side module. It allows customers to input passenger capacity, destination or travel area, budget, rental duration, and vehicle preference. The system then applies predefined rule-based logic to display suitable available vehicles before the customer submits a booking request. This separates customer-side vehicle selection support from admin-side branch allocation recommendation, which remains focused on demand forecasting, fleet monitoring, maintenance records, and operational planning.
+
+[P01050 | 150801:150802 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01051 | 150802:150860 | NORMAL_TEXT | LIST id=kix.pgs1g8eq225f level=0]
+Idle Vehicle Detection and Vehicle Utilization Monitoring
+
+[P01052 | 150860:151490 | NORMAL_TEXT]
+Idle vehicle detection and vehicle utilization monitoring are important aspects of fleet management because they help determine whether vehicles are being used efficiently or left unused for a certain period. In rental and shared mobility operations, vehicles that remain idle may still require parking, cleaning, monitoring, maintenance, and administrative attention even when they are not producing revenue. Vehicle utilization monitoring therefore supports operational visibility by showing which vehicles are frequently used, which vehicles are rarely used, and which locations may have excess or insufficient vehicle supply.
+
+[P01053 | 151490:151491 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01054 | 151491:152135 | NORMAL_TEXT]
+Abouelela et al. (2023) developed a fleet utilization prediction framework for shared mobility using open-source big data and machine learning. Their study measured fleet utilization through the daily number of trips per vehicle and examined how historical demand, temporal patterns, and contextual variables can be used to predict vehicle usage. The study shows that utilization monitoring can support operational policies related to fleet deployment, planning, and resource use. It also demonstrates that historical mobility records can be transformed into useful indicators for understanding whether fleet assets are being used efficiently.
+
+[P01055 | 152135:152136 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01056 | 152136:152740 | NORMAL_TEXT]
+Eliyan and Kerbache (2024) reviewed vehicle relocation in one-way carsharing systems and explained that flexible pickup and return arrangements may create vehicle imbalance. In one-way systems, some stations may accumulate excess vehicles while other stations experience vehicle shortages. Their review emphasized that vehicle rebalancing, relocation, resource allocation, and station planning are important operational concerns in fleet-based services. This supports the idea that vehicle availability should not be viewed only at the individual vehicle level, but also at the location or branch level.
+
+[P01057 | 152740:152741 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01058 | 152741:153340 | NORMAL_TEXT]
+Zhu et al. (2024) proposed an idle vehicle rebalancing approach for autonomous mobility-on-demand systems. Their study explained that imbalance between mobility demand and vehicle supply can reduce operational efficiency and service quality. Vehicle rebalancing was presented as a way of dispatching idle vehicles to areas with higher demand in order to improve service rates and reduce passenger waiting time. Although the study focused on autonomous mobility, it shows that idle vehicles can become useful operational resources when their location, availability, and demand context are monitored.
+
+[P01059 | 153340:153341 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01060 | 153341:153832 | NORMAL_TEXT]
+Zhong et al. (2025) studied carsharing operation optimization by considering economic and social benefits. Their study developed an optimization model involving site location, fleet size, site size, and pricing decisions. The study shows that vehicle distribution and utilization are important in transport services that depend on shared or rented vehicles. It also highlights that operational planning must consider how fleet resources are positioned and used in relation to travel demand.
+
+[P01061 | 153832:153833 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01062 | 153833:154396 | NORMAL_TEXT]
+Skrzynski et al. (2026) examined vehicle relocation decisions in free-floating carsharing schemes. Their study combined demand prediction, vehicle availability prediction, and decision-making methods to support relocation planning. The study shows that relocation decisions become more effective when demand and availability are considered together. This suggests that idle vehicle detection should not be based only on whether a vehicle is currently unused, but should also consider demand patterns, availability, and the location where the vehicle is assigned.
+
+[P01063 | 154396:154397 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01064 | 154397:155086 | NORMAL_TEXT]
+This indicates that idle vehicle detection and vehicle utilization monitoring support fleet visibility, resource planning, and allocation decisions. These studies suggest that underutilized vehicles, location-based imbalance, and branch-level vehicle shortages can be identified more effectively when booking history, rental activity, availability status, and location assignment are monitored together. In the context of Web-based Car Rental Management System, these findings support the inclusion of vehicle utilization reports, idle vehicle reports, fleet status dashboards, and branch-level monitoring to help the Owner/Admin review vehicle use and make informed allocation decisions.
+
+[P01065 | 155086:155087 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01066 | 155087:155156 | NORMAL_TEXT | LIST id=kix.pgs1g8eq225f level=0]
+Vehicle Maintenance Monitoring and Preventive Maintenance Scheduling
+
+[P01067 | 155156:155695 | NORMAL_TEXT]
+Vehicle maintenance monitoring and preventive maintenance scheduling are essential in fleet operations because they help maintain vehicle safety, reliability, and availability. Preventive maintenance is performed before serious failure occurs and may be based on scheduled service dates, mileage intervals, inspection findings, vehicle condition, or service history. In fleet-based operations, maintenance monitoring helps reduce unexpected downtime, avoid delayed service, and ensure that only roadworthy vehicles are used for operation.
+
+[P01068 | 155695:155696 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01069 | 155696:156258 | NORMAL_TEXT]
+Barreiro-Zambrano et al. (2026) developed an integrated preventive maintenance management and alert system for light vehicles. Their system monitored the distance traveled by a vehicle and generated alerts for services such as oil changes, brake inspections, and timing-belt replacements. The study shows that preventive maintenance reminders can help users become aware of upcoming service requirements before vehicle problems become more serious. It also demonstrates that distance-based monitoring can be used as a practical basis for maintenance scheduling.
+
+[P01070 | 156258:156259 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01071 | 156259:156937 | NORMAL_TEXT]
+Crespo del Castillo and Parlikad (2024) discussed dynamic fleet management by integrating predictive maintenance, preventive maintenance, and operational workload balancing. Their study explained that traditional maintenance strategies may become inefficient when they rely only on fixed schedules or reactive repair. The authors emphasized that maintenance planning affects fleet availability, cost, and workload distribution because vehicles must be assigned either to operation, preventive maintenance, predictive maintenance, or idle status. This shows that maintenance planning should be connected to operational decision-making rather than treated as a separate activity.
+
+[P01072 | 156937:156938 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01073 | 156938:157529 | NORMAL_TEXT]
+Arena et al. (2022) reviewed predictive maintenance in the automotive sector and discussed statistical, stochastic, and artificial intelligence-based approaches for maintenance decision-making. Their review explained that data-driven maintenance can help prevent possible failures and support timely maintenance actions. The study also shows that vehicle maintenance decisions increasingly depend on organized and reliable data, including vehicle condition, usage patterns, and failure-related information. This supports the importance of structured maintenance records in fleet operations.
+
+[P01074 | 157529:157530 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01075 | 157530:158146 | NORMAL_TEXT]
+Giannoulidis et al. (2024) presented a predictive maintenance framework in the Navarchos Fleet Management System. Their study focused on applying predictive maintenance in a fleet environment where information may be dynamic, incomplete, or continuously changing. The Navarchos case shows that fleet management systems can support maintenance decisions by organizing vehicle-related data, monitoring status changes, and applying maintenance logic within a broader system architecture. This highlights the importance of updating maintenance records as vehicles are used, inspected, repaired, and returned to service.
+
+[P01076 | 158146:158147 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01077 | 158147:158750 | NORMAL_TEXT]
+Mahale et al. (2025) reviewed artificial intelligence-driven predictive maintenance in vehicles and emphasized that predictive maintenance can improve vehicle reliability, reduce operating costs, and support better maintenance scheduling. Their review discussed the role of vehicle health monitoring, diagnostics, data quality, and maintenance records in improving maintenance strategies. The study also identified challenges such as data quality, scalability, and integration, which means that maintenance systems must be designed carefully to ensure that recorded data can support reliable decisions.
+
+[P01078 | 158750:158751 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01079 | 158751:159459 | NORMAL_TEXT]
+It shows that maintenance monitoring and preventive maintenance scheduling help improve fleet readiness, vehicle safety, reliability, and operational control. These studies indicate that maintenance decisions should consider mileage, service dates, maintenance alerts, vehicle condition, and service history. In the context of Web-based Car Rental Management System, these findings support the inclusion of maintenance records, PMS scheduling, vehicle status logs, mileage tracking, and maintenance readiness dashboards. These features can help authorized users monitor service schedules, identify vehicles due for PMS, and prevent vehicles with unresolved maintenance issues from being assigned to renters.
+
+[P01080 | 159459:159460 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01081 | 159460:159538 | NORMAL_TEXT | LIST id=kix.pgs1g8eq225f level=0]
+Mileage, Vehicle Condition, and Maintenance History as Fleet Decision Factors
+
+[P01082 | 159538:160156 | NORMAL_TEXT]
+Mileage, vehicle condition, and maintenance history are important decision factors in fleet management because they help determine whether a vehicle is suitable for operation, rental assignment, preventive maintenance, or further inspection. A vehicle may appear available based on schedule, but it may still be unsuitable for use if it has high mileage, poor condition, unresolved repair issues, or incomplete maintenance records. In fleet-based operations, these factors help managers evaluate vehicle readiness and reduce the risk of assigning vehicles that may be unsafe, unreliable, or likely to require service.
+
+[P01083 | 160156:160157 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01084 | 160157:160799 | NORMAL_TEXT]
+Chen et al. (2024) proposed a mileage-aware method for vehicle maintenance demand prediction. Their study emphasized that mileage should be considered when predicting vehicle maintenance needs because vehicle use contributes to component wear, aging, and possible maintenance demand. The study also noted that some maintenance prediction methods focus only on partial maintenance needs, while overall vehicle maintenance demand requires a broader view of the vehicle’s usage and service requirements. This shows that mileage is not only a numerical record of vehicle use but also a useful indicator for anticipating future maintenance needs.
+
+[P01085 | 160799:160800 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01086 | 160800:161484 | NORMAL_TEXT]
+Arena et al. (2022) reviewed predictive maintenance in the automotive sector and discussed how statistical, stochastic, and artificial intelligence-based methods can support maintenance decisions. Their review explained that the availability of condition-monitoring data allows vehicle-related problems to be detected earlier and helps maintenance actions become more timely and appropriate. The study also highlighted that predictive maintenance depends on organized data and proper interpretation of vehicle condition. This supports the idea that vehicle condition records and maintenance-related data are necessary for improving fleet reliability and reducing unexpected failures.
+
+[P01087 | 161484:162172 | NORMAL_TEXT]
+Chaudhuri and Ghosh (2024) developed a predictive maintenance approach for vehicle fleets using hybrid deep learning-based ensemble methods. Their study used both sensor data and historical maintenance data to support time-between-failures modeling and vehicle fleet maintenance prediction. Although their approach uses advanced computational methods, the study demonstrates that historical maintenance records are valuable for understanding vehicle reliability and supporting preventive management. This reinforces the importance of maintaining complete maintenance history in fleet operations, especially when vehicles are repeatedly used and exposed to different operating conditions.
+
+[P01088 | 162172:162173 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01089 | 162173:162821 | NORMAL_TEXT]
+Crespo del Castillo and Parlikad (2024) discussed dynamic fleet management by integrating predictive maintenance, preventive maintenance, and operational workload balancing. Their study explained that maintenance planning affects fleet availability because vehicles must be allocated either to operation, preventive maintenance, predictive maintenance, or idle status. This means that maintenance is not only a technical activity but also an operational decision factor. If maintenance planning is not connected to vehicle assignment and workload distribution, fleet operations may experience higher costs, reduced availability, or service delays.
+
+[P01090 | 162821:162822 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01091 | 162822:163440 | NORMAL_TEXT]
+Chen et al. (2025) reviewed vehicle maintenance demand prediction and explained that many existing studies focus on specific vehicle components, such as suspension, brakes, or batteries. Their review emphasized the need to move from isolated component-level prediction toward holistic vehicle health management. This is important in fleet decision-making because a vehicle’s readiness cannot be judged from one factor alone. Mileage, condition status, maintenance records, unresolved issues, and service history must be considered together to form a more complete understanding of the vehicle’s operational condition.
+
+[P01092 | 163440:163441 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01093 | 163441:164191 | NORMAL_TEXT]
+Overall, the reviewed studies show that mileage, vehicle condition, and maintenance history are significant factors in fleet decision-making. Mileage data can indicate usage level and possible wear, condition records can show readiness or risk, and maintenance history can reveal completed service activities, recurring problems, or unresolved issues. In the context of Web-based Car Rental Management System, these findings support the use of odometer records, vehicle condition status, maintenance history, PMS information, and audit records as internal decision-support data. These factors can help the Owner/Admin determine whether a vehicle is ready for rental, due for inspection, under maintenance, or unsuitable for assignment until cleared.
+
+[P01094 | 164191:164192 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01095 | 164192:164273 | NORMAL_TEXT | LIST id=kix.qxrjqx68pt1b level=0]
+Demand Forecasting in Transportation, Car Rental, and Vehicle-Sharing Operations
+
+[P01096 | 164273:164994 | NORMAL_TEXT]
+Demand forecasting is an important decision-support process in transportation, car rental, and vehicle-sharing operations because it helps businesses estimate future customer demand based on historical data, usage patterns, and other related factors. In rental-based transportation services, demand is not always consistent across time and location. Some branches, stations, or service areas may experience high demand during certain periods, while others may have lower usage or idle vehicles. Without demand forecasting, businesses may rely only on manual judgment or current vehicle availability, which can lead to reactive decision-making, vehicle shortages, poor vehicle distribution, and underutilized fleet units.
+
+[P01097 | 164994:165605 | NORMAL_TEXT]
+In car rental and vehicle-sharing operations, forecasting helps managers anticipate where and when vehicles will be needed. This is particularly important in multi-branch or multi-location operations because each location may experience different demand levels. Historical rental transactions, reservation records, return data, and vehicle usage patterns can be analyzed to estimate future demand and support better planning. When demand forecasts are connected to fleet monitoring and allocation decisions, businesses can prepare vehicles in advance, reduce shortages, and improve overall vehicle utilization.
+
+[P01098 | 165605:166399 | NORMAL_TEXT]
+Suganya et al. (2026) proposed an integrated AI-driven forecasting and optimization framework called RentOptima for intelligent vehicle rental management. Their study used branch-wise historical rental, usage, and maintenance data to forecast demand and support operational decisions. The framework applied time-series forecasting models such as ARIMA, Prophet, and LSTM to estimate future rental demand across multiple locations. The study showed that forecasting can help align fleet distribution with predicted demand and improve the efficiency of vehicle allocation and maintenance scheduling. This supports the proposed capstone system because it shows that historical rental and operational data can be used to produce branch-level demand forecasts that guide fleet allocation decisions.
+
+[P01099 | 166399:167214 | NORMAL_TEXT]
+Alencar et al. (2021) examined carsharing demand forecasting using univariable and multivariable models. Their study emphasized that daily demand variation can contribute to fleet imbalance in carsharing systems, especially in large urban areas. They also found that adding meteorological data, such as weather-related variables, can improve forecasting performance depending on the forecasting model and time horizon. This finding supports the idea that demand forecasting may be strengthened by considering contextual factors, especially weather conditions, which may influence customer travel behavior and rental demand. For the proposed car rental management system, this supports the inclusion of demand forecasting and selected context-aware factors to assist managers in anticipating demand more accurately.
+
+[P01100 | 167214:167991 | NORMAL_TEXT]
+Zhao et al. (2021) focused on station-level short-term demand forecasting in carsharing systems. Their study proposed a station-embedding-based hybrid neural network that combines spatial station features and time-series patterns to predict rental and return demand. The study emphasized that accurate short-term demand forecasting is necessary for vehicle relocation because operators need to know which stations are likely to experience higher rental or return activity. Although their method uses a more advanced forecasting model than the proposed capstone system, the operational principle is relevant. It shows that location-specific forecasting can support vehicle distribution decisions, which is similar to the proposed system’s goal of forecasting demand per branch.
+
+[P01101 | 167991:168769 | NORMAL_TEXT]
+Martin et al. (2021) also demonstrated the relationship between demand prediction and fleet relocation in free-floating car-sharing services. Their study explained that predicting demand across geographic regions and time periods is necessary for determining where vehicles should be positioned. They used predicted utilization as an input for relocation optimization, showing that forecasting is not only useful for reporting but also for operational planning. This is relevant to the proposed system because the demand forecasting feature is intended to support rule-based fleet allocation recommendations. In other words, the system will not only predict future demand but also use those predictions to guide managers in assigning or redistributing vehicles across branches.
+
+[P01102 | 168769:169463 | NORMAL_TEXT]
+Huang et al. (2021) addressed demand-supply imbalance in carsharing systems under demand uncertainty. Their study proposed a two-stage stochastic programming approach that considers tactical planning and real-time vehicle relocation decisions. The findings showed that active relocation and planning under uncertain demand can improve service outcomes. This supports the importance of forecasting in rental operations because demand uncertainty can lead to shortages, lost rental opportunities, and poor service availability. For small-scale multi-branch car rental businesses, forecasting can help managers prepare for expected demand instead of responding only after vehicle shortages occur.
+
+[P01103 | 169463:169464 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01104 | 169464:170373 | NORMAL_TEXT]
+Overall, the reviewed studies show that demand forecasting is a useful tool for improving planning and decision-making in transportation, car rental, and vehicle-sharing operations. Historical rental data, vehicle usage records, reservation patterns, and location-based demand information can help estimate future vehicle needs. These forecasts can then support fleet monitoring, branch coordination, and vehicle allocation. In the proposed web-based car rental management system, qualifying historical booking records will be aggregated by calendar week, branch, and vehicle category, and a three-period Weighted Moving Average will be used to generate short-term forecasts for up to three succeeding weekly periods. The resulting forecast horizon can help managers view expected demand trends in advance, identify possible future shortages or surpluses, and support more proactive fleet-planning decisions.
+
+[P01105 | 170373:170374 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01106 | 170374:170870 | NORMAL_TEXT]
+Therefore, demand forecasting is directly connected to the proposed system’s decision-support function. By transforming historical rental records into future demand estimates, the system can help small-scale multi-branch car rental businesses move from reactive vehicle assignment to more proactive and data-informed planning. This supports the development of a car rental management system that does not only record transactions but also assists managers in making better operational decisions.
+
+[P01107 | 170870:170871 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01108 | 170871:170919 | NORMAL_TEXT | LIST id=kix.fihvif59up1g level=0]
+Weighted Moving Average and Forecasting Methods
+
+[P01109 | 170919:171363 | NORMAL_TEXT]
+Accurate demand forecasting is a foundational requirement for any fleet management or resource planning system. Among the classical time series techniques, the Weighted Moving Average (WMA) method has been consistently recognized in recent literature as a practical and reliable approach for short-term demand prediction, particularly in small-scale operational environments where computational simplicity and interpretability are prioritized.
+
+[P01110 | 171363:171364 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01111 | 171364:172228 | NORMAL_TEXT]
+The WMA method estimates future demand by computing a weighted mean of a fixed number of past observations, where more recent data points are assigned higher weights than older ones. This design reflects the intuitive assumption that recent patterns are more indicative of near-future behavior than distant historical records. Formally, the forecast for a future period is expressed as the sum of the products of each historical observation and its corresponding weight, divided by the total sum of weights. This differentiates WMA from the Simple Moving Average (SMA), which treats all historical periods equally. As Rahayu et al. (2022) demonstrated in forecasting product inventory for a small reseller, the WMA method produced a MAPE of just 0.18% using a 3-month weighted window, confirming its precision in short-horizon, low-volatility demand environments.
+
+[P01112 | 172228:173143 | NORMAL_TEXT]
+The suitability of WMA for short-term forecasting has been validated across multiple operational contexts. A comparative study by Sariati et al. (2026) evaluating SMA and WMA for MSME production planning found that the WMA model with a 4-period window achieved the lowest MAPE of 8.36%, significantly outperforming SMA (MAPE of 14.40%) and longer-period variants of both methods. The study attributes this advantage to WMA's responsiveness to recent demand shifts, noting that shorter historical periods combined with appropriate weighting more effectively capture evolving demand patterns in dynamic operational environments. Similarly, Paramitha and Saifuddin (2023), comparing WMA, SMA, and Single Exponential Smoothing for industrial demand forecasting, found WMA to produce the smallest error across all key accuracy metrics, recommending it as the most appropriate method for operational production planning.
+
+[P01113 | 173143:174056 | NORMAL_TEXT]
+Beyond individual case studies, a broader review of time series forecasting models by Khalid (2024) situates the moving average family—including WMA—as particularly well-suited for short-term operational forecasting. The review notes that while advanced machine learning models offer improvements for long-term strategic prediction, traditional time series methods remain effective and efficient for immediate operational needs, particularly when data volumes are limited and computational resources are constrained. This finding aligns with the work of Lezama Lope et al. (2023), who developed an Analogue Moving Average (AnMA) method for very short-term load forecasting and demonstrated that moving average-based techniques deliver high accuracy, speed, robustness, and low maintenance overhead relative to more complex alternatives—attributes that are especially valuable in small-scale operational settings.
+
+[P01114 | 174056:174987 | NORMAL_TEXT]
+The advantages of the WMA method make it particularly appropriate for the forecasting module of the proposed fleet management system. First, its computational simplicity requires no specialized infrastructure and can be implemented efficiently in a web-based or lightweight application environment. Second, WMA is highly interpretable: administrators and operators can understand and verify forecasts without statistical expertise, supporting confidence in system outputs. Third, the method is lightweight in terms of data requirements—it operates on a short rolling window of historical data, making it viable even when historical records are limited, as is common in small-to-medium scale operations. Fourth, by assigning greater weight to recent observations, WMA is naturally attuned to gradual shifts in demand trends, making it more responsive than equal-weight methods in environments where usage patterns evolve over time.
+
+[P01115 | 174987:176543 | NORMAL_TEXT]
+However, the WMA method carries recognized limitations that must be acknowledged in system design. Because it derives forecasts from recent historical observations, WMA may not fully capture sudden or irregular changes in demand caused by unexpected events or abrupt operational shifts. In addition, WMA does not inherently model complex seasonal patterns or external contextual factors, which may limit its ability to represent demand changes that are not reflected in recent historical records. These limitations reinforce the need to treat WMA output as short-term decision-support information rather than as a guaranteed prediction of future demand. In the proposed system, WMA will therefore be implemented using a fixed three-period window and predefined descending weights of 0.50, 0.30, and 0.20. The system will generate a rolling forecast for up to three succeeding weekly periods. The first forecasted week will use the three most recently completed actual weekly observations, while the second and third forecasted weeks will be generated recursively using the newest available actual and previously forecasted values. Because recursive forecasting progressively incorporates predicted values, the farther forecast periods will be treated primarily as planning projections. The same procedure will be applied consistently across branches and vehicle categories to preserve reproducibility. The Owner/Admin may review and use the generated forecasts for operational planning, but the computed WMA values themselves will not be manually altered.
+
+[P01116 | 176543:176544 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01117 | 176544:176593 | NORMAL_TEXT | LIST id=kix.vkdh89c64kew level=0]
+Rule-Based Decision Support and Fleet Allocation
+
+[P01118 | 176593:177071 | NORMAL_TEXT]
+Beyond demand forecasting, operational fleet management requires a structured mechanism for translating forecast outputs into concrete vehicle allocation decisions. Rule-based decision support systems provide this mechanism by encoding expert operational knowledge into explicit IF-THEN conditional logic, enabling the system to generate consistent, auditable, and actionable recommendations without requiring complex optimization algorithms or machine learning infrastructure.
+
+[P01119 | 177071:177804 | NORMAL_TEXT]
+A rule-based system operates on a knowledge base composed of decision rules derived from domain expertise. Each rule specifies a condition—such as the number of available vehicles, current deployment status, forecasted demand, or route priority—and a corresponding action or recommendation. When the system evaluates a request or operational scenario, the inference engine matches current data against the rule set to produce a recommendation. This structure makes rule-based systems particularly transparent: every recommendation can be traced back to the rule or combination of rules that triggered it, which is important for operational accountability and for allowing administrators to audit or modify system behavior over time.
+
+[P01120 | 177804:177805 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01121 | 177805:178739 | NORMAL_TEXT]
+A particularly instructive recent example is provided by Haber et al. (2026), who developed a rule-based expert system for dispatch planning in liquid transportation logistics. Their system incorporated 28 decision rules formulated from the collective expertise of experienced planners, engineers, and senior managers, enabling automated evaluation of vehicle, trailer, and driver combinations for each operational order. Tested against real operational data from a Turkish logistics firm, the rule-based system consistently produced more cost-effective, balanced, and efficient dispatch plans than manual planning by experienced human personnel. Critically, the system reduced planning errors and reduced the variability introduced by individual human judgment—demonstrating that codifying expert logic into a rule structure can yield measurable operational improvements even in complex, multi-variable resource allocation problems.
+
+[P01122 | 178739:179495 | NORMAL_TEXT]
+The application of rule-based systems to fleet allocation is further supported by Mavrin and Makarova (2026), who developed a Decision Support System (DSS) for waste transportation fleet management. Their system integrated simulation with a structured vehicle competitiveness assessment module, and the optimization experiment yielded a 40.64% reduction in total logistics costs compared to the baseline—a statistically significant improvement attributed to the structured, rule-driven allocation of fleet assets based on operational requirements. This confirms that even in the absence of highly sophisticated optimization engines, systematically applied decision rules can produce substantial efficiency gains over ad hoc or manual allocation practices.
+
+[P01123 | 179495:179965 | NORMAL_TEXT]
+Meira et al. (2022) further contextualize the role of decision support systems in fleet operations through a literature review and DSS prototype for beer delivery route management. Their work illustrates how rule-based routing and allocation logic—built around Vehicle Routing Problem frameworks—can be practically implemented in small-to-medium fleet management applications, offering a structured template that balances operational complexity with system feasibility.
+
+[P01124 | 179965:180770 | NORMAL_TEXT]
+For the purposes of the proposed fleet management system, rule-based allocation provides the logical layer that connects forecast outputs to deployment decisions. Based on the WMA-generated demand estimate for a given period, the system applies a set of predefined allocation rules—such as prioritizing vehicles with the highest availability, matching vehicle type to route category, or distributing deployments to avoid fleet concentration—to generate a recommended allocation plan. This approach mirrors the logic described by Mohamad et al. (2026), who found that integrating predictive analytics with rule-based decision frameworks significantly improved fleet planning and resource allocation in a resource-constrained institutional setting, reducing underutilization and improving service coverage.
+
+[P01125 | 180770:181263 | NORMAL_TEXT]
+The use of rule-based systems in operational decision support is also well-established in adjacent expert system literature. The work of an expert system for freight coordination in logistics (2021) highlights how encoding domain knowledge into structured rule sets enables organizations to automate operational decisions consistently, reduce dependence on individual expertise, and improve overall logistics coordination—outcomes directly relevant to fleet allocation in the proposed system.
+
+[P01126 | 181263:181787 | NORMAL_TEXT]
+In summary, the combination of WMA-based forecasting and rule-based allocation logic constitutes a technically sound and operationally appropriate foundation for the system's decision-support modules. WMA provides reliable short-term demand estimates with minimal computational overhead, while the rule-based allocation layer translates those estimates into concrete vehicle deployment recommendations in a manner that is transparent, auditable, and adaptable to the specific operational context of the fleet being managed.
+
+[P01127 | 181787:181788 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01128 | 181788:181830 | NORMAL_TEXT | LIST id=kix.2p3fkpp9n0mt level=0]
+Rule-Based Vehicle Recommendation Systems
+
+[P01129 | 181830:182596 | NORMAL_TEXT]
+Rule-based vehicle recommendation systems represent one of the most established and interpretable approaches to operational decision-making in fleet management, car rental, and transportation contexts. Unlike opaque machine-learning recommenders, rule-based systems encode expert knowledge as IF–THEN rules or fuzzy-logic inference structures, producing transparent, auditable, and easily maintained recommendations — qualities especially valuable for applications where users (drivers, dispatchers, customers) must understand and trust the system's output. The recent literature shows that rule-based approaches remain highly relevant in 2021–2026, particularly when integrated with modern web technologies, fuzzy reasoning, and multi-criteria decision frameworks.
+
+[P01130 | 182596:182597 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01131 | 182597:183731 | NORMAL_TEXT]
+Rule-based expert systems for vehicle and resource selection. The most directly relevant recent study is Haber, Haklı, Uğuz, and Gerz (2026), who developed a rule-based expert system for resource planning in liquid transportation, published in Sustainability. Their system encoded 28 decision rules derived from expert knowledge — covering trailers, ISO tanks, vehicles, and driver allocation — and evaluated multiple resource combinations to recommend the most suitable allocation for each order. When tested with real operational data from a Turkish logistics company, the rule-based system produced more cost-effective, efficient, and balanced dispatch plans than manual planning, while reducing planning errors and variations arising from human judgment. The authors explicitly emphasized that rule-based expert systems serve as "reliable and scalable decision-support tools for complex dispatch planning problems," demonstrating consistent performance across different operational scenarios. This work directly validates the rule-based approach as an alternative or complement to machine learning in vehicle allocation contexts.
+
+[P01132 | 183731:183732 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01133 | 183732:184655 | NORMAL_TEXT]
+Earlier work by Topal, Yürüyen, Ulutaş, Karabašević, and Karaköy (2021) framed vehicle selection in freight transportation as a multi-criteria decision problem and used fuzzy BWM and fuzzy SWARA methods to determine which criteria freight companies value most when selecting transportation vehicles. Their finding that vehicle selection inherently involves multiple, sometimes conflicting criteria reinforces the case for rule-based and fuzzy approaches over single-objective optimization. Badulescu, Vanegas, and Cheikhrouhou (2025) extended this thinking with a Fuzzy Multi-Criteria Decision-Making (FMCDM) framework — integrating F-DEMATEL, F-AHP, and F-TOPSIS — for sustainable truck selection in a Swiss transportation company. Their results identified efficiency, truck capacity, and fuel consumption as key decision drivers, providing a structured rule-and-criteria approach for fleet-level vehicle recommendations.
+
+[P01134 | 184655:184656 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01135 | 184656:185691 | NORMAL_TEXT]
+Fuzzy-logic rule systems for transport route and vehicle recommendation. Several recent studies focus specifically on fuzzy-logic rule systems for transport decisions. Akhmedova, Zhazhneva, and Pianova (2023) developed a mobile expert system for selecting optimal cargo transport routes using fuzzy logic combined with geoinformation technologies and the OpenWeatherMap API for weather-aware decisions. Their system used Dijkstra's and Jena's algorithms for shortest-path calculation and a simplified fuzzy inference algorithm for route recommendation under multiple influencing factors. This work is particularly relevant because it integrates rule-based reasoning with weather data — exactly the integration the present study undertakes. Zulkarnaen and Gustian (2022) implemented a Mamdani-style fuzzy decision support system specifically for car rental, achieving 90% accuracy in vehicle selection by considering rental distance, time, and customer demand — a clear precedent for rule-based recommendation in the car rental domain.
+
+[P01136 | 185691:185692 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01137 | 185692:186713 | NORMAL_TEXT]
+Gouveia, de la Iglesia, Abrantes, Rivero, Gouveia, and Váz (2025) proposed a hybrid fuzzy-logic decision support model combining Fuzzy TOPSIS with a Fleet Renewal Priority Index (FRPI) to prioritize vehicle alternatives for SMEs and public entities seeking sustainable mobility. The model evaluated economic, environmental, and operational criteria (total cost of operation, CO₂ emissions, maintenance needs, autonomy, infrastructure compatibility), using linguistic judgments converted into triangular fuzzy numbers to handle uncertainty and subjectivity. A companion 2025 study by the same team applied fuzzy logic to evaluate electric vehicle attractiveness, demonstrating that fuzzy approaches are well-suited to scenario-based, multi-criteria fleet decisions. Nemade and Pujeri (2023) used hybrid fuzzy-logic rules in the Internet of Vehicle Things context (ECFL-IoVT) to select reliable next vehicles for emergency communication — another illustration of rule-based vehicle selection under operational constraints.
+
+[P01138 | 186713:186714 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01139 | 186714:187791 | NORMAL_TEXT]
+Knowledge-based and IF–THEN rule systems in adjacent recommendation domains. Beyond strictly vehicle recommendation, the literature shows rule-based systems being applied successfully across many related decision problems, demonstrating the broad maturity of the technique. Górski, Heesch, Dziendzikowski, and Dworakowski (2022) developed a fuzzy-logic-based recommendation system for processing algorithms in machine condition monitoring, showing 5–14.5% higher accuracy than arbitrary selection — useful as a precedent for predictive maintenance rule sets in fleet management. Chakrabarti, Ahmad, and Quix (2021) built a knowledge-based rule engine for visualization recommendation, demonstrating that rule-based recommendation systems extract data characteristics, match them to recommendation outputs, and operate effectively with minimal user input. Syed, Bhargava, and Sai Srinadh (2023) used simple IF–THEN rules in a knowledge-based expert system for material selection in racing bicycle forks — a methodological template that maps directly to vehicle selection logic.
+
+[P01140 | 187791:187792 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01141 | 187792:189033 | NORMAL_TEXT]
+Several Indonesian and Asian studies between 2024 and 2026 illustrate the continued relevance of rule-based systems for selection and recommendation problems implemented as practical web applications. Pratami, Tursina, and Septiriana (2024) built a rule-based recommendation system for bicycle model selection using the Laravel framework with Lemond-method rules, achieving an 82.9% user-satisfaction score in UAT testing — a useful template for the present study's recommendation engine implementation. Fajar, Atmaja, Hafidhoh, Ismar, and Ivansyah (2026) implemented a rule-based expert system in a Central Java vocational-school admission system using Agile Scrum and verified IF–THEN rules. Dumadi, Munawir, and Amaldi (2025) developed a rule-based expert system using Laravel with forward chaining inference for student major selection, reaching 85.25% UAT satisfaction. Sholihin and Hidayati (2024) used forward chaining in an expert system for programming language selection. Although these works are not in vehicle recommendation per se, they document the design patterns — IF–THEN rule representation, forward chaining inference, Laravel-based web implementation, UAT validation — that current rule-based recommendation systems use.
+
+[P01142 | 189033:189034 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01143 | 189034:189786 | NORMAL_TEXT]
+Patil (2021) applied classifier rules and fuzzy logic in a voter recommendation system, comparing decision-tree rules with PART; the result that PART outperformed pure decision-tree rules is informative for designing rule-set structures. Karimian (2022) developed a rule-based weighted expert system for instructor selection using decision-tree rules with majority voting, achieving 85.55% accuracy with low computational complexity — an important property for transparent, deployable rule-based systems. Muraina, Agoi, Omorojor, Adedokun, and Ajetunmobi (2022) used VisiRule, an artificial-intelligence rule-based expert system, to support algorithm selection — demonstrating the broader pattern of rule-based decision support for selection problems.
+
+[P01144 | 189786:189787 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01145 | 189787:190950 | NORMAL_TEXT]
+Rule-based recommendation embedded in fleet and rental management systems. Some recent fleet and rental management studies have explicitly embedded recommendation logic into operational systems. Sahu, Katlana, Sharma, Baniya, Sureliya, and Kanungo (2024) developed OnDemand Vehicle Ride, an online vehicle rental management system with a recommendation module that suggests vehicles to customers based on their requirements; while the authors used machine learning rather than pure rule-based logic, the architecture mirrors what a rule-based recommender would occupy in such a system. Gurusinghe (2021) built an automated fleet management system for Cash-In-Transit (CIT) operations that allocated vehicles and drivers based on rule-driven factors including productivity, cost reduction, secure transport, vehicle condition, distance, and number of jobs — essentially a rule-based allocation engine. Liu, Wu, and Wu (2023) built an app-based recommender system using association rules from pairwise comparison data on automobiles, showing that rule-mining techniques (with adjustable support and confidence thresholds) can deliver effective car recommendations.
+
+[P01146 | 190950:190951 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01147 | 190951:191012 | NORMAL_TEXT]
+C. Context-Aware Transportation and Operational Intelligence
+
+[P01148 | 191012:191062 | NORMAL_TEXT | LIST id=kix.svuqlhhmaehs level=0]
+Fuel Cost, Fuel Efficiency, and Vehicle Selection
+
+[P01149 | 191062:191719 | NORMAL_TEXT]
+Fuel cost and fuel efficiency are important considerations in transportation operations because they directly influence travel expenses, vehicle utilization, and operational decision-making. In car rental businesses, customers do not only choose vehicles based on seating capacity, rental price, or vehicle type. They may also consider how much fuel a vehicle is expected to consume, especially when the rental involves long-distance travel. For rental operators, fuel efficiency is also relevant because it can support better vehicle recommendation, reduce unnecessary operating costs, and improve the suitability of vehicles for specific rental purposes.
+
+[P01150 | 191719:192347 | NORMAL_TEXT]
+Recent studies show that fuel efficiency can be used as a decision-support factor in transportation systems. Vyas et al. (2022) developed DriveBFR, a driver behavior and fuel-efficiency-based recommendation system that uses machine learning to provide fuel-efficient driving suggestions. Their study emphasized that fuel efficiency can be transformed into practical recommendations by analyzing driving behavior and fuel-related performance. This supports the idea that fuel efficiency should not only be treated as a basic vehicle specification but also as a factor that can guide users in selecting a more economical vehicle.
+
+[P01151 | 192347:193031 | NORMAL_TEXT]
+Fuel efficiency can also be connected to route and vehicle assignment decisions. Moawad et al. (2024) proposed a real-time energy and cost-efficient vehicle route assignment recommender system that predicts vehicle energy consumption and cost based on route characteristics and fleet constraints. Although the study focused on route assignment, its concept is relevant to car rental operations because it shows that vehicles can be recommended based on expected travel distance, energy or fuel consumption, and estimated trip cost. In a car rental system, this can support the recommendation of vehicles that are more suitable for a customer’s intended destination or travel purpose.
+
+[P01152 | 193031:193667 | NORMAL_TEXT]
+Fuel price variability further affects transportation planning and vehicle selection. Peng et al. (2025) discussed how dynamic fuel prices can be considered in optimization systems to support cost-sensitive decisions. Their study showed that fuel-related planning can be adjusted depending on changing fuel price conditions. This is relevant to car rental operations because estimated fuel cost may vary depending on current fuel prices, travel distance, and vehicle fuel efficiency. Therefore, a car rental management system may use fuel price and fuel consumption data to provide more realistic and practical vehicle recommendations.
+
+[P01153 | 193667:194415 | NORMAL_TEXT]
+Vehicle selection is also considered a multi-criteria decision-making problem. Şimşek et al. (2025) presented a decision-support framework for vehicle selection using multi-criteria decision-making and machine learning. Their study demonstrated that vehicle alternatives can be ranked based on several benefit and cost-related criteria. Similarly, Alrashdi et al. (2025) proposed an intelligent decision-support framework for assessing alternative vehicle technologies and emphasized the importance of structured ranking in transportation decisions. These studies support the use of systematic criteria in recommending vehicles, such as fuel efficiency, vehicle type, route distance, expected cost, and suitability for the customer’s travel needs.
+
+[P01154 | 194415:194981 | NORMAL_TEXT]
+In the context of a web-based car rental management system, fuel efficiency can strengthen vehicle recommendation by allowing the system to suggest vehicles based on estimated fuel consumption and trip requirements. For example, a fuel-efficient vehicle may be recommended for long-distance travel, while another vehicle may be more suitable for short city trips or heavier passenger needs. This makes the recommendation more practical because the system considers not only vehicle availability but also the expected cost and operational suitability of the vehicle.
+
+[P01155 | 194981:194982 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01156 | 194982:195051 | NORMAL_TEXT | LIST id=kix.oqktyt550wbu level=0]
+Travel Distance and Estimated Fuel COnsumption in Vehicle Assignment
+
+[P01157 | 195051:195603 | NORMAL_TEXT]
+The accurate estimation of travel distance and fuel consumption has become a central concern in modern vehicle assignment and recommendation systems, particularly as transportation operators face rising fuel costs, sustainability mandates, and pressure to reduce greenhouse gas emissions. The literature reveals a steady evolution from simple distance-based assignment models toward sophisticated approaches that combine geographical attributes, vehicle-specific characteristics, and real-time conditions to produce fuel-aware vehicle recommendations.
+
+[P01158 | 195603:195604 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01159 | 195604:196434 | NORMAL_TEXT]
+Conrad (2022) presented statistical techniques for estimating vehicle fuel consumption in urban road networks based on vehicle and geographical factors. The work uses OpenStreetMap mapping data and Shuttle Radar Topography Mission elevation data to generate paths that minimize fuel consumption, introducing the concept of a "fuel consumption estimating function" as an extension of conventional distance-estimating functions widely used in logistics planning. The models incorporate vehicle weight, elevation, and regional travel speed characteristics as independent variables, demonstrating that fuel consumption can be reliably estimated from geographical data alone for long-range planning purposes. This work provides a foundational methodology for embedding fuel estimation directly into route and vehicle assignment logic.
+
+[P01160 | 196434:196435 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01161 | 196435:197107 | NORMAL_TEXT]
+Stokic, Momčilović, and Dimitrijević (2023) developed a bilinear interpolation model for estimating commercial vehicles' fuel consumption and exhaust emissions under different operating conditions. By incorporating average speed, road slope, and vehicle load/capacity utilization, the model achieved estimation deviations of only about 5% from real-world consumption values. This level of precision is significant for fleet operators because it demonstrates that fuel consumption can be predicted accurately enough to drive vehicle assignment decisions — for example, recommending lighter vehicles for hilly routes or restricting heavily loaded vehicles to flatter paths.
+
+[P01162 | 197107:197108 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01163 | 197108:198025 | NORMAL_TEXT]
+The relationship between distance and fuel consumption is rarely linear, and the literature increasingly recognizes that detailed environmental and behavioral factors must be considered. Fahmin et al. (2022) presented an eco-routing algorithm that computes the most fuel-economical route by considering detailed mobility profiles, driving behavior (aggressive vs. moderate), and vehicle type (truck vs. car). Their experiments on a real road network showed that this nuanced approach can reduce fuel consumption by up to 35% compared to traditional shortest-path or one-size-fits-all eco-routing methods. Similarly, Mahecha Núñez et al. (2023) demonstrated that incorporating real road network slopes into urban freight routing can increase fuel consumption estimates by 28.67% compared to flat-network assumptions — highlighting that route feasibility for fuel-aware vehicle recommendation must account for terrain.
+
+[P01164 | 198025:198026 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01165 | 198026:198743 | NORMAL_TEXT]
+For real-time and at-scale applications, Moawad et al. (2021) developed a neural network recommender system for assigning vehicles to routes based on energy and cost criteria. Using machine learning to estimate energy consumption of candidate vehicles over given routes with limited internal vehicle dynamics, their system implements a complete recommendation logic supporting (1) single-trip recommendations with a top-k vehicles star ranking and (2) general n-vehicles-to-m-trips assignment problems. The system has been deployed in the POLARIS Transportation System Simulation Tool, demonstrating that fuel-aware vehicle assignment is a practical, deployable capability rather than a purely theoretical exercise. 
+
+[P01166 | 198743:198744 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01167 | 198744:199281 | NORMAL_TEXT]
+Dhaou (2022) addressed the implementation side of fuel estimation by presenting a pipelined VLSI architecture for real-time fuel estimation algorithms. The work compared three architectures — binary search, direct address table, and approximation-based — and demonstrated that real-time, low-power fuel estimation suitable for in-vehicle and eco-routing applications is achievable. This implementation-oriented work complements the algorithmic literature by showing that fuel estimation is technologically feasible at the device level. 
+
+[P01168 | 199281:199282 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01169 | 199282:200002 | NORMAL_TEXT]
+Recent work extends fuel-aware assignment to data-driven and spatio-temporal modeling. Patil et al. (2025) presented a Graph Neural Network–based approach for fuel consumption estimation using spatio-temporal modeling and traffic flow predictions, combining traffic prediction uncertainty (via Adaptive Conformal Prediction) with Monte Carlo simulations of expected traffic flows. For passenger vehicles, predicted fuel consumption showed a maximum error of only 5.6% compared to observed values, and 8.4% for heavy-duty trucks. This study demonstrates that fuel-aware vehicle recommendation systems can now incorporate predicted traffic conditions, not just static route characteristics, into the assignment decision. 
+
+[P01170 | 200002:200003 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01171 | 200003:200502 | NORMAL_TEXT]
+Reddy, Vurubindi, and Uyyala (2026) applied a feedforward artificial neural network to estimate fuel efficiency in heavy-duty vehicles using distance-based modeling, achieving 93.5% classification accuracy by aggregating data from similar vehicle profiles. The system uses telemetry features such as speed, throttle, gear, and fuel rate, and emphasizes scalability for integration with real-time vehicle telemetry — providing a practical basis for fuel-aware vehicle selection in fleet operations. 
+
+[P01172 | 200502:200503 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01173 | 200503:201121 | NORMAL_TEXT]
+Together, these studies establish that travel distance and estimated fuel consumption are no longer treated as independent inputs to vehicle assignment; they are integrated, condition-aware, and increasingly predictive components of intelligent vehicle recommendation systems. Yet, as Patil et al. (2025) and Fahmin et al. (2022) note, this integration remains absent from most consumer-facing transportation and rental platforms, which continue to recommend vehicles based on inventory and price rather than projected fuel consumption over the specific route, terrain, and weather conditions the trip will encounter.
+
+[P01174 | 201121:201122 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01175 | 201122:201181 | NORMAL_TEXT | LIST id=kix.oqktyt550wbu level=0]
+Road Conditions, Route Feasibility, and Road Accessibility
+
+[P01176 | 201181:201828 | NORMAL_TEXT]
+Road conditions, route feasibility, and road accessibility are important factors in transportation and rental planning because they affect whether a vehicle is suitable for a specific trip. A route may be available in terms of distance, but it may not always be practical due to road closures, poor road surface, traffic congestion, flooding, construction, or limited accessibility. In car rental operations, these factors can affect travel time, customer experience, vehicle safety, and the possibility of vehicle damage. Because of this, road-related information can support better decision-making in vehicle recommendation and rental planning.
+
+[P01177 | 201828:202466 | NORMAL_TEXT]
+Context-aware transportation studies show that route recommendation should consider external conditions rather than relying only on distance or shortest-path calculations. Liu et al. (2022) proposed Hydra, a personalized and context-aware transportation recommendation system that integrates multi-source urban data such as road networks, points of interest, station data, and weather-related context. Their study emphasized that some travel queries may have no feasible route under certain conditions. This supports the need for transportation systems to determine whether a planned route is feasible before recommending travel options.
+
+[P01178 | 202466:203060 | NORMAL_TEXT]
+Real-time road condition data can also improve transportation planning. Dubey et al. (2025) developed RoadAware-DIRL, a system for on-the-fly path replanning using real-time road condition data. Their study used contextual cost mapping to assign higher penalties to hazardous routes and support route adjustments when road conditions change. This is relevant to car rental operations because road hazards, closures, or poor road conditions may affect a customer’s planned trip. A route-aware system can help identify possible route concerns and support safer and more reliable rental planning.
+
+[P01179 | 203060:203680 | NORMAL_TEXT]
+Road inspection and safety assessment systems also demonstrate the importance of road condition monitoring. Gabbar et al. (2023) developed HAIS, a highway automated-inspection system that collects road condition data and supports road safety assessment. Their study showed that road condition information can be gathered, assessed, and used to support transportation-related decisions. In relation to car rental operations, this supports the idea that road accessibility and safety conditions should be considered when recommending vehicles, especially for routes that may involve poor road quality or possible hazards.
+
+[P01180 | 203680:204236 | NORMAL_TEXT]
+Route feasibility also affects vehicle suitability. A compact and fuel-efficient vehicle may be appropriate for city travel, but it may not be the best option for long-distance routes, rough roads, or areas with limited accessibility. In contrast, a larger or more durable vehicle may be more appropriate for difficult routes, even if it consumes more fuel. This means that vehicle recommendation should not be based on fuel efficiency alone. It should also consider the customer’s destination, road conditions, route distance, and accessibility concerns.
+
+[P01181 | 204236:204765 | NORMAL_TEXT]
+In car rental operations, integrating route conditions and road accessibility into the system can help reduce poor vehicle matching and improve decision-making. If a route has possible road concerns, the system can recommend a more suitable vehicle or notify the operator that the selected vehicle may not be ideal for the intended trip. This supports a more context-aware approach to rental planning, where vehicle availability, fuel efficiency, and route feasibility are considered together before finalizing a recommendation.
+
+[P01182 | 204765:205373 | NORMAL_TEXT]
+Overall, the reviewed studies show that fuel efficiency and route awareness are valuable factors in transportation decision-support systems. Fuel-related studies support the use of fuel consumption, fuel cost estimation, and multi-criteria vehicle ranking, while route-related studies support the consideration of road conditions, route feasibility, and accessibility. These concepts support the proposed web-based car rental management system by strengthening its ability to recommend vehicles that are not only available, but also fuel-efficient, cost-aware, and suitable for the customer’s planned route.
+
+[P01183 | 205373:205374 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01184 | 205374:205437 | NORMAL_TEXT | LIST id=kix.feqq197afe7w level=0]
+Road Condition Data Sources and Route Accessibility Assessment
+
+[P01185 | 205437:205856 | NORMAL_TEXT]
+Effective context-aware transportation systems require reliable data on road condition and accessibility — information that historically was expensive to collect and slow to update. Recent literature documents a clear paradigm shift: from dedicated, costly surveys conducted by transportation agencies to crowdsourced and connected-vehicle approaches that produce continuous, low-cost, large-scale road condition data.
+
+[P01186 | 205856:205857 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01187 | 205857:206463 | NORMAL_TEXT]
+Dong and Li (2021), publishing in Sensors (MDPI), demonstrated the viability of smartphone-based road surface monitoring by collecting accelerometer data at low sampling rates from Android-based applications during normal driving. Using power spectral density analysis and k-means unsupervised machine learning, they achieved an average defect detection accuracy of 84%. Their finding that smartphones in ordinary drivers' vehicles can supply quasi-real-time road condition information at hourly or daily granularity established crowdsourced road sensing as a credible alternative to traditional surveys. 
+
+[P01188 | 206463:206464 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01189 | 206464:207097 | NORMAL_TEXT]
+Sattar (2021), in a master's thesis from Ryerson University, developed a probabilistic-based crowdsourcing technique using smartphone linear accelerometers, gyroscopes, and GPS sensors to detect road surface anomalies. Single-survey detection achieved approximately 80% accuracy, but when multiple drivers traversed the same road segments, the probabilistic integration of detections improved accuracy by an additional 5–20%. The accompanying web-based GIS platform demonstrated how such data can be visualized for real-time monitoring — directly relevant to how route accessibility information should be presented to system users. 
+
+[P01190 | 207097:207098 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01191 | 207098:207938 | NORMAL_TEXT]
+Building on these foundations, Lyu et al. (2024) proposed a Detecting and Clustering Framework that uses smartphone GPS, orientation, and accelerometer data with a wavelet scattering transformation and LSTM neural network to identify Bump Features of Road Surfaces (BFRSs). The framework's two-stage clustering method considers both distances and directions, producing road surface condition maps applicable to urban road maintenance and route planning.  Gamage, Thotawaththa, and Wijayasiri (2022) similarly used crowdsourced smartphone data combined with fuzzy logic and machine learning to identify and classify road anomalies by severity — an important advancement because it allows transportation systems to distinguish between minor irregularities and severe hazards that would render a route inaccessible for certain vehicle types. 
+
+[P01192 | 207938:207939 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01193 | 207939:208554 | NORMAL_TEXT]
+Connected vehicle data has emerged as a complementary source. Chen et al. (2021), publishing in Transportation Research Record, demonstrated that production connected vehicles can supply road surface readings closely correlated with Class 1 pavement profilers: a regional experiment in Detroit covering 64 miles of roadway found that 83% of traveled miles had a 0.8 or higher correlation with reference equipment, and 85% of measurements had absolute errors under 50 in/mi. This finding establishes that connected vehicle fleets can supply broad, continuous road condition data without dedicated survey equipment. 
+
+[P01194 | 208554:208555 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01195 | 208555:209177 | NORMAL_TEXT]
+Jeong and Jo (2024), publishing in the IEEE Internet of Things Journal (Q1), addressed the practical real-world challenges of smartphone-based pavement monitoring through IRI-Net, a fully convolutional neural network designed to estimate the International Roughness Index from anonymous vehicles' vibrations at variable driving speeds. By incorporating a data management strategy tailored to low-resolution crowdsourced GPS data and validating against conventional inertial profiler measurements across 29 vehicles, the work represents a significant step toward operationally deployable crowdsourced pavement assessment. 
+
+[P01196 | 209177:209178 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01197 | 209178:209710 | NORMAL_TEXT]
+Sirocchi, Klopfenstein, and Bogliolo (2022), publishing in IEEE Access (Q1), analyzed the SmartRoadSense (SRS) platform — a large-scale operational mobile crowdsensing system that computes a crowdsensed road roughness index (PPE) from smartphone sensor data. Their joint statistical analysis with open datasets demonstrated that road category, speed limit, and other internal/external features affect PPE in predictable ways, validating the SRS platform as a tool for assessing road quality conditions at city- and regional-scale. 
+
+[P01198 | 209710:209711 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01199 | 209711:210573 | NORMAL_TEXT]
+Road accessibility — particularly for users with mobility needs — represents an emerging extension of road condition sensing. Aly, Youssef, and Agrawala (2021) presented the AccessMap system, which passively crowdsources smartphone sensor measurements to mark indoor and outdoor spaces as visually impaired– and/or wheelchair-accessible. Evaluation in multiple countries achieved average precision and recall around 89.8% and 86.3%, increasing to 98.7% and 99% with as few as seven encounters per semantic.  Building on this, Nenadic, Palazzi, and Zanella (2025) developed a road accessibility mapping system using smartphone-based sensing with threshold-based methods and dynamic rolling windows, designed for integration with applications like Google Maps so users with specific mobility needs can choose routes based on real-time road condition information. 
+
+[P01200 | 210573:210574 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01201 | 210574:211152 | NORMAL_TEXT]
+The most recent contribution, Khandakar et al. (2025), introduced RoadSens-4M, a multimodal smartphone-and-camera dataset that integrates GPS, accelerometer, gyroscope, magnetometer, gravity, and orientation sensor data with GIS, weather, and video data — explicitly designed to support holistic road-way analysis for traffic management, infrastructure development, and smart transportation systems. The integration of weather information directly with road condition data within a single dataset reflects the convergence of context-aware data sources discussed in this study. 
+
+[P01202 | 211152:211153 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01203 | 211153:211739 | NORMAL_TEXT]
+Collectively, this literature confirms that road condition and accessibility data — once a bottleneck for context-aware transportation systems — are now available at scale through crowdsourced smartphone sensing, connected vehicle telemetry, and integrated multimodal datasets. The implication for route accessibility assessment is significant: transportation systems can now query real-time, granular road condition data alongside weather and traffic data when deciding whether a particular vehicle on a particular route at a particular time represents a feasible and safe assignment.
+
+[P01204 | 211739:211740 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01205 | 211740:211786 | NORMAL_TEXT | LIST id=kix.feqq197afe7w level=0]
+Weather-Aware Transportation Decision Support
+
+[P01206 | 211786:212682 | NORMAL_TEXT]
+Weather conditions are among the most consequential yet underappreciated variables in transportation decision-making. Rain, fog, snow, and low visibility do not merely slow vehicles; they fundamentally restructure which routes are feasible, which vehicle types are appropriate, and whether travel should proceed at all. Tobin et al. (2024) formalized this relationship by developing an impact-based decision support forecasting tool for surface transportation hazards, systematically linking precipitation type, local hour of day, and visibility levels to crash probability and roadway restriction thresholds. Their framework proposes severity classifications that can scale weather forecast information directly into actionable transport guidance — a model that demonstrates how meteorological data can be embedded into operational decision logic rather than treated as background information. 
+
+[P01207 | 212682:213553 | NORMAL_TEXT]
+The behavioral dimension of weather-aware transportation is equally significant. Hussein et al. (2021) used speed data from Weigh-in-Motion (WIM) sensors across multiple regions in Ohio, combined with weather observations, to develop a probabilistic trip-planning model for snowstorm conditions. Their findings reveal that under heavy snow with low visibility, drivers do not simply select the shortest path — they shift their decision criteria toward alternate routes perceived as safer or more likely to be cleared. Some drivers reduced speeds to as low as 20 mph and showed measurable hesitation behaviors during storm events. This study confirms that weather-aware decision support must model driver behavior probabilistically, not deterministically, and must account for route attractiveness factors such as road clearance status and terrain, not just travel time. 
+
+[P01208 | 213553:214187 | NORMAL_TEXT]
+At the systems level, Čelar et al. (2024) reviewed how Intelligent Transportation Systems (ITS) mitigate adverse weather impacts on traffic safety and efficiency. Their review documents that ITS applications — including variable message signs, automated speed advisories, and weather-responsive signal controls — demonstrably reduce accident rates and congestion during inclement weather. Critically, they identify a persistent gap: most deployed ITS solutions remain reactive, responding to weather events after they occur, and few integrate multi-source meteorological and traffic data into truly predictive, proactive frameworks. 
+
+[P01209 | 214187:214911 | NORMAL_TEXT]
+Pradeepraja et al. (2025) addressed this gap with WeatherSync-ITS, a heterogeneous data fusion system combining real-time meteorological department feeds, traffic sensor infrastructure, and incident reporting using a Space-Temporal Graph Attention Network (ST-GAT). The system achieved 92% prediction accuracy for traffic and incident events and provided weather-conditioned route optimization that delivered 15–25% travel time improvements over classical shortest-path algorithms. Its frontend, built with React for visualization and supported by a Node.js/TypeScript API backend, also represents an example of how weather-responsive systems can present actionable recommendations through dashboards and real-time alerts. 
+
+[P01210 | 214911:215560 | NORMAL_TEXT]
+Data fusion between weather and traffic streams is a recurring theme in this literature. Nasser and Simon (2025), publishing in the Journal of Advanced Transportation, presented the MI-SMHA (multi-input sequential multihead attention) model, which integrates weather variables — temperature, wind speed, precipitation, visibility, and humidity — directly into traffic prediction tasks using attention mechanisms drawn from sequential modeling. The model outperformed several state-of-the-art baselines and demonstrated that weather conditions are not merely noise in traffic data but structured, predictable contributors to traffic pattern shifts. 
+
+[P01211 | 215560:216112 | NORMAL_TEXT]
+Similarly, the SmartFlow AI system (2026) integrates live OpenWeatherMap data with OSRM routing and Folium map visualization in a Streamlit-based web interface, automatically recommending alternative routes when high congestion is predicted from combined weather and traffic inputs. The system's design illustrates how weather-aware logic can be delivered to end users through interactive web-based dashboards — a UI/UX consideration relevant to how recommendation results and alerts should be presented in context-sensitive transportation platforms. 
+
+[P01212 | 216112:216221 | NORMAL_TEXT]
+Collectively, these studies establish that effective weather-aware transportation decision support requires:
+
+[P01213 | 216221:216308 | NORMAL_TEXT]
+ (1) probabilistic modeling of weather impacts on driver behavior and road conditions,
+
+[P01214 | 216308:216374 | NORMAL_TEXT]
+ (2) real-time fusion of meteorological and traffic data streams,
+
+[P01215 | 216374:216436 | NORMAL_TEXT]
+ (3) proactive rather than reactive recommendation logic, and
+
+[P01216 | 216436:216563 | NORMAL_TEXT]
+ (4) accessible visual interfaces — dashboards, route maps, and alerts — that translate complex data into actionable guidance.
+
+[P01217 | 216563:216564 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01218 | 216564:216631 | NORMAL_TEXT | LIST id=kix.juysjilqj7c8 level=0]
+Weather Data Sources and Weather API Use in Transportation Systems
+
+[P01219 | 216631:217125 | NORMAL_TEXT]
+Weather data has emerged as one of the most heavily used external data sources in modern transportation systems, with a remarkably standardized pattern of API consumption across the recent literature. The dominant source by a clear margin is OpenWeatherMap (OWM), with Open-Meteo and several other providers serving complementary roles. The literature documents both the technical architectures used to integrate these APIs and the operational benefits gained from real-time weather awareness.
+
+[P01220 | 217125:217126 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01221 | 217126:217891 | NORMAL_TEXT]
+Kolambe et al. (2025), publishing in the International Journal of Environmental Science, presented a representative reference implementation of OpenWeatherMap integration: a Django-based MVC architecture providing real-time access to temperature, humidity, wind speed, and precipitation data with multilingual support, GPS-based location detection, and severe weather alert notifications. While the application targets general users rather than transportation operators, its architecture — a backend that consumes the OWM API, processes and stores the data, and presents both routine forecasts and severe-weather alerts through an interactive frontend — is the template that recurs across nearly every transportation-oriented application in the recent literature. 
+
+[P01222 | 217891:217892 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01223 | 217892:218476 | NORMAL_TEXT]
+Sandhip et al. (2025) deployed this template in an intelligent traffic monitoring and autonomous navigation system, integrating MapBox for dynamic mapping and OpenWeatherMap for weather analysis to predict traffic congestion, monitor weather conditions, and provide alternative routes using real-time data. Importantly, the system also includes an automated incident detection mechanism (a Raspberry Pi camera module) and pushes instant alerts to users — illustrating how weather APIs are combined with other real-time data streams to produce comprehensive context-aware navigation. 
+
+[P01224 | 218476:218477 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01225 | 218477:219135 | NORMAL_TEXT]
+Priyadarshini et al. (2025) presented the Integrated Weather-Aware Route Optimisation Dashboard (IWARD), explicitly addressing the problem that Google Maps and AccuWeather typically work as separate systems, forcing users to manually cross-reference weather forecasts against travel plans. IWARD merges real-time route planning with up-to-date weather forecasts using API-driven live data, historical patterns, and machine learning techniques including Random Forest, Gradient Boosting, and Reinforcement Learning to predict localized weather and adjust travel routes dynamically. This work directly motivates the integrated approach pursued in this study. 
+
+[P01226 | 219135:219136 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01227 | 219136:219683 | NORMAL_TEXT]
+The dominance of OpenWeatherMap is reflected in further examples across the recent literature: Bajad (2024) used the OpenWeather API with various machine learning algorithms for rainfall prediction with a user-friendly interface, demonstrating its accessibility for student and developer projects.  Khakim and Astutik (2026) integrated OpenWeatherMap with IoT-based irrigation systems, showing that the API's range of use cases extends from transportation to agriculture and that its JSON deserialization workflow has become a de facto standard. 
+
+[P01228 | 219683:219684 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01229 | 219684:220615 | NORMAL_TEXT]
+Two additional studies illustrate the broader use of weather APIs in transportation. Pradeepraja et al. (2025) integrated the Indian Meteorological Department's weather feeds with traffic sensor infrastructure in the WeatherSync-ITS framework, achieving 92% traffic prediction accuracy and 15–25% travel time improvement over classical shortest-path algorithms — demonstrating that national meteorological department feeds, where available, serve as a higher-fidelity alternative to commercial APIs for region-specific deployments.  Bhuvanraj et al. (2026) presented the Weather-Resilient Road Safety Vision System, which uses YOLOv8 deep learning for pothole, speed-bump, lane, and road-sign detection while incorporating diverse weather conditions into model training; the system surfaces detection results through a Streamlit-and-Plotly interactive dashboard with grade heatmaps and is designed for smart city ITS integration. 
+
+[P01230 | 220615:220616 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01231 | 220616:221335 | NORMAL_TEXT]
+A clear practical pattern emerges from this literature: transportation systems consume weather APIs through standardized JSON-over-HTTPS interfaces, retrieve a common set of parameters (temperature, humidity, wind speed, precipitation, visibility), apply analytical or machine learning logic to relate these to routing and safety decisions, and present results to users through dashboards, map overlays, and alerts. The data sources are mature, the integration patterns are well established, and the question for any new transportation decision-support system is not whether to use weather data, but which provider best fits the application's geographic scope, data resolution, refresh rate, and licensing constraints.
+
+[P01232 | 221335:221337 | NORMAL_TEXT]
+	
+
+[P01233 | 221337:221396 | NORMAL_TEXT | LIST id=kix.juysjilqj7c8 level=0]
+API Integration and Context-Aware Decision-Support Systems
+
+[P01234 | 221396:222040 | NORMAL_TEXT]
+The practical delivery of weather-aware, context-sensitive transportation intelligence depends heavily on Application Programming Interface (API) integration — the technical mechanism through which disparate real-time data sources are accessed, combined, and acted upon within a unified system. APIs allow systems to query live weather feeds, retrieve current traffic conditions, access map and routing services, and incorporate road condition data without owning the underlying data infrastructure. The literature confirms that multi-source API integration is now foundational to modern intelligent transportation and travel-planning systems.
+
+[P01235 | 222040:222877 | NORMAL_TEXT]
+Penumala and Naganaboina (2025) demonstrated this paradigm by building a context-aware navigation system that integrates OpenStreetMap (OSM) APIs with real-time environmental APIs — covering air quality index, temperature, wind speed, rainfall forecasts, and cloudiness — alongside points-of-interest APIs for hotels, restaurants, fuel stations, and transit stops. The unified platform adjusts route recommendations and travel insights based on both user preferences and live environmental conditions, providing a clear example of how multi-source API integration produces richer, more contextually relevant navigation experiences than systems relying on a single data stream. Their work underscores that the value of context-aware decision support lies not in any single data source but in the seamless orchestration of multiple APIs. 
+
+[P01236 | 222877:223616 | NORMAL_TEXT]
+Sandhip et al. (2025) presented a traffic monitoring and navigation system that integrates MapBox (for dynamic mapping) and OpenWeatherMap APIs (for weather analysis) to predict congestion, monitor weather conditions, and provide alternative route recommendations in real time. The system adds an IoT layer — a camera-enabled Raspberry Pi module for traffic anomaly detection — and sends automated incident alerts to users via cloud-based integration. The resulting architecture illustrates the convergence of weather APIs, mapping APIs, and IoT sensors within a single decision-support pipeline, and its alert notification interface provides a reference model for how transportation systems should surface critical information to users. 
+
+[P01237 | 223616:224323 | NORMAL_TEXT]
+Niroshan et al. (2025), publishing in MethodsX, designed a unified data-sharing API that integrates real-time air quality, noise, and traffic monitoring data from diverse sensor networks to support urban governance across four planning domains: user demand, transport, freight and logistics, and city infrastructure. Unlike frameworks that address environmental or traffic monitoring separately, their API unifies multi-source data with real-time processing, enabling data-driven decisions across overlapping urban planning needs. This architecture demonstrates a scalable approach to multi-domain context awareness where a single API layer can serve multiple decision-support applications simultaneously. 
+
+[P01238 | 224323:225070 | NORMAL_TEXT]
+Joshna et al. (2026) extended API integration to full travel planning by combining location-based search, distance calculation, transportation availability, and weather forecasting APIs into a real-time intelligent travel planning and cost management system. The system generates personalized itineraries, adjusts plans in response to weather-triggered route changes, and supports group travel cost sharing — all through RESTful API architecture. Their evaluation found significantly better planning efficiency and cost transparency compared to traditional multi-platform approaches, and the system's modular design illustrates how API-driven context awareness can scale from individual trip planning to fleet-level operational decision support. 
+
+[P01239 | 225070:225612 | NORMAL_TEXT]
+Vdovic et al. (2021), published in the International Conference on Telecommunications, described an API for advanced analytics of contextually enriched automotive data — combining vehicle-generated telematics with location, weather, and traffic context stored in big data platforms. Their two demonstrated use cases — contextually enriched data visualization and eco-efficient driving pattern evaluation — show how weather and traffic APIs can augment raw vehicle data to support both operational recommendations and sustainability analysis.
+
+[P01240 | 225612:226075 | NORMAL_TEXT]
+Across these studies, a clear architectural pattern emerges: effective context-aware decision-support systems commonly rely on API integration, where weather data, traffic data, road condition data, and mapping or routing data are accessed through external services and processed within a unified system. These systems commonly present contextual information through dashboards, maps, alerts, and recommendation interfaces to support operational decision-making.
+
+[P01241 | 226075:227328 | NORMAL_TEXT]
+In relation to the proposed system, context-aware decision support will not be implemented as autonomous environmental analysis, advanced artificial intelligence, or complex route optimization. Instead, selected contextual information such as weather condition, road condition, route feasibility, route accessibility, travel distance, reference fuel efficiency, and estimated fuel consumption will serve as supporting information for administrative vehicle-assignment and branch-allocation decisions. These contextual inputs will supplement the system's primary internal operational information, including forecasted demand, projected vehicle supply, vehicle availability, and maintenance readiness, and will not independently create a branch shortage or surplus or automatically determine the final operational action. The Customer-Side Vehicle Recommendation will remain a separate customer-facing function based primarily on customer rental requirements, vehicle eligibility, availability, maintenance readiness, and deterministic ranking rules. Contextual information may be obtained from available external data sources, predefined operational references, or authorized manual input according to the finalized implementation and fallback strategy.
+
+[P01242 | 227328:227329 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01243 | 227329:227389 | NORMAL_TEXT | LIST id=kix.3c3cpughlluc level=0]
+Comparison of API and Data Sources for Context-Aware Inputs
+
+[P01244 | 227389:227880 | NORMAL_TEXT]
+A defining characteristic of context-aware transportation systems is their reliance on multiple external APIs for different categories of data: weather, traffic, mapping and routing, road conditions, and location services. The reviewed literature does not present formal head-to-head benchmarks of commercial APIs, but it does reveal a clear pattern of API selection and combination that allows a comparative analysis of the practical strengths and trade-offs of the available data sources.
+
+[P01245 | 227880:227881 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01246 | 227881:228968 | NORMAL_TEXT]
+For weather data, the comparison is between commercial and open-source providers. OpenWeatherMap dominates the literature (Sandhip et al., 2025; Priyadarshini et al., 2025; Kolambe et al., 2025; Bajad, 2024; Khakim & Astutik, 2026), valued for its global coverage, well-documented JSON API, multilingual support, and free tier that is generous enough for student and prototype projects.  Open-Meteo is the principal alternative (Jeyabharathi et al., 2026), preferred when applications require fully open, no-API-key access, high-resolution forecasts, and transparent data provenance.  National meteorological department feeds (Pradeepraja et al., 2025) provide the highest fidelity for region-specific deployments, particularly where local terrain or monsoon patterns are critical, but they typically require institutional access agreements and are less portable across geographies.  The trade-off across these options is convenience versus fidelity: OpenWeatherMap maximizes ease of integration; national feeds maximize local accuracy; Open-Meteo balances both for open-data use cases.
+
+[P01247 | 228968:228969 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01248 | 228969:230020 | NORMAL_TEXT]
+For mapping and routing, the literature documents three primary choices. OpenStreetMap (OSM) and its derivatives — particularly OSRM (Open Source Routing Machine) and OSM-based geocoding via Nominatim — are widely adopted for routing-heavy applications (SmartFlow AI, 2026; Penumala & Naganaboina, 2025; Jeyabharathi et al., 2026). OSM's strength is openness — no API key restrictions, no per-query costs, and full data transparency — but its routing quality depends on local map completeness, which varies by region.  MapBox is selected for applications requiring polished, interactive mapping with strong visualization capabilities (Sandhip et al., 2025), balancing commercial reliability with developer-friendly APIs.  Google Maps API (via the Distance Matrix and Google Maps APIs) appears in transit and location-tracking applications (Suresh et al., 2023), valued for its real-time traffic information, comprehensive POI coverage, and global geocoding accuracy — but constrained by usage quotas and per-query pricing for production deployments. 
+
+[P01249 | 230020:230021 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01250 | 230021:230679 | NORMAL_TEXT]
+For road condition data, the comparison is between centrally curated and crowdsourced sources. Government and agency datasets — such as those derived from inertial profilers and dedicated survey vehicles — remain the gold standard for accuracy but suffer from limited coverage and infrequent updates (typically annual or biennial). Crowdsourced smartphone sensing platforms (Dong & Li, 2021; Sattar, 2021; Lyu et al., 2024; Gamage et al., 2022) trade some per-measurement accuracy for vastly greater coverage and refresh rate, achieving 80–84% defect detection accuracy from single-driver data and 95%+ accuracy with multi-driver probabilistic integration. 
+
+[P01251 | 230679:230680 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01252 | 230680:231402 | NORMAL_TEXT]
+For traffic and contextual data, the literature reveals an emerging pattern of unified, multi-source platforms rather than single-API solutions. Niroshan et al. (2025) demonstrated a single API layer integrating real-time air quality, noise, and traffic monitoring from diverse sensor networks.  Vdovic et al. (2021) showed how vehicle-generated telematics data can be contextually enriched with weather, location, and traffic data through a unified API.  These approaches reflect a key insight: for context-aware decision support, the comparative question is no longer "which single API is best?" but rather "what combination of APIs provides the most complete and reliable context, and how should they be orchestrated?"
+
+[P01253 | 231402:231403 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01254 | 231403:232494 | NORMAL_TEXT]
+The reviewed literature demonstrates that context-aware transportation systems may rely on combinations of weather, mapping, routing, traffic, incident, and other external data sources rather than on a single service. Weather APIs can provide meteorological information that supports transportation assessment, while mapping and routing services can provide location, travel-distance, travel-time, and route-related information. Traffic- and incident-related services may further provide information concerning road closures, restrictions, road works, flooding, and other disruptions that affect route movement. The reviewed studies also show that the suitability of an external data source depends on factors such as geographic coverage, available data, service accessibility, implementation requirements, and reliability. These findings provide the basis for adopting primary and fallback external data providers for the proposed system. The specific API providers, fallback mechanisms, normalization rules, and implementation procedures selected for the study are presented in Chapter 3.
+
+[P01255 | 232494:232495 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01256 | 232495:232532 | NORMAL_TEXT]
+D. Related Systems and Research Gaps
+
+[P01257 | 232532:232597 | NORMAL_TEXT | LIST id=kix.gqm9n3wmqrsv level=0]
+Related Car Rental, Fleet Management, and Transportation Systems
+
+[P01258 | 232597:233061 | NORMAL_TEXT]
+Existing car rental and fleet management systems have evolved significantly in their operational capabilities, yet a consistent pattern emerges across the reviewed literature: these systems excel at administrative and logistical functions while largely neglecting the contextual intelligence — weather awareness, road condition monitoring, and real-time environmental data — that would make them genuinely decision-supportive for vehicle selection and deployment.
+
+[P01259 | 233061:233743 | NORMAL_TEXT]
+The Smart Car Rental Management System reviewed by M.A. et al. (2023) represents a comprehensive operational platform covering customer registration and authentication, vehicle inventory management, reservation handling, rental duration tracking, payment processing, and reporting analytics. It incorporates data mining for demand forecasting and fleet utilization optimization. However, the system's vehicle recommendation logic is driven by inventory availability and pricing — not by vehicle suitability for current road or weather conditions. A customer renting a vehicle during a typhoon or flood event receives the same recommendation workflow as one renting on a clear day. 
+
+[P01260 | 233743:234340 | NORMAL_TEXT]
+The Online Car Rental Management System described by Surabhi (2025) adds GPS tracking, dynamic pricing, real-time vehicle availability, and automated notifications, and presents these through a user-friendly web interface. While the GPS component enables location tracking, it is used for fleet management rather than route feasibility assessment or weather-adapted dispatching. The system's analytics cover rental patterns and performance metrics but do not integrate environmental data that would allow operators to assess whether a given vehicle is appropriate for prevailing road conditions. 
+
+[P01261 | 234340:234975 | NORMAL_TEXT]
+Dhami et al. (2024), reviewing online vehicle rental management systems, document the industry-wide shift from manual processes to digital platforms, emphasizing improvements in operational efficiency, customer access, and transaction accuracy. Their analysis, however, notes that the literature on rental system design gives little attention to contextual intelligence — the capacity to match vehicle type, route, and departure timing to real-world environmental conditions. This gap is characterized as a structural limitation of platforms designed primarily around booking workflow optimization rather than transportation quality. 
+
+[P01262 | 234975:235561 | NORMAL_TEXT]
+Adisesha et al. (2026), in a comprehensive review of online car rental systems published in the International Research Journal of Modernization in Engineering Technology and Science, similarly identify that existing platforms prioritize user convenience, e-commerce functionality, and customer satisfaction metrics, with few addressing vehicle-to-condition matching or safety advisory features. Their review notes that emerging trends in the field — including AI-driven demand forecasting and dynamic pricing — have not yet extended to weather- or road-condition-aware recommendations.
+
+[P01263 | 235561:236067 | NORMAL_TEXT]
+Routaray and Dileep Kumar (2024) presented Auto Mobilize Pro, a car rental analytics solution using machine learning algorithms for demand forecasting, fleet utilization optimization, and maintenance prediction. While the system provides financial analysis tools and real-time maintenance insights that reduce downtime, it remains focused on internal operational performance. Environmental context — weather conditions, road accessibility, or route feasibility — is absent from its recommendation engine. 
+
+[P01264 | 236067:236574 | NORMAL_TEXT]
+Beyond car rental, the transportation and fleet management literature presents systems of increasing sophistication. Meira et al. (2022) reviewed decision support systems for fleet management and routing, covering the Vehicle Routing Problem and the Travelling Salesman Problem, and prototyped a DSS for beer delivery fleet management. Their work reflects the state of fleet optimization systems: strong in computational route efficiency, but disconnected from real-time weather and road condition inputs. 
+
+[P01265 | 236574:237102 | NORMAL_TEXT]
+Heidari et al. (2024), publishing in Kybernetes (a Q1 journal), proposed a resilient vehicle routing DSS using a multi-layer perceptron neural network for disruption prediction, k-means clustering for customer grouping, and mixed-integer programming for route planning. The system explicitly addresses resilience under uncertainty, including dynamic replanning — a significant capability — but its disruption model focuses on logistical uncertainty rather than environmental conditions such as weather events or road closures. 
+
+[P01266 | 237102:237796 | NORMAL_TEXT]
+In terms of UI/UX presentation, the reviewed systems commonly feature web-based dashboards displaying fleet status, booking queues, and performance analytics; tabular reports on revenue and utilization; and GPS map views for vehicle location tracking. Alert systems, where present, are primarily operational (maintenance due, booking confirmation) rather than safety- or condition-driven. None of the reviewed car rental systems present weather overlays on maps, condition-based vehicle suitability indicators, or route feasibility alerts — design elements that would meaningfully differentiate a context-aware transportation decision-support system from a standard rental management platform.
+
+[P01267 | 237796:237797 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01268 | 237797:237860 | NORMAL_TEXT | LIST id=kix.xz9z1w72fabu level=0]
+Comparison of Existing Car Rental and Fleet Management Systems
+
+[P01269 | 237860:238397 | NORMAL_TEXT]
+Existing car rental systems usually focus on digitizing basic rental operations such as customer registration, vehicle browsing, reservation scheduling, booking management, payment processing, and customer communication. These features help reduce manual work and allow customers to access rental services more conveniently. However, many car rental systems are still mainly transaction-oriented and provide limited support for demand forecasting, branch-level allocation, vehicle utilization analysis, and context-aware recommendation.
+
+[P01270 | 238397:238398 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01271 | 238398:238971 | NORMAL_TEXT]
+Wan Abdul Rahman and Mohd Rusli (2023) developed a web-based car rental business management system, showing that web-based car rental management is already an established area of system development research. However, the available description does not confirm whether the system includes GPS integration, demand forecasting, maintenance monitoring, or decision-support features. This indicates that some existing car rental systems address digital transaction management but do not fully explain how the system supports analytical planning or multi-branch fleet decisions.
+
+[P01272 | 238971:238972 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01273 | 238972:239793 | NORMAL_TEXT]
+Atanasio, Shibghatullah, and Islam (2022) developed a mobile application for fleet vehicle tracking. This shows that fleet tracking is also studied as a separate system category. However, tracking-focused applications usually center on vehicle location and monitoring rather than complete rental workflows. Such systems may not include customer verification, payment validation, rental agreements, booking approval, return settlement, vehicle recommendation, or branch allocation. This supports the distinction between vehicle tracking systems and car rental management systems. A tracking application may help locate vehicles, but it does not automatically solve fragmented booking records, payment proof checking, maintenance tracking, and branch-level reporting unless it is connected to the core management platform.
+
+[P01274 | 239793:239794 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01275 | 239794:240413 | NORMAL_TEXT]
+Akbiyik et al. (2024) developed a decision support system for internal logistics operations management. Their system combined vehicle tracking, demand forecasting, and predictive demand-vehicle assignment. Although the study was conducted in an internal logistics context rather than a car rental business, it provides strong support for integrating tracking, forecasting, and assignment logic in fleet-related operations. This is relevant to the proposed car rental system because vehicle assignment and branch allocation also require the use of demand, availability, vehicle suitability, and operational constraints.
+
+[P01276 | 240413:240414 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01277 | 240414:240964 | NORMAL_TEXT]
+Mavrin and Makarova (2026) developed a decision support system for waste transportation using simulation and vehicle competitiveness assessment. Their study showed that fleet-related decision support can improve operational planning and reduce logistics costs. Although the domain is different from car rental, the study supports the value of structured decision-support systems in fleet management. It suggests that vehicle selection, assignment, and allocation can be improved when supported by data, criteria, and systematic recommendation logic.
+
+[P01278 | 240964:240965 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01279 | 240965:241508 | NORMAL_TEXT]
+The comparison of existing systems shows that car rental systems, vehicle tracking applications, and fleet decision-support systems often exist as separate categories. Car rental systems commonly manage reservations and transactions. GPS tracking systems focus on vehicle location. Fleet decision-support systems focus on forecasting, assignment, simulation, or optimization. The research gap is the need for a practical small-scale car rental system that centralizes rental operations while also providing selected decision-support features.
+
+[P01280 | 241508:241509 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01281 | 241509:242365 | NORMAL_TEXT]
+The proposed system addresses this gap by combining centralized customer records, vehicle records, booking requests, payment validation, maintenance monitoring, operational reports, customer-side vehicle recommendation, demand forecasting, and branch allocation recommendation. Unlike standalone GPS tools, the proposed system does not directly integrate live tracking from AKSH GPS, Apple Find My, or AirTags. Instead, it treats these as external monitoring tools while centralizing the operational records needed for decision-making. Unlike basic booking systems, it includes forecasting and rule-based recommendation logic. Unlike complex logistics optimization systems, it remains practical for a small-scale multi-branch car rental business by using interpretable and feasible methods such as Weighted Moving Average and rule-based decision criteria.
+
+[P01282 | 242365:242366 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01283 | 242366:242851 | NORMAL_TEXT]
+Overall, the reviewed studies support the development of a web-based car rental management and decision-support system that is more than a reservation platform. The system is positioned as a practical tool for improving record centralization, customer booking access, vehicle availability monitoring, maintenance tracking, customer-side vehicle recommendation, forecasting, branch allocation support, and operational decision-making for small-scale multi-branch car rental businesses.
+
+[P01284 | 242851:242852 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01285 | 242852:242902 | NORMAL_TEXT | LIST id=kix.xz9z1w72fabu level=0]
+Limitations and Research Gaps in Existing Systems
+
+[P01286 | 242902:243371 | NORMAL_TEXT]
+Lack of weather integration in vehicle recommendation logic. Existing car rental and fleet management systems do not incorporate weather data into vehicle selection or deployment recommendations. Customers are matched to vehicles based on availability and pricing, not on whether those vehicles are appropriate for prevailing or forecasted weather conditions. This represents a safety gap with direct consequences for service reliability during adverse weather events.
+
+[P01287 | 243371:243808 | NORMAL_TEXT]
+Absence of road condition awareness. While road condition monitoring technologies exist in the literature — including IoT-based sensor systems, GPS/accelerometer-based roughness detection, and V2X communication frameworks — none of the reviewed car rental or fleet management systems incorporate road condition data into their operational decision logic. Route feasibility is not assessed before vehicle dispatch or rental confirmation.
+
+[P01288 | 243808:244256 | NORMAL_TEXT]
+Reactive rather than proactive decision support. Most existing systems respond to conditions after they have developed: congestion is rerouted after it forms, incidents are logged after they occur, bookings are processed without environmental pre-screening. The literature on intelligent transportation systems consistently identifies this reactivity as a key limitation, and proactive, predictive frameworks represent an active research frontier.
+
+[P01289 | 244256:244749 | NORMAL_TEXT]
+Siloed data architectures. Weather data, traffic data, road condition data, and rental/fleet management data are maintained in separate systems with limited integration. The API integration literature demonstrates that unified multi-source architectures are technically feasible, but existing rental and fleet platforms have not adopted this approach. Decision-makers must consult multiple platforms — weather apps, navigation apps, rental dashboards — to form a complete operational picture.
+
+[P01290 | 244749:245235 | NORMAL_TEXT]
+Limited contextual intelligence in recommendation engines. Vehicle recommendation in existing systems is inventory-driven. The literature on context-aware navigation and route recommendation systems (Penumala & Naganaboina, 2025; Nasution et al., 2021) demonstrates that recommendation engines can incorporate vehicle type, road characteristics, weather conditions, and traffic patterns into a unified scoring model — but this capability has not been applied to the car rental domain. 
+
+[P01291 | 245235:245646 | NORMAL_TEXT]
+Insufficient UI integration of contextual data. Related systems present operational data through dashboards and reports, but weather and road condition information — when available at all — is displayed in separate interfaces rather than integrated into the recommendation workflow. Effective decision support requires that contextual information be surfaced at the point of decision, not retrieved separately.
+
+[P01292 | 245646:245647 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01293 | 245647:245737 | NORMAL_TEXT | LIST id=kix.awfen2jjqo1x level=0]
+Gaps in Existing Systems Regarding Forecasting, Maintenance, and Context-Aware Allocation
+
+[P01294 | 245737:246350 | NORMAL_TEXT]
+While modern car rental, fleet management, and transportation systems have advanced significantly in functional scope, the recent literature points to three persistent and interrelated gaps that limit their effectiveness as truly intelligent decision-support tools: weaknesses in demand forecasting, fragmented predictive maintenance integration, and the near-absence of context-aware vehicle allocation. These gaps are particularly relevant to the present study because they describe precisely the capability shortfall that a weather-, road-, and fuel-aware vehicle recommendation system is designed to address.
+
+[P01295 | 246350:246351 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01296 | 246351:248200 | NORMAL_TEXT]
+Demand forecasting gaps. Demand forecasting in the car rental and shared-mobility sectors remains far less mature than in adjacent industries such as airlines and hospitality. Ukandu and Kalesanwo (2025) reported that approximately 50% of car rental companies experience demand forecasting inaccuracies severe enough to depress fleet utilization to 70–75%, well below the 85–90% optimal level. Their integrated customer segmentation and forecasting framework — combining clustering algorithms (DBSCAN, Agglomerative, Fuzzy-C-Means) with ARIMA, regression, and Holt–Winters models — achieved a Mean Absolute Error of only 29.36, but the authors note that most operational car rental systems still rely on fixed pricing charts, staff intuition, and broad seasonal assumptions rather than data-driven prediction. Yang et al. (2021) similarly observed that multitype car rental demand forecasting is hampered by the high probability of vehicle upgrading/downgrading, customer subjective preferences, and the need to repair constrained historical demand before forecasting — challenges that single-method forecasting models cannot adequately address. ShivajiRao et al. (2024), in a multi-orthogonal review of urban mobility demand forecasting, concluded that while machine learning, deep learning, and even quantum learning methods have been applied to demand prediction, prevailing approaches suffer from computational limitations and a persistent gap between forecasting research and operational deployment. The most recent applied work — Suganya et al.'s (2026) RentOptima framework and Uday Kumar et al.'s (2026) dynamic pricing system — explicitly identifies the same gap: existing car rental systems set prices and allocate fleets manually, without evaluating historical trends, regional variations, or multiple influencing factors simultaneously.
+
+[P01297 | 248200:248201 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01298 | 248201:249003 | NORMAL_TEXT]
+The dynamic and non-linear nature of mobility demand compounds these problems. G. S. et al. (2024) noted that demand for rides can be influenced by weather, special events, and unforeseen catastrophes — dynamic factors that conventional forecasting models, focused on seasonal and trend components, capture poorly. Alzaidi, Shakya, and Khargharia (2022) demonstrated that incorporating external inputs such as temperature and holidays into vehicle demand forecasting substantially improves accuracy, yet such external integration is rare in deployed rental systems. The gap is therefore not one of theoretical impossibility but of practical adoption: the methods exist in the research literature, but commercial rental and fleet systems have not yet absorbed them into their core recommendation logic.
+
+[P01299 | 249003:249004 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01300 | 249004:250157 | NORMAL_TEXT]
+Predictive maintenance gaps. A second persistent gap concerns predictive maintenance. Chen, Jia, and Zhou (2025), in a systematic review of vehicle maintenance demand prediction published in Applied Sciences, identified a principal challenge: while machine learning and deep learning models can accurately predict failures in specific components (suspensions, batteries), these approaches "predominantly operate in isolation," and the field has not successfully transitioned from single-component failure prediction to holistic Vehicle Health Management (VHM). Crespo del Castillo and Parlikad (2024), publishing in Reliability Engineering & System Safety, identified a more operational gap: predictive maintenance is rarely integrated with calendar-based preventive maintenance and operational workload allocation, despite the fact that these three functions interact strongly to determine fleet availability and cost. Their optimization model demonstrated that integrating all three dimensions can substantially reduce fleet operating costs, but they explicitly note that this integration remains absent from most commercial fleet management systems.
+
+[P01301 | 250157:250158 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01302 | 250158:251322 | NORMAL_TEXT]
+Several recent studies confirm that the gap is being addressed in research but lags in practice. Chaudhuri and Ghosh (2024) developed a hybrid deep learning ensemble for vehicle fleet predictive maintenance using IoT data, and Sharma et al. (2025) built the DriveSure platform reporting 30–50% reductions in unplanned downtime through machine learning–based maintenance prediction. Nagy and Lakatos (2024), however, emphasized that while premium-segment vehicles increasingly support predictive maintenance through rich sensor and data structures, mass-market and rental-fleet vehicles still lack the sensor infrastructure to make predictive maintenance broadly practical. Kansal and Ediga (2024) and Mittal et al. (2024) demonstrated that IoT-enabled predictive maintenance is technically feasible and can produce customized maintenance schedules per vehicle, yet acknowledge that integration with broader fleet management decision systems remains limited. Priyanka et al. (2025) and Zayats et al. (2026) reinforced that scalable, end-to-end pipelines connecting predictive maintenance models to fleet operational decisions are still emerging rather than mature.
+
+[P01303 | 251322:251323 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01304 | 251323:252524 | NORMAL_TEXT]
+Context-aware vehicle allocation gaps. The third — and perhaps most directly relevant — gap is the limited use of contextual data (weather, road conditions, real-time traffic, route characteristics) in vehicle allocation and dispatch decisions. Xu et al. (2021), publishing in IEEE Transactions on Intelligent Transportation Systems (Q1), demonstrated that network-flow-based vehicle dispatch in ride-hailing systems can significantly improve service rates, but their model and most successor models optimize based on supply and demand alone, without incorporating environmental conditions that affect feasibility and safety. Han et al. (2024), in their GARLIC framework presented at AAAI, explicitly identified the limitation that current vehicle dispatch systems "struggle to navigate the complexities of urban traffic dynamics, including unpredictable traffic conditions" — and proposed reinforcement learning with multi-view graphs to address this, but again without integrating weather or road-surface data. Daoud (2021, 2022) similarly explored multi-agent and decentralized vehicle allocation but framed the problem in terms of communication and coordination rather than environmental context.
+
+[P01305 | 252524:252525 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01306 | 252525:253824 | NORMAL_TEXT]
+A small but growing body of work explicitly recognizes the context-aware allocation gap. Hu et al. (2023) proposed the Road-aware Grid-based Multi-Agent Reinforcement Learning (RGMARL) approach, which incorporates road information into vehicle dispatching decisions and demonstrates a 5.75% improvement in order response rate over road-agnostic baselines — an explicit acknowledgement that contextual data improves allocation quality. Li, Parker, and Hao (2021) addressed stochastic travel times in on-demand ride-sharing dispatch, noting that "existing ride-sharing research seldom considers travel time uncertainty, which leads to inaccurate dispatch allocations." Wang et al. (2025) introduced "sink proximity" as a way to consider future network states in online dispatch but without environmental inputs. Potluri and Kumar (2021) advocated context-aware multi-data fusion for ride-share scheduling using big data techniques. Hssini (2025), publishing in IEEE Access (Q1), is among the few to combine context-aware allocation with robust optimization in a hybrid framework for disaster blood logistics — demonstrating that the methodology can be made operational when the application domain demands it, but underscoring that mainstream rental and fleet systems have not adopted such approaches.
+
+[P01307 | 253824:253825 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01308 | 253825:255491 | NORMAL_TEXT]
+The IoT-driven fleet management literature similarly highlights what is missing. Farahpoor, Esparza, and Soriano (2024), publishing in IEEE Access, noted that traditional telematics systems exhibit "closed compatibility with specific brands, unique network protocols, and insufficient data analysis and decision-making support." Raut et al. (2025) reviewed real-time fleet monitoring systems and concluded that current systems face persistent challenges in latency, scalability, security, and — crucially — data integration across disparate sources. Rathnayaka et al. (2021), Babiyola et al. (2023), Singaraju (2025), Anderson (2022), Lee et al. (2026), and Zahid et al. (2025) collectively demonstrate that real-time fleet management systems are now widespread, but they focus primarily on vehicle tracking, emissions monitoring, route optimization, and predictive maintenance — not on context-aware vehicle-to-trip recommendation that integrates weather, road conditions, terrain, and fuel projections. Abediasl et al. (2024) integrated emissions estimation into an intelligent fleet management system, illustrating that context-aware extensions are technically achievable when the development effort is invested. Brar, Kasture, and Su (2022) showed that EV rental fleets in particular suffer from supply-demand mismatch due to limited control over fleet distribution — a gap that contextual, predictive allocation could close. Sangaraju et al. (2024) and Alanazi and Almutairi (2026) reinforced that effective resource allocation and revenue generation for rental vehicles depends on integrating multiple data dimensions that current systems handle in isolation.
+
+[P01309 | 255491:255492 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01310 | 255492:255518 | NORMAL_TEXT]
+E. Synthesis of the Study
+
+[P01311 | 255518:255800 | NORMAL_TEXT]
+	The literature reviewed in this chapter collectively establishes both the operational context and the theoretical foundations of the proposed web-based car rental management system with demand forecasting and context-aware fleet allocation for small-scale multi-branch businesses.
+
+[P01312 | 255800:256997 | NORMAL_TEXT]
+Studies on car rental operations and existing management challenges confirm that traditional and semi-manual rental practices create persistent inefficiencies — including manual booking delays, overlapping reservations, fragmented customer and vehicle records, and delayed transaction processing — that reduce operational reliability and limit the ability of owners to make timely decisions (Kumar & Singh, 2024; Dhami et al., 2024; Mhatre et al., 2026; Rahman & Mohd Rusli, 2023). These findings directly reflect the operational conditions of the target client, the participating car rental business, where reservations, payment verification, customer requirements, and vehicle availability are currently managed across separate devices, messaging platforms, and scheduling tools. The reviewed studies on web-based car rental management systems demonstrate that centralizing these functions into a single browser-accessible platform can improve record organization, transaction processing, vehicle monitoring, and overall operational efficiency (Ogbiti & Aaron, 2024; Bakale et al., 2023; Karche et al., 2025), which supports the proposed system's core reservation and rental management modules.
+
+[P01313 | 256997:257994 | NORMAL_TEXT]
+The challenge of managing vehicles across more than one location is addressed by studies on multi-branch operations and fleet coordination, which show that branch-level fleet imbalance — where one location experiences shortages while another has idle units — is a structural problem in rental and vehicle-sharing operations requiring more than basic booking records (Boysen et al., 2024; Eliyan & Kerbache, 2024; Brandizzi et al., 2022). For small-scale operators like the participating car rental business, this imbalance is typically managed through informal coordination, which introduces risk as reservation volumes grow. The literature on distributed car rental systems and fleet monitoring demonstrates that reservation validation, availability locking, and branch-level fleet visibility can reduce booking conflicts and improve vehicle distribution across locations (Saritha et al., 2026), which directly informs the proposed system's multi-branch fleet monitoring and allocation features.
+
+[P01314 | 257994:259134 | NORMAL_TEXT]
+Security, data privacy, and role-based access control are consistently identified as essential requirements in web-based systems that handle sensitive user records, payment information, uploaded documents, and administrative data. The reviewed studies show that Role-Based Access Control effectively restricts system functions based on assigned user roles, reduces the risk of unauthorized access, and improves data accountability across multi-user platforms (Romadhan & Mansur, 2026; Cardos et al., 2025; Purba & Hidayasari, 2026). Secure authentication frameworks using JSON Web Tokens, encrypted credential storage, and audit logging further strengthen access management and session security (Kanagamalliga et al., 2026; Dedhia, 2026; Manoj et al., 2025). These findings are directly relevant to the proposed system because the participating car rental business will handle customer-submitted documents, payment records, rental transactions, and operational reports. Therefore, secure authentication and restricted access are necessary to ensure that only authorized internal users can access sensitive records and management functions.
+
+[P01315 | 259134:260555 | NORMAL_TEXT]
+Fleet management literature confirms that idle vehicles, vehicle shortages, uneven demand distribution, and poor vehicle allocation are recurring problems in transportation and rental operations, and that demand forecasting using historical rental and usage data can help businesses anticipate where and when vehicles will be needed rather than reacting after imbalances occur (Brandizzi et al., 2022; Favier et al., 2024; Sangaraju et al., 2024). Studies on demand forecasting in car rental and vehicle-sharing operations demonstrate that branch-level historical rental records, reservation patterns, and usage data can be analyzed to produce short-term demand estimates that support fleet planning and allocation decisions (Suganya et al., 2026; Zhao et al., 2021; Martin et al., 2021; Huang et al., 2021). The Weighted Moving Average method is validated across multiple small-scale and operational contexts as a practical, interpretable, and computationally lightweight forecasting approach that captures recent demand trends without requiring complex infrastructure (Rahayu et al., 2022; Sariati et al., 2026; Paramitha & Saifuddin, 2023; Khalid, 2024). These studies collectively support the proposed system's WMA-based demand forecasting module, which will estimate short-term vehicle demand per branch from historical booking records to help managers anticipate demand and prepare vehicle availability in advance.
+
+[P01316 | 260555:261412 | NORMAL_TEXT]
+Beyond forecasting, rule-based decision support systems provide the logical mechanism for translating demand estimates into concrete vehicle allocation recommendations. Studies on rule-based systems in transportation and fleet management show that encoding expert operational knowledge into explicit IF-THEN conditional logic produces consistent, auditable, and actionable recommendations without requiring advanced optimization algorithms (Haber et al., 2026; Mavrin & Makarova, 2026; Meira et al., 2022; Mohamad et al., 2026). These findings support the proposed system's rule-based fleet allocation feature, which will apply predefined allocation rules — based on forecasted demand, vehicle availability, branch assignment, and operational conditions — to generate vehicle distribution recommendations that guide rather than replace managerial judgment.
+
+[P01317 | 261412:263045 | NORMAL_TEXT]
+Context-aware factors further strengthen the administrative decision-support capability of the proposed system. Studies on fuel efficiency and transportation planning demonstrate that travel distance and fuel-consumption estimates can provide useful supporting information when evaluating vehicle and fleet movements, while studies on road conditions, route feasibility, and accessibility show that road incidents, closures, and other operational restrictions may affect whether a proposed movement remains practical (Vyas et al., 2022; Moawad et al., 2024; Liu et al., 2022; Dubey et al., 2025; Gabbar et al., 2023). Weather-aware transportation studies likewise show that precipitation, visibility, and other adverse weather conditions may support operational review when incorporated as advisory information (Tobin et al., 2024; Hussein et al., 2021; Celar et al., 2024; Pradeepraja et al., 2025). API integration makes these contextual inputs technically feasible by allowing external weather, routing, and incident-related information to be obtained through web-based services (Penumala & Naganaboina, 2025; Sandhip et al., 2025; Joshna et al., 2026; Vdovic et al., 2021). In the proposed system, these contextual factors will support Owner/Admin review of vehicle-assignment and branch-allocation decisions and will remain separate from the primary Customer-Side Vehicle Recommendation logic. Missing contextual information will not prevent the system from performing its available internal demand, supply, vehicle-availability, and maintenance-readiness analyses and will not be silently interpreted as a favorable condition.
+
+[P01318 | 263045:263439 | NORMAL_TEXT]
+The reviewed systems also show the operational value of notifications and alert mechanisms in improving user awareness and reducing missed updates. In the proposed system, alerts for booking status, payment reminders, verification results, return schedules, maintenance reminders, and low vehicle availability can support more timely coordination among customers and authorized internal users.
+
+[P01319 | 263439:264391 | NORMAL_TEXT]
+The reviewed car rental systems provide a basis for transaction management, customer registration, booking processing, and reporting (M.A. et al., 2023; Surabhi, 2025; Dhami et al., 2024; Adisesha et al., 2026; Routaray & Dileep Kumar, 2024). Related decision-support work provides a basis for examining explicit allocation rules and contextual operational information (Meira et al., 2022; Heidari et al., 2024). The contribution proposed in this study is their integration for the participating small-scale, multi-branch business: weekly booking-demand forecasts, transparent shortage and surplus calculations, eligible transfer candidates, and external context presented for administrative review. The study does not claim that these individual techniques are new or absent from all commercial rental systems. Its contribution will be assessed through implementation, traceable outputs, functional tests, and user evaluation within the stated scope.
+
+[P01320 | 264391:265376 | NORMAL_TEXT]
+The reviewed studies show that existing car rental systems generally address booking management, customer records, vehicle records, payment processing, and reporting. For this study, the implementation gap is the participating business’s need for connected weekly demand forecasting, rule-based branch allocation, and context-informed administrative review. This gap is significant because small-scale multi-branch businesses require not only centralized records but also practical decision-support tools for anticipating demand, reducing idle vehicles, improving vehicle distribution, and considering operational factors such as fuel efficiency, weather conditions, road accessibility, possible road closures, and route feasibility. Therefore, the proposed system addresses this gap by integrating centralized rental management, Weighted Moving Average demand forecasting, rule-based fleet allocation recommendations, and selected context-aware factors within one web-based platform.
+
+[P01321 | 265376:266615 | NORMAL_TEXT]
+Finally, the literature on software quality evaluation using ISO/IEC 25010 establishes the framework as an appropriate basis for assessing the proposed system based on selected software quality characteristics. In this study, the relevant characteristics include functional suitability, performance efficiency, compatibility, interaction capability, reliability, security, maintainability, flexibility, and safety (Monteverde et al., 2023; Bondoc, 2023; Mendoz et al., 2025; Adyaputra et al., 2025; Islam et al., 2021; Ismail et al., 2025). Studies using multiple evaluation perspectives, involving both technical evaluators and actual users, further support the use of separate evaluation groups such as owners, administrators, staff, customers or potential renters, and IT evaluators, since each group interacts with different modules and functions of the proposed system. Findings from prior evaluations also highlight that security requires deliberate attention during development, especially because systems that handle customer information, uploaded requirements, payment records, and role-based access may become vulnerable when security is not considered from the early stages of design and implementation (Laudza & Sofyan, 2024).
+
+[P01322 | 266615:267369 | NORMAL_TEXT]
+Taken together, the reviewed literature provides a coherent and converging foundation for the proposed system. The operational challenges of small-scale multi-branch car rental businesses are well-documented, while the selected technical approaches, including web-based architecture, Weighted Moving Average forecasting, rule-based allocation, role-based access control, API-supported or predefined contextual data inputs, and ISO/IEC 25010-based evaluation, are supported by related literature. The identified research gap confirms the need for a unified platform that integrates car rental management, demand forecasting, and context-aware fleet allocation in a small-scale multi-branch setting, which the participating car rental business represents.
+
+[P01323 | 267369:267370 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01324 | 267370:267371 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01325 | 267372:267373 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01326 | 267373:267383 | NORMAL_TEXT]
+Chapter 3
+
+[P01327 | 267383:267395 | NORMAL_TEXT]
+METHODOLOGY
+
+[P01328 | 267395:267924 | NORMAL_TEXT]
+This chapter presents the methodologies, procedures, development tools, testing procedures, and evaluation methods to be used in the development of the proposed Web-based Car Rental Management System with demand forecasting and context-aware fleet allocation. It discusses the requirements analysis, system development methodology, process model, development tools, testing procedures, system requirements, and evaluation procedures that will guide the design, development, implementation, and assessment of the proposed system.
+
+[P01329 | 267924:268180 | NORMAL_TEXT]
+The methodologies and procedures presented in this chapter are intended to ensure that the proposed system is developed using structured software engineering practices and aligned with the operational requirements of the participating car rental business.
+
+[P01330 | 268180:268181 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01331 | 268181:268203 | NORMAL_TEXT]
+Requirements Analysis
+
+[P01332 | 268203:268624 | NORMAL_TEXT]
+This section presents the identified functional and non-functional requirements of the proposed Web-based Car Rental Management System. The requirements were derived from client interviews, workflow analysis, observation of current business processes, related literature, and system planning activities. These requirements served as the basis for the design, development, testing, and evaluation of the proposed system. 
+
+[P01333 | 268624:268625 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01334 | 268625:268676 | NORMAL_TEXT]
+The following system requirements were identified:
+
+[P01335 | 268676:268870 | NORMAL_TEXT]
+R1 - The system shall provide a centralized reservation and rental management module for recording booking requests, customer details, rental schedules, payment status, and transaction history.
+
+[P01336 | 268870:269051 | NORMAL_TEXT]
+R2 - The system shall provide online booking request management that allows administrators to review, approve, reject, and monitor reservations while checking vehicle availability.
+
+[P01337 | 269051:269227 | NORMAL_TEXT]
+R3 - The system shall provide a requirement submission and verification module where customers can upload required documents and administrators can review verification status.
+
+[P01338 | 269227:269384 | NORMAL_TEXT]
+R4 - The system shall provide access to rental policies, agreements, penalties, and booking conditions for customer reference and administrative validation.
+
+[P01339 | 269384:269570 | NORMAL_TEXT]
+R5 - The system shall provide a vehicle and fleet management module for managing vehicle records, availability status, branch assignment, condition details, and maintenance information.
+
+[P01340 | 269570:269723 | NORMAL_TEXT]
+R6 - The system shall provide fleet monitoring features for tracking active rentals, idle vehicles, vehicle availability, and branch-level fleet status.
+
+[P01341 | 269723:270241 | NORMAL_TEXT]
+R7 - The system shall implement demand forecasting using a three-period Weighted Moving Average method with fixed weights of 0.50, 0.30, and 0.20 to estimate vehicle demand for up to three succeeding weekly periods per branch and vehicle category based on qualifying historical booking records. The first forecasted week shall use the three most recent completed actual-demand observations, while succeeding forecast periods shall be generated recursively using the most recent available actual and forecasted values.
+
+[P01342 | 270241:270686 | NORMAL_TEXT]
+R8 - The system shall provide rule-based branch allocation recommendations for the Owner/Admin by comparing forecasted vehicle requirements with projected available vehicle supply per branch and vehicle category and by considering vehicle availability, maintenance readiness, idle-vehicle information, and applicable operational context. The generated recommendations shall be advisory and shall not automatically transfer or reassign vehicles.
+
+[P01343 | 270686:270991 | NORMAL_TEXT]
+R9 - The system shall provide analytical reports for vehicle utilization, idle vehicle detection, branch demand, forecasted vehicle shortage and surplus, booking records, payment records, maintenance information, and fleet performance to support operational monitoring and administrative decision-making.
+
+[P01344 | 270991:271632 | NORMAL_TEXT]
+R10 - The system shall provide a Customer-Side Vehicle Recommendation feature that uses rule-based eligibility filtering and deterministic ranking based on passenger and large-luggage capacity, a stated total rental budget compared with a daily-rate reference estimate, rental duration, vehicle preference, availability, and maintenance readiness. An optional destination shall be retained for administrative review and shall not affect customer ranking. The generated recommendations shall assist customers in vehicle selection before submitting a booking request and shall not constitute booking approval or guaranteed vehicle assignment.
+
+[P01345 | 271632:272138 | NORMAL_TEXT]
+R11 - The system shall provide context-aware decision support for the Owner/Admin using applicable operational and external context information, including weather condition, road condition, route feasibility, route accessibility, travel distance, reference fuel efficiency, and estimated fuel consumption. These contextual inputs shall serve as supporting information for administrative vehicle-assignment and branch-allocation decisions and shall not independently determine the final operational action.
+
+[P01346 | 272138:272342 | NORMAL_TEXT]
+R12 - The system shall provide notification and alert features for booking updates, payment reminders, verification results, vehicle return schedules, maintenance reminders, and low vehicle availability.
+
+[P01347 | 272342:272537 | NORMAL_TEXT]
+R13 - The system shall implement secure authentication, role-based access control, and restricted access to customer records, payment information, uploaded requirements, and operational reports.
+
+[P01348 | 272537:272709 | NORMAL_TEXT]
+R14 - The system shall provide centralized database storage with backup and recovery procedures to support data integrity, record availability, and operational continuity.
+
+[P01349 | 272709:272717 | NORMAL_TEXT]
+Table 5
+
+[P01350 | 272717:272747 | NORMAL_TEXT]
+Requirement – Features Matrix
+
+[P01351 | 272750:272762 | NORMAL_TEXT | TABLE row=0 col=0]
+Requirement
+
+[P01352 | 272762:272771 | NORMAL_TEXT | TABLE row=0 col=0]
+Features
+
+[P01353 | 272772:272775 | NORMAL_TEXT | TABLE row=0 col=1]
+R1
+
+[P01354 | 272776:272779 | NORMAL_TEXT | TABLE row=0 col=2]
+R2
+
+[P01355 | 272780:272783 | NORMAL_TEXT | TABLE row=0 col=3]
+R3
+
+[P01356 | 272784:272787 | NORMAL_TEXT | TABLE row=0 col=4]
+R4
+
+[P01357 | 272788:272791 | NORMAL_TEXT | TABLE row=0 col=5]
+R5
+
+[P01358 | 272792:272795 | NORMAL_TEXT | TABLE row=0 col=6]
+R6
+
+[P01359 | 272796:272799 | NORMAL_TEXT | TABLE row=0 col=7]
+R7
+
+[P01360 | 272800:272803 | NORMAL_TEXT | TABLE row=0 col=8]
+R8
+
+[P01361 | 272804:272807 | NORMAL_TEXT | TABLE row=0 col=9]
+R9
+
+[P01362 | 272808:272812 | NORMAL_TEXT | TABLE row=0 col=10]
+R10
+
+[P01363 | 272813:272817 | NORMAL_TEXT | TABLE row=0 col=11]
+R11
+
+[P01364 | 272818:272822 | NORMAL_TEXT | TABLE row=0 col=12]
+R12
+
+[P01365 | 272823:272827 | NORMAL_TEXT | TABLE row=0 col=13]
+R13
+
+[P01366 | 272828:272832 | NORMAL_TEXT | TABLE row=0 col=14]
+R14
+
+[P01367 | 272834:272871 | NORMAL_TEXT | TABLE row=1 col=0]
+User Authentication & Access Control
+
+[P01368 | 272872:272873 | NORMAL_TEXT | TABLE row=1 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01369 | 272874:272875 | NORMAL_TEXT | TABLE row=1 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01370 | 272876:272877 | NORMAL_TEXT | TABLE row=1 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01371 | 272878:272879 | NORMAL_TEXT | TABLE row=1 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01372 | 272880:272881 | NORMAL_TEXT | TABLE row=1 col=5]
+⟦EMPTY PARAGRAPH⟧
+
+[P01373 | 272882:272883 | NORMAL_TEXT | TABLE row=1 col=6]
+⟦EMPTY PARAGRAPH⟧
+
+[P01374 | 272884:272885 | NORMAL_TEXT | TABLE row=1 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01375 | 272886:272887 | NORMAL_TEXT | TABLE row=1 col=8]
+⟦EMPTY PARAGRAPH⟧
+
+[P01376 | 272888:272889 | NORMAL_TEXT | TABLE row=1 col=9]
+⟦EMPTY PARAGRAPH⟧
+
+[P01377 | 272890:272891 | NORMAL_TEXT | TABLE row=1 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01378 | 272892:272893 | NORMAL_TEXT | TABLE row=1 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01379 | 272894:272895 | NORMAL_TEXT | TABLE row=1 col=12]
+⟦EMPTY PARAGRAPH⟧
+
+[P01380 | 272896:272898 | NORMAL_TEXT | TABLE row=1 col=13]
+✓
+
+[P01381 | 272899:272900 | NORMAL_TEXT | TABLE row=1 col=14]
+⟦EMPTY PARAGRAPH⟧
+
+[P01382 | 272902:272929 | NORMAL_TEXT | TABLE row=2 col=0]
+Customer Record Management
+
+[P01383 | 272930:272932 | NORMAL_TEXT | TABLE row=2 col=1]
+✓
+
+[P01384 | 272933:272934 | NORMAL_TEXT | TABLE row=2 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01385 | 272935:272937 | NORMAL_TEXT | TABLE row=2 col=3]
+✓
+
+[P01386 | 272938:272939 | NORMAL_TEXT | TABLE row=2 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01387 | 272940:272941 | NORMAL_TEXT | TABLE row=2 col=5]
+⟦EMPTY PARAGRAPH⟧
+
+[P01388 | 272942:272943 | NORMAL_TEXT | TABLE row=2 col=6]
+⟦EMPTY PARAGRAPH⟧
+
+[P01389 | 272944:272945 | NORMAL_TEXT | TABLE row=2 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01390 | 272946:272947 | NORMAL_TEXT | TABLE row=2 col=8]
+⟦EMPTY PARAGRAPH⟧
+
+[P01391 | 272948:272949 | NORMAL_TEXT | TABLE row=2 col=9]
+⟦EMPTY PARAGRAPH⟧
+
+[P01392 | 272950:272951 | NORMAL_TEXT | TABLE row=2 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01393 | 272952:272953 | NORMAL_TEXT | TABLE row=2 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01394 | 272954:272955 | NORMAL_TEXT | TABLE row=2 col=12]
+⟦EMPTY PARAGRAPH⟧
+
+[P01395 | 272956:272958 | NORMAL_TEXT | TABLE row=2 col=13]
+✓
+
+[P01396 | 272959:272961 | NORMAL_TEXT | TABLE row=2 col=14]
+✓
+
+[P01397 | 272963:272986 | NORMAL_TEXT | TABLE row=3 col=0]
+Reservation Management
+
+[P01398 | 272987:272989 | NORMAL_TEXT | TABLE row=3 col=1]
+✓
+
+[P01399 | 272990:272992 | NORMAL_TEXT | TABLE row=3 col=2]
+✓
+
+[P01400 | 272993:272994 | NORMAL_TEXT | TABLE row=3 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01401 | 272995:272996 | NORMAL_TEXT | TABLE row=3 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01402 | 272997:272998 | NORMAL_TEXT | TABLE row=3 col=5]
+⟦EMPTY PARAGRAPH⟧
+
+[P01403 | 272999:273000 | NORMAL_TEXT | TABLE row=3 col=6]
+⟦EMPTY PARAGRAPH⟧
+
+[P01404 | 273001:273002 | NORMAL_TEXT | TABLE row=3 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01405 | 273003:273004 | NORMAL_TEXT | TABLE row=3 col=8]
+⟦EMPTY PARAGRAPH⟧
+
+[P01406 | 273005:273007 | NORMAL_TEXT | TABLE row=3 col=9]
+✓
+
+[P01407 | 273008:273010 | NORMAL_TEXT | TABLE row=3 col=10]
+✓
+
+[P01408 | 273011:273012 | NORMAL_TEXT | TABLE row=3 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01409 | 273013:273015 | NORMAL_TEXT | TABLE row=3 col=12]
+✓
+
+[P01410 | 273016:273017 | NORMAL_TEXT | TABLE row=3 col=13]
+⟦EMPTY PARAGRAPH⟧
+
+[P01411 | 273018:273020 | NORMAL_TEXT | TABLE row=3 col=14]
+✓
+
+[P01412 | 273022:273050 | NORMAL_TEXT | TABLE row=4 col=0]
+Booking Approval Management
+
+[P01413 | 273051:273053 | NORMAL_TEXT | TABLE row=4 col=1]
+✓
+
+[P01414 | 273054:273056 | NORMAL_TEXT | TABLE row=4 col=2]
+✓
+
+[P01415 | 273057:273059 | NORMAL_TEXT | TABLE row=4 col=3]
+✓
+
+[P01416 | 273060:273062 | NORMAL_TEXT | TABLE row=4 col=4]
+✓
+
+[P01417 | 273063:273064 | NORMAL_TEXT | TABLE row=4 col=5]
+⟦EMPTY PARAGRAPH⟧
+
+[P01418 | 273065:273066 | NORMAL_TEXT | TABLE row=4 col=6]
+⟦EMPTY PARAGRAPH⟧
+
+[P01419 | 273067:273068 | NORMAL_TEXT | TABLE row=4 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01420 | 273069:273070 | NORMAL_TEXT | TABLE row=4 col=8]
+⟦EMPTY PARAGRAPH⟧
+
+[P01421 | 273071:273072 | NORMAL_TEXT | TABLE row=4 col=9]
+⟦EMPTY PARAGRAPH⟧
+
+[P01422 | 273073:273074 | NORMAL_TEXT | TABLE row=4 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01423 | 273075:273076 | NORMAL_TEXT | TABLE row=4 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01424 | 273077:273079 | NORMAL_TEXT | TABLE row=4 col=12]
+✓
+
+[P01425 | 273080:273082 | NORMAL_TEXT | TABLE row=4 col=13]
+✓
+
+[P01426 | 273083:273084 | NORMAL_TEXT | TABLE row=4 col=14]
+⟦EMPTY PARAGRAPH⟧
+
+[P01427 | 273086:273124 | NORMAL_TEXT | TABLE row=5 col=0]
+Requirement Submission & Verification
+
+[P01428 | 273125:273126 | NORMAL_TEXT | TABLE row=5 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01429 | 273127:273128 | NORMAL_TEXT | TABLE row=5 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01430 | 273129:273131 | NORMAL_TEXT | TABLE row=5 col=3]
+✓
+
+[P01431 | 273132:273133 | NORMAL_TEXT | TABLE row=5 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01432 | 273134:273135 | NORMAL_TEXT | TABLE row=5 col=5]
+⟦EMPTY PARAGRAPH⟧
+
+[P01433 | 273136:273137 | NORMAL_TEXT | TABLE row=5 col=6]
+⟦EMPTY PARAGRAPH⟧
+
+[P01434 | 273138:273139 | NORMAL_TEXT | TABLE row=5 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01435 | 273140:273141 | NORMAL_TEXT | TABLE row=5 col=8]
+⟦EMPTY PARAGRAPH⟧
+
+[P01436 | 273142:273143 | NORMAL_TEXT | TABLE row=5 col=9]
+⟦EMPTY PARAGRAPH⟧
+
+[P01437 | 273144:273145 | NORMAL_TEXT | TABLE row=5 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01438 | 273146:273147 | NORMAL_TEXT | TABLE row=5 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01439 | 273148:273150 | NORMAL_TEXT | TABLE row=5 col=12]
+✓
+
+[P01440 | 273151:273153 | NORMAL_TEXT | TABLE row=5 col=13]
+✓
+
+[P01441 | 273154:273156 | NORMAL_TEXT | TABLE row=5 col=14]
+✓
+
+[P01442 | 273158:273195 | NORMAL_TEXT | TABLE row=6 col=0]
+Rental Policy & Agreement Management
+
+[P01443 | 273196:273197 | NORMAL_TEXT | TABLE row=6 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01444 | 273198:273199 | NORMAL_TEXT | TABLE row=6 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01445 | 273200:273201 | NORMAL_TEXT | TABLE row=6 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01446 | 273202:273204 | NORMAL_TEXT | TABLE row=6 col=4]
+✓
+
+[P01447 | 273205:273206 | NORMAL_TEXT | TABLE row=6 col=5]
+⟦EMPTY PARAGRAPH⟧
+
+[P01448 | 273207:273208 | NORMAL_TEXT | TABLE row=6 col=6]
+⟦EMPTY PARAGRAPH⟧
+
+[P01449 | 273209:273210 | NORMAL_TEXT | TABLE row=6 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01450 | 273211:273212 | NORMAL_TEXT | TABLE row=6 col=8]
+⟦EMPTY PARAGRAPH⟧
+
+[P01451 | 273213:273214 | NORMAL_TEXT | TABLE row=6 col=9]
+⟦EMPTY PARAGRAPH⟧
+
+[P01452 | 273215:273216 | NORMAL_TEXT | TABLE row=6 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01453 | 273217:273218 | NORMAL_TEXT | TABLE row=6 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01454 | 273219:273220 | NORMAL_TEXT | TABLE row=6 col=12]
+⟦EMPTY PARAGRAPH⟧
+
+[P01455 | 273221:273223 | NORMAL_TEXT | TABLE row=6 col=13]
+✓
+
+[P01456 | 273224:273226 | NORMAL_TEXT | TABLE row=6 col=14]
+✓
+
+[P01457 | 273228:273254 | NORMAL_TEXT | TABLE row=7 col=0]
+Payment Record Management
+
+[P01458 | 273255:273257 | NORMAL_TEXT | TABLE row=7 col=1]
+✓
+
+[P01459 | 273258:273259 | NORMAL_TEXT | TABLE row=7 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01460 | 273260:273261 | NORMAL_TEXT | TABLE row=7 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01461 | 273262:273263 | NORMAL_TEXT | TABLE row=7 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01462 | 273264:273265 | NORMAL_TEXT | TABLE row=7 col=5]
+⟦EMPTY PARAGRAPH⟧
+
+[P01463 | 273266:273267 | NORMAL_TEXT | TABLE row=7 col=6]
+⟦EMPTY PARAGRAPH⟧
+
+[P01464 | 273268:273269 | NORMAL_TEXT | TABLE row=7 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01465 | 273270:273271 | NORMAL_TEXT | TABLE row=7 col=8]
+⟦EMPTY PARAGRAPH⟧
+
+[P01466 | 273272:273274 | NORMAL_TEXT | TABLE row=7 col=9]
+✓
+
+[P01467 | 273275:273276 | NORMAL_TEXT | TABLE row=7 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01468 | 273277:273278 | NORMAL_TEXT | TABLE row=7 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01469 | 273279:273281 | NORMAL_TEXT | TABLE row=7 col=12]
+✓
+
+[P01470 | 273282:273284 | NORMAL_TEXT | TABLE row=7 col=13]
+✓
+
+[P01471 | 273285:273287 | NORMAL_TEXT | TABLE row=7 col=14]
+✓
+
+[P01472 | 273289:273319 | NORMAL_TEXT | TABLE row=8 col=0]
+Rental Transaction Management
+
+[P01473 | 273320:273322 | NORMAL_TEXT | TABLE row=8 col=1]
+✓
+
+[P01474 | 273323:273324 | NORMAL_TEXT | TABLE row=8 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01475 | 273325:273326 | NORMAL_TEXT | TABLE row=8 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01476 | 273327:273329 | NORMAL_TEXT | TABLE row=8 col=4]
+✓
+
+[P01477 | 273330:273331 | NORMAL_TEXT | TABLE row=8 col=5]
+⟦EMPTY PARAGRAPH⟧
+
+[P01478 | 273332:273334 | NORMAL_TEXT | TABLE row=8 col=6]
+✓
+
+[P01479 | 273335:273336 | NORMAL_TEXT | TABLE row=8 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01480 | 273337:273338 | NORMAL_TEXT | TABLE row=8 col=8]
+⟦EMPTY PARAGRAPH⟧
+
+[P01481 | 273339:273341 | NORMAL_TEXT | TABLE row=8 col=9]
+✓
+
+[P01482 | 273342:273343 | NORMAL_TEXT | TABLE row=8 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01483 | 273344:273345 | NORMAL_TEXT | TABLE row=8 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01484 | 273346:273348 | NORMAL_TEXT | TABLE row=8 col=12]
+✓
+
+[P01485 | 273349:273350 | NORMAL_TEXT | TABLE row=8 col=13]
+⟦EMPTY PARAGRAPH⟧
+
+[P01486 | 273351:273353 | NORMAL_TEXT | TABLE row=8 col=14]
+✓
+
+[P01487 | 273355:273381 | NORMAL_TEXT | TABLE row=9 col=0]
+Vehicle Record Management
+
+[P01488 | 273382:273383 | NORMAL_TEXT | TABLE row=9 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01489 | 273384:273386 | NORMAL_TEXT | TABLE row=9 col=2]
+✓
+
+[P01490 | 273387:273388 | NORMAL_TEXT | TABLE row=9 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01491 | 273389:273390 | NORMAL_TEXT | TABLE row=9 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01492 | 273391:273393 | NORMAL_TEXT | TABLE row=9 col=5]
+✓
+
+[P01493 | 273394:273396 | NORMAL_TEXT | TABLE row=9 col=6]
+✓
+
+[P01494 | 273397:273398 | NORMAL_TEXT | TABLE row=9 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01495 | 273399:273401 | NORMAL_TEXT | TABLE row=9 col=8]
+✓
+
+[P01496 | 273402:273403 | NORMAL_TEXT | TABLE row=9 col=9]
+⟦EMPTY PARAGRAPH⟧
+
+[P01497 | 273404:273406 | NORMAL_TEXT | TABLE row=9 col=10]
+✓
+
+[P01498 | 273407:273409 | NORMAL_TEXT | TABLE row=9 col=11]
+✓
+
+[P01499 | 273410:273411 | NORMAL_TEXT | TABLE row=9 col=12]
+⟦EMPTY PARAGRAPH⟧
+
+[P01500 | 273412:273413 | NORMAL_TEXT | TABLE row=9 col=13]
+⟦EMPTY PARAGRAPH⟧
+
+[P01501 | 273414:273416 | NORMAL_TEXT | TABLE row=9 col=14]
+✓
+
+[P01502 | 273418:273441 | NORMAL_TEXT | TABLE row=10 col=0]
+Maintenance Monitoring
+
+[P01503 | 273442:273443 | NORMAL_TEXT | TABLE row=10 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01504 | 273444:273445 | NORMAL_TEXT | TABLE row=10 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01505 | 273446:273447 | NORMAL_TEXT | TABLE row=10 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01506 | 273448:273449 | NORMAL_TEXT | TABLE row=10 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01507 | 273450:273452 | NORMAL_TEXT | TABLE row=10 col=5]
+✓
+
+[P01508 | 273453:273455 | NORMAL_TEXT | TABLE row=10 col=6]
+✓
+
+[P01509 | 273456:273457 | NORMAL_TEXT | TABLE row=10 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01510 | 273458:273460 | NORMAL_TEXT | TABLE row=10 col=8]
+✓
+
+[P01511 | 273461:273463 | NORMAL_TEXT | TABLE row=10 col=9]
+✓
+
+[P01512 | 273464:273466 | NORMAL_TEXT | TABLE row=10 col=10]
+✓
+
+[P01513 | 273467:273469 | NORMAL_TEXT | TABLE row=10 col=11]
+✓
+
+[P01514 | 273470:273472 | NORMAL_TEXT | TABLE row=10 col=12]
+✓
+
+[P01515 | 273473:273474 | NORMAL_TEXT | TABLE row=10 col=13]
+⟦EMPTY PARAGRAPH⟧
+
+[P01516 | 273475:273477 | NORMAL_TEXT | TABLE row=10 col=14]
+✓
+
+[P01517 | 273479:273506 | NORMAL_TEXT | TABLE row=11 col=0]
+Fleet Monitoring Dashboard
+
+[P01518 | 273507:273508 | NORMAL_TEXT | TABLE row=11 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01519 | 273509:273511 | NORMAL_TEXT | TABLE row=11 col=2]
+✓
+
+[P01520 | 273512:273513 | NORMAL_TEXT | TABLE row=11 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01521 | 273514:273515 | NORMAL_TEXT | TABLE row=11 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01522 | 273516:273518 | NORMAL_TEXT | TABLE row=11 col=5]
+✓
+
+[P01523 | 273519:273521 | NORMAL_TEXT | TABLE row=11 col=6]
+✓
+
+[P01524 | 273522:273523 | NORMAL_TEXT | TABLE row=11 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01525 | 273524:273526 | NORMAL_TEXT | TABLE row=11 col=8]
+✓
+
+[P01526 | 273527:273529 | NORMAL_TEXT | TABLE row=11 col=9]
+✓
+
+[P01527 | 273530:273531 | NORMAL_TEXT | TABLE row=11 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01528 | 273532:273534 | NORMAL_TEXT | TABLE row=11 col=11]
+✓
+
+[P01529 | 273535:273537 | NORMAL_TEXT | TABLE row=11 col=12]
+✓
+
+[P01530 | 273538:273539 | NORMAL_TEXT | TABLE row=11 col=13]
+⟦EMPTY PARAGRAPH⟧
+
+[P01531 | 273540:273542 | NORMAL_TEXT | TABLE row=11 col=14]
+✓
+
+[P01532 | 273543:273544 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01533 | 273544:273599 | NORMAL_TEXT]
+Continuation of Table 5. Requirement – Features Matrix
+
+[P01534 | 273602:273614 | NORMAL_TEXT | TABLE row=0 col=0]
+Requirement
+
+[P01535 | 273614:273623 | NORMAL_TEXT | TABLE row=0 col=0]
+Features
+
+[P01536 | 273624:273627 | NORMAL_TEXT | TABLE row=0 col=1]
+R1
+
+[P01537 | 273628:273631 | NORMAL_TEXT | TABLE row=0 col=2]
+R2
+
+[P01538 | 273632:273635 | NORMAL_TEXT | TABLE row=0 col=3]
+R3
+
+[P01539 | 273636:273639 | NORMAL_TEXT | TABLE row=0 col=4]
+R4
+
+[P01540 | 273640:273643 | NORMAL_TEXT | TABLE row=0 col=5]
+R5
+
+[P01541 | 273644:273647 | NORMAL_TEXT | TABLE row=0 col=6]
+R6
+
+[P01542 | 273648:273651 | NORMAL_TEXT | TABLE row=0 col=7]
+R7
+
+[P01543 | 273652:273655 | NORMAL_TEXT | TABLE row=0 col=8]
+R8
+
+[P01544 | 273656:273659 | NORMAL_TEXT | TABLE row=0 col=9]
+R9
+
+[P01545 | 273660:273664 | NORMAL_TEXT | TABLE row=0 col=10]
+R10
+
+[P01546 | 273665:273669 | NORMAL_TEXT | TABLE row=0 col=11]
+R11
+
+[P01547 | 273670:273674 | NORMAL_TEXT | TABLE row=0 col=12]
+R12
+
+[P01548 | 273675:273679 | NORMAL_TEXT | TABLE row=0 col=13]
+R13
+
+[P01549 | 273680:273684 | NORMAL_TEXT | TABLE row=0 col=14]
+R14
+
+[P01550 | 273686:273712 | NORMAL_TEXT | TABLE row=1 col=0]
+Demand Forecasting Module
+
+[P01551 | 273713:273714 | NORMAL_TEXT | TABLE row=1 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01552 | 273715:273716 | NORMAL_TEXT | TABLE row=1 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01553 | 273717:273718 | NORMAL_TEXT | TABLE row=1 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01554 | 273719:273720 | NORMAL_TEXT | TABLE row=1 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01555 | 273721:273722 | NORMAL_TEXT | TABLE row=1 col=5]
+⟦EMPTY PARAGRAPH⟧
+
+[P01556 | 273723:273724 | NORMAL_TEXT | TABLE row=1 col=6]
+⟦EMPTY PARAGRAPH⟧
+
+[P01557 | 273725:273727 | NORMAL_TEXT | TABLE row=1 col=7]
+✓
+
+[P01558 | 273728:273730 | NORMAL_TEXT | TABLE row=1 col=8]
+✓
+
+[P01559 | 273731:273733 | NORMAL_TEXT | TABLE row=1 col=9]
+✓
+
+[P01560 | 273734:273735 | NORMAL_TEXT | TABLE row=1 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01561 | 273736:273737 | NORMAL_TEXT | TABLE row=1 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01562 | 273738:273739 | NORMAL_TEXT | TABLE row=1 col=12]
+⟦EMPTY PARAGRAPH⟧
+
+[P01563 | 273740:273741 | NORMAL_TEXT | TABLE row=1 col=13]
+⟦EMPTY PARAGRAPH⟧
+
+[P01564 | 273742:273744 | NORMAL_TEXT | TABLE row=1 col=14]
+✓
+
+[P01565 | 273746:273785 | NORMAL_TEXT | TABLE row=2 col=0]
+Fleet Allocation Recommendation Module
+
+[P01566 | 273786:273787 | NORMAL_TEXT | TABLE row=2 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01567 | 273788:273789 | NORMAL_TEXT | TABLE row=2 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01568 | 273790:273791 | NORMAL_TEXT | TABLE row=2 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01569 | 273792:273793 | NORMAL_TEXT | TABLE row=2 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01570 | 273794:273796 | NORMAL_TEXT | TABLE row=2 col=5]
+✓
+
+[P01571 | 273797:273799 | NORMAL_TEXT | TABLE row=2 col=6]
+✓
+
+[P01572 | 273800:273802 | NORMAL_TEXT | TABLE row=2 col=7]
+✓
+
+[P01573 | 273803:273805 | NORMAL_TEXT | TABLE row=2 col=8]
+✓
+
+[P01574 | 273806:273808 | NORMAL_TEXT | TABLE row=2 col=9]
+✓
+
+[P01575 | 273809:273810 | NORMAL_TEXT | TABLE row=2 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01576 | 273811:273813 | NORMAL_TEXT | TABLE row=2 col=11]
+✓
+
+[P01577 | 273814:273815 | NORMAL_TEXT | TABLE row=2 col=12]
+⟦EMPTY PARAGRAPH⟧
+
+[P01578 | 273816:273817 | NORMAL_TEXT | TABLE row=2 col=13]
+⟦EMPTY PARAGRAPH⟧
+
+[P01579 | 273818:273820 | NORMAL_TEXT | TABLE row=2 col=14]
+✓
+
+[P01580 | 273822:273866 | NORMAL_TEXT | TABLE row=3 col=0]
+Customer-Side Vehicle Recommendation Module
+
+[P01581 | 273867:273868 | NORMAL_TEXT | TABLE row=3 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01582 | 273869:273871 | NORMAL_TEXT | TABLE row=3 col=2]
+✓
+
+[P01583 | 273872:273873 | NORMAL_TEXT | TABLE row=3 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01584 | 273874:273875 | NORMAL_TEXT | TABLE row=3 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01585 | 273876:273878 | NORMAL_TEXT | TABLE row=3 col=5]
+✓
+
+[P01586 | 273879:273880 | NORMAL_TEXT | TABLE row=3 col=6]
+⟦EMPTY PARAGRAPH⟧
+
+[P01587 | 273881:273882 | NORMAL_TEXT | TABLE row=3 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01588 | 273883:273884 | NORMAL_TEXT | TABLE row=3 col=8]
+⟦EMPTY PARAGRAPH⟧
+
+[P01589 | 273885:273886 | NORMAL_TEXT | TABLE row=3 col=9]
+⟦EMPTY PARAGRAPH⟧
+
+[P01590 | 273887:273889 | NORMAL_TEXT | TABLE row=3 col=10]
+✓
+
+[P01591 | 273890:273891 | NORMAL_TEXT | TABLE row=3 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01592 | 273892:273893 | NORMAL_TEXT | TABLE row=3 col=12]
+⟦EMPTY PARAGRAPH⟧
+
+[P01593 | 273894:273895 | NORMAL_TEXT | TABLE row=3 col=13]
+⟦EMPTY PARAGRAPH⟧
+
+[P01594 | 273896:273898 | NORMAL_TEXT | TABLE row=3 col=14]
+✓
+
+[P01595 | 273900:273931 | NORMAL_TEXT | TABLE row=4 col=0]
+Context-Aware Decision Support
+
+[P01596 | 273932:273933 | NORMAL_TEXT | TABLE row=4 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01597 | 273934:273935 | NORMAL_TEXT | TABLE row=4 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01598 | 273936:273937 | NORMAL_TEXT | TABLE row=4 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01599 | 273938:273939 | NORMAL_TEXT | TABLE row=4 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01600 | 273940:273942 | NORMAL_TEXT | TABLE row=4 col=5]
+✓
+
+[P01601 | 273943:273945 | NORMAL_TEXT | TABLE row=4 col=6]
+✓
+
+[P01602 | 273946:273947 | NORMAL_TEXT | TABLE row=4 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01603 | 273948:273950 | NORMAL_TEXT | TABLE row=4 col=8]
+✓
+
+[P01604 | 273951:273952 | NORMAL_TEXT | TABLE row=4 col=9]
+⟦EMPTY PARAGRAPH⟧
+
+[P01605 | 273953:273954 | NORMAL_TEXT | TABLE row=4 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01606 | 273955:273957 | NORMAL_TEXT | TABLE row=4 col=11]
+✓
+
+[P01607 | 273958:273959 | NORMAL_TEXT | TABLE row=4 col=12]
+⟦EMPTY PARAGRAPH⟧
+
+[P01608 | 273960:273961 | NORMAL_TEXT | TABLE row=4 col=13]
+⟦EMPTY PARAGRAPH⟧
+
+[P01609 | 273962:273964 | NORMAL_TEXT | TABLE row=4 col=14]
+✓
+
+[P01610 | 273966:273996 | NORMAL_TEXT | TABLE row=5 col=0]
+Reports & Analytics Dashboard
+
+[P01611 | 273997:273999 | NORMAL_TEXT | TABLE row=5 col=1]
+✓
+
+[P01612 | 274000:274001 | NORMAL_TEXT | TABLE row=5 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01613 | 274002:274003 | NORMAL_TEXT | TABLE row=5 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01614 | 274004:274005 | NORMAL_TEXT | TABLE row=5 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01615 | 274006:274007 | NORMAL_TEXT | TABLE row=5 col=5]
+⟦EMPTY PARAGRAPH⟧
+
+[P01616 | 274008:274010 | NORMAL_TEXT | TABLE row=5 col=6]
+✓
+
+[P01617 | 274011:274013 | NORMAL_TEXT | TABLE row=5 col=7]
+✓
+
+[P01618 | 274014:274016 | NORMAL_TEXT | TABLE row=5 col=8]
+✓
+
+[P01619 | 274017:274019 | NORMAL_TEXT | TABLE row=5 col=9]
+✓
+
+[P01620 | 274020:274021 | NORMAL_TEXT | TABLE row=5 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01621 | 274022:274023 | NORMAL_TEXT | TABLE row=5 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01622 | 274024:274025 | NORMAL_TEXT | TABLE row=5 col=12]
+⟦EMPTY PARAGRAPH⟧
+
+[P01623 | 274026:274028 | NORMAL_TEXT | TABLE row=5 col=13]
+✓
+
+[P01624 | 274029:274031 | NORMAL_TEXT | TABLE row=5 col=14]
+✓
+
+[P01625 | 274033:274065 | NORMAL_TEXT | TABLE row=6 col=0]
+Notification & Alert Management
+
+[P01626 | 274066:274067 | NORMAL_TEXT | TABLE row=6 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01627 | 274068:274070 | NORMAL_TEXT | TABLE row=6 col=2]
+✓
+
+[P01628 | 274071:274073 | NORMAL_TEXT | TABLE row=6 col=3]
+✓
+
+[P01629 | 274074:274075 | NORMAL_TEXT | TABLE row=6 col=4]
+⟦EMPTY PARAGRAPH⟧
+
+[P01630 | 274076:274078 | NORMAL_TEXT | TABLE row=6 col=5]
+✓
+
+[P01631 | 274079:274081 | NORMAL_TEXT | TABLE row=6 col=6]
+✓
+
+[P01632 | 274082:274083 | NORMAL_TEXT | TABLE row=6 col=7]
+⟦EMPTY PARAGRAPH⟧
+
+[P01633 | 274084:274085 | NORMAL_TEXT | TABLE row=6 col=8]
+⟦EMPTY PARAGRAPH⟧
+
+[P01634 | 274086:274087 | NORMAL_TEXT | TABLE row=6 col=9]
+⟦EMPTY PARAGRAPH⟧
+
+[P01635 | 274088:274089 | NORMAL_TEXT | TABLE row=6 col=10]
+⟦EMPTY PARAGRAPH⟧
+
+[P01636 | 274090:274091 | NORMAL_TEXT | TABLE row=6 col=11]
+⟦EMPTY PARAGRAPH⟧
+
+[P01637 | 274092:274094 | NORMAL_TEXT | TABLE row=6 col=12]
+✓
+
+[P01638 | 274095:274096 | NORMAL_TEXT | TABLE row=6 col=13]
+⟦EMPTY PARAGRAPH⟧
+
+[P01639 | 274097:274098 | NORMAL_TEXT | TABLE row=6 col=14]
+⟦EMPTY PARAGRAPH⟧
+
+[P01640 | 274100:274140 | NORMAL_TEXT | TABLE row=7 col=0]
+Centralized Database, Backup & Recovery
+
+[P01641 | 274141:274143 | NORMAL_TEXT | TABLE row=7 col=1]
+✓
+
+[P01642 | 274144:274145 | NORMAL_TEXT | TABLE row=7 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01643 | 274146:274148 | NORMAL_TEXT | TABLE row=7 col=3]
+✓
+
+[P01644 | 274149:274151 | NORMAL_TEXT | TABLE row=7 col=4]
+✓
+
+[P01645 | 274152:274154 | NORMAL_TEXT | TABLE row=7 col=5]
+✓
+
+[P01646 | 274155:274157 | NORMAL_TEXT | TABLE row=7 col=6]
+✓
+
+[P01647 | 274158:274160 | NORMAL_TEXT | TABLE row=7 col=7]
+✓
+
+[P01648 | 274161:274163 | NORMAL_TEXT | TABLE row=7 col=8]
+✓
+
+[P01649 | 274164:274166 | NORMAL_TEXT | TABLE row=7 col=9]
+✓
+
+[P01650 | 274167:274169 | NORMAL_TEXT | TABLE row=7 col=10]
+✓
+
+[P01651 | 274170:274172 | NORMAL_TEXT | TABLE row=7 col=11]
+✓
+
+[P01652 | 274173:274174 | NORMAL_TEXT | TABLE row=7 col=12]
+⟦EMPTY PARAGRAPH⟧
+
+[P01653 | 274175:274177 | NORMAL_TEXT | TABLE row=7 col=13]
+✓
+
+[P01654 | 274178:274180 | NORMAL_TEXT | TABLE row=7 col=14]
+✓
+
+[P01655 | 274181:274182 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01656 | 274182:274705 | NORMAL_TEXT]
+	Table 5 shows the relationship between the identified system requirements and the proposed system features. Each feature was mapped to one or more requirements to ensure that the system directly addresses the operational problems identified in the study. The matrix also confirms that the proposed system is not limited to basic transaction processing, but includes fleet monitoring, analytical reporting, forecasting, rule-based recommendations, context-aware decision support, security, and centralized data management.
+
+[P01657 | 274705:275062 | NORMAL_TEXT]
+The requirements analysis establishes the foundation for the succeeding design specifications, including the use case diagrams, use case reports, activity diagrams, database schema, and data dictionary. It ensures that all system designs and development activities remain aligned with the actual needs of the target client and the objectives of the study.
+
+[P01658 | 275062:275080 | NORMAL_TEXT]
+Use Case Diagrams
+
+[P01659 | 275080:275115 | NORMAL_TEXT]
+Figure 4. General Use Case Diagram
+
+[P01660 | 275115:275117 | NORMAL_TEXT]
+[INLINE_OBJECT kix.q2lf4iymsy2x]
+
+[P01661 | 275117:275301 | NORMAL_TEXT]
+Figure 4 illustrates the general use case diagram, showing the identified system use cases and their associations with the Owner/Admin, Operations Staff, and Customer/Renter actors. 
+
+[P01662 | 275301:275328 | NORMAL_TEXT]
+Figure 5. Use Case Diagram
+
+[P01663 | 275328:275330 | NORMAL_TEXT]
+[INLINE_OBJECT kix.hlhr1w2m45ll]
+
+[P01664 | 275330:275604 | NORMAL_TEXT]
+Figure 5 illustrates the view vehicle catalog use case, showing how the Customer/Renter opens the vehicle catalog, browses available vehicles, views vehicle details, checks vehicle availability, and selects a vehicle for consideration before submitting a booking request. 
+
+[P01665 | 275604:275659 | NORMAL_TEXT]
+Figure 6. Use Case Diagram - Use Smart Vehicle Finder 
+
+[P01666 | 275659:275661 | NORMAL_TEXT]
+[INLINE_OBJECT kix.9x7no3kk9e7e]
+
+[P01667 | 275661:276048 | NORMAL_TEXT]
+Figure 6 illustrates the use Smart Vehicle Finder use case, showing how the Customer/Renter enters rental requirements, reviews the recommended vehicles and their recommendation details, selects a suitable recommended vehicle, and continues to the booking request. The recommendation assists vehicle selection and does not constitute booking approval or guaranteed vehicle assignment. 
+
+[P01668 | 276048:276049 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01669 | 276049:276095 | NORMAL_TEXT]
+Figure 7. Use Case Diagram - Register Account
+
+[P01670 | 276095:276097 | NORMAL_TEXT]
+[INLINE_OBJECT kix.ruyw3ye30358]
+
+[P01671 | 276097:276307 | NORMAL_TEXT]
+Figure 7 illustrates the register account use case, showing how the Customer/Renter opens the registration form, provides account details, submits the registration details, and accesses the customer account. 
+
+[P01672 | 276307:276342 | NORMAL_TEXT]
+Figure 8. Use Case Diagram - Login
+
+[P01673 | 276342:276344 | NORMAL_TEXT]
+[INLINE_OBJECT kix.gvjemgvxbk9x]
+
+[P01674 | 276344:276346 | NORMAL_TEXT]
+	
+
+[P01675 | 276346:276580 | NORMAL_TEXT]
+Figure 8 illustrates the login use case, showing how the Owner/Admin, Operations Staff, and Customer/Renter open the sign-in form, enter their account credentials, submit the login credentials, and access their respective accounts. 
+
+[P01676 | 276580:276629 | NORMAL_TEXT]
+Figure 9. Use Case Diagram - Manage Reservations
+
+[P01677 | 276629:276631 | NORMAL_TEXT]
+[INLINE_OBJECT kix.ifowfyyh2u74]
+
+[P01678 | 276631:276989 | NORMAL_TEXT]
+Figure 9 illustrates the manage reservations use case, showing how the Customer/Renter submits and manages eligible booking requests, while the Owner/Admin and Operations Staff review reservation information and booking schedules according to their permitted access. The Owner/Admin performs reservation confirmation, rejection, or cancellation decisions. 
+
+[P01679 | 276989:277048 | NORMAL_TEXT]
+Figure 10. Use Case Diagram - Verify Customer Requirements
+
+[P01680 | 277048:277050 | NORMAL_TEXT]
+[INLINE_OBJECT kix.ja9chcuoioyc]
+
+[P01681 | 277050:277411 | NORMAL_TEXT]
+Figure 10 illustrates the verify customer requirements use case, showing how the Customer/Renter uploads and submits required documents, while the Owner/Admin reviews the submitted requirements and records the verification result. When corrections are required, the Owner/Admin requests resubmission and the Customer/Renter resubmits the flagged requirements.
+
+[P01682 | 277411:277456 | NORMAL_TEXT]
+Figure 11. Use Case Diagram - Verify Payment
+
+[P01683 | 277456:277458 | NORMAL_TEXT]
+[INLINE_OBJECT kix.3vpt7m6pttxm]
+
+[P01684 | 277458:277804 | NORMAL_TEXT]
+Figure 11 illustrates the verify payment use case, showing how the Owner/Admin establishes the required payment amount and reviews the submitted payment information, while the Customer/Renter submits proof of payment. The Owner/Admin checks the payment reference, records the payment status, and may request payment resubmission when necessary.
+
+[P01685 | 277804:277861 | NORMAL_TEXT]
+Figure 12. Use Case Diagram - Manage Rental Transactions
+
+[P01686 | 277861:277863 | NORMAL_TEXT]
+[INLINE_OBJECT kix.yirn9t2hmsvy]
+
+[P01687 | 277863:278162 | NORMAL_TEXT]
+Figure 12 illustrates the manage rental transactions use case, showing how the Owner/Admin reviews booking, vehicle, and payment information before releasing the vehicle and starting the rental. The Customer/Renter can view the active rental status and transaction history related to the booking. 
+
+[P01688 | 278162:278215 | NORMAL_TEXT]
+Figure 13. Use Case Diagram - Process Vehicle Return
+
+[P01689 | 278215:278217 | NORMAL_TEXT]
+[INLINE_OBJECT kix.c7jas5sf1b5u]
+
+[P01690 | 278217:278494 | NORMAL_TEXT]
+Figure 13 illustrates the process vehicle return use case, showing how the Owner/Admin opens the active rental record, records the return date and time, odometer and fuel information, reviews the vehicle condition, records return details, and resolves the return inspection. 
+
+[P01691 | 278494:278495 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01692 | 278495:278540 | NORMAL_TEXT]
+Figure 14. Use Case Diagram - View Dashboard
+
+[P01693 | 278540:278542 | NORMAL_TEXT]
+[INLINE_OBJECT kix.y6at4a6mw4f8]
+
+[P01694 | 278542:278791 | NORMAL_TEXT]
+Figure 14 illustrates the view dashboard use case, showing how authorized users access the dashboard and review reservation, fleet and maintenance, rental and payment, and forecast and recommendation summaries according to their permitted access. 
+
+[P01695 | 278791:278845 | NORMAL_TEXT]
+Figure 15. Use Case Diagram - Manage Customer Records
+
+[P01696 | 278845:278847 | NORMAL_TEXT]
+[INLINE_OBJECT kix.dazdbip8c9l5]
+
+[P01697 | 278847:279052 | NORMAL_TEXT]
+Figure 15 illustrates the manage customer records use case, showing how the Owner/Admin opens customer records, views customer details, and reviews booking, requirement, and rental history information.  
+
+[P01698 | 279052:279105 | NORMAL_TEXT]
+Figure 16. Use Case Diagram - Manage Vehicle Records
+
+[P01699 | 279105:279107 | NORMAL_TEXT]
+[INLINE_OBJECT kix.co47i2bq5s54]
+
+[P01700 | 279107:279345 | NORMAL_TEXT]
+Figure 16 illustrates the manage vehicle records use case, showing how the Owner/Admin opens vehicle records, adds vehicle details, updates vehicle information, sets vehicle status, and assigns vehicles to their corresponding branches. 
+
+[P01701 | 279345:279402 | NORMAL_TEXT]
+Figure 17. Use Case Diagram - Manage Maintenance Records
+
+[P01702 | 279402:279404 | NORMAL_TEXT]
+[INLINE_OBJECT kix.xpibykar015y]
+
+[P01703 | 279404:279634 | NORMAL_TEXT]
+Figure 17 illustrates the manage maintenance records use case, showing how the Owner/Admin selects a vehicle record, schedules maintenance, updates maintenance status, records vehicle condition, and reviews maintenance history. 
+
+[P01704 | 279634:279635 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01705 | 279635:279688 | NORMAL_TEXT]
+Figure 18. Use Case Diagram - View Forecasted Demand
+
+[P01706 | 279688:279690 | NORMAL_TEXT]
+[INLINE_OBJECT kix.m5hqsdc0h0iy]
+
+[P01707 | 279690:279944 | NORMAL_TEXT]
+Figure 18 illustrates the view forecasted demand use case, showing how the Owner/Admin opens the forecasting module, selects the relevant forecast record, and reviews the forecasted demand, forecast inputs, and available forecast-accuracy information. 
+
+[P01708 | 279944:280011 | NORMAL_TEXT]
+Figure 19. Use Case Diagram - View Fleet Allocation Recommendation
+
+[P01709 | 280011:280013 | NORMAL_TEXT]
+[INLINE_OBJECT kix.qwrx78lji6ay]
+
+[P01710 | 280013:280433 | NORMAL_TEXT]
+Figure 19 illustrates the view fleet allocation recommendation use case, showing how the Owner/Admin reviews supply evaluation information, identified shortages and surpluses, vehicle availability, contextual factors, and the resulting allocation recommendation. The Owner/Admin may approve or reject the recommendation and separately reconcile a vehicle's branch location when an operational transfer is carried out. 
+
+[P01711 | 280433:280486 | NORMAL_TEXT]
+Figure 20. Use Case Diagram - View Generated Reports
+
+[P01712 | 280486:280488 | NORMAL_TEXT]
+[INLINE_OBJECT kix.uteppuxlu2g7]
+
+[P01713 | 280488:280778 | NORMAL_TEXT]
+Figure 20 illustrates the view generated reports use case, showing how the Owner/Admin and Operations Staff open the reports module, select a report type, apply report filters, view the report output, and review the resulting operational information according to their permitted access.  
+
+[P01714 | 280778:280832 | NORMAL_TEXT]
+Figure 21. Use Case Diagram - Configure Notifications
+
+[P01715 | 280832:280834 | NORMAL_TEXT]
+[INLINE_OBJECT kix.9m6k1dfl76ag]
+
+[P01716 | 280834:281068 | NORMAL_TEXT]
+Figure 21 illustrates the configure notifications use case, showing how the Owner/Admin configures booking updates, verification alerts, payment reminders, return schedule alerts, maintenance reminders, and low availability alerts. 
+
+[P01717 | 281068:281085 | NORMAL_TEXT]
+Use Case Reports
+
+[P01718 | 281085:281093 | NORMAL_TEXT]
+Table 6
+
+[P01719 | 281093:281133 | NORMAL_TEXT]
+Use Case Report – View Vehicle Catalog 
+
+[P01720 | 281136:281150 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P01721 | 281151:281173 | NORMAL_TEXT | TABLE row=0 col=1]
+View Vehicle Catalog 
+
+[P01722 | 281175:281182 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P01723 | 281183:281201 | NORMAL_TEXT | TABLE row=1 col=1]
+Customer / Renter
+
+[P01724 | 281203:281215 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P01725 | 281216:281378 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows the customer/renter to browse available vehicles, view vehicle details, check vehicle availability, and select a vehicle for consideration. 
+
+[P01726 | 281380:281393 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P01727 | 281394:281488 | NORMAL_TEXT | TABLE row=3 col=1]
+The customer/renter has access to the web-based system and the vehicle catalog is available. 
+
+[P01728 | 281490:281505 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P01729 | 281506:281524 | NORMAL_TEXT | TABLE row=4 col=1]
+Customer / Renter
+
+[P01730 | 281524:281571 | NORMAL_TEXT | LIST id=kix.uwv4v7655ux4 level=0 | TABLE row=4 col=1]
+The customer/renter opens the vehicle catalog.
+
+[P01731 | 281571:281619 | NORMAL_TEXT | LIST id=kix.uwv4v7655ux4 level=0 | TABLE row=4 col=1]
+The customer/renter browses available vehicles.
+
+[P01732 | 281619:281662 | NORMAL_TEXT | LIST id=kix.uwv4v7655ux4 level=0 | TABLE row=4 col=1]
+The customer/renter views vehicle details.
+
+[P01733 | 281662:281711 | NORMAL_TEXT | LIST id=kix.uwv4v7655ux4 level=0 | TABLE row=4 col=1]
+The customer/renter checks vehicle availability.
+
+[P01734 | 281711:281751 | NORMAL_TEXT | LIST id=kix.uwv4v7655ux4 level=0 | TABLE row=4 col=1]
+The customer/renter selects a vehicle. 
+
+[P01735 | 281753:281769 | NORMAL_TEXT | TABLE row=5 col=0]
+Post Conditions
+
+[P01736 | 281770:281902 | NORMAL_TEXT | TABLE row=5 col=1]
+The customer/renter has reviewed available vehicle information and may proceed with the selected vehicle toward a booking request. 
+
+[P01737 | 281904:281915 | NORMAL_TEXT | TABLE row=6 col=0]
+Exceptions
+
+[P01738 | 281916:282022 | NORMAL_TEXT | LIST id=kix.mf34sakwofgx level=0 | TABLE row=6 col=1]
+If no vehicles match the selected availability or criteria, the customer/renter may revise the selection.
+
+[P01739 | 282022:282120 | NORMAL_TEXT | LIST id=kix.mf34sakwofgx level=0 | TABLE row=6 col=1]
+If a selected vehicle is unavailable, the customer/renter must select another available vehicle. 
+
+[P01740 | 282121:282123 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01741 | 282123:282131 | NORMAL_TEXT]
+Table 7
+
+[P01742 | 282131:282174 | NORMAL_TEXT]
+Use Case Report – Use Smart Vehicle Finder
+
+[P01743 | 282177:282191 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P01744 | 282192:282218 | NORMAL_TEXT | TABLE row=0 col=1]
+Use Smart Vehicle Finder 
+
+[P01745 | 282220:282227 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P01746 | 282228:282246 | NORMAL_TEXT | TABLE row=1 col=1]
+Customer / Renter
+
+[P01747 | 282248:282260 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P01748 | 282261:282414 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows the customer/renter to provide rental requirements and review vehicle recommendations that assist in selecting a suitable vehicle. 
+
+[P01749 | 282416:282429 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P01750 | 282430:282547 | NORMAL_TEXT | TABLE row=3 col=1]
+The customer/renter has access to the Smart Vehicle Finder and vehicle information is available for recommendation. 
+
+[P01751 | 282549:282564 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P01752 | 282565:282583 | NORMAL_TEXT | TABLE row=4 col=1]
+Customer / Renter
+
+[P01753 | 282583:282635 | NORMAL_TEXT | LIST id=kix.thqyq0el7h0a level=0 | TABLE row=4 col=1]
+The customer/renter opens the Smart Vehicle Finder.
+
+[P01754 | 282635:282687 | NORMAL_TEXT | LIST id=kix.thqyq0el7h0a level=0 | TABLE row=4 col=1]
+The customer/renter enters the rental requirements.
+
+[P01755 | 282687:282735 | NORMAL_TEXT | LIST id=kix.thqyq0el7h0a level=0 | TABLE row=4 col=1]
+The customer/renter views recommended vehicles.
+
+[P01756 | 282735:282787 | NORMAL_TEXT | LIST id=kix.thqyq0el7h0a level=0 | TABLE row=4 col=1]
+The customer/renter reviews recommendation details.
+
+[P01757 | 282787:282838 | NORMAL_TEXT | LIST id=kix.thqyq0el7h0a level=0 | TABLE row=4 col=1]
+The customer/renter selects a recommended vehicle.
+
+[P01758 | 282838:282893 | NORMAL_TEXT | LIST id=kix.thqyq0el7h0a level=0 | TABLE row=4 col=1]
+The customer/renter continues to the booking request. 
+
+[P01759 | 282895:282911 | NORMAL_TEXT | TABLE row=5 col=0]
+Post Conditions
+
+[P01760 | 282912:283129 | NORMAL_TEXT | TABLE row=5 col=1]
+The customer/renter has selected a recommended vehicle and may be carried into the booking process, but the recommendation does not constitute booking approval, vehicle reservation, or guaranteed vehicle assignment. 
+
+[P01761 | 283131:283142 | NORMAL_TEXT | TABLE row=6 col=0]
+Exceptions
+
+[P01762 | 283143:283244 | NORMAL_TEXT | LIST id=kix.acnvzu4027y5 level=0 | TABLE row=6 col=1]
+If required rental information is incomplete, the customer/renter completes the missing information.
+
+[P01763 | 283244:283353 | NORMAL_TEXT | LIST id=kix.acnvzu4027y5 level=0 | TABLE row=6 col=1]
+If no suitable vehicle recommendation is available, the customer/renter may revise the rental requirements. 
+
+[P01764 | 283353:283541 | NORMAL_TEXT | LIST id=kix.acnvzu4027y5 level=0 | TABLE row=6 col=1]
+If the selected recommendation becomes unavailable or no longer satisfies the booking conditions, the customer/renter must refresh the recommendations or select another eligible vehicle. 
+
+[P01765 | 283542:283544 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01766 | 283544:283552 | NORMAL_TEXT]
+Table 8
+
+[P01767 | 283552:283588 | NORMAL_TEXT]
+Use Case Report – Register Account 
+
+[P01768 | 283591:283605 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P01769 | 283606:283623 | NORMAL_TEXT | TABLE row=0 col=1]
+Register Account
+
+[P01770 | 283625:283632 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P01771 | 283633:283651 | NORMAL_TEXT | TABLE row=1 col=1]
+Customer / Renter
+
+[P01772 | 283653:283665 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P01773 | 283666:283785 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows a customer/renter to create an account for accessing permitted customer-facing rental functions. 
+
+[P01774 | 283787:283800 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P01775 | 283801:283890 | NORMAL_TEXT | TABLE row=3 col=1]
+The customer/renter has access to the web-based system and is on the registration page. 
+
+[P01776 | 283892:283907 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P01777 | 283908:283926 | NORMAL_TEXT | TABLE row=4 col=1]
+Customer / Renter
+
+[P01778 | 283926:283975 | NORMAL_TEXT | LIST id=kix.uoy65og5w0m level=0 | TABLE row=4 col=1]
+The customer/renter opens the registration form.
+
+[P01779 | 283975:284034 | NORMAL_TEXT | LIST id=kix.uoy65og5w0m level=0 | TABLE row=4 col=1]
+The customer/renter provides the required account details.
+
+[P01780 | 284034:284088 | NORMAL_TEXT | LIST id=kix.uoy65og5w0m level=0 | TABLE row=4 col=1]
+The customer/renter submits the registration details.
+
+[P01781 | 284088:284164 | NORMAL_TEXT | LIST id=kix.uoy65og5w0m level=0 | TABLE row=4 col=1]
+The customer/renter proceeds according to the account confirmation status. 
+
+[P01782 | 284166:284182 | NORMAL_TEXT | TABLE row=5 col=0]
+Post Conditions
+
+[P01783 | 284183:284319 | NORMAL_TEXT | TABLE row=5 col=1]
+The customer/renter account is created. Account access becomes available after any required email confirmation and successful sign-in. 
+
+[P01784 | 284321:284332 | NORMAL_TEXT | TABLE row=6 col=0]
+Exceptions
+
+[P01785 | 284333:284458 | NORMAL_TEXT | LIST id=kix.pw3tzvr1jt6e level=0 | TABLE row=6 col=1]
+If required registration details are incomplete, the system prompts the customer/renter to complete the missing information.
+
+[P01786 | 284458:284571 | NORMAL_TEXT | LIST id=kix.pw3tzvr1jt6e level=0 | TABLE row=6 col=1]
+If a duplicate account is detected, the system informs the customer/renter and prevents duplicate registration. 
+
+[P01787 | 284571:284723 | NORMAL_TEXT | LIST id=kix.pw3tzvr1jt6e level=0 | TABLE row=6 col=1]
+If email confirmation is required, the customer/renter must confirm the registered email address before signing in and accessing the customer account. 
+
+[P01788 | 284724:284725 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01789 | 284725:284727 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01790 | 284727:284735 | NORMAL_TEXT]
+Table 9
+
+[P01791 | 284735:284759 | NORMAL_TEXT]
+Use Case Report – Login
+
+[P01792 | 284762:284776 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P01793 | 284777:284783 | NORMAL_TEXT | TABLE row=0 col=1]
+Login
+
+[P01794 | 284784:284785 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01795 | 284786:284787 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01796 | 284789:284796 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P01797 | 284797:284848 | NORMAL_TEXT | TABLE row=1 col=1]
+Customer / Renter; Owner / Admin; Operations Staff
+
+[P01798 | 284849:284850 | NORMAL_TEXT | TABLE row=1 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01799 | 284851:284852 | NORMAL_TEXT | TABLE row=1 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01800 | 284854:284866 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P01801 | 284867:284988 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows authorized users to log into the system and access functions permitted for their respective roles. 
+
+[P01802 | 284989:284990 | NORMAL_TEXT | TABLE row=2 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01803 | 284991:284992 | NORMAL_TEXT | TABLE row=2 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01804 | 284994:285007 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P01805 | 285008:285066 | NORMAL_TEXT | TABLE row=3 col=1]
+The user has a valid account and is on the sign-in page. 
+
+[P01806 | 285067:285068 | NORMAL_TEXT | TABLE row=3 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01807 | 285069:285070 | NORMAL_TEXT | TABLE row=3 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01808 | 285072:285087 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P01809 | 285088:285106 | NORMAL_TEXT | TABLE row=4 col=1]
+Customer / Renter
+
+[P01810 | 285107:285121 | NORMAL_TEXT | TABLE row=4 col=2]
+Owner / Admin
+
+[P01811 | 285122:285139 | NORMAL_TEXT | TABLE row=4 col=3]
+Operations Staff
+
+[P01812 | 285141:285142 | NORMAL_TEXT | TABLE row=5 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01813 | 285143:285170 | NORMAL_TEXT | TABLE row=5 col=1]
+1. Opens the sign-in form.
+
+[P01814 | 285171:285198 | NORMAL_TEXT | TABLE row=5 col=2]
+1. Opens the sign-in form.
+
+[P01815 | 285199:285226 | NORMAL_TEXT | TABLE row=5 col=3]
+1. Opens the sign-in form.
+
+[P01816 | 285228:285229 | NORMAL_TEXT | TABLE row=6 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01817 | 285230:285261 | NORMAL_TEXT | TABLE row=6 col=1]
+2. Enters account credentials.
+
+[P01818 | 285262:285293 | NORMAL_TEXT | TABLE row=6 col=2]
+2. Enters account credentials.
+
+[P01819 | 285294:285325 | NORMAL_TEXT | TABLE row=6 col=3]
+2. Enters account credentials.
+
+[P01820 | 285327:285328 | NORMAL_TEXT | TABLE row=7 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01821 | 285329:285363 | NORMAL_TEXT | TABLE row=7 col=1]
+3. Submits the login credentials.
+
+[P01822 | 285364:285398 | NORMAL_TEXT | TABLE row=7 col=2]
+3. Submits the login credentials.
+
+[P01823 | 285399:285433 | NORMAL_TEXT | TABLE row=7 col=3]
+3. Submits the login credentials.
+
+[P01824 | 285435:285436 | NORMAL_TEXT | TABLE row=8 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01825 | 285437:285468 | NORMAL_TEXT | TABLE row=8 col=1]
+4. Views the customer account.
+
+[P01826 | 285469:285526 | NORMAL_TEXT | TABLE row=8 col=2]
+4. Views the authorized account with full system access.
+
+[P01827 | 285527:285594 | NORMAL_TEXT | TABLE row=8 col=3]
+4. Views the authorized account with permitted operational access.
+
+[P01828 | 285596:285612 | NORMAL_TEXT | TABLE row=9 col=0]
+Post Conditions
+
+[P01829 | 285613:285706 | NORMAL_TEXT | TABLE row=9 col=1]
+The user is logged into the system and can access features permitted for the assigned role. 
+
+[P01830 | 285707:285708 | NORMAL_TEXT | TABLE row=9 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01831 | 285709:285710 | NORMAL_TEXT | TABLE row=9 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01832 | 285712:285723 | NORMAL_TEXT | TABLE row=10 col=0]
+Exceptions
+
+[P01833 | 285724:285824 | NORMAL_TEXT | LIST id=kix.kkpkf8s71vee level=0 | TABLE row=10 col=1]
+If invalid credentials are entered, the system prompts the user to provide the correct information.
+
+[P01834 | 285824:285892 | NORMAL_TEXT | LIST id=kix.kkpkf8s71vee level=0 | TABLE row=10 col=1]
+If the account is inactive or unauthorized, access is not granted. 
+
+[P01835 | 285893:285894 | NORMAL_TEXT | TABLE row=10 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01836 | 285895:285896 | NORMAL_TEXT | TABLE row=10 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01837 | 285897:285899 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01838 | 285899:285900 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01839 | 285900:285909 | NORMAL_TEXT]
+Table 10
+
+[P01840 | 285909:285947 | NORMAL_TEXT]
+Use Case Report – Manage Reservations
+
+[P01841 | 285950:285964 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P01842 | 285965:285985 | NORMAL_TEXT | TABLE row=0 col=1]
+Manage Reservations
+
+[P01843 | 285986:285987 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01844 | 285988:285989 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01845 | 285991:285998 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P01846 | 285999:286050 | NORMAL_TEXT | TABLE row=1 col=1]
+Customer / Renter; Owner / Admin; Operations Staff
+
+[P01847 | 286051:286052 | NORMAL_TEXT | TABLE row=1 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01848 | 286053:286054 | NORMAL_TEXT | TABLE row=1 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01849 | 286056:286068 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P01850 | 286069:286300 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case supports customer booking requests and authorized reservation review and management. Successful payment verification normally triggers booking confirmation automatically when confirmation requirements are satisfied. 
+
+[P01851 | 286301:286302 | NORMAL_TEXT | TABLE row=2 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01852 | 286303:286304 | NORMAL_TEXT | TABLE row=2 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01853 | 286306:286319 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P01854 | 286320:286453 | NORMAL_TEXT | TABLE row=3 col=1]
+Required vehicle and booking information is available, and the user has the appropriate access for the intended reservation action. 
+
+[P01855 | 286454:286455 | NORMAL_TEXT | TABLE row=3 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01856 | 286456:286457 | NORMAL_TEXT | TABLE row=3 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01857 | 286459:286474 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P01858 | 286475:286493 | NORMAL_TEXT | TABLE row=4 col=1]
+Customer / Renter
+
+[P01859 | 286494:286508 | NORMAL_TEXT | TABLE row=4 col=2]
+Owner / Admin
+
+[P01860 | 286509:286526 | NORMAL_TEXT | TABLE row=4 col=3]
+Operations Staff
+
+[P01861 | 286528:286529 | NORMAL_TEXT | TABLE row=5 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01862 | 286530:286564 | NORMAL_TEXT | TABLE row=5 col=1]
+1. Opens the reservation module. 
+
+[P01863 | 286565:286599 | NORMAL_TEXT | TABLE row=5 col=2]
+1. Opens the reservation module. 
+
+[P01864 | 286600:286634 | NORMAL_TEXT | TABLE row=5 col=3]
+1. Opens the reservation module. 
+
+[P01865 | 286636:286637 | NORMAL_TEXT | TABLE row=6 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01866 | 286638:286668 | NORMAL_TEXT | TABLE row=6 col=1]
+2. Submits a booking request.
+
+[P01867 | 286669:286702 | NORMAL_TEXT | TABLE row=6 col=2]
+2. Reviews reservation details. 
+
+[P01868 | 286703:286745 | NORMAL_TEXT | TABLE row=6 col=3]
+2. Reviews permitted reservation details.
+
+[P01869 | 286747:286748 | NORMAL_TEXT | TABLE row=7 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01870 | 286749:286796 | NORMAL_TEXT | TABLE row=7 col=1]
+3. Edits a draft booking request when needed. 
+
+[P01871 | 286797:286862 | NORMAL_TEXT | TABLE row=7 col=2]
+3. Confirms, rejects, or cancels the reservation when permitted.
+
+[P01872 | 286863:286895 | NORMAL_TEXT | TABLE row=7 col=3]
+3. Views the booking calendar. 
+
+[P01873 | 286897:286898 | NORMAL_TEXT | TABLE row=8 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01874 | 286899:286954 | NORMAL_TEXT | TABLE row=8 col=1]
+4. Withdraws an eligible booking request when needed. 
+
+[P01875 | 286955:286987 | NORMAL_TEXT | TABLE row=8 col=2]
+4. Views the booking calendar. 
+
+[P01876 | 286988:286989 | NORMAL_TEXT | TABLE row=8 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01877 | 286991:286992 | NORMAL_TEXT | TABLE row=9 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01878 | 286993:286994 | NORMAL_TEXT | TABLE row=9 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01879 | 286995:287071 | NORMAL_TEXT | TABLE row=9 col=2]
+5. Reviews any confirmation exception that requires administrative action. 
+
+[P01880 | 287072:287073 | NORMAL_TEXT | TABLE row=9 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01881 | 287075:287091 | NORMAL_TEXT | TABLE row=10 col=0]
+Post Conditions
+
+[P01882 | 287092:287230 | NORMAL_TEXT | TABLE row=10 col=1]
+The booking request or reservation reflects the authorized action performed and is available for subsequent applicable rental processes. 
+
+[P01883 | 287231:287232 | NORMAL_TEXT | TABLE row=10 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01884 | 287233:287234 | NORMAL_TEXT | TABLE row=10 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01885 | 287236:287248 | NORMAL_TEXT | TABLE row=11 col=0]
+Exceptions 
+
+[P01886 | 287249:287355 | NORMAL_TEXT | LIST id=kix.poqmbt9dtkh level=0 | TABLE row=11 col=1]
+If required booking information is incomplete, the customer/renter must complete the missing information.
+
+[P01887 | 287355:287445 | NORMAL_TEXT | LIST id=kix.poqmbt9dtkh level=0 | TABLE row=11 col=1]
+If the requested vehicle or schedule is unavailable, the booking request must be revised.
+
+[P01888 | 287445:287521 | NORMAL_TEXT | LIST id=kix.poqmbt9dtkh level=0 | TABLE row=11 col=1]
+Actions outside an actor's permitted role are not available to that actor. 
+
+[P01889 | 287521:287710 | NORMAL_TEXT | LIST id=kix.poqmbt9dtkh level=0 | TABLE row=11 col=1]
+If automatic confirmation cannot proceed because assignment, vehicle readiness, schedule, or other confirmation requirements are not satisfied, the booking remains for Owner/Admin review. 
+
+[P01890 | 287711:287712 | NORMAL_TEXT | TABLE row=11 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01891 | 287713:287714 | NORMAL_TEXT | TABLE row=11 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P01892 | 287715:287716 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01893 | 287716:287725 | NORMAL_TEXT]
+Table 11
+
+[P01894 | 287725:287772 | NORMAL_TEXT]
+Use Case Report – Verify Customer Requirements
+
+[P01895 | 287775:287789 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P01896 | 287790:287819 | NORMAL_TEXT | TABLE row=0 col=1]
+Verify Customer Requirements
+
+[P01897 | 287820:287821 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01898 | 287823:287830 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P01899 | 287831:287864 | NORMAL_TEXT | TABLE row=1 col=1]
+Customer / Renter; Owner / Admin
+
+[P01900 | 287865:287866 | NORMAL_TEXT | TABLE row=1 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01901 | 287868:287880 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P01902 | 287881:288054 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows the customer/renter to submit required documents and allows the owner/admin to review the submitted requirements and record their verification status. 
+
+[P01903 | 288055:288056 | NORMAL_TEXT | TABLE row=2 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01904 | 288058:288071 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P01905 | 288072:288175 | NORMAL_TEXT | TABLE row=3 col=1]
+A relevant customer or booking record exists and requirements are available for submission or review. 
+
+[P01906 | 288176:288177 | NORMAL_TEXT | TABLE row=3 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01907 | 288179:288194 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P01908 | 288195:288213 | NORMAL_TEXT | TABLE row=4 col=1]
+Customer / Renter
+
+[P01909 | 288214:288228 | NORMAL_TEXT | TABLE row=4 col=2]
+Owner / Admin
+
+[P01910 | 288230:288231 | NORMAL_TEXT | TABLE row=5 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01911 | 288232:288265 | NORMAL_TEXT | TABLE row=5 col=1]
+1. Opens the requirements page. 
+
+[P01912 | 288266:288299 | NORMAL_TEXT | TABLE row=5 col=2]
+1. Opens the requirements page. 
+
+[P01913 | 288301:288302 | NORMAL_TEXT | TABLE row=6 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01914 | 288303:288339 | NORMAL_TEXT | TABLE row=6 col=1]
+2. Uploads the required documents. 
+
+[P01915 | 288340:288380 | NORMAL_TEXT | TABLE row=6 col=2]
+2. Reviews the submitted requirements. 
+
+[P01916 | 288382:288383 | NORMAL_TEXT | TABLE row=7 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01917 | 288384:288414 | NORMAL_TEXT | TABLE row=7 col=1]
+3. Submits the requirements. 
+
+[P01918 | 288415:288452 | NORMAL_TEXT | TABLE row=7 col=2]
+3. Records the verification status. 
+
+[P01919 | 288454:288455 | NORMAL_TEXT | TABLE row=8 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01920 | 288456:288507 | NORMAL_TEXT | TABLE row=8 col=1]
+4. Resubmits flagged requirements when requested. 
+
+[P01921 | 288508:288577 | NORMAL_TEXT | TABLE row=8 col=2]
+4. Requests requirement resubmission when corrections are required. 
+
+[P01922 | 288579:288595 | NORMAL_TEXT | TABLE row=9 col=0]
+Post Conditions
+
+[P01923 | 288596:288724 | NORMAL_TEXT | TABLE row=9 col=1]
+The submitted requirements have a recorded verification status or are returned to the customer/renter for required correction. 
+
+[P01924 | 288725:288726 | NORMAL_TEXT | TABLE row=9 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01925 | 288728:288739 | NORMAL_TEXT | TABLE row=10 col=0]
+Exceptions
+
+[P01926 | 288740:288827 | NORMAL_TEXT | LIST id=kix.6cedbirl0721 level=0 | TABLE row=10 col=1]
+If required documents are missing or unreadable, corrected requirements are requested.
+
+[P01927 | 288827:288913 | NORMAL_TEXT | LIST id=kix.6cedbirl0721 level=0 | TABLE row=10 col=1]
+If submitted information requires correction, the owner/admin requests resubmission. 
+
+[P01928 | 288913:289088 | NORMAL_TEXT | LIST id=kix.6cedbirl0721 level=0 | TABLE row=10 col=1]
+If one or more submitted requirements require correction, the Owner/Admin requests resubmission and the Customer/Renter replaces the flagged requirement before resubmitting. 
+
+[P01929 | 289089:289090 | NORMAL_TEXT | TABLE row=10 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01930 | 289091:289093 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01931 | 289093:289102 | NORMAL_TEXT]
+Table 12
+
+[P01932 | 289102:289135 | NORMAL_TEXT]
+Use Case Report – Verify Payment
+
+[P01933 | 289138:289152 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P01934 | 289153:289168 | NORMAL_TEXT | TABLE row=0 col=1]
+Verify Payment
+
+[P01935 | 289169:289170 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01936 | 289172:289179 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P01937 | 289180:289213 | NORMAL_TEXT | TABLE row=1 col=1]
+Customer / Renter; Owner / Admin
+
+[P01938 | 289214:289215 | NORMAL_TEXT | TABLE row=1 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01939 | 289217:289229 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P01940 | 289230:289506 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows the Customer/Renter to review the issued quotation and submit payment proof, while the Owner/Admin reviews the system-calculated quotation, enters the applicable delivery fee, issues the quotation, verifies payment proof, and records the payment status. 
+
+[P01941 | 289507:289508 | NORMAL_TEXT | TABLE row=2 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01942 | 289510:289523 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P01943 | 289524:289669 | NORMAL_TEXT | TABLE row=3 col=1]
+The Customer/Renter requirements are verified, the applicable booking exists, and the booking is eligible for quotation and payment processing. 
+
+[P01944 | 289670:289671 | NORMAL_TEXT | TABLE row=3 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01945 | 289673:289688 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P01946 | 289689:289707 | NORMAL_TEXT | TABLE row=4 col=1]
+Customer / Renter
+
+[P01947 | 289708:289722 | NORMAL_TEXT | TABLE row=4 col=2]
+Owner / Admin
+
+[P01948 | 289724:289725 | NORMAL_TEXT | TABLE row=5 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01949 | 289726:289757 | NORMAL_TEXT | TABLE row=5 col=1]
+1. Opens the payment records. 
+
+[P01950 | 289758:289789 | NORMAL_TEXT | TABLE row=5 col=2]
+1. Opens the payment records. 
+
+[P01951 | 289791:289792 | NORMAL_TEXT | TABLE row=6 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01952 | 289793:289794 | NORMAL_TEXT | TABLE row=6 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01953 | 289795:289841 | NORMAL_TEXT | TABLE row=6 col=2]
+2. Reviews the calculated payment quotation. 
+
+[P01954 | 289843:289844 | NORMAL_TEXT | TABLE row=7 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01955 | 289845:289879 | NORMAL_TEXT | TABLE row=7 col=1]
+2. Reviews the issued quotation. 
+
+[P01956 | 289880:289920 | NORMAL_TEXT | TABLE row=7 col=2]
+3. Enters the applicable delivery fee. 
+
+[P01957 | 289922:289923 | NORMAL_TEXT | TABLE row=8 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01958 | 289924:289925 | NORMAL_TEXT | TABLE row=8 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01959 | 289926:289960 | NORMAL_TEXT | TABLE row=8 col=2]
+4. Issues the payment quotation. 
+
+[P01960 | 289962:289963 | NORMAL_TEXT | TABLE row=9 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01961 | 289964:290029 | NORMAL_TEXT | TABLE row=9 col=1]
+3. Submits payment proof for the exact required payment amount. 
+
+[P01962 | 290030:290067 | NORMAL_TEXT | TABLE row=9 col=2]
+5. Reviews submitted payment proof. 
+
+[P01963 | 290069:290070 | NORMAL_TEXT | TABLE row=10 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01964 | 290071:290072 | NORMAL_TEXT | TABLE row=10 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01965 | 290073:290128 | NORMAL_TEXT | TABLE row=10 col=2]
+6. Checks the payment reference and submitted amount. 
+
+[P01966 | 290130:290131 | NORMAL_TEXT | TABLE row=11 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01967 | 290132:290176 | NORMAL_TEXT | TABLE row=11 col=1]
+4. Resubmits payment proof when requested. 
+
+[P01968 | 290177:290209 | NORMAL_TEXT | TABLE row=11 col=2]
+7. Records the payment status. 
+
+[P01969 | 290211:290212 | NORMAL_TEXT | TABLE row=12 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P01970 | 290213:290214 | NORMAL_TEXT | TABLE row=12 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P01971 | 290215:290265 | NORMAL_TEXT | TABLE row=12 col=2]
+8. Requests payment resubmission when necessary. 
+
+[P01972 | 290267:290283 | NORMAL_TEXT | TABLE row=13 col=0]
+Post Conditions
+
+[P01973 | 290284:290384 | NORMAL_TEXT | TABLE row=13 col=1]
+The payment information has a recorded status or has been returned for correction or resubmission. 
+
+[P01974 | 290385:290386 | NORMAL_TEXT | TABLE row=13 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01975 | 290388:290399 | NORMAL_TEXT | TABLE row=14 col=0]
+Exceptions
+
+[P01976 | 290400:290487 | NORMAL_TEXT | LIST id=kix.q6cclks6bzto level=0 | TABLE row=14 col=1]
+If payment proof is unclear or incomplete, corrected payment information is requested.
+
+[P01977 | 290487:290587 | NORMAL_TEXT | LIST id=kix.q6cclks6bzto level=0 | TABLE row=14 col=1]
+If the payment reference cannot be confirmed, the payment is not treated as successfully verified. 
+
+[P01978 | 290587:290698 | NORMAL_TEXT | LIST id=kix.q6cclks6bzto level=0 | TABLE row=14 col=1]
+If the submitted amount does not match the exact required payment amount, payment verification cannot proceed.
+
+[P01979 | 290698:290868 | NORMAL_TEXT | LIST id=kix.q6cclks6bzto level=0 | TABLE row=14 col=1]
+If successful payment verification cannot automatically confirm the booking because confirmation requirements are not satisfied, the booking requires Owner/Admin review.
+
+[P01980 | 290869:290870 | NORMAL_TEXT | TABLE row=14 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01981 | 290871:290872 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P01982 | 290872:290881 | NORMAL_TEXT]
+Table 13
+
+[P01983 | 290881:290926 | NORMAL_TEXT]
+Use Case Report – Manage Rental Transactions
+
+[P01984 | 290929:290943 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P01985 | 290944:290971 | NORMAL_TEXT | TABLE row=0 col=1]
+Manage Rental Transactions
+
+[P01986 | 290972:290973 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01987 | 290975:290982 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P01988 | 290983:291016 | NORMAL_TEXT | TABLE row=1 col=1]
+Customer / Renter; Owner / Admin
+
+[P01989 | 291017:291018 | NORMAL_TEXT | TABLE row=1 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01990 | 291020:291032 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P01991 | 291033:291306 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case supports authorized processing and viewing of rental transactions associated with eligible bookings. Vehicle release includes recording the release condition and the required acknowledgements for the rental agreement, vehicle condition, and return schedule. 
+
+[P01992 | 291307:291308 | NORMAL_TEXT | TABLE row=2 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01993 | 291310:291323 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P01994 | 291324:291468 | NORMAL_TEXT | TABLE row=3 col=1]
+The booking is confirmed, an eligible vehicle is assigned, requirements and payment are verified, and all release prerequisites are satisfied. 
+
+[P01995 | 291469:291470 | NORMAL_TEXT | TABLE row=3 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P01996 | 291472:291487 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P01997 | 291488:291506 | NORMAL_TEXT | TABLE row=4 col=1]
+Customer / Renter
+
+[P01998 | 291507:291521 | NORMAL_TEXT | TABLE row=4 col=2]
+Owner / Admin
+
+[P01999 | 291523:291524 | NORMAL_TEXT | TABLE row=5 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02000 | 291525:291582 | NORMAL_TEXT | TABLE row=5 col=1]
+1. Opens the applicable rental transaction information. 
+
+[P02001 | 291583:291624 | NORMAL_TEXT | TABLE row=5 col=2]
+1. Opens the rental transaction record. 
+
+[P02002 | 291626:291627 | NORMAL_TEXT | TABLE row=6 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02003 | 291628:291629 | NORMAL_TEXT | TABLE row=6 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02004 | 291630:291631 | NORMAL_TEXT | TABLE row=6 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02005 | 291633:291634 | NORMAL_TEXT | TABLE row=7 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02006 | 291635:291636 | NORMAL_TEXT | TABLE row=7 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02007 | 291637:291638 | NORMAL_TEXT | TABLE row=7 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02008 | 291640:291641 | NORMAL_TEXT | TABLE row=8 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02009 | 291642:291643 | NORMAL_TEXT | TABLE row=8 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02010 | 291644:291681 | NORMAL_TEXT | TABLE row=8 col=2]
+2. Reviews the booking information. 
+
+[P02011 | 291683:291684 | NORMAL_TEXT | TABLE row=9 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02012 | 291685:291686 | NORMAL_TEXT | TABLE row=9 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02013 | 291687:291688 | NORMAL_TEXT | TABLE row=9 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02014 | 291690:291691 | NORMAL_TEXT | TABLE row=10 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02015 | 291692:291693 | NORMAL_TEXT | TABLE row=10 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02016 | 291694:291695 | NORMAL_TEXT | TABLE row=10 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02017 | 291697:291698 | NORMAL_TEXT | TABLE row=11 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02018 | 291699:291700 | NORMAL_TEXT | TABLE row=11 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02019 | 291701:291742 | NORMAL_TEXT | TABLE row=11 col=2]
+3. Reviews vehicle and payment details. 
+
+[P02020 | 291744:291745 | NORMAL_TEXT | TABLE row=12 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02021 | 291746:291781 | NORMAL_TEXT | TABLE row=12 col=1]
+2. Views the active rental status.
+
+[P02022 | 291782:291783 | NORMAL_TEXT | TABLE row=12 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02023 | 291785:291786 | NORMAL_TEXT | TABLE row=13 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02024 | 291787:291788 | NORMAL_TEXT | TABLE row=13 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02025 | 291789:291790 | NORMAL_TEXT | TABLE row=13 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02026 | 291792:291793 | NORMAL_TEXT | TABLE row=14 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02027 | 291794:291795 | NORMAL_TEXT | TABLE row=14 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02028 | 291796:291895 | NORMAL_TEXT | TABLE row=14 col=2]
+4. Records the release condition, including applicable odometer, fuel, and condition information. 
+
+[P02029 | 291897:291898 | NORMAL_TEXT | TABLE row=15 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02030 | 291899:291900 | NORMAL_TEXT | TABLE row=15 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02031 | 291901:291902 | NORMAL_TEXT | TABLE row=15 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02032 | 291904:291905 | NORMAL_TEXT | TABLE row=16 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02033 | 291906:291907 | NORMAL_TEXT | TABLE row=16 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02034 | 291908:291909 | NORMAL_TEXT | TABLE row=16 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02035 | 291911:291912 | NORMAL_TEXT | TABLE row=17 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02036 | 291913:291914 | NORMAL_TEXT | TABLE row=17 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02037 | 291915:292023 | NORMAL_TEXT | TABLE row=17 col=2]
+5. Records the required acknowledgements for the rental agreement, vehicle condition, and return schedule. 
+
+[P02038 | 292025:292026 | NORMAL_TEXT | TABLE row=18 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02039 | 292027:292028 | NORMAL_TEXT | TABLE row=18 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02040 | 292029:292030 | NORMAL_TEXT | TABLE row=18 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02041 | 292032:292033 | NORMAL_TEXT | TABLE row=19 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02042 | 292034:292068 | NORMAL_TEXT | TABLE row=19 col=1]
+3. Views the transaction history.
+
+[P02043 | 292069:292070 | NORMAL_TEXT | TABLE row=19 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02044 | 292072:292073 | NORMAL_TEXT | TABLE row=20 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02045 | 292074:292075 | NORMAL_TEXT | TABLE row=20 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02046 | 292076:292124 | NORMAL_TEXT | TABLE row=20 col=2]
+6. Releases the vehicle and starts the rental. 
+
+[P02047 | 292126:292127 | NORMAL_TEXT | TABLE row=21 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02048 | 292128:292129 | NORMAL_TEXT | TABLE row=21 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02049 | 292130:292131 | NORMAL_TEXT | TABLE row=21 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02050 | 292133:292134 | NORMAL_TEXT | TABLE row=22 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02051 | 292135:292136 | NORMAL_TEXT | TABLE row=22 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02052 | 292137:292138 | NORMAL_TEXT | TABLE row=22 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02053 | 292140:292141 | NORMAL_TEXT | TABLE row=23 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02054 | 292142:292143 | NORMAL_TEXT | TABLE row=23 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02055 | 292144:292204 | NORMAL_TEXT | TABLE row=23 col=2]
+7. Views the active rental status and transaction history. 
+
+[P02056 | 292206:292207 | NORMAL_TEXT | TABLE row=24 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02057 | 292208:292209 | NORMAL_TEXT | TABLE row=24 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02058 | 292210:292211 | NORMAL_TEXT | TABLE row=24 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02059 | 292213:292214 | NORMAL_TEXT | TABLE row=25 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02060 | 292215:292216 | NORMAL_TEXT | TABLE row=25 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02061 | 292217:292218 | NORMAL_TEXT | TABLE row=25 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02062 | 292220:292236 | NORMAL_TEXT | TABLE row=26 col=0]
+Post Conditions
+
+[P02063 | 292237:292365 | NORMAL_TEXT | TABLE row=26 col=1]
+The applicable rental transaction information is recorded and available for subsequent rental monitoring or return processing. 
+
+[P02064 | 292366:292367 | NORMAL_TEXT | TABLE row=26 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02065 | 292369:292380 | NORMAL_TEXT | TABLE row=27 col=0]
+Exceptions
+
+[P02066 | 292381:292507 | NORMAL_TEXT | LIST id=kix.svc0o7ba8vrt level=0 | TABLE row=27 col=1]
+If required transaction information is incomplete, the transaction cannot proceed until the required information is resolved.
+
+[P02067 | 292507:292623 | NORMAL_TEXT | LIST id=kix.svc0o7ba8vrt level=0 | TABLE row=27 col=1]
+If required booking, requirement, payment, or vehicle conditions do not permit release, the rental is not started. 
+
+[P02068 | 292624:292625 | NORMAL_TEXT | TABLE row=27 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02069 | 292626:292628 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02070 | 292628:292637 | NORMAL_TEXT]
+Table 14
+
+[P02071 | 292637:292678 | NORMAL_TEXT]
+Use Case Report – Process Vehicle Return
+
+[P02072 | 292681:292695 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P02073 | 292696:292719 | NORMAL_TEXT | TABLE row=0 col=1]
+Process Vehicle Return
+
+[P02074 | 292721:292728 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P02075 | 292729:292743 | NORMAL_TEXT | TABLE row=1 col=1]
+Owner / Admin
+
+[P02076 | 292745:292757 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P02077 | 292758:292931 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows the Owner/Admin to record the physical return of a rented vehicle, record return condition details, and separately resolve the post-return inspection. 
+
+[P02078 | 292933:292946 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P02079 | 292947:293043 | NORMAL_TEXT | TABLE row=3 col=1]
+An active rental record exists and the vehicle is presented or eligible for return processing. 
+
+[P02080 | 293045:293060 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P02081 | 293061:293109 | NORMAL_TEXT | LIST id=kix.19ge957oxp2y level=0 | TABLE row=4 col=1]
+The owner/admin opens the active rental record.
+
+[P02082 | 293109:293159 | NORMAL_TEXT | LIST id=kix.19ge957oxp2y level=0 | TABLE row=4 col=1]
+The owner/admin records the return date and time.
+
+[P02083 | 293159:293225 | NORMAL_TEXT | LIST id=kix.19ge957oxp2y level=0 | TABLE row=4 col=1]
+The owner/admin records the return odometer and fuel information.
+
+[P02084 | 293225:293272 | NORMAL_TEXT | LIST id=kix.19ge957oxp2y level=0 | TABLE row=4 col=1]
+The owner/admin reviews the vehicle condition.
+
+[P02085 | 293272:293316 | NORMAL_TEXT | LIST id=kix.19ge957oxp2y level=0 | TABLE row=4 col=1]
+The owner/admin records the return details.
+
+[P02086 | 293316:293365 | NORMAL_TEXT | LIST id=kix.19ge957oxp2y level=0 | TABLE row=4 col=1]
+The owner/admin resolves the return inspection. 
+
+[P02087 | 293367:293383 | NORMAL_TEXT | TABLE row=5 col=0]
+Post Conditions
+
+[P02088 | 293384:293483 | NORMAL_TEXT | TABLE row=5 col=1]
+The vehicle return and inspection information are recorded for the applicable rental transaction. 
+
+[P02089 | 293485:293496 | NORMAL_TEXT | TABLE row=6 col=0]
+Exceptions
+
+[P02090 | 293497:293618 | NORMAL_TEXT | LIST id=kix.r4qu891ke4yg level=0 | TABLE row=6 col=1]
+If required return information is incomplete, the return cannot be finalized until the required information is provided.
+
+[P02091 | 293618:293754 | NORMAL_TEXT | LIST id=kix.r4qu891ke4yg level=0 | TABLE row=6 col=1]
+If the return inspection identifies an issue requiring resolution, the return remains subject to the applicable inspection resolution. 
+
+[P02092 | 293755:293756 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02093 | 293756:293758 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02094 | 293758:293767 | NORMAL_TEXT]
+Table 15
+
+[P02095 | 293767:293801 | NORMAL_TEXT]
+Use Case Report – View Dashboard 
+
+[P02096 | 293804:293818 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P02097 | 293819:293834 | NORMAL_TEXT | TABLE row=0 col=1]
+View Dashboard
+
+[P02098 | 293835:293836 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02099 | 293838:293845 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P02100 | 293846:293879 | NORMAL_TEXT | TABLE row=1 col=1]
+Owner / Admin; Operations Staff 
+
+[P02101 | 293880:293881 | NORMAL_TEXT | TABLE row=1 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02102 | 293883:293895 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P02103 | 293896:294011 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows authorized internal users to view operational summaries available to their respective roles. 
+
+[P02104 | 294012:294013 | NORMAL_TEXT | TABLE row=2 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02105 | 294015:294028 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P02106 | 294029:294135 | NORMAL_TEXT | TABLE row=3 col=1]
+The user is logged in with authorized internal access and applicable dashboard information is available. 
+
+[P02107 | 294136:294137 | NORMAL_TEXT | TABLE row=3 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02108 | 294139:294154 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P02109 | 294155:294169 | NORMAL_TEXT | TABLE row=4 col=1]
+Owner / Admin
+
+[P02110 | 294170:294187 | NORMAL_TEXT | TABLE row=4 col=2]
+Operations Staff
+
+[P02111 | 294189:294190 | NORMAL_TEXT | TABLE row=5 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02112 | 294191:294220 | NORMAL_TEXT | TABLE row=5 col=1]
+1. Opens the dashboard page.
+
+[P02113 | 294221:294250 | NORMAL_TEXT | TABLE row=5 col=2]
+1. Opens the dashboard page.
+
+[P02114 | 294250:294251 | NORMAL_TEXT | TABLE row=5 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02115 | 294253:294254 | NORMAL_TEXT | TABLE row=6 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02116 | 294255:294256 | NORMAL_TEXT | TABLE row=6 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02117 | 294257:294258 | NORMAL_TEXT | TABLE row=6 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02118 | 294260:294261 | NORMAL_TEXT | TABLE row=7 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02119 | 294262:294296 | NORMAL_TEXT | TABLE row=7 col=1]
+2. Views the reservation summary.
+
+[P02120 | 294297:294298 | NORMAL_TEXT | TABLE row=7 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02121 | 294300:294301 | NORMAL_TEXT | TABLE row=8 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02122 | 294302:294303 | NORMAL_TEXT | TABLE row=8 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02123 | 294304:294305 | NORMAL_TEXT | TABLE row=8 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02124 | 294307:294308 | NORMAL_TEXT | TABLE row=9 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02125 | 294309:294353 | NORMAL_TEXT | TABLE row=9 col=1]
+3. Views the fleet and maintenance summary.
+
+[P02126 | 294354:294355 | NORMAL_TEXT | TABLE row=9 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02127 | 294357:294358 | NORMAL_TEXT | TABLE row=10 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02128 | 294359:294360 | NORMAL_TEXT | TABLE row=10 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02129 | 294361:294424 | NORMAL_TEXT | TABLE row=10 col=2]
+2. Views dashboard information permitted for Operations Staff.
+
+[P02130 | 294426:294427 | NORMAL_TEXT | TABLE row=11 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02131 | 294428:294469 | NORMAL_TEXT | TABLE row=11 col=1]
+4. Views the rental and payment summary.
+
+[P02132 | 294470:294471 | NORMAL_TEXT | TABLE row=11 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02133 | 294473:294474 | NORMAL_TEXT | TABLE row=12 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02134 | 294475:294476 | NORMAL_TEXT | TABLE row=12 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02135 | 294477:294478 | NORMAL_TEXT | TABLE row=12 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02136 | 294480:294481 | NORMAL_TEXT | TABLE row=13 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02137 | 294482:294532 | NORMAL_TEXT | TABLE row=13 col=1]
+5. Views the forecast and recommendation summary.
+
+[P02138 | 294533:294534 | NORMAL_TEXT | TABLE row=13 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02139 | 294536:294537 | NORMAL_TEXT | TABLE row=14 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02140 | 294538:294539 | NORMAL_TEXT | TABLE row=14 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02141 | 294540:294541 | NORMAL_TEXT | TABLE row=14 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02142 | 294543:294559 | NORMAL_TEXT | TABLE row=15 col=0]
+Post Conditions
+
+[P02143 | 294560:294655 | NORMAL_TEXT | TABLE row=15 col=1]
+The owner/admin obtains a centralized operational overview for monitoring and decision-making.
+
+[P02144 | 294656:294657 | NORMAL_TEXT | TABLE row=15 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02145 | 294659:294670 | NORMAL_TEXT | TABLE row=16 col=0]
+Exceptions
+
+[P02146 | 294671:294765 | NORMAL_TEXT | LIST id=kix.t0agfwo7m8v level=0 | TABLE row=16 col=1]
+If dashboard data are incomplete, the system displays only the available summary information.
+
+[P02147 | 294765:294861 | NORMAL_TEXT | LIST id=kix.t0agfwo7m8v level=0 | TABLE row=16 col=1]
+If summary values require review, the owner/admin may open the related module for verification.
+
+[P02148 | 294862:294863 | NORMAL_TEXT | TABLE row=16 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02149 | 294864:294865 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02150 | 294865:294867 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02151 | 294867:294876 | NORMAL_TEXT]
+Table 16
+
+[P02152 | 294876:294919 | NORMAL_TEXT]
+Use Case Report – Manage Customer Records 
+
+[P02153 | 294922:294936 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P02154 | 294937:294961 | NORMAL_TEXT | TABLE row=0 col=1]
+Manage Customer Records
+
+[P02155 | 294963:294970 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P02156 | 294971:294985 | NORMAL_TEXT | TABLE row=1 col=1]
+Owner / Admin
+
+[P02157 | 294987:294999 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P02158 | 295000:295124 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows the owner/admin to review customer information and relevant booking, requirement, and rental history. 
+
+[P02159 | 295126:295139 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P02160 | 295140:295209 | NORMAL_TEXT | TABLE row=3 col=1]
+The owner/admin is logged in and applicable customer records exist. 
+
+[P02161 | 295211:295226 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P02162 | 295227:295271 | NORMAL_TEXT | LIST id=kix.zwv8i6ssl59 level=0 | TABLE row=4 col=1]
+The owner/admin opens the customer records.
+
+[P02163 | 295271:295311 | NORMAL_TEXT | LIST id=kix.zwv8i6ssl59 level=0 | TABLE row=4 col=1]
+The owner/admin views customer details.
+
+[P02164 | 295311:295352 | NORMAL_TEXT | LIST id=kix.zwv8i6ssl59 level=0 | TABLE row=4 col=1]
+The owner/admin reviews booking history.
+
+[P02165 | 295352:295396 | NORMAL_TEXT | LIST id=kix.zwv8i6ssl59 level=0 | TABLE row=4 col=1]
+The owner/admin reviews requirement status.
+
+[P02166 | 295396:295437 | NORMAL_TEXT | LIST id=kix.zwv8i6ssl59 level=0 | TABLE row=4 col=1]
+The owner/admin reviews rental history. 
+
+[P02167 | 295439:295455 | NORMAL_TEXT | TABLE row=5 col=0]
+Post Conditions
+
+[P02168 | 295456:295538 | NORMAL_TEXT | TABLE row=5 col=1]
+The owner/admin has reviewed the applicable customer record and related history. 
+
+[P02169 | 295540:295551 | NORMAL_TEXT | TABLE row=6 col=0]
+Exceptions
+
+[P02170 | 295552:295648 | NORMAL_TEXT | LIST id=kix.7cle3gg7d0zb level=0 | TABLE row=6 col=1]
+If the requested customer record cannot be found, no customer details are available for review.
+
+[P02171 | 295648:295733 | NORMAL_TEXT | LIST id=kix.7cle3gg7d0zb level=0 | TABLE row=6 col=1]
+If related history is unavailable, only existing customer information is displayed. 
+
+[P02172 | 295734:295735 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02173 | 295735:295737 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02174 | 295737:295746 | NORMAL_TEXT]
+Table 17
+
+[P02175 | 295746:295787 | NORMAL_TEXT]
+Use Case Report – Manage Vehicle Records
+
+[P02176 | 295790:295804 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P02177 | 295805:295828 | NORMAL_TEXT | TABLE row=0 col=1]
+Manage Vehicle Records
+
+[P02178 | 295830:295837 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P02179 | 295838:295852 | NORMAL_TEXT | TABLE row=1 col=1]
+Owner / Admin
+
+[P02180 | 295854:295866 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P02181 | 295867:295967 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows the owner/admin to manage vehicle information, status, and branch assignment. 
+
+[P02182 | 295969:295982 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P02183 | 295983:296072 | NORMAL_TEXT | TABLE row=3 col=1]
+The owner/admin is logged in and applicable vehicle or branch information is available. 
+
+[P02184 | 296074:296089 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P02185 | 296090:296133 | NORMAL_TEXT | LIST id=kix.ac1jt0gtj0br level=0 | TABLE row=4 col=1]
+The owner/admin opens the vehicle records.
+
+[P02186 | 296133:296171 | NORMAL_TEXT | LIST id=kix.ac1jt0gtj0br level=0 | TABLE row=4 col=1]
+The owner/admin adds vehicle details.
+
+[P02187 | 296171:296216 | NORMAL_TEXT | LIST id=kix.ac1jt0gtj0br level=0 | TABLE row=4 col=1]
+The owner/admin updates vehicle information.
+
+[P02188 | 296216:296257 | NORMAL_TEXT | LIST id=kix.ac1jt0gtj0br level=0 | TABLE row=4 col=1]
+The owner/admin sets the vehicle status.
+
+[P02189 | 296257:296302 | NORMAL_TEXT | LIST id=kix.ac1jt0gtj0br level=0 | TABLE row=4 col=1]
+The owner/admin assigns the vehicle branch. 
+
+[P02190 | 296304:296320 | NORMAL_TEXT | TABLE row=5 col=0]
+Post Conditions
+
+[P02191 | 296321:296434 | NORMAL_TEXT | TABLE row=5 col=1]
+The authorized vehicle record changes are stored and become available to applicable fleet and rental functions. 
+
+[P02192 | 296436:296447 | NORMAL_TEXT | TABLE row=6 col=0]
+Exceptions
+
+[P02193 | 296448:296570 | NORMAL_TEXT | LIST id=kix.g2fjheq92j2y level=0 | TABLE row=6 col=1]
+If required vehicle information is incomplete, the record cannot be completed until the required information is provided.
+
+[P02194 | 296570:296639 | NORMAL_TEXT | LIST id=kix.g2fjheq92j2y level=0 | TABLE row=6 col=1]
+If a branch assignment is invalid, a valid branch must be selected. 
+
+[P02195 | 296640:296641 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02196 | 296641:296643 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02197 | 296643:296652 | NORMAL_TEXT]
+Table 18
+
+[P02198 | 296652:296697 | NORMAL_TEXT]
+Use Case Report – Manage Maintenance Records
+
+[P02199 | 296700:296714 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P02200 | 296715:296742 | NORMAL_TEXT | TABLE row=0 col=1]
+Manage Maintenance Records
+
+[P02201 | 296744:296751 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P02202 | 296752:296766 | NORMAL_TEXT | TABLE row=1 col=1]
+Owner / Admin
+
+[P02203 | 296768:296780 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P02204 | 296781:296907 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows the owner/admin to manage maintenance information and vehicle condition for fleet readiness monitoring. 
+
+[P02205 | 296909:296922 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P02206 | 296923:296995 | NORMAL_TEXT | TABLE row=3 col=1]
+The owner/admin is logged in and the applicable vehicle record exists. 
+
+[P02207 | 296997:297012 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P02208 | 297013:297060 | NORMAL_TEXT | LIST id=kix.nurcn37h9uaj level=0 | TABLE row=4 col=1]
+The owner/admin opens the maintenance records.
+
+[P02209 | 297060:297104 | NORMAL_TEXT | LIST id=kix.nurcn37h9uaj level=0 | TABLE row=4 col=1]
+The owner/admin selects the vehicle record.
+
+[P02210 | 297104:297143 | NORMAL_TEXT | LIST id=kix.nurcn37h9uaj level=0 | TABLE row=4 col=1]
+The owner/admin schedules maintenance.
+
+[P02211 | 297143:297191 | NORMAL_TEXT | LIST id=kix.nurcn37h9uaj level=0 | TABLE row=4 col=1]
+The owner/admin updates the maintenance status.
+
+[P02212 | 297191:297238 | NORMAL_TEXT | LIST id=kix.nurcn37h9uaj level=0 | TABLE row=4 col=1]
+The owner/admin records the vehicle condition.
+
+[P02213 | 297238:297286 | NORMAL_TEXT | LIST id=kix.nurcn37h9uaj level=0 | TABLE row=4 col=1]
+The owner/admin views the maintenance history. 
+
+[P02214 | 297288:297304 | NORMAL_TEXT | TABLE row=5 col=0]
+Post Conditions
+
+[P02215 | 297305:297417 | NORMAL_TEXT | TABLE row=5 col=1]
+The applicable maintenance information and vehicle condition are recorded and available for subsequent review. 
+
+[P02216 | 297419:297430 | NORMAL_TEXT | TABLE row=6 col=0]
+Exceptions
+
+[P02217 | 297431:297557 | NORMAL_TEXT | LIST id=kix.81m376vaf8k1 level=0 | TABLE row=6 col=1]
+If required maintenance information is incomplete, the record cannot be completed until the required information is provided.
+
+[P02218 | 297557:297646 | NORMAL_TEXT | LIST id=kix.81m376vaf8k1 level=0 | TABLE row=6 col=1]
+If the selected vehicle cannot be found, another valid vehicle record must be selected. 
+
+[P02219 | 297647:297648 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02220 | 297648:297649 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02221 | 297649:297650 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02222 | 297650:297651 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02223 | 297651:297652 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02224 | 297652:297653 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02225 | 297653:297655 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02226 | 297655:297664 | NORMAL_TEXT]
+Table 19
+
+[P02227 | 297664:297705 | NORMAL_TEXT]
+Use Case Report – View Forecasted Demand
+
+[P02228 | 297708:297722 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P02229 | 297723:297746 | NORMAL_TEXT | TABLE row=0 col=1]
+View Forecasted Demand
+
+[P02230 | 297748:297755 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P02231 | 297756:297770 | NORMAL_TEXT | TABLE row=1 col=1]
+Owner / Admin
+
+[P02232 | 297772:297784 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P02233 | 297785:297903 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows the owner/admin to select and review available forecast information for rental-demand analysis. 
+
+[P02234 | 297905:297918 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P02235 | 297919:298002 | NORMAL_TEXT | TABLE row=3 col=1]
+The owner/admin is logged in and applicable forecasting information is available. 
+
+[P02236 | 298004:298019 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P02237 | 298020:298066 | NORMAL_TEXT | LIST id=kix.91bnasxk6kr level=0 | TABLE row=4 col=1]
+The owner/admin opens the forecasting module.
+
+[P02238 | 298066:298109 | NORMAL_TEXT | LIST id=kix.91bnasxk6kr level=0 | TABLE row=4 col=1]
+The owner/admin selects a forecast record.
+
+[P02239 | 298109:298156 | NORMAL_TEXT | LIST id=kix.91bnasxk6kr level=0 | TABLE row=4 col=1]
+The owner/admin reviews the forecasted demand.
+
+[P02240 | 298156:298201 | NORMAL_TEXT | LIST id=kix.91bnasxk6kr level=0 | TABLE row=4 col=1]
+The owner/admin reviews the forecast inputs.
+
+[P02241 | 298201:298271 | NORMAL_TEXT | LIST id=kix.91bnasxk6kr level=0 | TABLE row=4 col=1]
+The owner/admin reviews the available forecast accuracy information. 
+
+[P02242 | 298273:298289 | NORMAL_TEXT | TABLE row=5 col=0]
+Post Conditions
+
+[P02243 | 298290:298383 | NORMAL_TEXT | TABLE row=5 col=1]
+The owner/admin has reviewed the applicable demand forecast and its supporting information. 
+
+[P02244 | 298385:298396 | NORMAL_TEXT | TABLE row=6 col=0]
+Exceptions
+
+[P02245 | 298397:298506 | NORMAL_TEXT | LIST id=kix.1s2pmtt6i00x level=0 | TABLE row=6 col=1]
+If forecast information is unavailable or insufficient, only available forecast information can be reviewed.
+
+[P02246 | 298506:298598 | NORMAL_TEXT | LIST id=kix.1s2pmtt6i00x level=0 | TABLE row=6 col=1]
+If the selected forecast record is unavailable, another available record must be selected. 
+
+[P02247 | 298599:298600 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02248 | 298600:298602 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02249 | 298602:298611 | NORMAL_TEXT]
+Table 20
+
+[P02250 | 298611:298666 | NORMAL_TEXT]
+Use Case Report – View Fleet Allocation Recommendation
+
+[P02251 | 298669:298683 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P02252 | 298684:298721 | NORMAL_TEXT | TABLE row=0 col=1]
+View Fleet Allocation Recommendation
+
+[P02253 | 298723:298730 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P02254 | 298731:298745 | NORMAL_TEXT | TABLE row=1 col=1]
+Owner / Admin
+
+[P02255 | 298747:298759 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P02256 | 298760:298897 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows the owner/admin to review fleet allocation decision-support information and take the applicable authorized action. 
+
+[P02257 | 298899:298912 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P02258 | 298913:299033 | NORMAL_TEXT | TABLE row=3 col=1]
+The owner/admin is logged in and applicable supply, availability, contextual, and allocation information is available. 
+
+[P02259 | 299035:299050 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P02260 | 299051:299104 | NORMAL_TEXT | LIST id=kix.xq49o9hxrwny level=0 | TABLE row=4 col=1]
+The owner/admin opens the allocation recommendation.
+
+[P02261 | 299104:299151 | NORMAL_TEXT | LIST id=kix.xq49o9hxrwny level=0 | TABLE row=4 col=1]
+The owner/admin reviews the supply evaluation.
+
+[P02262 | 299151:299220 | NORMAL_TEXT | LIST id=kix.xq49o9hxrwny level=0 | TABLE row=4 col=1]
+The owner/admin reviews identified shortage and surplus information.
+
+[P02263 | 299220:299275 | NORMAL_TEXT | LIST id=kix.xq49o9hxrwny level=0 | TABLE row=4 col=1]
+The owner/admin reviews the allocation recommendation.
+
+[P02264 | 299275:299321 | NORMAL_TEXT | LIST id=kix.xq49o9hxrwny level=0 | TABLE row=4 col=1]
+The owner/admin reviews vehicle availability.
+
+[P02265 | 299321:299365 | NORMAL_TEXT | LIST id=kix.xq49o9hxrwny level=0 | TABLE row=4 col=1]
+The owner/admin reviews contextual factors.
+
+[P02266 | 299365:299421 | NORMAL_TEXT | LIST id=kix.xq49o9hxrwny level=0 | TABLE row=4 col=1]
+The owner/admin approves or rejects the recommendation.
+
+[P02267 | 299421:299533 | NORMAL_TEXT | LIST id=kix.xq49o9hxrwny level=0 | TABLE row=4 col=1]
+The owner/admin separately reconciles the vehicle branch location when an operational transfer is carried out. 
+
+[P02268 | 299535:299551 | NORMAL_TEXT | TABLE row=5 col=0]
+Post Conditions
+
+[P02269 | 299552:299726 | NORMAL_TEXT | TABLE row=5 col=1]
+The recommendation has been reviewed and the owner/admin's applicable decision is recorded. Any actual branch-location reconciliation remains a separate operational action. 
+
+[P02270 | 299728:299739 | NORMAL_TEXT | TABLE row=6 col=0]
+Exceptions
+
+[P02271 | 299740:299850 | NORMAL_TEXT | LIST id=kix.mtv3ez7mhrjw level=0 | TABLE row=6 col=1]
+If required supporting information is unavailable, only available recommendation information can be reviewed.
+
+[P02272 | 299850:299966 | NORMAL_TEXT | LIST id=kix.mtv3ez7mhrjw level=0 | TABLE row=6 col=1]
+If the recommendation is not accepted, no corresponding branch-location reconciliation is performed on that basis. 
+
+[P02273 | 299967:299969 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02274 | 299969:299978 | NORMAL_TEXT]
+Table 21
+
+[P02275 | 299978:300020 | NORMAL_TEXT]
+Use Case Report – View Generated Reports 
+
+[P02276 | 300023:300037 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P02277 | 300038:300061 | NORMAL_TEXT | TABLE row=0 col=1]
+View Generated Reports
+
+[P02278 | 300062:300063 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02279 | 300065:300072 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P02280 | 300073:300106 | NORMAL_TEXT | TABLE row=1 col=1]
+Owner / Admin; Operations Staff 
+
+[P02281 | 300107:300108 | NORMAL_TEXT | TABLE row=1 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02282 | 300110:300122 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P02283 | 300123:300249 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows authorized internal users to select and review operational reports according to their permitted access. 
+
+[P02284 | 300250:300251 | NORMAL_TEXT | TABLE row=2 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02285 | 300253:300266 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P02286 | 300267:300370 | NORMAL_TEXT | TABLE row=3 col=1]
+The user is logged in with authorized internal access and applicable report information is available. 
+
+[P02287 | 300371:300372 | NORMAL_TEXT | TABLE row=3 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02288 | 300374:300389 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P02289 | 300390:300405 | NORMAL_TEXT | TABLE row=4 col=1]
+Owner / Admin 
+
+[P02290 | 300406:300423 | NORMAL_TEXT | TABLE row=4 col=2]
+Operations Staff
+
+[P02291 | 300425:300426 | NORMAL_TEXT | TABLE row=5 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02292 | 300427:300456 | NORMAL_TEXT | TABLE row=5 col=1]
+1. Opens the reports module.
+
+[P02293 | 300457:300486 | NORMAL_TEXT | TABLE row=5 col=2]
+1. Opens the reports module.
+
+[P02294 | 300488:300489 | NORMAL_TEXT | TABLE row=6 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02295 | 300490:300518 | NORMAL_TEXT | TABLE row=6 col=1]
+2. Selects the report type.
+
+[P02296 | 300519:300556 | NORMAL_TEXT | TABLE row=6 col=2]
+2. Selects an available report type.
+
+[P02297 | 300558:300559 | NORMAL_TEXT | TABLE row=7 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02298 | 300560:300584 | NORMAL_TEXT | TABLE row=7 col=1]
+3. Sets report filters.
+
+[P02299 | 300585:300619 | NORMAL_TEXT | TABLE row=7 col=2]
+3. Sets permitted report filters.
+
+[P02300 | 300621:300622 | NORMAL_TEXT | TABLE row=8 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02301 | 300623:300651 | NORMAL_TEXT | TABLE row=8 col=1]
+4. Views the report output.
+
+[P02302 | 300652:300686 | NORMAL_TEXT | TABLE row=8 col=2]
+4. Views permitted report output.
+
+[P02303 | 300688:300689 | NORMAL_TEXT | TABLE row=9 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P02304 | 300690:300722 | NORMAL_TEXT | TABLE row=9 col=1]
+5. Reviews the report results. 
+
+[P02305 | 300723:300761 | NORMAL_TEXT | TABLE row=9 col=2]
+5. Reviews permitted report results. 
+
+[P02306 | 300763:300779 | NORMAL_TEXT | TABLE row=10 col=0]
+Post Conditions
+
+[P02307 | 300780:300888 | NORMAL_TEXT | TABLE row=10 col=1]
+The authorized user has reviewed the selected report information according to the user's permitted access. 
+
+[P02308 | 300889:300890 | NORMAL_TEXT | TABLE row=10 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02309 | 300892:300903 | NORMAL_TEXT | TABLE row=11 col=0]
+Exceptions
+
+[P02310 | 300904:300991 | NORMAL_TEXT | LIST id=kix.emxm42u07sdo level=0 | TABLE row=11 col=1]
+If no records match the selected filters, no matching report information is available.
+
+[P02311 | 300991:301055 | NORMAL_TEXT | LIST id=kix.emxm42u07sdo level=0 | TABLE row=11 col=1]
+If selected criteria are invalid, the criteria must be revised.
+
+[P02312 | 301055:301146 | NORMAL_TEXT | LIST id=kix.emxm42u07sdo level=0 | TABLE row=11 col=1]
+Report information outside the Operations Staff role's permitted access is not available. 
+
+[P02313 | 301147:301148 | NORMAL_TEXT | TABLE row=11 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02314 | 301149:301150 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02315 | 301150:301152 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02316 | 301152:301161 | NORMAL_TEXT]
+Table 22
+
+[P02317 | 301161:301203 | NORMAL_TEXT]
+Use Case Report – Configure Notifications
+
+[P02318 | 301206:301220 | NORMAL_TEXT | TABLE row=0 col=0]
+Use Case Name
+
+[P02319 | 301221:301245 | NORMAL_TEXT | TABLE row=0 col=1]
+Configure Notifications
+
+[P02320 | 301247:301254 | NORMAL_TEXT | TABLE row=1 col=0]
+Actors
+
+[P02321 | 301255:301269 | NORMAL_TEXT | TABLE row=1 col=1]
+Owner / Admin
+
+[P02322 | 301271:301283 | NORMAL_TEXT | TABLE row=2 col=0]
+Description
+
+[P02323 | 301284:301381 | NORMAL_TEXT | TABLE row=2 col=1]
+This use case allows the owner/admin to configure supported notification and reminder settings. 
+
+[P02324 | 301383:301396 | NORMAL_TEXT | TABLE row=3 col=0]
+Precondition
+
+[P02325 | 301397:301497 | NORMAL_TEXT | TABLE row=3 col=1]
+The owner/admin is logged in and applicable notification settings are available for configuration. 
+
+[P02326 | 301499:301514 | NORMAL_TEXT | TABLE row=4 col=0]
+Flow of Events
+
+[P02327 | 301515:301564 | NORMAL_TEXT | LIST id=kix.1bvnt0j2m9tb level=0 | TABLE row=4 col=1]
+The owner/admin opens the notification settings.
+
+[P02328 | 301564:301614 | NORMAL_TEXT | LIST id=kix.1bvnt0j2m9tb level=0 | TABLE row=4 col=1]
+The owner/admin configures booking update alerts.
+
+[P02329 | 301614:301669 | NORMAL_TEXT | LIST id=kix.1bvnt0j2m9tb level=0 | TABLE row=4 col=1]
+The owner/admin configures verification result alerts.
+
+[P02330 | 301669:301715 | NORMAL_TEXT | LIST id=kix.1bvnt0j2m9tb level=0 | TABLE row=4 col=1]
+The owner/admin configures payment reminders.
+
+[P02331 | 301715:301766 | NORMAL_TEXT | LIST id=kix.1bvnt0j2m9tb level=0 | TABLE row=4 col=1]
+The owner/admin configures return schedule alerts.
+
+[P02332 | 301766:301816 | NORMAL_TEXT | LIST id=kix.1bvnt0j2m9tb level=0 | TABLE row=4 col=1]
+The owner/admin configures maintenance reminders.
+
+[P02333 | 301816:301869 | NORMAL_TEXT | LIST id=kix.1bvnt0j2m9tb level=0 | TABLE row=4 col=1]
+The owner/admin configures low availability alerts. 
+
+[P02334 | 301871:301887 | NORMAL_TEXT | TABLE row=5 col=0]
+Post Conditions
+
+[P02335 | 301888:301987 | NORMAL_TEXT | TABLE row=5 col=1]
+The configured notification and reminder settings are stored for applicable system notifications. 
+
+[P02336 | 301989:302000 | NORMAL_TEXT | TABLE row=6 col=0]
+Exceptions
+
+[P02337 | 302001:302108 | NORMAL_TEXT | LIST id=kix.qdzb5mw56jup level=0 | TABLE row=6 col=1]
+If required notification settings are incomplete, the settings must be completed before they can be saved.
+
+[P02338 | 302108:302193 | NORMAL_TEXT | LIST id=kix.qdzb5mw56jup level=0 | TABLE row=6 col=1]
+If configured alert criteria are invalid, the owner/admin must revise the criteria. 
+
+[P02339 | 302194:302195 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02340 | 302195:302196 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02341 | 302196:302218 | NORMAL_TEXT]
+Design Specifications
+
+[P02342 | 302218:302237 | NORMAL_TEXT]
+	Activity Diagram.
+
+[P02343 | 302237:302604 | NORMAL_TEXT]
+	The Activity Diagram visually represents the workflow or sequence of activities that take place in the system, showing how users or components interact with it to accomplish a specific process. This diagram is especially helpful in illustrating the logic and flow of operations, from beginning to end, including decisions, parallel processes, and system responses.
+
+[P02344 | 302604:302649 | NORMAL_TEXT]
+Figure 30. Register/ Log In Customer Account
+
+[P02345 | 302649:302651 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02346 | 302651:302686 | NORMAL_TEXT]
+Figure 31. Authenticate User Login
+
+[P02347 | 302686:302688 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02348 | 302688:302725 | NORMAL_TEXT]
+Figure 32. Manage Access Permissions
+
+[P02349 | 302725:302726 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02350 | 302726:302727 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02351 | 302727:302728 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02352 | 302728:302729 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02353 | 302729:302731 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02354 | 302731:302765 | NORMAL_TEXT]
+Figure 33.Manage Customer Records
+
+[P02355 | 302765:302766 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02356 | 302766:302768 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02357 | 302768:302813 | NORMAL_TEXT]
+Figure 34. Manage Vehicle and Branch Records
+
+[P02358 | 302813:302814 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02359 | 302814:302815 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02360 | 302815:302816 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02361 | 302816:302817 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02362 | 302817:302818 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02363 | 302818:302819 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02364 | 302819:302820 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02365 | 302820:302821 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02366 | 302821:302822 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02367 | 302822:302823 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02368 | 302823:302824 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02369 | 302824:302825 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02370 | 302825:302826 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02371 | 302826:302827 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02372 | 302827:302828 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02373 | 302828:302829 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02374 | 302829:302830 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02375 | 302830:302868 | NORMAL_TEXT]
+Figure 35. Manage Maintenance Records
+
+[P02376 | 302868:302869 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02377 | 302869:302871 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02378 | 302871:302903 | NORMAL_TEXT]
+Figure 36. View Vehicle Catalog
+
+[P02379 | 302903:302904 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02380 | 302904:302906 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02381 | 302906:302946 | NORMAL_TEXT]
+Figure 37. View Rental Policy Agreement
+
+[P02382 | 302946:302948 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02383 | 302948:302989 | NORMAL_TEXT]
+Figure 38. Create and Manage Reservation
+
+[P02384 | 302989:302991 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02385 | 302991:303024 | NORMAL_TEXT]
+Figure 39. View Booking Calendar
+
+[P02386 | 303024:303025 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02387 | 303025:303027 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02388 | 303027:303065 | NORMAL_TEXT]
+Figure 40. Check Vehicle Availability
+
+[P02389 | 303065:303066 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02390 | 303066:303068 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02391 | 303068:303100 | NORMAL_TEXT]
+Figure 41. Verify Requirements 
+
+[P02392 | 303100:303101 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02393 | 303101:303103 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02394 | 303103:303139 | NORMAL_TEXT]
+Figure 42. Validate Payment Records
+
+[P02395 | 303139:303141 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02396 | 303141:303178 | NORMAL_TEXT]
+Figure 43. Forecast Demand Using WMA
+
+[P02397 | 303178:303180 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02398 | 303180:303222 | NORMAL_TEXT]
+Figure 44. Evaluate Context Aware Factors
+
+[P02399 | 303222:303223 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02400 | 303223:303224 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02401 | 303224:303225 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02402 | 303225:303227 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02403 | 303227:303265 | NORMAL_TEXT]
+Figure 45. Recommend Fleet Allocation
+
+[P02404 | 303265:303266 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02405 | 303266:303268 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02406 | 303268:303294 | NORMAL_TEXT]
+Figure 46. Assign Vehicle
+
+[P02407 | 303294:303296 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02408 | 303296:303333 | NORMAL_TEXT]
+Figure 47. Manage Rental Transaction
+
+[P02409 | 303333:303335 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02410 | 303335:303367 | NORMAL_TEXT]
+Figure 48. Track Booking Status
+
+[P02411 | 303367:303369 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02412 | 303369:303408 | NORMAL_TEXT]
+Figure 49. Browse Vehicles and Reserve
+
+[P02413 | 303408:303410 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02414 | 303410:303442 | NORMAL_TEXT]
+Figure 50. Monitor Fleet Status
+
+[P02415 | 303442:303444 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02416 | 303444:303489 | NORMAL_TEXT]
+Figure 51. Process Vehicle Return Settlement
+
+[P02417 | 303489:303490 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02418 | 303490:303492 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02419 | 303492:303532 | NORMAL_TEXT]
+Figure 52. Record Penalties and Damages
+
+[P02420 | 303532:303534 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02421 | 303534:303577 | NORMAL_TEXT]
+Figure 53. Manage Notifications and Alerts
+
+[P02422 | 303577:303579 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02423 | 303579:303608 | NORMAL_TEXT]
+Figure 54.  Generate Reports
+
+[P02424 | 303608:303610 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02425 | 303610:303656 | NORMAL_TEXT]
+Figure 55. View Dashboard Operational Summary
+
+[P02426 | 303656:303658 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02427 | 303658:303674 | NORMAL_TEXT]
+Database Schema
+
+[P02428 | 303674:303701 | NORMAL_TEXT]
+Figure 59. Database Schema
+
+[P02429 | 303701:303703 | NORMAL_TEXT]
+[INLINE_OBJECT kix.dn90qwoz8be]
+
+[P02430 | 303703:304180 | NORMAL_TEXT]
+Figure 59 shows the database schema used in the creation of Web-based Car Rental Management System. This includes the tables, attributes, primary keys, foreign keys, and relationships needed to support renter management, booking requests, manual requirement verification, payment processing, vehicle records, rental transactions, operational expenses, demand forecasting, allocation recommendations, configurable system settings, notifications, audit logs, and backup records.
+
+[P02431 | 304180:304255 | NORMAL_TEXT]
+Figure 60.Database Schema Closer View: Vehicle and Branch History Records 
+
+[P02432 | 304255:304257 | NORMAL_TEXT]
+[INLINE_OBJECT kix.hazblua51yrp]
+
+[P02433 | 304257:304258 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02434 | 304258:304349 | NORMAL_TEXT]
+Figure 61. Database Schema Closer View: Forecasting and Allocation Recommendation Records 
+
+[P02435 | 304349:304351 | NORMAL_TEXT]
+[INLINE_OBJECT kix.8wgeqxkexgfz]
+
+[P02436 | 304351:304352 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02437 | 304352:304353 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02438 | 304353:304354 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02439 | 304354:304355 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02440 | 304355:304356 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02441 | 304356:304357 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02442 | 304357:304358 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02443 | 304358:304359 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02444 | 304359:304360 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02445 | 304360:304361 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02446 | 304361:304456 | NORMAL_TEXT]
+Figure 62. Database Schema Closer View: User, System Setting, Audit, and Notification Records 
+
+[P02447 | 304456:304458 | NORMAL_TEXT]
+[INLINE_OBJECT kix.2g9d5b80nr28]
+
+[P02448 | 304458:304459 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02449 | 304459:304460 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02450 | 304460:304461 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02451 | 304461:304462 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02452 | 304462:304463 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02453 | 304463:304563 | NORMAL_TEXT]
+Figure 63. Database Schema Closer View: Renter, Authorized Driver, Requirement, and Branch Records 
+
+[P02454 | 304563:304565 | NORMAL_TEXT]
+[INLINE_OBJECT kix.pdc32jostkdc]
+
+[P02455 | 304565:304566 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02456 | 304566:304567 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02457 | 304567:304568 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02458 | 304568:304569 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02459 | 304569:304570 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02460 | 304570:304571 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02461 | 304571:304677 | NORMAL_TEXT]
+Figure 64. Database Schema Closer View: Booking Request, Approval, Status, and Return Inspection Records 
+
+[P02462 | 304677:304679 | NORMAL_TEXT]
+[INLINE_OBJECT kix.cb8wgfdhic9u]
+
+[P02463 | 304679:304680 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02464 | 304680:304681 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02465 | 304681:304682 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02466 | 304682:304683 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02467 | 304683:304684 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02468 | 304684:304685 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02469 | 304685:304686 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02470 | 304686:304778 | NORMAL_TEXT]
+Figure 65. Database Schema Closer View: Rental, Quotation, and Operational Expense Records 
+
+[P02471 | 304778:304780 | NORMAL_TEXT]
+[INLINE_OBJECT kix.rgkkeqjc8ogy]
+
+[P02472 | 304780:304871 | NORMAL_TEXT]
+Figure 66. Database Schema Closer View: Rental Charges, Payment, and Trip Context Records 
+
+[P02473 | 304871:304873 | NORMAL_TEXT]
+[INLINE_OBJECT kix.toc446ii1pf3]
+
+[P02474 | 304873:304874 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02475 | 304874:304974 | NORMAL_TEXT]
+Figure 67. Database Schema Closer View: Backup, Rental Policy, Monitoring, and Maintenance Records 
+
+[P02476 | 304974:304976 | NORMAL_TEXT]
+[INLINE_OBJECT kix.smxwbdt3xyh9]
+
+[P02477 | 304976:304977 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02478 | 304977:304978 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P02479 | 304978:304994 | NORMAL_TEXT]
+Data Dictionary
+
+[P02480 | 304994:305343 | NORMAL_TEXT]
+The following data dictionary describes the logical records used by the proposed system. It presents the attributes, data types, field sizes, and purposes of the records needed for the rental workflow and decision-support features. Records identified as proposed will be implemented and tested before they are treated as completed system functions.
+
+[P02481 | 305343:305352 | NORMAL_TEXT]
+Table 32
+
+[P02482 | 305352:305376 | NORMAL_TEXT]
+Data Dictionary - Users
+
+[P02483 | 305379:305397 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Users
+
+[P02484 | 305398:305399 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02485 | 305400:305401 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02486 | 305402:305403 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P02487 | 305405:305416 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P02488 | 305417:305427 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P02489 | 305428:305439 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P02490 | 305440:305452 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P02491 | 305454:305462 | NORMAL_TEXT | TABLE row=2 col=0]
+user_id
+
+[P02492 | 305463:305467 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P02493 | 305468:305471 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P02494 | 305472:305525 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each system user.
+
+[P02495 | 305527:305537 | NORMAL_TEXT | TABLE row=3 col=0]
+user_type
+
+[P02496 | 305538:305543 | NORMAL_TEXT | TABLE row=3 col=1]
+ENUM
+
+[P02497 | 305544:305546 | NORMAL_TEXT | TABLE row=3 col=2]
+ 
+
+[P02498 | 305547:305610 | NORMAL_TEXT | TABLE row=3 col=3]
+Identifies whether the account is for Admin, Staff, or Renter.
+
+[P02499 | 305612:305623 | NORMAL_TEXT | TABLE row=4 col=0]
+first_name
+
+[P02500 | 305624:305632 | NORMAL_TEXT | TABLE row=4 col=1]
+VARCHAR
+
+[P02501 | 305633:305637 | NORMAL_TEXT | TABLE row=4 col=2]
+100
+
+[P02502 | 305638:305669 | NORMAL_TEXT | TABLE row=4 col=3]
+First name of the system user.
+
+[P02503 | 305671:305683 | NORMAL_TEXT | TABLE row=5 col=0]
+middle_name
+
+[P02504 | 305684:305692 | NORMAL_TEXT | TABLE row=5 col=1]
+VARCHAR
+
+[P02505 | 305693:305697 | NORMAL_TEXT | TABLE row=5 col=2]
+100
+
+[P02506 | 305698:305745 | NORMAL_TEXT | TABLE row=5 col=3]
+Middle name of the system user, if applicable.
+
+[P02507 | 305747:305757 | NORMAL_TEXT | TABLE row=6 col=0]
+last_name
+
+[P02508 | 305758:305766 | NORMAL_TEXT | TABLE row=6 col=1]
+VARCHAR
+
+[P02509 | 305767:305771 | NORMAL_TEXT | TABLE row=6 col=2]
+100
+
+[P02510 | 305772:305802 | NORMAL_TEXT | TABLE row=6 col=3]
+Last name of the system user.
+
+[P02511 | 305804:305811 | NORMAL_TEXT | TABLE row=7 col=0]
+suffix
+
+[P02512 | 305812:305820 | NORMAL_TEXT | TABLE row=7 col=1]
+VARCHAR
+
+[P02513 | 305821:305824 | NORMAL_TEXT | TABLE row=7 col=2]
+20
+
+[P02514 | 305825:305867 | NORMAL_TEXT | TABLE row=7 col=3]
+Suffix of the user (e.g., Jr., Sr., III).
+
+[P02515 | 305869:305875 | NORMAL_TEXT | TABLE row=8 col=0]
+email
+
+[P02516 | 305876:305884 | NORMAL_TEXT | TABLE row=8 col=1]
+VARCHAR
+
+[P02517 | 305885:305889 | NORMAL_TEXT | TABLE row=8 col=2]
+150
+
+[P02518 | 305890:305912 | NORMAL_TEXT | TABLE row=8 col=3]
+User’s email address.
+
+[P02519 | 305914:305927 | NORMAL_TEXT | TABLE row=9 col=0]
+phone_number
+
+[P02520 | 305928:305936 | NORMAL_TEXT | TABLE row=9 col=1]
+VARCHAR
+
+[P02521 | 305937:305940 | NORMAL_TEXT | TABLE row=9 col=2]
+30
+
+[P02522 | 305941:305964 | NORMAL_TEXT | TABLE row=9 col=3]
+User’s contact number.
+
+[P02523 | 305966:305980 | NORMAL_TEXT | TABLE row=10 col=0]
+password_hash
+
+[P02524 | 305981:305989 | NORMAL_TEXT | TABLE row=10 col=1]
+VARCHAR
+
+[P02525 | 305990:305994 | NORMAL_TEXT | TABLE row=10 col=2]
+255
+
+[P02526 | 305995:306027 | NORMAL_TEXT | TABLE row=10 col=3]
+Encrypted password of the user.
+
+[P02527 | 306029:306044 | NORMAL_TEXT | TABLE row=11 col=0]
+account_status
+
+[P02528 | 306045:306050 | NORMAL_TEXT | TABLE row=11 col=1]
+ENUM
+
+[P02529 | 306051:306053 | NORMAL_TEXT | TABLE row=11 col=2]
+ 
+
+[P02530 | 306054:306114 | NORMAL_TEXT | TABLE row=11 col=3]
+Status of the user account: Active, Inactive, or Suspended.
+
+[P02531 | 306116:306127 | NORMAL_TEXT | TABLE row=12 col=0]
+last_login
+
+[P02532 | 306128:306137 | NORMAL_TEXT | TABLE row=12 col=1]
+DATETIME
+
+[P02533 | 306138:306140 | NORMAL_TEXT | TABLE row=12 col=2]
+ 
+
+[P02534 | 306141:306188 | NORMAL_TEXT | TABLE row=12 col=3]
+Date and time of the user’s most recent login.
+
+[P02535 | 306190:306201 | NORMAL_TEXT | TABLE row=13 col=0]
+created_at
+
+[P02536 | 306202:306212 | NORMAL_TEXT | TABLE row=13 col=1]
+TIMESTAMP
+
+[P02537 | 306213:306215 | NORMAL_TEXT | TABLE row=13 col=2]
+ 
+
+[P02538 | 306216:306255 | NORMAL_TEXT | TABLE row=13 col=3]
+Date and time the account was created.
+
+[P02539 | 306257:306268 | NORMAL_TEXT | TABLE row=14 col=0]
+updated_at
+
+[P02540 | 306269:306279 | NORMAL_TEXT | TABLE row=14 col=1]
+TIMESTAMP
+
+[P02541 | 306280:306282 | NORMAL_TEXT | TABLE row=14 col=2]
+ 
+
+[P02542 | 306283:306327 | NORMAL_TEXT | TABLE row=14 col=3]
+Date and time the account was last updated.
+
+[P02543 | 306328:306330 | NORMAL_TEXT]
+ 
+
+[P02544 | 306330:306332 | NORMAL_TEXT]
+ 
+
+[P02545 | 306332:306740 | NORMAL_TEXT]
+Table 32 describes the logical user-account record. In the current system, Supabase Auth manages authentication credentials, while public.profiles stores application profile and access-role information linked by UUID. A separate application password_hash column is not required. The implemented role labels are Owner/Admin, Operations Staff, and Renter; access follows the adssigned role and account status.
+
+[P02546 | 306740:306749 | NORMAL_TEXT]
+Table 33
+
+[P02547 | 306749:306776 | NORMAL_TEXT]
+Data Dictionary - Branches
+
+[P02548 | 306779:306800 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Branches
+
+[P02549 | 306801:306802 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02550 | 306803:306804 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02551 | 306805:306806 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P02552 | 306808:306819 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P02553 | 306820:306830 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P02554 | 306831:306842 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P02555 | 306843:306855 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P02556 | 306857:306867 | NORMAL_TEXT | TABLE row=2 col=0]
+branch_id
+
+[P02557 | 306868:306872 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P02558 | 306873:306876 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P02559 | 306877:306947 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each branch or operating location.
+
+[P02560 | 306949:306961 | NORMAL_TEXT | TABLE row=3 col=0]
+branch_name
+
+[P02561 | 306962:306970 | NORMAL_TEXT | TABLE row=3 col=1]
+VARCHAR
+
+[P02562 | 306971:306975 | NORMAL_TEXT | TABLE row=3 col=2]
+100
+
+[P02563 | 306976:307018 | NORMAL_TEXT | TABLE row=3 col=3]
+Name of the branch or operating location.
+
+[P02564 | 307020:307036 | NORMAL_TEXT | TABLE row=4 col=0]
+street_address 
+
+[P02565 | 307037:307045 | NORMAL_TEXT | TABLE row=4 col=1]
+VARCHAR
+
+[P02566 | 307046:307050 | NORMAL_TEXT | TABLE row=4 col=2]
+150
+
+[P02567 | 307051:307134 | NORMAL_TEXT | TABLE row=4 col=3]
+Street address, house number, building, or specific address detail of the branch. 
+
+[P02568 | 307136:307145 | NORMAL_TEXT | TABLE row=5 col=0]
+barangay
+
+[P02569 | 307146:307154 | NORMAL_TEXT | TABLE row=5 col=1]
+VARCHAR
+
+[P02570 | 307155:307159 | NORMAL_TEXT | TABLE row=5 col=2]
+100
+
+[P02571 | 307160:307198 | NORMAL_TEXT | TABLE row=5 col=3]
+Barangay where the branch is located.
+
+[P02572 | 307200:307218 | NORMAL_TEXT | TABLE row=6 col=0]
+city_municipality
+
+[P02573 | 307219:307227 | NORMAL_TEXT | TABLE row=6 col=1]
+VARCHAR
+
+[P02574 | 307228:307232 | NORMAL_TEXT | TABLE row=6 col=2]
+100
+
+[P02575 | 307233:307267 | NORMAL_TEXT | TABLE row=6 col=3]
+City where the branch is located.
+
+[P02576 | 307269:307278 | NORMAL_TEXT | TABLE row=7 col=0]
+province
+
+[P02577 | 307279:307287 | NORMAL_TEXT | TABLE row=7 col=1]
+VARCHAR
+
+[P02578 | 307288:307292 | NORMAL_TEXT | TABLE row=7 col=2]
+100
+
+[P02579 | 307293:307331 | NORMAL_TEXT | TABLE row=7 col=3]
+Province where the branch is located.
+
+[P02580 | 307333:307340 | NORMAL_TEXT | TABLE row=8 col=0]
+region
+
+[P02581 | 307341:307349 | NORMAL_TEXT | TABLE row=8 col=1]
+VARCHAR
+
+[P02582 | 307350:307353 | NORMAL_TEXT | TABLE row=8 col=2]
+50
+
+[P02583 | 307354:307390 | NORMAL_TEXT | TABLE row=8 col=3]
+Region where the branch is located.
+
+[P02584 | 307392:307401 | NORMAL_TEXT | TABLE row=9 col=0]
+zip_code
+
+[P02585 | 307402:307410 | NORMAL_TEXT | TABLE row=9 col=1]
+VARCHAR
+
+[P02586 | 307411:307414 | NORMAL_TEXT | TABLE row=9 col=2]
+10
+
+[P02587 | 307415:307439 | NORMAL_TEXT | TABLE row=9 col=3]
+Zip code of the branch.
+
+[P02588 | 307441:307456 | NORMAL_TEXT | TABLE row=10 col=0]
+contact_number
+
+[P02589 | 307457:307465 | NORMAL_TEXT | TABLE row=10 col=1]
+VARCHAR
+
+[P02590 | 307466:307469 | NORMAL_TEXT | TABLE row=10 col=2]
+30
+
+[P02591 | 307470:307500 | NORMAL_TEXT | TABLE row=10 col=3]
+Contact number of the branch.
+
+[P02592 | 307502:307509 | NORMAL_TEXT | TABLE row=11 col=0]
+status
+
+[P02593 | 307510:307515 | NORMAL_TEXT | TABLE row=11 col=1]
+ENUM
+
+[P02594 | 307516:307518 | NORMAL_TEXT | TABLE row=11 col=2]
+ 
+
+[P02595 | 307519:307562 | NORMAL_TEXT | TABLE row=11 col=3]
+Current branch status: Active or Inactive.
+
+[P02596 | 307564:307575 | NORMAL_TEXT | TABLE row=12 col=0]
+created_at
+
+[P02597 | 307576:307586 | NORMAL_TEXT | TABLE row=12 col=1]
+TIMESTAMP
+
+[P02598 | 307587:307589 | NORMAL_TEXT | TABLE row=12 col=2]
+ 
+
+[P02599 | 307590:307635 | NORMAL_TEXT | TABLE row=12 col=3]
+Date and time the branch record was created.
+
+[P02600 | 307637:307648 | NORMAL_TEXT | TABLE row=13 col=0]
+updated_at
+
+[P02601 | 307649:307659 | NORMAL_TEXT | TABLE row=13 col=1]
+TIMESTAMP
+
+[P02602 | 307660:307662 | NORMAL_TEXT | TABLE row=13 col=2]
+ 
+
+[P02603 | 307663:307713 | NORMAL_TEXT | TABLE row=13 col=3]
+Date and time the branch record was last updated.
+
+[P02604 | 307714:307716 | NORMAL_TEXT]
+ 
+
+[P02605 | 307716:307718 | NORMAL_TEXT]
+ 
+
+[P02606 | 307718:307912 | NORMAL_TEXT]
+Table 33 shows the table in the database named "Branches," where information about the business operating locations is stored, including branch name, address, city, contact details, and status.
+
+[P02607 | 307912:307914 | NORMAL_TEXT]
+ 
+
+[P02608 | 307914:307923 | NORMAL_TEXT]
+Table 34
+
+[P02609 | 307923:307949 | NORMAL_TEXT]
+Data Dictionary - Renters
+
+[P02610 | 307952:307972 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Renters
+
+[P02611 | 307973:307974 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02612 | 307975:307976 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02613 | 307977:307978 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P02614 | 307980:307991 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P02615 | 307992:308002 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P02616 | 308003:308014 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P02617 | 308015:308027 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P02618 | 308029:308039 | NORMAL_TEXT | TABLE row=2 col=0]
+renter_id
+
+[P02619 | 308040:308044 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P02620 | 308045:308048 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P02621 | 308049:308097 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each renter.
+
+[P02622 | 308099:308107 | NORMAL_TEXT | TABLE row=3 col=0]
+user_id
+
+[P02623 | 308108:308112 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P02624 | 308113:308116 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P02625 | 308117:308185 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that links the renter to a user account, if applicable.
+
+[P02626 | 308187:308202 | NORMAL_TEXT | TABLE row=4 col=0]
+street_address
+
+[P02627 | 308203:308211 | NORMAL_TEXT | TABLE row=4 col=1]
+VARCHAR
+
+[P02628 | 308212:308216 | NORMAL_TEXT | TABLE row=4 col=2]
+150
+
+[P02629 | 308217:308299 | NORMAL_TEXT | TABLE row=4 col=3]
+Street address, house number, building, or specific address detail of the renter.
+
+[P02630 | 308301:308310 | NORMAL_TEXT | TABLE row=5 col=0]
+barangay
+
+[P02631 | 308311:308319 | NORMAL_TEXT | TABLE row=5 col=1]
+VARCHAR
+
+[P02632 | 308320:308324 | NORMAL_TEXT | TABLE row=5 col=2]
+100
+
+[P02633 | 308325:308359 | NORMAL_TEXT | TABLE row=5 col=3]
+Barangay of the renter’s address.
+
+[P02634 | 308361:308379 | NORMAL_TEXT | TABLE row=6 col=0]
+city_municipality
+
+[P02635 | 308380:308388 | NORMAL_TEXT | TABLE row=6 col=1]
+VARCHAR
+
+[P02636 | 308389:308393 | NORMAL_TEXT | TABLE row=6 col=2]
+100
+
+[P02637 | 308394:308440 | NORMAL_TEXT | TABLE row=6 col=3]
+City or municipality of the renter’s address.
+
+[P02638 | 308442:308451 | NORMAL_TEXT | TABLE row=7 col=0]
+province
+
+[P02639 | 308452:308460 | NORMAL_TEXT | TABLE row=7 col=1]
+VARCHAR
+
+[P02640 | 308461:308465 | NORMAL_TEXT | TABLE row=7 col=2]
+100
+
+[P02641 | 308466:308500 | NORMAL_TEXT | TABLE row=7 col=3]
+Province of the renter’s address.
+
+[P02642 | 308502:308509 | NORMAL_TEXT | TABLE row=8 col=0]
+region
+
+[P02643 | 308510:308518 | NORMAL_TEXT | TABLE row=8 col=1]
+VARCHAR
+
+[P02644 | 308519:308522 | NORMAL_TEXT | TABLE row=8 col=2]
+50
+
+[P02645 | 308523:308555 | NORMAL_TEXT | TABLE row=8 col=3]
+Region of the renter’s address.
+
+[P02646 | 308557:308566 | NORMAL_TEXT | TABLE row=9 col=0]
+zip_code
+
+[P02647 | 308567:308575 | NORMAL_TEXT | TABLE row=9 col=1]
+VARCHAR
+
+[P02648 | 308576:308579 | NORMAL_TEXT | TABLE row=9 col=2]
+10
+
+[P02649 | 308580:308614 | NORMAL_TEXT | TABLE row=9 col=3]
+Zip code of the renter’s address.
+
+[P02650 | 308616:308640 | NORMAL_TEXT | TABLE row=10 col=0]
+background_check_status
+
+[P02651 | 308641:308646 | NORMAL_TEXT | TABLE row=10 col=1]
+ENUM
+
+[P02652 | 308647:308649 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P02653 | 308650:308741 | NORMAL_TEXT | TABLE row=10 col=3]
+Result of manual background checking: Not Checked, Clear, With Issue, or Unable to Verify.
+
+[P02654 | 308743:308763 | NORMAL_TEXT | TABLE row=11 col=0]
+verification_status
+
+[P02655 | 308764:308769 | NORMAL_TEXT | TABLE row=11 col=1]
+ENUM
+
+[P02656 | 308770:308772 | NORMAL_TEXT | TABLE row=11 col=2]
+ 
+
+[P02657 | 308773:308840 | NORMAL_TEXT | TABLE row=11 col=3]
+Verification status of the renter: Pending, Verified, or Rejected.
+
+[P02658 | 308842:308861 | NORMAL_TEXT | TABLE row=12 col=0]
+verification_notes
+
+[P02659 | 308862:308867 | NORMAL_TEXT | TABLE row=12 col=1]
+TEXT
+
+[P02660 | 308868:308870 | NORMAL_TEXT | TABLE row=12 col=2]
+ 
+
+[P02661 | 308871:308915 | NORMAL_TEXT | TABLE row=12 col=3]
+Notes or remarks about renter verification.
+
+[P02662 | 308917:308929 | NORMAL_TEXT | TABLE row=13 col=0]
+verified_by
+
+[P02663 | 308930:308934 | NORMAL_TEXT | TABLE row=13 col=1]
+INT
+
+[P02664 | 308935:308938 | NORMAL_TEXT | TABLE row=13 col=2]
+11
+
+[P02665 | 308939:309021 | NORMAL_TEXT | TABLE row=13 col=3]
+Foreign key that identifies the admin or authorized user who verified the renter.
+
+[P02666 | 309023:309035 | NORMAL_TEXT | TABLE row=14 col=0]
+verified_at
+
+[P02667 | 309036:309045 | NORMAL_TEXT | TABLE row=14 col=1]
+DATETIME
+
+[P02668 | 309046:309048 | NORMAL_TEXT | TABLE row=14 col=2]
+ 
+
+[P02669 | 309049:309088 | NORMAL_TEXT | TABLE row=14 col=3]
+Date and time the renter was verified.
+
+[P02670 | 309090:309101 | NORMAL_TEXT | TABLE row=15 col=0]
+created_at
+
+[P02671 | 309102:309112 | NORMAL_TEXT | TABLE row=15 col=1]
+TIMESTAMP
+
+[P02672 | 309113:309115 | NORMAL_TEXT | TABLE row=15 col=2]
+ 
+
+[P02673 | 309116:309161 | NORMAL_TEXT | TABLE row=15 col=3]
+Date and time the renter record was created.
+
+[P02674 | 309163:309174 | NORMAL_TEXT | TABLE row=16 col=0]
+updated_at
+
+[P02675 | 309175:309185 | NORMAL_TEXT | TABLE row=16 col=1]
+TIMESTAMP
+
+[P02676 | 309186:309188 | NORMAL_TEXT | TABLE row=16 col=2]
+ 
+
+[P02677 | 309189:309239 | NORMAL_TEXT | TABLE row=16 col=3]
+Date and time the renter record was last updated.
+
+[P02678 | 309240:309242 | NORMAL_TEXT]
+ 
+
+[P02679 | 309242:309244 | NORMAL_TEXT]
+ 
+
+[P02680 | 309244:309246 | NORMAL_TEXT]
+ 
+
+[P02681 | 309246:309561 | NORMAL_TEXT]
+Table 34 shows the table in the database named "Renters," where renter-specific profile, address, background checking, and verification details are stored. The renter’s account name, email, phone number, and login information are connected through the related user account to reduce duplicate personal information.
+
+[P02682 | 309561:309563 | NORMAL_TEXT]
+ 
+
+[P02683 | 309563:309565 | NORMAL_TEXT]
+ 
+
+[P02684 | 309565:309567 | NORMAL_TEXT]
+ 
+
+[P02685 | 309567:309569 | NORMAL_TEXT]
+ 
+
+[P02686 | 309569:309578 | NORMAL_TEXT]
+Table 35
+
+[P02687 | 309578:309615 | NORMAL_TEXT]
+Data Dictionary - Authorized Drivers
+
+[P02688 | 309618:309649 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Authorized_Drivers
+
+[P02689 | 309650:309651 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02690 | 309652:309653 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02691 | 309654:309655 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P02692 | 309657:309668 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P02693 | 309669:309679 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P02694 | 309680:309691 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P02695 | 309692:309704 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P02696 | 309706:309716 | NORMAL_TEXT | TABLE row=2 col=0]
+driver_id
+
+[P02697 | 309717:309721 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P02698 | 309722:309725 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P02699 | 309726:309785 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each authorized driver.
+
+[P02700 | 309787:309797 | NORMAL_TEXT | TABLE row=3 col=0]
+renter_id
+
+[P02701 | 309798:309802 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P02702 | 309803:309806 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P02703 | 309807:309871 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the renter connected to the driver.
+
+[P02704 | 309873:309884 | NORMAL_TEXT | TABLE row=4 col=0]
+first_name
+
+[P02705 | 309885:309893 | NORMAL_TEXT | TABLE row=4 col=1]
+VARCHAR
+
+[P02706 | 309894:309898 | NORMAL_TEXT | TABLE row=4 col=2]
+100
+
+[P02707 | 309899:309936 | NORMAL_TEXT | TABLE row=4 col=3]
+First name of the authorized driver.
+
+[P02708 | 309938:309950 | NORMAL_TEXT | TABLE row=5 col=0]
+middle_name
+
+[P02709 | 309951:309959 | NORMAL_TEXT | TABLE row=5 col=1]
+VARCHAR
+
+[P02710 | 309960:309964 | NORMAL_TEXT | TABLE row=5 col=2]
+100
+
+[P02711 | 309965:310018 | NORMAL_TEXT | TABLE row=5 col=3]
+Middle name of the authorized driver, if applicable.
+
+[P02712 | 310020:310030 | NORMAL_TEXT | TABLE row=6 col=0]
+last_name
+
+[P02713 | 310031:310039 | NORMAL_TEXT | TABLE row=6 col=1]
+VARCHAR
+
+[P02714 | 310040:310044 | NORMAL_TEXT | TABLE row=6 col=2]
+100
+
+[P02715 | 310045:310081 | NORMAL_TEXT | TABLE row=6 col=3]
+Last name of the authorized driver.
+
+[P02716 | 310083:310090 | NORMAL_TEXT | TABLE row=7 col=0]
+suffix
+
+[P02717 | 310091:310099 | NORMAL_TEXT | TABLE row=7 col=1]
+VARCHAR
+
+[P02718 | 310100:310103 | NORMAL_TEXT | TABLE row=7 col=2]
+20
+
+[P02719 | 310104:310159 | NORMAL_TEXT | TABLE row=7 col=3]
+Suffix of the authorized driver (e.g., Jr., Sr., III).
+
+[P02720 | 310161:310176 | NORMAL_TEXT | TABLE row=8 col=0]
+contact_number
+
+[P02721 | 310177:310185 | NORMAL_TEXT | TABLE row=8 col=1]
+VARCHAR
+
+[P02722 | 310186:310189 | NORMAL_TEXT | TABLE row=8 col=2]
+30
+
+[P02723 | 310190:310231 | NORMAL_TEXT | TABLE row=8 col=3]
+Contact number of the authorized driver.
+
+[P02724 | 310233:310251 | NORMAL_TEXT | TABLE row=9 col=0]
+driver_license_no
+
+[P02725 | 310252:310260 | NORMAL_TEXT | TABLE row=9 col=1]
+VARCHAR
+
+[P02726 | 310261:310265 | NORMAL_TEXT | TABLE row=9 col=2]
+100
+
+[P02727 | 310266:310316 | NORMAL_TEXT | TABLE row=9 col=3]
+Driver’s license number of the authorized driver.
+
+[P02728 | 310318:310338 | NORMAL_TEXT | TABLE row=10 col=0]
+license_expiry_date
+
+[P02729 | 310339:310344 | NORMAL_TEXT | TABLE row=10 col=1]
+DATE
+
+[P02730 | 310345:310347 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P02731 | 310348:310389 | NORMAL_TEXT | TABLE row=10 col=3]
+Expiration date of the driver’s license.
+
+[P02732 | 310391:310414 | NORMAL_TEXT | TABLE row=11 col=0]
+relationship_to_renter
+
+[P02733 | 310415:310423 | NORMAL_TEXT | TABLE row=11 col=1]
+VARCHAR
+
+[P02734 | 310424:310428 | NORMAL_TEXT | TABLE row=11 col=2]
+100
+
+[P02735 | 310429:310482 | NORMAL_TEXT | TABLE row=11 col=3]
+Relationship of the authorized driver to the renter.
+
+[P02736 | 310484:310508 | NORMAL_TEXT | TABLE row=12 col=0]
+lto_verification_status
+
+[P02737 | 310509:310514 | NORMAL_TEXT | TABLE row=12 col=1]
+ENUM
+
+[P02738 | 310515:310517 | NORMAL_TEXT | TABLE row=12 col=2]
+ 
+
+[P02739 | 310518:310602 | NORMAL_TEXT | TABLE row=12 col=3]
+Result of manual LTO checking: Not Checked, Clear, With Issue, or Unable to Verify.
+
+[P02740 | 310604:310624 | NORMAL_TEXT | TABLE row=13 col=0]
+verification_status
+
+[P02741 | 310625:310630 | NORMAL_TEXT | TABLE row=13 col=1]
+ENUM
+
+[P02742 | 310631:310633 | NORMAL_TEXT | TABLE row=13 col=2]
+ 
+
+[P02743 | 310634:310712 | NORMAL_TEXT | TABLE row=13 col=3]
+Verification status of the authorized driver: Pending, Verified, or Rejected.
+
+[P02744 | 310714:310733 | NORMAL_TEXT | TABLE row=14 col=0]
+verification_notes
+
+[P02745 | 310734:310739 | NORMAL_TEXT | TABLE row=14 col=1]
+TEXT
+
+[P02746 | 310740:310742 | NORMAL_TEXT | TABLE row=14 col=2]
+ 
+
+[P02747 | 310743:310787 | NORMAL_TEXT | TABLE row=14 col=3]
+Notes or remarks about driver verification.
+
+[P02748 | 310789:310801 | NORMAL_TEXT | TABLE row=15 col=0]
+verified_by
+
+[P02749 | 310802:310806 | NORMAL_TEXT | TABLE row=15 col=1]
+INT
+
+[P02750 | 310807:310810 | NORMAL_TEXT | TABLE row=15 col=2]
+11
+
+[P02751 | 310811:310893 | NORMAL_TEXT | TABLE row=15 col=3]
+Foreign key that identifies the admin or authorized user who verified the driver.
+
+[P02752 | 310895:310907 | NORMAL_TEXT | TABLE row=16 col=0]
+verified_at
+
+[P02753 | 310908:310917 | NORMAL_TEXT | TABLE row=16 col=1]
+DATETIME
+
+[P02754 | 310918:310920 | NORMAL_TEXT | TABLE row=16 col=2]
+ 
+
+[P02755 | 310921:310960 | NORMAL_TEXT | TABLE row=16 col=3]
+Date and time the driver was verified.
+
+[P02756 | 310962:310973 | NORMAL_TEXT | TABLE row=17 col=0]
+created_at
+
+[P02757 | 310974:310984 | NORMAL_TEXT | TABLE row=17 col=1]
+TIMESTAMP
+
+[P02758 | 310985:310987 | NORMAL_TEXT | TABLE row=17 col=2]
+ 
+
+[P02759 | 310988:311033 | NORMAL_TEXT | TABLE row=17 col=3]
+Date and time the driver record was created.
+
+[P02760 | 311035:311046 | NORMAL_TEXT | TABLE row=18 col=0]
+updated_at
+
+[P02761 | 311047:311057 | NORMAL_TEXT | TABLE row=18 col=1]
+TIMESTAMP
+
+[P02762 | 311058:311060 | NORMAL_TEXT | TABLE row=18 col=2]
+ 
+
+[P02763 | 311061:311111 | NORMAL_TEXT | TABLE row=18 col=3]
+Date and time the driver record was last updated.
+
+[P02764 | 311112:311114 | NORMAL_TEXT]
+ 
+
+[P02765 | 311114:311394 | NORMAL_TEXT]
+Table 35 shows the table in the database named "Authorized_Drivers," where details of renter-provided drivers are stored, including normalized name fields, license information, relationship to the renter, LTO checking status, verification status, and manual verification results.
+
+[P02766 | 311394:311396 | NORMAL_TEXT]
+ 
+
+[P02767 | 311396:311405 | NORMAL_TEXT]
+Table 36
+
+[P02768 | 311405:311442 | NORMAL_TEXT]
+Data Dictionary - Vehicle Categories
+
+[P02769 | 311445:311476 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Vehicle_Categories
+
+[P02770 | 311477:311478 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02771 | 311479:311480 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02772 | 311481:311482 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P02773 | 311484:311495 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P02774 | 311496:311506 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P02775 | 311507:311518 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P02776 | 311519:311531 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P02777 | 311533:311545 | NORMAL_TEXT | TABLE row=2 col=0]
+category_id
+
+[P02778 | 311546:311550 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P02779 | 311551:311554 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P02780 | 311555:311613 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each vehicle category.
+
+[P02781 | 311615:311629 | NORMAL_TEXT | TABLE row=3 col=0]
+category_name
+
+[P02782 | 311630:311638 | NORMAL_TEXT | TABLE row=3 col=1]
+VARCHAR
+
+[P02783 | 311639:311643 | NORMAL_TEXT | TABLE row=3 col=2]
+100
+
+[P02784 | 311644:311707 | NORMAL_TEXT | TABLE row=3 col=3]
+Name of the vehicle category, such as Sedan, SUV, MPV, or Van.
+
+[P02785 | 311709:311734 | NORMAL_TEXT | TABLE row=4 col=0]
+default_seating_capacity
+
+[P02786 | 311735:311739 | NORMAL_TEXT | TABLE row=4 col=1]
+INT
+
+[P02787 | 311740:311743 | NORMAL_TEXT | TABLE row=4 col=2]
+11
+
+[P02788 | 311744:311794 | NORMAL_TEXT | TABLE row=4 col=3]
+Default seating capacity of the vehicle category.
+
+[P02789 | 311796:311808 | NORMAL_TEXT | TABLE row=5 col=0]
+description
+
+[P02790 | 311809:311814 | NORMAL_TEXT | TABLE row=5 col=1]
+TEXT
+
+[P02791 | 311815:311817 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P02792 | 311818:311855 | NORMAL_TEXT | TABLE row=5 col=3]
+Description of the vehicle category.
+
+[P02793 | 311857:311868 | NORMAL_TEXT | TABLE row=6 col=0]
+created_at
+
+[P02794 | 311869:311879 | NORMAL_TEXT | TABLE row=6 col=1]
+TIMESTAMP
+
+[P02795 | 311880:311882 | NORMAL_TEXT | TABLE row=6 col=2]
+ 
+
+[P02796 | 311883:311938 | NORMAL_TEXT | TABLE row=6 col=3]
+Date and time the vehicle category record was created.
+
+[P02797 | 311939:311941 | NORMAL_TEXT]
+ 
+
+[P02798 | 311941:311943 | NORMAL_TEXT]
+ 
+
+[P02799 | 311943:312130 | NORMAL_TEXT]
+Table 36 shows the table in the database named "Vehicle_Categories," where the classification of vehicles is stored, including category names, default seating capacity, and descriptions.
+
+[P02800 | 312130:312132 | NORMAL_TEXT]
+ 
+
+[P02801 | 312132:312141 | NORMAL_TEXT]
+Table 37
+
+[P02802 | 312141:312168 | NORMAL_TEXT]
+Data Dictionary - Vehicles
+
+[P02803 | 312171:312192 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Vehicles
+
+[P02804 | 312193:312194 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02805 | 312195:312196 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02806 | 312197:312198 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P02807 | 312200:312211 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P02808 | 312212:312222 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P02809 | 312223:312234 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P02810 | 312235:312247 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P02811 | 312249:312260 | NORMAL_TEXT | TABLE row=2 col=0]
+vehicle_id
+
+[P02812 | 312261:312265 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P02813 | 312266:312269 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P02814 | 312270:312319 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each vehicle.
+
+[P02815 | 312321:312331 | NORMAL_TEXT | TABLE row=3 col=0]
+branch_id
+
+[P02816 | 312332:312336 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P02817 | 312337:312340 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P02818 | 312341:312411 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the branch where the vehicle is assigned.
+
+[P02819 | 312413:312425 | NORMAL_TEXT | TABLE row=4 col=0]
+category_id
+
+[P02820 | 312426:312430 | NORMAL_TEXT | TABLE row=4 col=1]
+INT
+
+[P02821 | 312431:312434 | NORMAL_TEXT | TABLE row=4 col=2]
+11
+
+[P02822 | 312435:312485 | NORMAL_TEXT | TABLE row=4 col=3]
+Foreign key that identifies the vehicle category.
+
+[P02823 | 312487:312500 | NORMAL_TEXT | TABLE row=5 col=0]
+plate_number
+
+[P02824 | 312501:312509 | NORMAL_TEXT | TABLE row=5 col=1]
+VARCHAR
+
+[P02825 | 312510:312513 | NORMAL_TEXT | TABLE row=5 col=2]
+50
+
+[P02826 | 312514:312543 | NORMAL_TEXT | TABLE row=5 col=3]
+Plate number of the vehicle.
+
+[P02827 | 312545:312559 | NORMAL_TEXT | TABLE row=6 col=0]
+engine_number
+
+[P02828 | 312560:312568 | NORMAL_TEXT | TABLE row=6 col=1]
+VARCHAR
+
+[P02829 | 312569:312573 | NORMAL_TEXT | TABLE row=6 col=2]
+100
+
+[P02830 | 312574:312645 | NORMAL_TEXT | TABLE row=6 col=3]
+Engine number of the vehicle based on registration or vehicle records.
+
+[P02831 | 312647:312662 | NORMAL_TEXT | TABLE row=7 col=0]
+chassis_number
+
+[P02832 | 312663:312671 | NORMAL_TEXT | TABLE row=7 col=1]
+VARCHAR
+
+[P02833 | 312672:312676 | NORMAL_TEXT | TABLE row=7 col=2]
+100
+
+[P02834 | 312677:312749 | NORMAL_TEXT | TABLE row=7 col=3]
+Chassis number of the vehicle based on registration or vehicle records.
+
+[P02835 | 312751:312757 | NORMAL_TEXT | TABLE row=8 col=0]
+brand
+
+[P02836 | 312758:312766 | NORMAL_TEXT | TABLE row=8 col=1]
+VARCHAR
+
+[P02837 | 312767:312771 | NORMAL_TEXT | TABLE row=8 col=2]
+100
+
+[P02838 | 312772:312810 | NORMAL_TEXT | TABLE row=8 col=3]
+Brand or manufacturer of the vehicle.
+
+[P02839 | 312812:312818 | NORMAL_TEXT | TABLE row=9 col=0]
+model
+
+[P02840 | 312819:312827 | NORMAL_TEXT | TABLE row=9 col=1]
+VARCHAR
+
+[P02841 | 312828:312832 | NORMAL_TEXT | TABLE row=9 col=2]
+100
+
+[P02842 | 312833:312860 | NORMAL_TEXT | TABLE row=9 col=3]
+Model name of the vehicle.
+
+[P02843 | 312862:312873 | NORMAL_TEXT | TABLE row=10 col=0]
+year_model
+
+[P02844 | 312874:312879 | NORMAL_TEXT | TABLE row=10 col=1]
+YEAR
+
+[P02845 | 312880:312882 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P02846 | 312883:312910 | NORMAL_TEXT | TABLE row=10 col=3]
+Year model of the vehicle.
+
+[P02847 | 312912:312918 | NORMAL_TEXT | TABLE row=11 col=0]
+color
+
+[P02848 | 312919:312927 | NORMAL_TEXT | TABLE row=11 col=1]
+VARCHAR
+
+[P02849 | 312928:312931 | NORMAL_TEXT | TABLE row=11 col=2]
+50
+
+[P02850 | 312932:312954 | NORMAL_TEXT | TABLE row=11 col=3]
+Color of the vehicle.
+
+[P02851 | 312956:312966 | NORMAL_TEXT | TABLE row=12 col=0]
+fuel_type
+
+[P02852 | 312967:312972 | NORMAL_TEXT | TABLE row=12 col=1]
+ENUM
+
+[P02853 | 312973:312975 | NORMAL_TEXT | TABLE row=12 col=2]
+ 
+
+[P02854 | 312976:313041 | NORMAL_TEXT | TABLE row=12 col=3]
+Fuel type of the vehicle: Gasoline, Diesel, Hybrid, or Electric.
+
+[P02855 | 313043:313056 | NORMAL_TEXT | TABLE row=13 col=0]
+transmission
+
+[P02856 | 313057:313062 | NORMAL_TEXT | TABLE row=13 col=1]
+ENUM
+
+[P02857 | 313063:313065 | NORMAL_TEXT | TABLE row=13 col=2]
+ 
+
+[P02858 | 313066:313121 | NORMAL_TEXT | TABLE row=13 col=3]
+Transmission type of the vehicle: Manual or Automatic.
+
+[P02859 | 313123:313140 | NORMAL_TEXT | TABLE row=14 col=0]
+seating_capacity
+
+[P02860 | 313141:313145 | NORMAL_TEXT | TABLE row=14 col=1]
+INT
+
+[P02861 | 313146:313149 | NORMAL_TEXT | TABLE row=14 col=2]
+11
+
+[P02862 | 313150:313190 | NORMAL_TEXT | TABLE row=14 col=3]
+Actual seating capacity of the vehicle.
+
+[P02863 | 313192:313221 | NORMAL_TEXT | TABLE row=15 col=0]
+fuel_efficiency_km_per_liter
+
+[P02864 | 313222:313230 | NORMAL_TEXT | TABLE row=15 col=1]
+DECIMAL
+
+[P02865 | 313231:313235 | NORMAL_TEXT | TABLE row=15 col=2]
+8,2
+
+[P02866 | 313236:313278 | NORMAL_TEXT | TABLE row=15 col=3]
+Estimated fuel efficiency of the vehicle.
+
+[P02867 | 313280:313291 | NORMAL_TEXT | TABLE row=16 col=0]
+daily_rate
+
+[P02868 | 313292:313300 | NORMAL_TEXT | TABLE row=16 col=1]
+DECIMAL
+
+[P02869 | 313301:313306 | NORMAL_TEXT | TABLE row=16 col=2]
+10,2
+
+[P02870 | 313307:313341 | NORMAL_TEXT | TABLE row=16 col=3]
+Daily rental rate of the vehicle.
+
+[P02871 | 313343:313360 | NORMAL_TEXT | TABLE row=17 col=0]
+twelve_hour_rate
+
+[P02872 | 313361:313369 | NORMAL_TEXT | TABLE row=17 col=1]
+DECIMAL
+
+[P02873 | 313370:313375 | NORMAL_TEXT | TABLE row=17 col=2]
+10,2
+
+[P02874 | 313376:313416 | NORMAL_TEXT | TABLE row=17 col=3]
+Twelve-hour rental rate of the vehicle.
+
+[P02875 | 313418:313440 | NORMAL_TEXT | TABLE row=18 col=0]
+twenty_four_hour_rate
+
+[P02876 | 313441:313449 | NORMAL_TEXT | TABLE row=18 col=1]
+DECIMAL
+
+[P02877 | 313450:313455 | NORMAL_TEXT | TABLE row=18 col=2]
+10,2
+
+[P02878 | 313456:313501 | NORMAL_TEXT | TABLE row=18 col=3]
+Twenty-four-hour rental rate of the vehicle.
+
+[P02879 | 313503:313518 | NORMAL_TEXT | TABLE row=19 col=0]
+vehicle_status
+
+[P02880 | 313519:313524 | NORMAL_TEXT | TABLE row=19 col=1]
+ENUM
+
+[P02881 | 313525:313527 | NORMAL_TEXT | TABLE row=19 col=2]
+ 
+
+[P02882 | 313528:313607 | NORMAL_TEXT | TABLE row=19 col=3]
+Current vehicle status: Available, Reserved, Rented, Maintenance, or Inactive.
+
+[P02883 | 313609:313626 | NORMAL_TEXT | TABLE row=20 col=0]
+condition_status
+
+[P02884 | 313627:313632 | NORMAL_TEXT | TABLE row=20 col=1]
+ENUM
+
+[P02885 | 313633:313635 | NORMAL_TEXT | TABLE row=20 col=2]
+ 
+
+[P02886 | 313636:313742 | NORMAL_TEXT | TABLE row=20 col=3]
+Excellent, Good, Needs Inspection, Needs Service, Damaged, Under Repair, Under Maintenance, Not Available
+
+[P02887 | 313744:313761 | NORMAL_TEXT | TABLE row=21 col=0]
+current_odometer
+
+[P02888 | 313762:313766 | NORMAL_TEXT | TABLE row=21 col=1]
+INT
+
+[P02889 | 313767:313770 | NORMAL_TEXT | TABLE row=21 col=2]
+11
+
+[P02890 | 313771:313812 | NORMAL_TEXT | TABLE row=21 col=3]
+Current odometer reading of the vehicle.
+
+[P02891 | 313814:313827 | NORMAL_TEXT | TABLE row=22 col=0]
+mileage_note
+
+[P02892 | 313828:313836 | NORMAL_TEXT | TABLE row=22 col=1]
+VARCHAR
+
+[P02893 | 313837:313841 | NORMAL_TEXT | TABLE row=22 col=2]
+100
+
+[P02894 | 313842:313875 | NORMAL_TEXT | TABLE row=22 col=3]
+Additional mileage-related note.
+
+[P02895 | 313877:313888 | NORMAL_TEXT | TABLE row=23 col=0]
+image_path
+
+[P02896 | 313889:313897 | NORMAL_TEXT | TABLE row=23 col=1]
+VARCHAR
+
+[P02897 | 313898:313902 | NORMAL_TEXT | TABLE row=23 col=2]
+255
+
+[P02898 | 313903:313940 | NORMAL_TEXT | TABLE row=23 col=3]
+File path of the main vehicle image.
+
+[P02899 | 313942:313948 | NORMAL_TEXT | TABLE row=24 col=0]
+notes
+
+[P02900 | 313949:313954 | NORMAL_TEXT | TABLE row=24 col=1]
+TEXT
+
+[P02901 | 313955:313957 | NORMAL_TEXT | TABLE row=24 col=2]
+ 
+
+[P02902 | 313958:313994 | NORMAL_TEXT | TABLE row=24 col=3]
+Additional notes about the vehicle.
+
+[P02903 | 313996:314007 | NORMAL_TEXT | TABLE row=25 col=0]
+created_at
+
+[P02904 | 314008:314018 | NORMAL_TEXT | TABLE row=25 col=1]
+TIMESTAMP
+
+[P02905 | 314019:314021 | NORMAL_TEXT | TABLE row=25 col=2]
+ 
+
+[P02906 | 314022:314068 | NORMAL_TEXT | TABLE row=25 col=3]
+Date and time the vehicle record was created.
+
+[P02907 | 314070:314081 | NORMAL_TEXT | TABLE row=26 col=0]
+updated_at
+
+[P02908 | 314082:314092 | NORMAL_TEXT | TABLE row=26 col=1]
+TIMESTAMP
+
+[P02909 | 314093:314095 | NORMAL_TEXT | TABLE row=26 col=2]
+ 
+
+[P02910 | 314096:314147 | NORMAL_TEXT | TABLE row=26 col=3]
+Date and time the vehicle record was last updated.
+
+[P02911 | 314148:314150 | NORMAL_TEXT]
+ 
+
+[P02912 | 314150:314152 | NORMAL_TEXT]
+ 
+
+[P02913 | 314152:314154 | NORMAL_TEXT]
+ 
+
+[P02914 | 314154:314450 | NORMAL_TEXT]
+Table 37 shows the table in the database named "Vehicles," where vehicle records are stored, including branch assignment, category, plate number, engine number, chassis number, brand, model, rates, availability status, condition status, mileage, image reference, and other vehicle-related notes.
+
+[P02915 | 314450:314452 | NORMAL_TEXT]
+ 
+
+[P02916 | 314452:314454 | NORMAL_TEXT]
+ 
+
+[P02917 | 314454:314463 | NORMAL_TEXT]
+Table 38
+
+[P02918 | 314463:314496 | NORMAL_TEXT]
+Data Dictionary - Vehicle Photos
+
+[P02919 | 314499:314526 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Vehicle_Photos
+
+[P02920 | 314527:314528 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02921 | 314529:314530 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02922 | 314531:314532 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P02923 | 314534:314545 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P02924 | 314546:314556 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P02925 | 314557:314568 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P02926 | 314569:314581 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P02927 | 314583:314592 | NORMAL_TEXT | TABLE row=2 col=0]
+photo_id
+
+[P02928 | 314593:314597 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P02929 | 314598:314601 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P02930 | 314602:314657 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each vehicle photo.
+
+[P02931 | 314659:314670 | NORMAL_TEXT | TABLE row=3 col=0]
+vehicle_id
+
+[P02932 | 314671:314675 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P02933 | 314676:314679 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P02934 | 314680:314744 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the vehicle connected to the photo.
+
+[P02935 | 314746:314757 | NORMAL_TEXT | TABLE row=4 col=0]
+photo_path
+
+[P02936 | 314758:314766 | NORMAL_TEXT | TABLE row=4 col=1]
+VARCHAR
+
+[P02937 | 314767:314771 | NORMAL_TEXT | TABLE row=4 col=2]
+255
+
+[P02938 | 314772:314813 | NORMAL_TEXT | TABLE row=4 col=3]
+File path of the uploaded vehicle photo.
+
+[P02939 | 314815:314833 | NORMAL_TEXT | TABLE row=5 col=0]
+photo_description
+
+[P02940 | 314834:314842 | NORMAL_TEXT | TABLE row=5 col=1]
+VARCHAR
+
+[P02941 | 314843:314847 | NORMAL_TEXT | TABLE row=5 col=2]
+150
+
+[P02942 | 314848:314888 | NORMAL_TEXT | TABLE row=5 col=3]
+Short description of the vehicle photo.
+
+[P02943 | 314890:314901 | NORMAL_TEXT | TABLE row=6 col=0]
+is_primary
+
+[P02944 | 314902:314910 | NORMAL_TEXT | TABLE row=6 col=1]
+BOOLEAN
+
+[P02945 | 314911:314913 | NORMAL_TEXT | TABLE row=6 col=2]
+1
+
+[P02946 | 314914:314969 | NORMAL_TEXT | TABLE row=6 col=3]
+Indicates whether the photo is the main display photo.
+
+[P02947 | 314971:314983 | NORMAL_TEXT | TABLE row=7 col=0]
+uploaded_at
+
+[P02948 | 314984:314994 | NORMAL_TEXT | TABLE row=7 col=1]
+TIMESTAMP
+
+[P02949 | 314995:314997 | NORMAL_TEXT | TABLE row=7 col=2]
+ 
+
+[P02950 | 314998:315044 | NORMAL_TEXT | TABLE row=7 col=3]
+Date and time the vehicle photo was uploaded.
+
+[P02951 | 315045:315047 | NORMAL_TEXT]
+ 
+
+[P02952 | 315047:315227 | NORMAL_TEXT]
+Table 38 shows the table in the database named "Vehicle_Photos," where uploaded vehicle images are stored to support the customer-facing vehicle catalog and staff vehicle records.
+
+[P02953 | 315227:315236 | NORMAL_TEXT]
+Table 39
+
+[P02954 | 315236:315274 | NORMAL_TEXT]
+Data Dictionary - Vehicle Status Logs
+
+[P02955 | 315277:315309 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Vehicle_Status_Logs
+
+[P02956 | 315310:315311 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02957 | 315312:315313 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P02958 | 315314:315315 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P02959 | 315317:315328 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P02960 | 315329:315339 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P02961 | 315340:315351 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P02962 | 315352:315364 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P02963 | 315366:315380 | NORMAL_TEXT | TABLE row=2 col=0]
+status_log_id
+
+[P02964 | 315381:315385 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P02965 | 315386:315389 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P02966 | 315390:315450 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each vehicle status log.
+
+[P02967 | 315452:315463 | NORMAL_TEXT | TABLE row=3 col=0]
+vehicle_id
+
+[P02968 | 315464:315468 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P02969 | 315469:315472 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P02970 | 315473:315539 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the vehicle whose status was changed.
+
+[P02971 | 315541:315552 | NORMAL_TEXT | TABLE row=4 col=0]
+old_status
+
+[P02972 | 315553:315561 | NORMAL_TEXT | TABLE row=4 col=1]
+VARCHAR
+
+[P02973 | 315562:315565 | NORMAL_TEXT | TABLE row=4 col=2]
+50
+
+[P02974 | 315566:315598 | NORMAL_TEXT | TABLE row=4 col=3]
+Previous status of the vehicle.
+
+[P02975 | 315600:315611 | NORMAL_TEXT | TABLE row=5 col=0]
+new_status
+
+[P02976 | 315612:315620 | NORMAL_TEXT | TABLE row=5 col=1]
+VARCHAR
+
+[P02977 | 315621:315624 | NORMAL_TEXT | TABLE row=5 col=2]
+50
+
+[P02978 | 315625:315656 | NORMAL_TEXT | TABLE row=5 col=3]
+Updated status of the vehicle.
+
+[P02979 | 315658:315666 | NORMAL_TEXT | TABLE row=6 col=0]
+remarks
+
+[P02980 | 315667:315672 | NORMAL_TEXT | TABLE row=6 col=1]
+TEXT
+
+[P02981 | 315673:315675 | NORMAL_TEXT | TABLE row=6 col=2]
+ 
+
+[P02982 | 315676:315715 | NORMAL_TEXT | TABLE row=6 col=3]
+Notes or reason for the status change.
+
+[P02983 | 315717:315728 | NORMAL_TEXT | TABLE row=7 col=0]
+changed_by
+
+[P02984 | 315729:315733 | NORMAL_TEXT | TABLE row=7 col=1]
+INT
+
+[P02985 | 315734:315737 | NORMAL_TEXT | TABLE row=7 col=2]
+11
+
+[P02986 | 315738:315827 | NORMAL_TEXT | TABLE row=7 col=3]
+Foreign key that identifies the admin or authorized user who changed the vehicle status.
+
+[P02987 | 315829:315840 | NORMAL_TEXT | TABLE row=8 col=0]
+changed_at
+
+[P02988 | 315841:315851 | NORMAL_TEXT | TABLE row=8 col=1]
+TIMESTAMP
+
+[P02989 | 315852:315854 | NORMAL_TEXT | TABLE row=8 col=2]
+ 
+
+[P02990 | 315855:315901 | NORMAL_TEXT | TABLE row=8 col=3]
+Date and time the vehicle status was changed.
+
+[P02991 | 315902:315904 | NORMAL_TEXT]
+ 
+
+[P02992 | 315904:315906 | NORMAL_TEXT]
+ 
+
+[P02993 | 315906:316071 | NORMAL_TEXT]
+Table 39 shows the table in the database named "Vehicle_Status_Logs," where every change in vehicle status is recorded for monitoring, tracking, and audit purposes.
+
+[P02994 | 316071:316073 | NORMAL_TEXT]
+ 
+
+[P02995 | 316073:316082 | NORMAL_TEXT]
+Table 40
+
+[P02996 | 316082:316123 | NORMAL_TEXT]
+Data Dictionary - Vehicle Branch History
+
+[P02997 | 316126:316161 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Vehicle_Branch_History
+
+[P02998 | 316162:316163 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P02999 | 316164:316165 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03000 | 316166:316167 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03001 | 316169:316180 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03002 | 316181:316191 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03003 | 316192:316203 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03004 | 316204:316216 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03005 | 316218:316236 | NORMAL_TEXT | TABLE row=2 col=0]
+branch_history_id
+
+[P03006 | 316237:316241 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03007 | 316242:316245 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03008 | 316246:316317 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each vehicle branch history record.
+
+[P03009 | 316319:316330 | NORMAL_TEXT | TABLE row=3 col=0]
+vehicle_id
+
+[P03010 | 316331:316335 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03011 | 316336:316339 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03012 | 316340:316393 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the transferred vehicle.
+
+[P03013 | 316395:316410 | NORMAL_TEXT | TABLE row=4 col=0]
+from_branch_id
+
+[P03014 | 316411:316415 | NORMAL_TEXT | TABLE row=4 col=1]
+INT
+
+[P03015 | 316416:316419 | NORMAL_TEXT | TABLE row=4 col=2]
+11
+
+[P03016 | 316420:316484 | NORMAL_TEXT | TABLE row=4 col=3]
+Foreign key that identifies the previous branch of the vehicle.
+
+[P03017 | 316486:316499 | NORMAL_TEXT | TABLE row=5 col=0]
+to_branch_id
+
+[P03018 | 316500:316504 | NORMAL_TEXT | TABLE row=5 col=1]
+INT
+
+[P03019 | 316505:316508 | NORMAL_TEXT | TABLE row=5 col=2]
+11
+
+[P03020 | 316509:316568 | NORMAL_TEXT | TABLE row=5 col=3]
+Foreign key that identifies the new branch of the vehicle.
+
+[P03021 | 316570:316586 | NORMAL_TEXT | TABLE row=6 col=0]
+transfer_reason
+
+[P03022 | 316587:316592 | NORMAL_TEXT | TABLE row=6 col=1]
+TEXT
+
+[P03023 | 316593:316595 | NORMAL_TEXT | TABLE row=6 col=2]
+ 
+
+[P03024 | 316596:316648 | NORMAL_TEXT | TABLE row=6 col=3]
+Reason for vehicle branch transfer or reassignment.
+
+[P03025 | 316650:316665 | NORMAL_TEXT | TABLE row=7 col=0]
+transferred_by
+
+[P03026 | 316666:316670 | NORMAL_TEXT | TABLE row=7 col=1]
+INT
+
+[P03027 | 316671:316674 | NORMAL_TEXT | TABLE row=7 col=2]
+11
+
+[P03028 | 316675:316759 | NORMAL_TEXT | TABLE row=7 col=3]
+Foreign key that identifies the admin or authorized user who recorded the transfer.
+
+[P03029 | 316761:316776 | NORMAL_TEXT | TABLE row=8 col=0]
+transferred_at
+
+[P03030 | 316777:316787 | NORMAL_TEXT | TABLE row=8 col=1]
+TIMESTAMP
+
+[P03031 | 316788:316790 | NORMAL_TEXT | TABLE row=8 col=2]
+ 
+
+[P03032 | 316791:316832 | NORMAL_TEXT | TABLE row=8 col=3]
+Date and time the transfer was recorded.
+
+[P03033 | 316833:316835 | NORMAL_TEXT]
+ 
+
+[P03034 | 316835:316837 | NORMAL_TEXT]
+ 
+
+[P03035 | 316837:316839 | NORMAL_TEXT]
+ 
+
+[P03036 | 316839:317092 | NORMAL_TEXT]
+Table 40 shows the table in the database named "Vehicle_Branch_History," where records of vehicle branch reassignment or movement are stored, including the previous branch, new branch, reason, and the admin or authorized user who recorded the transfer.
+
+[P03037 | 317092:317094 | NORMAL_TEXT]
+ 
+
+[P03038 | 317094:317103 | NORMAL_TEXT]
+Table 41
+
+[P03039 | 317103:317138 | NORMAL_TEXT]
+Data Dictionary - Booking Requests
+
+[P03040 | 317141:317170 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Booking_Requests
+
+[P03041 | 317171:317172 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03042 | 317173:317174 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03043 | 317175:317176 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03044 | 317178:317189 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03045 | 317190:317200 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03046 | 317201:317212 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03047 | 317213:317225 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03048 | 317227:317238 | NORMAL_TEXT | TABLE row=2 col=0]
+booking_id
+
+[P03049 | 317239:317243 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03050 | 317244:317247 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03051 | 317248:317305 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each booking request.
+
+[P03052 | 317307:317317 | NORMAL_TEXT | TABLE row=3 col=0]
+renter_id
+
+[P03053 | 317318:317322 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03054 | 317323:317326 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03055 | 317327:317396 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the renter who made the booking request.
+
+[P03056 | 317398:317419 | NORMAL_TEXT | TABLE row=4 col=0]
+authorized_driver_id
+
+[P03057 | 317420:317424 | NORMAL_TEXT | TABLE row=4 col=1]
+INT
+
+[P03058 | 317425:317428 | NORMAL_TEXT | TABLE row=4 col=2]
+11
+
+[P03059 | 317429:317496 | NORMAL_TEXT | TABLE row=4 col=3]
+Foreign key that identifies the authorized driver for the booking.
+
+[P03060 | 317498:317515 | NORMAL_TEXT | TABLE row=5 col=0]
+pickup_branch_id
+
+[P03061 | 317516:317520 | NORMAL_TEXT | TABLE row=5 col=1]
+INT
+
+[P03062 | 317521:317524 | NORMAL_TEXT | TABLE row=5 col=2]
+11
+
+[P03063 | 317525:317581 | NORMAL_TEXT | TABLE row=5 col=3]
+Foreign key that identifies the selected pickup branch.
+
+[P03064 | 317583:317600 | NORMAL_TEXT | TABLE row=6 col=0]
+return_branch_id
+
+[P03065 | 317601:317605 | NORMAL_TEXT | TABLE row=6 col=1]
+INT
+
+[P03066 | 317606:317609 | NORMAL_TEXT | TABLE row=6 col=2]
+11
+
+[P03067 | 317610:317666 | NORMAL_TEXT | TABLE row=6 col=3]
+Foreign key that identifies the selected return branch.
+
+[P03068 | 317668:317690 | NORMAL_TEXT | TABLE row=7 col=0]
+preferred_category_id
+
+[P03069 | 317691:317695 | NORMAL_TEXT | TABLE row=7 col=1]
+INT
+
+[P03070 | 317696:317699 | NORMAL_TEXT | TABLE row=7 col=2]
+11
+
+[P03071 | 317700:317760 | NORMAL_TEXT | TABLE row=7 col=3]
+Foreign key that identifies the preferred vehicle category.
+
+[P03072 | 317762:317782 | NORMAL_TEXT | TABLE row=8 col=0]
+assigned_vehicle_id
+
+[P03073 | 317783:317787 | NORMAL_TEXT | TABLE row=8 col=1]
+INT
+
+[P03074 | 317788:317791 | NORMAL_TEXT | TABLE row=8 col=2]
+11
+
+[P03075 | 317792:317869 | NORMAL_TEXT | TABLE row=8 col=3]
+Foreign key that identifies the vehicle selected or assigned to the booking.
+
+[P03076 | 317871:317897 | NORMAL_TEXT | TABLE row=9 col=0]
+number_of_seats_preferred
+
+[P03077 | 317898:317902 | NORMAL_TEXT | TABLE row=9 col=1]
+INT
+
+[P03078 | 317903:317906 | NORMAL_TEXT | TABLE row=9 col=2]
+11
+
+[P03079 | 317907:317948 | NORMAL_TEXT | TABLE row=9 col=3]
+Number of seats preferred by the renter.
+
+[P03080 | 317950:317972 | NORMAL_TEXT | TABLE row=10 col=0]
+rental_start_datetime
+
+[P03081 | 317973:317982 | NORMAL_TEXT | TABLE row=10 col=1]
+DATETIME
+
+[P03082 | 317983:317985 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P03083 | 317986:318021 | NORMAL_TEXT | TABLE row=10 col=3]
+Start date and time of the rental.
+
+[P03084 | 318023:318043 | NORMAL_TEXT | TABLE row=11 col=0]
+rental_end_datetime
+
+[P03085 | 318044:318053 | NORMAL_TEXT | TABLE row=11 col=1]
+DATETIME
+
+[P03086 | 318054:318056 | NORMAL_TEXT | TABLE row=11 col=2]
+ 
+
+[P03087 | 318057:318090 | NORMAL_TEXT | TABLE row=11 col=3]
+End date and time of the rental.
+
+[P03088 | 318092:318115 | NORMAL_TEXT | TABLE row=12 col=0]
+rental_duration_option
+
+[P03089 | 318116:318121 | NORMAL_TEXT | TABLE row=12 col=1]
+ENUM
+
+[P03090 | 318122:318124 | NORMAL_TEXT | TABLE row=12 col=2]
+ 
+
+[P03091 | 318125:318187 | NORMAL_TEXT | TABLE row=12 col=3]
+Rental duration option: 12 Hours, 24 Hours, Daily, or Others.
+
+[P03092 | 318189:318211 | NORMAL_TEXT | TABLE row=13 col=0]
+rental_duration_value
+
+[P03093 | 318212:318220 | NORMAL_TEXT | TABLE row=13 col=1]
+DECIMAL
+
+[P03094 | 318221:318226 | NORMAL_TEXT | TABLE row=13 col=2]
+10,2
+
+[P03095 | 318227:318265 | NORMAL_TEXT | TABLE row=13 col=3]
+Numeric value of the rental duration.
+
+[P03096 | 318267:318288 | NORMAL_TEXT | TABLE row=14 col=0]
+rental_duration_unit
+
+[P03097 | 318289:318294 | NORMAL_TEXT | TABLE row=14 col=1]
+ENUM
+
+[P03098 | 318295:318297 | NORMAL_TEXT | TABLE row=14 col=2]
+ 
+
+[P03099 | 318298:318344 | NORMAL_TEXT | TABLE row=14 col=3]
+Unit of rental duration: Hour, Day, or Other.
+
+[P03100 | 318346:318361 | NORMAL_TEXT | TABLE row=15 col=0]
+release_option
+
+[P03101 | 318362:318367 | NORMAL_TEXT | TABLE row=15 col=1]
+ENUM
+
+[P03102 | 318368:318370 | NORMAL_TEXT | TABLE row=15 col=2]
+ 
+
+[P03103 | 318371:318430 | NORMAL_TEXT | TABLE row=15 col=3]
+Indicates whether the unit will be delivered or picked up.
+
+[P03104 | 318432:318448 | NORMAL_TEXT | TABLE row=16 col=0]
+pickup_location
+
+[P03105 | 318449:318454 | NORMAL_TEXT | TABLE row=16 col=1]
+TEXT
+
+[P03106 | 318455:318457 | NORMAL_TEXT | TABLE row=16 col=2]
+ 
+
+[P03107 | 318458:318499 | NORMAL_TEXT | TABLE row=16 col=3]
+Pick-up location provided by the renter.
+
+[P03108 | 318501:318518 | NORMAL_TEXT | TABLE row=17 col=0]
+dropoff_location
+
+[P03109 | 318519:318524 | NORMAL_TEXT | TABLE row=17 col=1]
+TEXT
+
+[P03110 | 318525:318527 | NORMAL_TEXT | TABLE row=17 col=2]
+ 
+
+[P03111 | 318528:318580 | NORMAL_TEXT | TABLE row=17 col=3]
+Return or drop-off location provided by the renter.
+
+[P03112 | 318582:318594 | NORMAL_TEXT | TABLE row=18 col=0]
+destination
+
+[P03113 | 318595:318600 | NORMAL_TEXT | TABLE row=18 col=1]
+TEXT
+
+[P03114 | 318601:318603 | NORMAL_TEXT | TABLE row=18 col=2]
+ 
+
+[P03115 | 318604:318640 | NORMAL_TEXT | TABLE row=18 col=3]
+Intended destination of the renter.
+
+[P03116 | 318642:318657 | NORMAL_TEXT | TABLE row=19 col=0]
+purpose_of_use
+
+[P03117 | 318658:318663 | NORMAL_TEXT | TABLE row=19 col=1]
+TEXT
+
+[P03118 | 318664:318666 | NORMAL_TEXT | TABLE row=19 col=2]
+ 
+
+[P03119 | 318667:318704 | NORMAL_TEXT | TABLE row=19 col=3]
+Purpose of using the rented vehicle.
+
+[P03120 | 318706:318728 | NORMAL_TEXT | TABLE row=20 col=0]
+estimated_distance_km
+
+[P03121 | 318729:318737 | NORMAL_TEXT | TABLE row=20 col=1]
+DECIMAL
+
+[P03122 | 318738:318743 | NORMAL_TEXT | TABLE row=20 col=2]
+10,2
+
+[P03123 | 318744:318785 | NORMAL_TEXT | TABLE row=20 col=3]
+Estimated travel distance in kilometers.
+
+[P03124 | 318787:318802 | NORMAL_TEXT | TABLE row=21 col=0]
+booking_source
+
+[P03125 | 318803:318808 | NORMAL_TEXT | TABLE row=21 col=1]
+ENUM
+
+[P03126 | 318809:318811 | NORMAL_TEXT | TABLE row=21 col=2]
+ 
+
+[P03127 | 318812:318890 | NORMAL_TEXT | TABLE row=21 col=3]
+Source of booking request, such as Facebook, Messenger, Website, or WhatsApp.
+
+[P03128 | 318892:318907 | NORMAL_TEXT | TABLE row=22 col=0]
+booking_status
+
+[P03129 | 318908:318913 | NORMAL_TEXT | TABLE row=22 col=1]
+ENUM
+
+[P03130 | 318914:318916 | NORMAL_TEXT | TABLE row=22 col=2]
+ 
+
+[P03131 | 318917:318956 | NORMAL_TEXT | TABLE row=22 col=3]
+Current status of the booking request.
+
+[P03132 | 318958:318970 | NORMAL_TEXT | TABLE row=23 col=0]
+recorded_by
+
+[P03133 | 318971:318975 | NORMAL_TEXT | TABLE row=23 col=1]
+INT
+
+[P03134 | 318976:318979 | NORMAL_TEXT | TABLE row=23 col=2]
+11
+
+[P03135 | 318980:319058 | NORMAL_TEXT | TABLE row=23 col=3]
+Foreign key that identifies the admin or staff user who recorded the booking.
+
+[P03136 | 319060:319068 | NORMAL_TEXT | TABLE row=24 col=0]
+remarks
+
+[P03137 | 319069:319074 | NORMAL_TEXT | TABLE row=24 col=1]
+TEXT
+
+[P03138 | 319075:319077 | NORMAL_TEXT | TABLE row=24 col=2]
+ 
+
+[P03139 | 319078:319124 | NORMAL_TEXT | TABLE row=24 col=3]
+Additional remarks about the booking request.
+
+[P03140 | 319126:319137 | NORMAL_TEXT | TABLE row=25 col=0]
+created_at
+
+[P03141 | 319138:319148 | NORMAL_TEXT | TABLE row=25 col=1]
+TIMESTAMP
+
+[P03142 | 319149:319151 | NORMAL_TEXT | TABLE row=25 col=2]
+ 
+
+[P03143 | 319152:319199 | NORMAL_TEXT | TABLE row=25 col=3]
+Date and time the booking request was created.
+
+[P03144 | 319201:319212 | NORMAL_TEXT | TABLE row=26 col=0]
+updated_at
+
+[P03145 | 319213:319223 | NORMAL_TEXT | TABLE row=26 col=1]
+TIMESTAMP
+
+[P03146 | 319224:319226 | NORMAL_TEXT | TABLE row=26 col=2]
+ 
+
+[P03147 | 319227:319279 | NORMAL_TEXT | TABLE row=26 col=3]
+Date and time the booking request was last updated.
+
+[P03148 | 319280:319282 | NORMAL_TEXT]
+ 
+
+[P03149 | 319282:319660 | NORMAL_TEXT]
+Table 41 shows the table in the database named "Booking_Requests," where all customer inquiry and reservation details are stored, including renter information, pickup branch, return branch, preferred seats, rental dates, rental duration, vehicle preference, release option, pick-up and return details, destination, purpose of use, source of booking, and current booking status.
+
+[P03150 | 319660:319662 | NORMAL_TEXT]
+ 
+
+[P03151 | 319662:319671 | NORMAL_TEXT]
+Table 42
+
+[P03152 | 319671:319709 | NORMAL_TEXT]
+Data Dictionary - Renter Requirements
+
+[P03153 | 319712:319744 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Renter_Requirements
+
+[P03154 | 319745:319746 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03155 | 319747:319748 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03156 | 319749:319750 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03157 | 319752:319763 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03158 | 319764:319774 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03159 | 319775:319786 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03160 | 319787:319799 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03161 | 319801:319816 | NORMAL_TEXT | TABLE row=2 col=0]
+requirement_id
+
+[P03162 | 319817:319821 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03163 | 319822:319825 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03164 | 319826:319889 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each submitted requirement.
+
+[P03165 | 319891:319901 | NORMAL_TEXT | TABLE row=3 col=0]
+renter_id
+
+[P03166 | 319902:319906 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03167 | 319907:319910 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03168 | 319911:319981 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the renter who submitted the requirement.
+
+[P03169 | 319983:319993 | NORMAL_TEXT | TABLE row=4 col=0]
+driver_id
+
+[P03170 | 319994:319998 | NORMAL_TEXT | TABLE row=4 col=1]
+INT
+
+[P03171 | 319999:320002 | NORMAL_TEXT | TABLE row=4 col=2]
+11
+
+[P03172 | 320003:320087 | NORMAL_TEXT | TABLE row=4 col=3]
+Foreign key that identifies the driver connected to the requirement, if applicable.
+
+[P03173 | 320089:320100 | NORMAL_TEXT | TABLE row=5 col=0]
+booking_id
+
+[P03174 | 320101:320105 | NORMAL_TEXT | TABLE row=5 col=1]
+INT
+
+[P03175 | 320106:320109 | NORMAL_TEXT | TABLE row=5 col=2]
+11
+
+[P03176 | 320110:320180 | NORMAL_TEXT | TABLE row=5 col=3]
+Foreign key that identifies the booking connected to the requirement.
+
+[P03177 | 320182:320199 | NORMAL_TEXT | TABLE row=6 col=0]
+requirement_type
+
+[P03178 | 320200:320205 | NORMAL_TEXT | TABLE row=6 col=1]
+ENUM
+
+[P03179 | 320206:320208 | NORMAL_TEXT | TABLE row=6 col=2]
+ 
+
+[P03180 | 320209:320340 | NORMAL_TEXT | TABLE row=6 col=3]
+Type of submitted requirement, such as Valid ID, Driver License, Proof of Billing, Authorization Letter, Selfie With ID, or Other.
+
+[P03181 | 320342:320352 | NORMAL_TEXT | TABLE row=7 col=0]
+file_path
+
+[P03182 | 320353:320361 | NORMAL_TEXT | TABLE row=7 col=1]
+VARCHAR
+
+[P03183 | 320362:320366 | NORMAL_TEXT | TABLE row=7 col=2]
+255
+
+[P03184 | 320367:320406 | NORMAL_TEXT | TABLE row=7 col=3]
+File path of the uploaded requirement.
+
+[P03185 | 320408:320427 | NORMAL_TEXT | TABLE row=8 col=0]
+requirement_status
+
+[P03186 | 320428:320433 | NORMAL_TEXT | TABLE row=8 col=1]
+ENUM
+
+[P03187 | 320434:320436 | NORMAL_TEXT | TABLE row=8 col=2]
+ 
+
+[P03188 | 320437:320510 | NORMAL_TEXT | TABLE row=8 col=3]
+Manual review status of the requirement: Pending, Approved, or Rejected.
+
+[P03189 | 320512:320520 | NORMAL_TEXT | TABLE row=9 col=0]
+remarks
+
+[P03190 | 320521:320526 | NORMAL_TEXT | TABLE row=9 col=1]
+TEXT
+
+[P03191 | 320527:320529 | NORMAL_TEXT | TABLE row=9 col=2]
+ 
+
+[P03192 | 320530:320575 | NORMAL_TEXT | TABLE row=9 col=3]
+Remarks regarding the submitted requirement.
+
+[P03193 | 320577:320589 | NORMAL_TEXT | TABLE row=10 col=0]
+uploaded_at
+
+[P03194 | 320590:320600 | NORMAL_TEXT | TABLE row=10 col=1]
+TIMESTAMP
+
+[P03195 | 320601:320603 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P03196 | 320604:320648 | NORMAL_TEXT | TABLE row=10 col=3]
+Date and time the requirement was uploaded.
+
+[P03197 | 320650:320662 | NORMAL_TEXT | TABLE row=11 col=0]
+reviewed_by
+
+[P03198 | 320663:320667 | NORMAL_TEXT | TABLE row=11 col=1]
+INT
+
+[P03199 | 320668:320671 | NORMAL_TEXT | TABLE row=11 col=2]
+11
+
+[P03200 | 320672:320759 | NORMAL_TEXT | TABLE row=11 col=3]
+Foreign key that identifies the admin or authorized user who reviewed the requirement.
+
+[P03201 | 320761:320773 | NORMAL_TEXT | TABLE row=12 col=0]
+reviewed_at
+
+[P03202 | 320774:320783 | NORMAL_TEXT | TABLE row=12 col=1]
+DATETIME
+
+[P03203 | 320784:320786 | NORMAL_TEXT | TABLE row=12 col=2]
+ 
+
+[P03204 | 320787:320831 | NORMAL_TEXT | TABLE row=12 col=3]
+Date and time the requirement was reviewed.
+
+[P03205 | 320832:320834 | NORMAL_TEXT]
+ 
+
+[P03206 | 320834:320836 | NORMAL_TEXT]
+ 
+
+[P03207 | 320836:321095 | NORMAL_TEXT]
+Table 42 shows the table in the database named "Renter_Requirements," where uploaded renter and driver documents are stored, including the document type, file path, manual review status, remarks, and the admin or authorized user who reviewed the requirement.
+
+[P03208 | 321095:321097 | NORMAL_TEXT]
+ 
+
+[P03209 | 321097:321099 | NORMAL_TEXT]
+ 
+
+[P03210 | 321099:321108 | NORMAL_TEXT]
+Table 43
+
+[P03211 | 321108:321144 | NORMAL_TEXT]
+Data Dictionary - Booking Approvals
+
+[P03212 | 321147:321177 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Booking_Approvals
+
+[P03213 | 321178:321179 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03214 | 321180:321181 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03215 | 321182:321183 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03216 | 321185:321196 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03217 | 321197:321207 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03218 | 321208:321219 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03219 | 321220:321232 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03220 | 321234:321246 | NORMAL_TEXT | TABLE row=2 col=0]
+approval_id
+
+[P03221 | 321247:321251 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03222 | 321252:321255 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03223 | 321256:321313 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each approval record.
+
+[P03224 | 321315:321326 | NORMAL_TEXT | TABLE row=3 col=0]
+booking_id
+
+[P03225 | 321327:321331 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03226 | 321332:321335 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03227 | 321336:321403 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the booking connected to the approval.
+
+[P03228 | 321405:321419 | NORMAL_TEXT | TABLE row=4 col=0]
+approval_type
+
+[P03229 | 321420:321425 | NORMAL_TEXT | TABLE row=4 col=1]
+ENUM
+
+[P03230 | 321426:321428 | NORMAL_TEXT | TABLE row=4 col=2]
+ 
+
+[P03231 | 321429:321585 | NORMAL_TEXT | TABLE row=4 col=3]
+Type of approval, such as Requirement Verification, Driver Verification, Payment Verification, Booking Confirmation, Vehicle Release, or Return Settlement.
+
+[P03232 | 321587:321603 | NORMAL_TEXT | TABLE row=5 col=0]
+approval_status
+
+[P03233 | 321604:321609 | NORMAL_TEXT | TABLE row=5 col=1]
+ENUM
+
+[P03234 | 321610:321612 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P03235 | 321613:321662 | NORMAL_TEXT | TABLE row=5 col=3]
+Approval status: Pending, Approved, or Rejected.
+
+[P03236 | 321664:321672 | NORMAL_TEXT | TABLE row=6 col=0]
+remarks
+
+[P03237 | 321673:321678 | NORMAL_TEXT | TABLE row=6 col=1]
+TEXT
+
+[P03238 | 321679:321681 | NORMAL_TEXT | TABLE row=6 col=2]
+ 
+
+[P03239 | 321682:321732 | NORMAL_TEXT | TABLE row=6 col=3]
+Remarks or explanation for the approval decision.
+
+[P03240 | 321734:321746 | NORMAL_TEXT | TABLE row=7 col=0]
+approved_by
+
+[P03241 | 321747:321751 | NORMAL_TEXT | TABLE row=7 col=1]
+INT
+
+[P03242 | 321752:321755 | NORMAL_TEXT | TABLE row=7 col=2]
+11
+
+[P03243 | 321756:321850 | NORMAL_TEXT | TABLE row=7 col=3]
+Foreign key that identifies the admin or authorized user who approved or rejected the action.
+
+[P03244 | 321852:321864 | NORMAL_TEXT | TABLE row=8 col=0]
+approved_at
+
+[P03245 | 321865:321874 | NORMAL_TEXT | TABLE row=8 col=1]
+DATETIME
+
+[P03246 | 321875:321877 | NORMAL_TEXT | TABLE row=8 col=2]
+ 
+
+[P03247 | 321878:321927 | NORMAL_TEXT | TABLE row=8 col=3]
+Date and time the approval action was completed.
+
+[P03248 | 321929:321940 | NORMAL_TEXT | TABLE row=9 col=0]
+created_at
+
+[P03249 | 321941:321951 | NORMAL_TEXT | TABLE row=9 col=1]
+TIMESTAMP
+
+[P03250 | 321952:321954 | NORMAL_TEXT | TABLE row=9 col=2]
+ 
+
+[P03251 | 321955:322002 | NORMAL_TEXT | TABLE row=9 col=3]
+Date and time the approval record was created.
+
+[P03252 | 322003:322005 | NORMAL_TEXT]
+ 
+
+[P03253 | 322005:322440 | NORMAL_TEXT]
+Table 43 describes the logical record of administrative review actions. These actions must be mapped to the current booking, requirement-review, payment-verification, and status-history records rather than assumed to reside in a separate Booking_Approvals table. Payment verification, booking confirmation, vehicle release, and physical return are distinct workflow events. Financial return settlement is outside the current workflow.
+
+[P03254 | 322440:322449 | NORMAL_TEXT]
+Table 44
+
+[P03255 | 322449:322487 | NORMAL_TEXT]
+Data Dictionary - Booking Status Logs
+
+[P03256 | 322490:322522 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Booking_Status_Logs
+
+[P03257 | 322523:322524 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03258 | 322525:322526 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03259 | 322527:322528 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03260 | 322530:322541 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03261 | 322542:322552 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03262 | 322553:322564 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03263 | 322565:322577 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03264 | 322579:322601 | NORMAL_TEXT | TABLE row=2 col=0]
+booking_status_log_id
+
+[P03265 | 322602:322606 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03266 | 322607:322610 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03267 | 322611:322671 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each booking status log.
+
+[P03268 | 322673:322684 | NORMAL_TEXT | TABLE row=3 col=0]
+booking_id
+
+[P03269 | 322685:322689 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03270 | 322690:322693 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03271 | 322694:322760 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the booking whose status was changed.
+
+[P03272 | 322762:322773 | NORMAL_TEXT | TABLE row=4 col=0]
+old_status
+
+[P03273 | 322774:322782 | NORMAL_TEXT | TABLE row=4 col=1]
+VARCHAR
+
+[P03274 | 322783:322787 | NORMAL_TEXT | TABLE row=4 col=2]
+100
+
+[P03275 | 322788:322813 | NORMAL_TEXT | TABLE row=4 col=3]
+Previous booking status.
+
+[P03276 | 322815:322826 | NORMAL_TEXT | TABLE row=5 col=0]
+new_status
+
+[P03277 | 322827:322835 | NORMAL_TEXT | TABLE row=5 col=1]
+VARCHAR
+
+[P03278 | 322836:322840 | NORMAL_TEXT | TABLE row=5 col=2]
+100
+
+[P03279 | 322841:322865 | NORMAL_TEXT | TABLE row=5 col=3]
+Updated booking status.
+
+[P03280 | 322867:322875 | NORMAL_TEXT | TABLE row=6 col=0]
+remarks
+
+[P03281 | 322876:322881 | NORMAL_TEXT | TABLE row=6 col=1]
+TEXT
+
+[P03282 | 322882:322884 | NORMAL_TEXT | TABLE row=6 col=2]
+ 
+
+[P03283 | 322885:322924 | NORMAL_TEXT | TABLE row=6 col=3]
+Notes or reason for the status change.
+
+[P03284 | 322926:322937 | NORMAL_TEXT | TABLE row=7 col=0]
+changed_by
+
+[P03285 | 322938:322942 | NORMAL_TEXT | TABLE row=7 col=1]
+INT
+
+[P03286 | 322943:322946 | NORMAL_TEXT | TABLE row=7 col=2]
+11
+
+[P03287 | 322947:323031 | NORMAL_TEXT | TABLE row=7 col=3]
+Foreign key that identifies the admin or staff user who changed the booking status.
+
+[P03288 | 323033:323044 | NORMAL_TEXT | TABLE row=8 col=0]
+changed_at
+
+[P03289 | 323047:323048 | NORMAL_TEXT | TABLE row=0 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P03290 | 323049:323050 | NORMAL_TEXT | TABLE row=8 col=0]
+⟦EMPTY PARAGRAPH⟧
+
+[P03291 | 323051:323061 | NORMAL_TEXT | TABLE row=8 col=1]
+TIMESTAMP
+
+[P03292 | 323062:323063 | NORMAL_TEXT | TABLE row=8 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03293 | 323064:323110 | NORMAL_TEXT | TABLE row=8 col=3]
+Date and time the booking status was changed.
+
+[P03294 | 323111:323113 | NORMAL_TEXT]
+ 
+
+[P03295 | 323113:323286 | NORMAL_TEXT]
+Table 44 shows the table in the database named "Booking_Status_Logs," where changes in booking status are stored to provide a traceable history of each reservation process.
+
+[P03296 | 323286:323288 | NORMAL_TEXT]
+ 
+
+[P03297 | 323288:323297 | NORMAL_TEXT]
+Table 45
+
+[P03298 | 323297:323326 | NORMAL_TEXT]
+Data Dictionary - Quotations
+
+[P03299 | 323329:323352 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Quotations
+
+[P03300 | 323353:323354 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03301 | 323355:323356 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03302 | 323357:323358 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03303 | 323360:323371 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03304 | 323372:323382 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03305 | 323383:323394 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03306 | 323395:323407 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03307 | 323409:323422 | NORMAL_TEXT | TABLE row=2 col=0]
+quotation_id
+
+[P03308 | 323423:323427 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03309 | 323428:323431 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03310 | 323432:323483 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each quotation.
+
+[P03311 | 323485:323496 | NORMAL_TEXT | TABLE row=3 col=0]
+booking_id
+
+[P03312 | 323497:323501 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03313 | 323502:323505 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03314 | 323506:323574 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the booking connected to the quotation.
+
+[P03315 | 323576:323595 | NORMAL_TEXT | TABLE row=4 col=0]
+base_rental_amount
+
+[P03316 | 323596:323604 | NORMAL_TEXT | TABLE row=4 col=1]
+DECIMAL
+
+[P03317 | 323605:323610 | NORMAL_TEXT | TABLE row=4 col=2]
+10,2
+
+[P03318 | 323611:323668 | NORMAL_TEXT | TABLE row=4 col=3]
+Main rental amount before additional fees and discounts.
+
+[P03319 | 323670:323683 | NORMAL_TEXT | TABLE row=5 col=0]
+delivery_fee
+
+[P03320 | 323684:323692 | NORMAL_TEXT | TABLE row=5 col=1]
+DECIMAL
+
+[P03321 | 323693:323698 | NORMAL_TEXT | TABLE row=5 col=2]
+10,2
+
+[P03322 | 323699:323739 | NORMAL_TEXT | TABLE row=5 col=3]
+Delivery fee included in the quotation.
+
+[P03323 | 323741:323762 | NORMAL_TEXT | TABLE row=6 col=0]
+other_estimated_fees
+
+[P03324 | 323763:323771 | NORMAL_TEXT | TABLE row=6 col=1]
+DECIMAL
+
+[P03325 | 323772:323777 | NORMAL_TEXT | TABLE row=6 col=2]
+10,2
+
+[P03326 | 323778:323826 | NORMAL_TEXT | TABLE row=6 col=3]
+Other estimated fees included in the quotation.
+
+[P03327 | 323828:323844 | NORMAL_TEXT | TABLE row=7 col=0]
+discount_amount
+
+[P03328 | 323845:323853 | NORMAL_TEXT | TABLE row=7 col=1]
+DECIMAL
+
+[P03329 | 323854:323859 | NORMAL_TEXT | TABLE row=7 col=2]
+10,2
+
+[P03330 | 323860:323902 | NORMAL_TEXT | TABLE row=7 col=3]
+Discount amount applied to the quotation.
+
+[P03331 | 323904:323924 | NORMAL_TEXT | TABLE row=8 col=0]
+total_quoted_amount
+
+[P03332 | 323925:323933 | NORMAL_TEXT | TABLE row=8 col=1]
+DECIMAL
+
+[P03333 | 323934:323939 | NORMAL_TEXT | TABLE row=8 col=2]
+10,2
+
+[P03334 | 323940:323975 | NORMAL_TEXT | TABLE row=8 col=3]
+Total amount quoted to the renter.
+
+[P03335 | 323977:323994 | NORMAL_TEXT | TABLE row=9 col=0]
+quotation_status
+
+[P03336 | 323995:324000 | NORMAL_TEXT | TABLE row=9 col=1]
+ENUM
+
+[P03337 | 324001:324003 | NORMAL_TEXT | TABLE row=9 col=2]
+ 
+
+[P03338 | 324004:324074 | NORMAL_TEXT | TABLE row=9 col=3]
+Status of the quotation: Draft, Sent, Accepted, Declined, or Expired.
+
+[P03339 | 324076:324088 | NORMAL_TEXT | TABLE row=10 col=0]
+valid_until
+
+[P03340 | 324089:324098 | NORMAL_TEXT | TABLE row=10 col=1]
+DATETIME
+
+[P03341 | 324099:324101 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P03342 | 324102:324151 | NORMAL_TEXT | TABLE row=10 col=3]
+Date and time until the quotation remains valid.
+
+[P03343 | 324153:324159 | NORMAL_TEXT | TABLE row=11 col=0]
+notes
+
+[P03344 | 324160:324165 | NORMAL_TEXT | TABLE row=11 col=1]
+TEXT
+
+[P03345 | 324166:324168 | NORMAL_TEXT | TABLE row=11 col=2]
+ 
+
+[P03346 | 324169:324207 | NORMAL_TEXT | TABLE row=11 col=3]
+Additional notes about the quotation.
+
+[P03347 | 324209:324221 | NORMAL_TEXT | TABLE row=12 col=0]
+prepared_by
+
+[P03348 | 324222:324226 | NORMAL_TEXT | TABLE row=12 col=1]
+INT
+
+[P03349 | 324227:324230 | NORMAL_TEXT | TABLE row=12 col=2]
+11
+
+[P03350 | 324231:324316 | NORMAL_TEXT | TABLE row=12 col=3]
+Foreign key that identifies the admin or authorized user who prepared the quotation.
+
+[P03351 | 324318:324329 | NORMAL_TEXT | TABLE row=13 col=0]
+created_at
+
+[P03352 | 324330:324340 | NORMAL_TEXT | TABLE row=13 col=1]
+TIMESTAMP
+
+[P03353 | 324341:324343 | NORMAL_TEXT | TABLE row=13 col=2]
+ 
+
+[P03354 | 324344:324385 | NORMAL_TEXT | TABLE row=13 col=3]
+Date and time the quotation was created.
+
+[P03355 | 324387:324398 | NORMAL_TEXT | TABLE row=14 col=0]
+updated_at
+
+[P03356 | 324399:324409 | NORMAL_TEXT | TABLE row=14 col=1]
+TIMESTAMP
+
+[P03357 | 324410:324412 | NORMAL_TEXT | TABLE row=14 col=2]
+ 
+
+[P03358 | 324413:324459 | NORMAL_TEXT | TABLE row=14 col=3]
+Date and time the quotation was last updated.
+
+[P03359 | 324460:324462 | NORMAL_TEXT]
+ 
+
+[P03360 | 324462:324464 | NORMAL_TEXT]
+ 
+
+[P03361 | 324464:324466 | NORMAL_TEXT]
+ 
+
+[P03362 | 324466:324733 | NORMAL_TEXT]
+Table 45 shows the table in the database named "Quotations," where estimated rental charges are stored for a booking request, including the base rental amount, additional estimated fees, discounts, total quoted amount, quotation status, validity date, and preparer. 
+
+[P03363 | 324733:324735 | NORMAL_TEXT]
+ 
+
+[P03364 | 324735:324744 | NORMAL_TEXT]
+Table 46
+
+[P03365 | 324744:324778 | NORMAL_TEXT]
+Data Dictionary - Quotation Items
+
+[P03366 | 324781:324809 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Quotation_Items
+
+[P03367 | 324810:324811 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03368 | 324812:324813 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03369 | 324814:324815 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03370 | 324817:324828 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03371 | 324829:324839 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03372 | 324840:324851 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03373 | 324852:324864 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03374 | 324866:324884 | NORMAL_TEXT | TABLE row=2 col=0]
+quotation_item_id
+
+[P03375 | 324885:324889 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03376 | 324890:324893 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03377 | 324894:324950 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each quotation item.
+
+[P03378 | 324952:324965 | NORMAL_TEXT | TABLE row=3 col=0]
+quotation_id
+
+[P03379 | 324966:324970 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03380 | 324971:324974 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03381 | 324975:325040 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the quotation connected to the item.
+
+[P03382 | 325042:325052 | NORMAL_TEXT | TABLE row=4 col=0]
+item_name
+
+[P03383 | 325053:325061 | NORMAL_TEXT | TABLE row=4 col=1]
+VARCHAR
+
+[P03384 | 325062:325066 | NORMAL_TEXT | TABLE row=4 col=2]
+150
+
+[P03385 | 325067:325102 | NORMAL_TEXT | TABLE row=4 col=3]
+Name of the quotation item or fee.
+
+[P03386 | 325104:325116 | NORMAL_TEXT | TABLE row=5 col=0]
+description
+
+[P03387 | 325117:325122 | NORMAL_TEXT | TABLE row=5 col=1]
+TEXT
+
+[P03388 | 325123:325125 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P03389 | 325126:325161 | NORMAL_TEXT | TABLE row=5 col=3]
+Description of the quotation item.
+
+[P03390 | 325163:325170 | NORMAL_TEXT | TABLE row=6 col=0]
+amount
+
+[P03391 | 325171:325179 | NORMAL_TEXT | TABLE row=6 col=1]
+DECIMAL
+
+[P03392 | 325180:325185 | NORMAL_TEXT | TABLE row=6 col=2]
+10,2
+
+[P03393 | 325186:325216 | NORMAL_TEXT | TABLE row=6 col=3]
+Amount of the quotation item.
+
+[P03394 | 325217:325219 | NORMAL_TEXT]
+ 
+
+[P03395 | 325219:325394 | NORMAL_TEXT]
+Table 46 shows the table in the database named "Quotation_Items," where individual quotation components are stored to provide a detailed breakdown of the total quoted amount.
+
+[P03396 | 325394:325396 | NORMAL_TEXT]
+ 
+
+[P03397 | 325396:325405 | NORMAL_TEXT]
+Table 47
+
+[P03398 | 325405:325432 | NORMAL_TEXT]
+Data Dictionary - Payments
+
+[P03399 | 325435:325456 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Payments
+
+[P03400 | 325457:325458 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03401 | 325459:325460 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03402 | 325461:325462 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03403 | 325464:325475 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03404 | 325476:325486 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03405 | 325487:325498 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03406 | 325499:325511 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03407 | 325513:325524 | NORMAL_TEXT | TABLE row=2 col=0]
+payment_id
+
+[P03408 | 325525:325529 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03409 | 325530:325533 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03410 | 325534:325590 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each payment record.
+
+[P03411 | 325592:325603 | NORMAL_TEXT | TABLE row=3 col=0]
+booking_id
+
+[P03412 | 325604:325608 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03413 | 325609:325612 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03414 | 325613:325679 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the booking connected to the payment.
+
+[P03415 | 325681:325696 | NORMAL_TEXT | TABLE row=4 col=0]
+payment_method
+
+[P03416 | 325697:325702 | NORMAL_TEXT | TABLE row=4 col=1]
+ENUM
+
+[P03417 | 325703:325704 | NORMAL_TEXT | TABLE row=4 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03418 | 325705:325808 | NORMAL_TEXT | TABLE row=4 col=3]
+Method used for payment, such as Cash, Bank Transfer, GCash, Maya, QR Payment, Card Payment, or Other.
+
+[P03419 | 325810:325823 | NORMAL_TEXT | TABLE row=5 col=0]
+payment_type
+
+[P03420 | 325824:325829 | NORMAL_TEXT | TABLE row=5 col=1]
+ENUM
+
+[P03421 | 325829:325831 | NORMAL_TEXT | TABLE row=5 col=1]
+ 
+
+[P03422 | 325831:325833 | NORMAL_TEXT | TABLE row=5 col=1]
+ 
+
+[P03423 | 325834:325836 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P03424 | 325837:325936 | NORMAL_TEXT | TABLE row=5 col=3]
+Type of payment, such as Partial Payment, Full Payment, Remaining Balance, or Final Settlement Fee
+
+[P03425 | 325938:325945 | NORMAL_TEXT | TABLE row=6 col=0]
+amount
+
+[P03426 | 325946:325954 | NORMAL_TEXT | TABLE row=6 col=1]
+DECIMAL
+
+[P03427 | 325955:325960 | NORMAL_TEXT | TABLE row=6 col=2]
+10,2
+
+[P03428 | 325961:325988 | NORMAL_TEXT | TABLE row=6 col=3]
+Amount paid by the renter.
+
+[P03429 | 325990:326007 | NORMAL_TEXT | TABLE row=7 col=0]
+reference_number
+
+[P03430 | 326008:326016 | NORMAL_TEXT | TABLE row=7 col=1]
+VARCHAR
+
+[P03431 | 326017:326021 | NORMAL_TEXT | TABLE row=7 col=2]
+150
+
+[P03432 | 326022:326048 | NORMAL_TEXT | TABLE row=7 col=3]
+Payment reference number.
+
+[P03433 | 326050:326072 | NORMAL_TEXT | TABLE row=8 col=0]
+proof_of_payment_path
+
+[P03434 | 326073:326081 | NORMAL_TEXT | TABLE row=8 col=1]
+VARCHAR
+
+[P03435 | 326082:326086 | NORMAL_TEXT | TABLE row=8 col=2]
+255
+
+[P03436 | 326087:326131 | NORMAL_TEXT | TABLE row=8 col=3]
+File path of the uploaded proof of payment.
+
+[P03437 | 326133:326148 | NORMAL_TEXT | TABLE row=9 col=0]
+payment_status
+
+[P03438 | 326149:326154 | NORMAL_TEXT | TABLE row=9 col=1]
+ENUM
+
+[P03439 | 326155:326157 | NORMAL_TEXT | TABLE row=9 col=2]
+ 
+
+[P03440 | 326158:326223 | NORMAL_TEXT | TABLE row=9 col=3]
+Status of the payment validation: Pending, Verified, or Invalid.
+
+[P03441 | 326225:326233 | NORMAL_TEXT | TABLE row=10 col=0]
+paid_at
+
+[P03442 | 326234:326243 | NORMAL_TEXT | TABLE row=10 col=1]
+DATETIME
+
+[P03443 | 326244:326246 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P03444 | 326247:326283 | NORMAL_TEXT | TABLE row=10 col=3]
+Date and time the payment was made.
+
+[P03445 | 326285:326297 | NORMAL_TEXT | TABLE row=11 col=0]
+verified_by
+
+[P03446 | 326298:326302 | NORMAL_TEXT | TABLE row=11 col=1]
+INT
+
+[P03447 | 326303:326306 | NORMAL_TEXT | TABLE row=11 col=2]
+11
+
+[P03448 | 326307:326390 | NORMAL_TEXT | TABLE row=11 col=3]
+Foreign key that identifies the admin or authorized user who verified the payment.
+
+[P03449 | 326392:326404 | NORMAL_TEXT | TABLE row=12 col=0]
+verified_at
+
+[P03450 | 326405:326414 | NORMAL_TEXT | TABLE row=12 col=1]
+DATETIME
+
+[P03451 | 326415:326417 | NORMAL_TEXT | TABLE row=12 col=2]
+ 
+
+[P03452 | 326418:326458 | NORMAL_TEXT | TABLE row=12 col=3]
+Date and time the payment was verified.
+
+[P03453 | 326460:326468 | NORMAL_TEXT | TABLE row=13 col=0]
+remarks
+
+[P03454 | 326469:326474 | NORMAL_TEXT | TABLE row=13 col=1]
+TEXT
+
+[P03455 | 326475:326477 | NORMAL_TEXT | TABLE row=13 col=2]
+ 
+
+[P03456 | 326478:326516 | NORMAL_TEXT | TABLE row=13 col=3]
+Additional remarks about the payment.
+
+[P03457 | 326518:326529 | NORMAL_TEXT | TABLE row=14 col=0]
+created_at
+
+[P03458 | 326530:326540 | NORMAL_TEXT | TABLE row=14 col=1]
+TIMESTAMP
+
+[P03459 | 326541:326543 | NORMAL_TEXT | TABLE row=14 col=2]
+ 
+
+[P03460 | 326544:326590 | NORMAL_TEXT | TABLE row=14 col=3]
+Date and time the payment record was created.
+
+[P03461 | 326591:326593 | NORMAL_TEXT]
+ 
+
+[P03462 | 326593:326857 | NORMAL_TEXT]
+Table 47 shows the table in the database named "Payments," where payment records connected to booking transactions are stored, including payment method, payment type, amount, reference number, proof of payment, validation status, verifier, and verification date. 
+
+[P03463 | 326857:326859 | NORMAL_TEXT]
+ 
+
+[P03464 | 326859:326861 | NORMAL_TEXT]
+ 
+
+[P03465 | 326861:326870 | NORMAL_TEXT]
+Table 48
+
+[P03466 | 326870:326896 | NORMAL_TEXT]
+Data Dictionary - Rentals
+
+[P03467 | 326899:326919 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Rentals
+
+[P03468 | 326920:326921 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03469 | 326922:326923 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03470 | 326924:326925 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03471 | 326927:326938 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03472 | 326939:326949 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03473 | 326950:326961 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03474 | 326962:326974 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03475 | 326976:326986 | NORMAL_TEXT | TABLE row=2 col=0]
+rental_id
+
+[P03476 | 326987:326991 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03477 | 326992:326995 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03478 | 326996:327056 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each rental transaction.
+
+[P03479 | 327058:327069 | NORMAL_TEXT | TABLE row=3 col=0]
+booking_id
+
+[P03480 | 327070:327074 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03481 | 327075:327078 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03482 | 327079:327154 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the confirmed booking converted into a rental.
+
+[P03483 | 327156:327167 | NORMAL_TEXT | TABLE row=4 col=0]
+vehicle_id
+
+[P03484 | 327168:327172 | NORMAL_TEXT | TABLE row=4 col=1]
+INT
+
+[P03485 | 327173:327176 | NORMAL_TEXT | TABLE row=4 col=2]
+11
+
+[P03486 | 327177:327238 | NORMAL_TEXT | TABLE row=4 col=3]
+Foreign key that identifies the vehicle used for the rental.
+
+[P03487 | 327240:327262 | NORMAL_TEXT | TABLE row=5 col=0]
+rental_start_datetime
+
+[P03488 | 327263:327272 | NORMAL_TEXT | TABLE row=5 col=1]
+DATETIME
+
+[P03489 | 327273:327275 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P03490 | 327276:327321 | NORMAL_TEXT | TABLE row=5 col=3]
+Scheduled start date and time of the rental.
+
+[P03491 | 327323:327343 | NORMAL_TEXT | TABLE row=6 col=0]
+rental_end_datetime
+
+[P03492 | 327344:327353 | NORMAL_TEXT | TABLE row=6 col=1]
+DATETIME
+
+[P03493 | 327354:327356 | NORMAL_TEXT | TABLE row=6 col=2]
+ 
+
+[P03494 | 327357:327400 | NORMAL_TEXT | TABLE row=6 col=3]
+Scheduled end date and time of the rental.
+
+[P03495 | 327402:327425 | NORMAL_TEXT | TABLE row=7 col=0]
+actual_return_datetime
+
+[P03496 | 327426:327435 | NORMAL_TEXT | TABLE row=7 col=1]
+DATETIME
+
+[P03497 | 327436:327438 | NORMAL_TEXT | TABLE row=7 col=2]
+ 
+
+[P03498 | 327439:327486 | NORMAL_TEXT | TABLE row=7 col=3]
+Actual date and time the vehicle was returned.
+
+[P03499 | 327488:327510 | NORMAL_TEXT | TABLE row=8 col=0]
+rental_duration_value
+
+[P03500 | 327511:327519 | NORMAL_TEXT | TABLE row=8 col=1]
+DECIMAL
+
+[P03501 | 327520:327525 | NORMAL_TEXT | TABLE row=8 col=2]
+10,2
+
+[P03502 | 327526:327564 | NORMAL_TEXT | TABLE row=8 col=3]
+Numeric value of the rental duration.
+
+[P03503 | 327566:327587 | NORMAL_TEXT | TABLE row=9 col=0]
+rental_duration_unit
+
+[P03504 | 327588:327593 | NORMAL_TEXT | TABLE row=9 col=1]
+ENUM
+
+[P03505 | 327594:327596 | NORMAL_TEXT | TABLE row=9 col=2]
+ 
+
+[P03506 | 327597:327643 | NORMAL_TEXT | TABLE row=9 col=3]
+Unit of rental duration: Hour, Day, or Other.
+
+[P03507 | 327645:327660 | NORMAL_TEXT | TABLE row=10 col=0]
+release_option
+
+[P03508 | 327661:327666 | NORMAL_TEXT | TABLE row=10 col=1]
+ENUM
+
+[P03509 | 327667:327669 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P03510 | 327670:327725 | NORMAL_TEXT | TABLE row=10 col=3]
+Indicates whether the unit was delivered or picked up.
+
+[P03511 | 327727:327746 | NORMAL_TEXT | TABLE row=11 col=0]
+release_fuel_level
+
+[P03512 | 327747:327755 | NORMAL_TEXT | TABLE row=11 col=1]
+VARCHAR
+
+[P03513 | 327756:327759 | NORMAL_TEXT | TABLE row=11 col=2]
+50
+
+[P03514 | 327760:327800 | NORMAL_TEXT | TABLE row=11 col=3]
+Fuel level of the vehicle upon release.
+
+[P03515 | 327802:327820 | NORMAL_TEXT | TABLE row=12 col=0]
+return_fuel_level
+
+[P03516 | 327821:327829 | NORMAL_TEXT | TABLE row=12 col=1]
+VARCHAR
+
+[P03517 | 327830:327833 | NORMAL_TEXT | TABLE row=12 col=2]
+50
+
+[P03518 | 327834:327873 | NORMAL_TEXT | TABLE row=12 col=3]
+Fuel level of the vehicle upon return.
+
+[P03519 | 327875:327892 | NORMAL_TEXT | TABLE row=13 col=0]
+release_odometer
+
+[P03520 | 327893:327897 | NORMAL_TEXT | TABLE row=13 col=1]
+INT
+
+[P03521 | 327898:327901 | NORMAL_TEXT | TABLE row=13 col=2]
+11
+
+[P03522 | 327902:327941 | NORMAL_TEXT | TABLE row=13 col=3]
+Odometer reading upon vehicle release.
+
+[P03523 | 327943:327959 | NORMAL_TEXT | TABLE row=14 col=0]
+return_odometer
+
+[P03524 | 327960:327964 | NORMAL_TEXT | TABLE row=14 col=1]
+INT
+
+[P03525 | 327965:327968 | NORMAL_TEXT | TABLE row=14 col=2]
+11
+
+[P03526 | 327969:328007 | NORMAL_TEXT | TABLE row=14 col=3]
+Odometer reading upon vehicle return.
+
+[P03527 | 328009:328021 | NORMAL_TEXT | TABLE row=15 col=0]
+released_by
+
+[P03528 | 328022:328026 | NORMAL_TEXT | TABLE row=15 col=1]
+INT
+
+[P03529 | 328027:328030 | NORMAL_TEXT | TABLE row=15 col=2]
+11
+
+[P03530 | 328031:328114 | NORMAL_TEXT | TABLE row=15 col=3]
+Foreign key that identifies the admin or authorized user who released the vehicle.
+
+[P03531 | 328116:328137 | NORMAL_TEXT | TABLE row=16 col=0]
+returned_received_by
+
+[P03532 | 328138:328142 | NORMAL_TEXT | TABLE row=16 col=1]
+INT
+
+[P03533 | 328143:328146 | NORMAL_TEXT | TABLE row=16 col=2]
+11
+
+[P03534 | 328147:328239 | NORMAL_TEXT | TABLE row=16 col=3]
+Foreign key that identifies the admin or authorized user who received the returned vehicle.
+
+[P03535 | 328241:328255 | NORMAL_TEXT | TABLE row=17 col=0]
+rental_status
+
+[P03536 | 328256:328261 | NORMAL_TEXT | TABLE row=17 col=1]
+ENUM
+
+[P03537 | 328262:328264 | NORMAL_TEXT | TABLE row=17 col=2]
+ 
+
+[P03538 | 328265:328340 | NORMAL_TEXT | TABLE row=17 col=3]
+Current rental status: Scheduled, Active, Returned, Settled, or Cancelled.
+
+[P03539 | 328342:328356 | NORMAL_TEXT | TABLE row=18 col=0]
+release_notes
+
+[P03540 | 328357:328362 | NORMAL_TEXT | TABLE row=18 col=1]
+TEXT
+
+[P03541 | 328363:328365 | NORMAL_TEXT | TABLE row=18 col=2]
+ 
+
+[P03542 | 328366:328405 | NORMAL_TEXT | TABLE row=18 col=3]
+Notes recorded during vehicle release.
+
+[P03543 | 328407:328420 | NORMAL_TEXT | TABLE row=19 col=0]
+return_notes
+
+[P03544 | 328421:328426 | NORMAL_TEXT | TABLE row=19 col=1]
+TEXT
+
+[P03545 | 328427:328429 | NORMAL_TEXT | TABLE row=19 col=2]
+ 
+
+[P03546 | 328430:328468 | NORMAL_TEXT | TABLE row=19 col=3]
+Notes recorded during vehicle return.
+
+[P03547 | 328470:328481 | NORMAL_TEXT | TABLE row=20 col=0]
+created_at
+
+[P03548 | 328482:328492 | NORMAL_TEXT | TABLE row=20 col=1]
+TIMESTAMP
+
+[P03549 | 328493:328495 | NORMAL_TEXT | TABLE row=20 col=2]
+ 
+
+[P03550 | 328496:328541 | NORMAL_TEXT | TABLE row=20 col=3]
+Date and time the rental record was created.
+
+[P03551 | 328543:328554 | NORMAL_TEXT | TABLE row=21 col=0]
+updated_at
+
+[P03552 | 328555:328565 | NORMAL_TEXT | TABLE row=21 col=1]
+TIMESTAMP
+
+[P03553 | 328566:328568 | NORMAL_TEXT | TABLE row=21 col=2]
+ 
+
+[P03554 | 328569:328619 | NORMAL_TEXT | TABLE row=21 col=3]
+Date and time the rental record was last updated.
+
+[P03555 | 328620:328622 | NORMAL_TEXT]
+ 
+
+[P03556 | 328622:328624 | NORMAL_TEXT]
+ 
+
+[P03557 | 328624:328882 | NORMAL_TEXT]
+Table 48 shows the table in the database named "Rentals," where confirmed rental transactions are stored, including the rental schedule, vehicle used, release and return details, fuel level, odometer readings, authorized user involvement, and rental status.
+
+[P03558 | 328882:328884 | NORMAL_TEXT]
+ 
+
+[P03559 | 328884:328893 | NORMAL_TEXT]
+Table 49
+
+[P03560 | 328893:328926 | NORMAL_TEXT]
+Data Dictionary - Rental Charges
+
+[P03561 | 328929:328956 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Rental_Charges
+
+[P03562 | 328957:328958 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03563 | 328959:328960 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03564 | 328961:328962 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03565 | 328964:328975 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03566 | 328976:328986 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03567 | 328987:328998 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03568 | 328999:329011 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03569 | 329013:329023 | NORMAL_TEXT | TABLE row=2 col=0]
+charge_id
+
+[P03570 | 329024:329028 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03571 | 329029:329032 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03572 | 329033:329088 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each rental charge.
+
+[P03573 | 329090:329101 | NORMAL_TEXT | TABLE row=3 col=0]
+booking_id
+
+[P03574 | 329102:329106 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03575 | 329107:329110 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03576 | 329111:329176 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the booking connected to the charge.
+
+[P03577 | 329178:329188 | NORMAL_TEXT | TABLE row=4 col=0]
+rental_id
+
+[P03578 | 329189:329193 | NORMAL_TEXT | TABLE row=4 col=1]
+INT
+
+[P03579 | 329194:329197 | NORMAL_TEXT | TABLE row=4 col=2]
+11
+
+[P03580 | 329198:329262 | NORMAL_TEXT | TABLE row=4 col=3]
+Foreign key that identifies the rental connected to the charge.
+
+[P03581 | 329264:329276 | NORMAL_TEXT | TABLE row=5 col=0]
+charge_type
+
+[P03582 | 329277:329282 | NORMAL_TEXT | TABLE row=5 col=1]
+ENUM
+
+[P03583 | 329283:329285 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P03584 | 329286:329425 | NORMAL_TEXT | TABLE row=5 col=3]
+Type of charge, such as Delivery Fee, Damage Fee, Late Return Fee, Extension Fee, Fuel Fee, Cleaning Fee, Parking Fee, Toll Fee, or Other.
+
+[P03585 | 329427:329439 | NORMAL_TEXT | TABLE row=6 col=0]
+description
+
+[P03586 | 329440:329445 | NORMAL_TEXT | TABLE row=6 col=1]
+TEXT
+
+[P03587 | 329446:329448 | NORMAL_TEXT | TABLE row=6 col=2]
+ 
+
+[P03588 | 329449:329483 | NORMAL_TEXT | TABLE row=6 col=3]
+Description of the rental charge.
+
+[P03589 | 329485:329492 | NORMAL_TEXT | TABLE row=7 col=0]
+amount
+
+[P03590 | 329493:329501 | NORMAL_TEXT | TABLE row=7 col=1]
+DECIMAL
+
+[P03591 | 329502:329507 | NORMAL_TEXT | TABLE row=7 col=2]
+10,2
+
+[P03592 | 329508:329530 | NORMAL_TEXT | TABLE row=7 col=3]
+Amount of the charge.
+
+[P03593 | 329532:329546 | NORMAL_TEXT | TABLE row=8 col=0]
+charge_status
+
+[P03594 | 329547:329552 | NORMAL_TEXT | TABLE row=8 col=1]
+ENUM
+
+[P03595 | 329553:329555 | NORMAL_TEXT | TABLE row=8 col=2]
+ 
+
+[P03596 | 329556:329603 | NORMAL_TEXT | TABLE row=8 col=3]
+Status of the charge: Unpaid, Paid, or Waived.
+
+[P03597 | 329605:329617 | NORMAL_TEXT | TABLE row=9 col=0]
+recorded_by
+
+[P03598 | 329618:329622 | NORMAL_TEXT | TABLE row=9 col=1]
+INT
+
+[P03599 | 329623:329626 | NORMAL_TEXT | TABLE row=9 col=2]
+11
+
+[P03600 | 329627:329709 | NORMAL_TEXT | TABLE row=9 col=3]
+Foreign key that identifies the admin or authorized user who recorded the charge.
+
+[P03601 | 329711:329722 | NORMAL_TEXT | TABLE row=10 col=0]
+created_at
+
+[P03602 | 329723:329733 | NORMAL_TEXT | TABLE row=10 col=1]
+TIMESTAMP
+
+[P03603 | 329734:329736 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P03604 | 329737:329783 | NORMAL_TEXT | TABLE row=10 col=3]
+Date and time the rental charge was recorded.
+
+[P03605 | 329784:329786 | NORMAL_TEXT]
+ 
+
+[P03606 | 329786:330112 | NORMAL_TEXT]
+Table 49 presents the proposed Rental_Charges record, which will store additional charges identified during vehicle return or rental settlement. The final charge categories, rates, approval permissions, deposit handling, and refund rules will follow the policies confirmed by the participating business before implementation.
+
+[P03607 | 330112:330114 | NORMAL_TEXT]
+ 
+
+[P03608 | 330114:330123 | NORMAL_TEXT]
+Table 50
+
+[P03609 | 330123:330162 | NORMAL_TEXT]
+Data Dictionary - Operational Expenses
+
+[P03610 | 330165:330198 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Operational_Expenses
+
+[P03611 | 330199:330200 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03612 | 330201:330202 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03613 | 330203:330204 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03614 | 330206:330217 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03615 | 330218:330228 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03616 | 330229:330240 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03617 | 330241:330253 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03618 | 330255:330266 | NORMAL_TEXT | TABLE row=2 col=0]
+expense_id
+
+[P03619 | 330267:330271 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03620 | 330272:330275 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03621 | 330276:330337 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each operational expense.
+
+[P03622 | 330339:330349 | NORMAL_TEXT | TABLE row=3 col=0]
+branch_id
+
+[P03623 | 330350:330354 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03624 | 330355:330358 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03625 | 330359:330424 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the branch connected to the expense.
+
+[P03626 | 330426:330437 | NORMAL_TEXT | TABLE row=4 col=0]
+vehicle_id
+
+[P03627 | 330438:330442 | NORMAL_TEXT | TABLE row=4 col=1]
+INT
+
+[P03628 | 330443:330446 | NORMAL_TEXT | TABLE row=4 col=2]
+11
+
+[P03629 | 330447:330513 | NORMAL_TEXT | TABLE row=4 col=3]
+Foreign key that identifies the vehicle connected to the expense.
+
+[P03630 | 330515:330526 | NORMAL_TEXT | TABLE row=5 col=0]
+booking_id
+
+[P03631 | 330527:330531 | NORMAL_TEXT | TABLE row=5 col=1]
+INT
+
+[P03632 | 330532:330535 | NORMAL_TEXT | TABLE row=5 col=2]
+11
+
+[P03633 | 330536:330602 | NORMAL_TEXT | TABLE row=5 col=3]
+Foreign key that identifies the booking connected to the expense.
+
+[P03634 | 330604:330614 | NORMAL_TEXT | TABLE row=6 col=0]
+rental_id
+
+[P03635 | 330615:330619 | NORMAL_TEXT | TABLE row=6 col=1]
+INT
+
+[P03636 | 330620:330623 | NORMAL_TEXT | TABLE row=6 col=2]
+11
+
+[P03637 | 330624:330689 | NORMAL_TEXT | TABLE row=6 col=3]
+Foreign key that identifies the rental connected to the expense.
+
+[P03638 | 330691:330704 | NORMAL_TEXT | TABLE row=7 col=0]
+expense_type
+
+[P03639 | 330705:330710 | NORMAL_TEXT | TABLE row=7 col=1]
+ENUM
+
+[P03640 | 330711:330713 | NORMAL_TEXT | TABLE row=7 col=2]
+ 
+
+[P03641 | 330714:330840 | NORMAL_TEXT | TABLE row=7 col=3]
+Type of expense, such as Fuel, Cleaning, Maintenance, Repair, Delivery, Parking, Toll, Parts Replacement, Car Wash, or Other.
+
+[P03642 | 330842:330854 | NORMAL_TEXT | TABLE row=8 col=0]
+description
+
+[P03643 | 330855:330860 | NORMAL_TEXT | TABLE row=8 col=1]
+TEXT
+
+[P03644 | 330861:330863 | NORMAL_TEXT | TABLE row=8 col=2]
+ 
+
+[P03645 | 330864:330892 | NORMAL_TEXT | TABLE row=8 col=3]
+Description of the expense.
+
+[P03646 | 330894:330901 | NORMAL_TEXT | TABLE row=9 col=0]
+amount
+
+[P03647 | 330902:330910 | NORMAL_TEXT | TABLE row=9 col=1]
+DECIMAL
+
+[P03648 | 330911:330916 | NORMAL_TEXT | TABLE row=9 col=2]
+10,2
+
+[P03649 | 330917:330947 | NORMAL_TEXT | TABLE row=9 col=3]
+Amount spent for the expense.
+
+[P03650 | 330949:330962 | NORMAL_TEXT | TABLE row=10 col=0]
+expense_date
+
+[P03651 | 330963:330968 | NORMAL_TEXT | TABLE row=10 col=1]
+DATE
+
+[P03652 | 330969:330971 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P03653 | 330972:331008 | NORMAL_TEXT | TABLE row=10 col=3]
+Date when the expense was incurred.
+
+[P03654 | 331010:331021 | NORMAL_TEXT | TABLE row=11 col=0]
+proof_path
+
+[P03655 | 331022:331030 | NORMAL_TEXT | TABLE row=11 col=1]
+VARCHAR
+
+[P03656 | 331031:331035 | NORMAL_TEXT | TABLE row=11 col=2]
+255
+
+[P03657 | 331036:331082 | NORMAL_TEXT | TABLE row=11 col=3]
+File path of the receipt or proof of expense.
+
+[P03658 | 331084:331096 | NORMAL_TEXT | TABLE row=12 col=0]
+recorded_by
+
+[P03659 | 331097:331101 | NORMAL_TEXT | TABLE row=12 col=1]
+INT
+
+[P03660 | 331102:331105 | NORMAL_TEXT | TABLE row=12 col=2]
+11
+
+[P03661 | 331106:331189 | NORMAL_TEXT | TABLE row=12 col=3]
+Foreign key that identifies the admin or authorized user who recorded the expense.
+
+[P03662 | 331191:331202 | NORMAL_TEXT | TABLE row=13 col=0]
+created_at
+
+[P03663 | 331203:331213 | NORMAL_TEXT | TABLE row=13 col=1]
+TIMESTAMP
+
+[P03664 | 331214:331216 | NORMAL_TEXT | TABLE row=13 col=2]
+ 
+
+[P03665 | 331217:331263 | NORMAL_TEXT | TABLE row=13 col=3]
+Date and time the expense record was created.
+
+[P03666 | 331264:331266 | NORMAL_TEXT]
+ 
+
+[P03667 | 331266:331268 | NORMAL_TEXT]
+ 
+
+[P03668 | 331268:331582 | NORMAL_TEXT]
+Table 50 presents the proposed Operational_Expenses record, which will store authorized business expenses related to rental operations. This record is separate from maintenance-cost entries and will be implemented only after the participating business confirms the required expense categories and reporting rules.
+
+[P03669 | 331582:331591 | NORMAL_TEXT]
+Table 51
+
+[P03670 | 331591:331635 | NORMAL_TEXT]
+Data Dictionary - Rental Return Inspections
+
+[P03671 | 331638:331676 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Rental_Return_Inspections
+
+[P03672 | 331677:331678 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03673 | 331679:331680 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03674 | 331681:331682 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03675 | 331684:331695 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03676 | 331696:331706 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03677 | 331707:331718 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03678 | 331719:331731 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03679 | 331733:331747 | NORMAL_TEXT | TABLE row=2 col=0]
+inspection_id
+
+[P03680 | 331748:331752 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03681 | 331753:331756 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03682 | 331757:331816 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each return inspection.
+
+[P03683 | 331818:331828 | NORMAL_TEXT | TABLE row=3 col=0]
+rental_id
+
+[P03684 | 331829:331833 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03685 | 331834:331837 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03686 | 331838:331906 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the rental transaction being inspected.
+
+[P03687 | 331908:331921 | NORMAL_TEXT | TABLE row=4 col=0]
+inspected_by
+
+[P03688 | 331922:331926 | NORMAL_TEXT | TABLE row=4 col=1]
+INT
+
+[P03689 | 331927:331930 | NORMAL_TEXT | TABLE row=4 col=2]
+11
+
+[P03690 | 331931:332024 | NORMAL_TEXT | TABLE row=4 col=3]
+Foreign key that identifies the admin or authorized user who inspected the returned vehicle.
+
+[P03691 | 332026:332046 | NORMAL_TEXT | TABLE row=5 col=0]
+inspection_datetime
+
+[P03692 | 332047:332056 | NORMAL_TEXT | TABLE row=5 col=1]
+DATETIME
+
+[P03693 | 332057:332059 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P03694 | 332060:332111 | NORMAL_TEXT | TABLE row=5 col=3]
+Date and time the return inspection was conducted.
+
+[P03695 | 332113:332132 | NORMAL_TEXT | TABLE row=6 col=0]
+exterior_condition
+
+[P03696 | 332133:332138 | NORMAL_TEXT | TABLE row=6 col=1]
+TEXT
+
+[P03697 | 332139:332141 | NORMAL_TEXT | TABLE row=6 col=2]
+ 
+
+[P03698 | 332142:332193 | NORMAL_TEXT | TABLE row=6 col=3]
+Notes about the exterior condition of the vehicle.
+
+[P03699 | 332195:332214 | NORMAL_TEXT | TABLE row=7 col=0]
+interior_condition
+
+[P03700 | 332215:332220 | NORMAL_TEXT | TABLE row=7 col=1]
+TEXT
+
+[P03701 | 332221:332223 | NORMAL_TEXT | TABLE row=7 col=2]
+ 
+
+[P03702 | 332224:332275 | NORMAL_TEXT | TABLE row=7 col=3]
+Notes about the interior condition of the vehicle.
+
+[P03703 | 332277:332290 | NORMAL_TEXT | TABLE row=8 col=0]
+damage_found
+
+[P03704 | 332291:332299 | NORMAL_TEXT | TABLE row=8 col=1]
+BOOLEAN
+
+[P03705 | 332300:332302 | NORMAL_TEXT | TABLE row=8 col=2]
+1
+
+[P03706 | 332303:332339 | NORMAL_TEXT | TABLE row=8 col=3]
+Indicates whether damage was found.
+
+[P03707 | 332341:332360 | NORMAL_TEXT | TABLE row=9 col=0]
+damage_description
+
+[P03708 | 332361:332366 | NORMAL_TEXT | TABLE row=9 col=1]
+TEXT
+
+[P03709 | 332367:332369 | NORMAL_TEXT | TABLE row=9 col=2]
+ 
+
+[P03710 | 332370:332421 | NORMAL_TEXT | TABLE row=9 col=3]
+Description of any damage found during inspection.
+
+[P03711 | 332423:332440 | NORMAL_TEXT | TABLE row=10 col=0]
+fuel_issue_found
+
+[P03712 | 332441:332449 | NORMAL_TEXT | TABLE row=10 col=1]
+BOOLEAN
+
+[P03713 | 332450:332452 | NORMAL_TEXT | TABLE row=10 col=2]
+1
+
+[P03714 | 332453:332503 | NORMAL_TEXT | TABLE row=10 col=3]
+Indicates whether there was a fuel-related issue.
+
+[P03715 | 332505:332517 | NORMAL_TEXT | TABLE row=11 col=0]
+late_return
+
+[P03716 | 332518:332526 | NORMAL_TEXT | TABLE row=11 col=1]
+BOOLEAN
+
+[P03717 | 332527:332529 | NORMAL_TEXT | TABLE row=11 col=2]
+1
+
+[P03718 | 332530:332579 | NORMAL_TEXT | TABLE row=11 col=3]
+Indicates whether the vehicle was returned late.
+
+[P03719 | 332581:332605 | NORMAL_TEXT | TABLE row=12 col=0]
+entered_restricted_area
+
+[P03720 | 332606:332614 | NORMAL_TEXT | TABLE row=12 col=1]
+BOOLEAN
+
+[P03721 | 332615:332617 | NORMAL_TEXT | TABLE row=12 col=2]
+1
+
+[P03722 | 332618:332675 | NORMAL_TEXT | TABLE row=12 col=3]
+Indicates whether the vehicle entered a restricted area.
+
+[P03723 | 332677:332699 | NORMAL_TEXT | TABLE row=13 col=0]
+restricted_area_notes
+
+[P03724 | 332700:332705 | NORMAL_TEXT | TABLE row=13 col=1]
+TEXT
+
+[P03725 | 332706:332708 | NORMAL_TEXT | TABLE row=13 col=2]
+ 
+
+[P03726 | 332709:332747 | NORMAL_TEXT | TABLE row=13 col=3]
+Notes about restricted area concerns.
+
+[P03727 | 332749:332777 | NORMAL_TEXT | TABLE row=14 col=0]
+additional_charges_required
+
+[P03728 | 332778:332786 | NORMAL_TEXT | TABLE row=14 col=1]
+BOOLEAN
+
+[P03729 | 332787:332789 | NORMAL_TEXT | TABLE row=14 col=2]
+1
+
+[P03730 | 332790:332841 | NORMAL_TEXT | TABLE row=14 col=3]
+Indicates whether additional charges are required.
+
+[P03731 | 332843:332860 | NORMAL_TEXT | TABLE row=15 col=0]
+inspection_notes
+
+[P03732 | 332861:332866 | NORMAL_TEXT | TABLE row=15 col=1]
+TEXT
+
+[P03733 | 332867:332869 | NORMAL_TEXT | TABLE row=15 col=2]
+ 
+
+[P03734 | 332870:332926 | NORMAL_TEXT | TABLE row=15 col=3]
+Additional remarks about the vehicle return inspection.
+
+[P03735 | 332928:332940 | NORMAL_TEXT | TABLE row=16 col=0]
+created_at 
+
+[P03736 | 332941:332952 | NORMAL_TEXT | TABLE row=16 col=1]
+TIMESTAMP 
+
+[P03737 | 332953:332954 | NORMAL_TEXT | TABLE row=16 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03738 | 332955:333012 | NORMAL_TEXT | TABLE row=16 col=3]
+Date and time the return inspection record was created. 
+
+[P03739 | 333013:333015 | NORMAL_TEXT]
+ 
+
+[P03740 | 333015:333288 | NORMAL_TEXT]
+Table 51 shows the table in the database named "Rental_Return_Inspections," where vehicle return inspection details are stored, including exterior and interior condition, damages, fuel issues, late return status, restricted area concerns, and additional charge indicators.
+
+[P03741 | 333288:333290 | NORMAL_TEXT]
+ 
+
+[P03742 | 333290:333299 | NORMAL_TEXT]
+Table 52
+
+[P03743 | 333299:333337 | NORMAL_TEXT]
+Data Dictionary - Maintenance Records
+
+[P03744 | 333340:333372 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Maintenance_Records
+
+[P03745 | 333373:333374 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03746 | 333375:333376 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03747 | 333377:333378 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03748 | 333380:333391 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03749 | 333392:333402 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03750 | 333403:333414 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03751 | 333415:333427 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03752 | 333429:333444 | NORMAL_TEXT | TABLE row=2 col=0]
+maintenance_id
+
+[P03753 | 333445:333449 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03754 | 333450:333453 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03755 | 333454:333514 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each maintenance record.
+
+[P03756 | 333516:333527 | NORMAL_TEXT | TABLE row=3 col=0]
+vehicle_id
+
+[P03757 | 333528:333532 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03758 | 333533:333536 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03759 | 333537:333596 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the vehicle under maintenance.
+
+[P03760 | 333598:333615 | NORMAL_TEXT | TABLE row=4 col=0]
+maintenance_type
+
+[P03761 | 333616:333621 | NORMAL_TEXT | TABLE row=4 col=1]
+ENUM
+
+[P03762 | 333622:333624 | NORMAL_TEXT | TABLE row=4 col=2]
+ 
+
+[P03763 | 333625:333751 | NORMAL_TEXT | TABLE row=4 col=3]
+Type of maintenance activity, such as Routine Check, Repair, Cleaning, Engine Check, Fuel Check, Parts Replacement, or Other.
+
+[P03764 | 333753:333765 | NORMAL_TEXT | TABLE row=5 col=0]
+description
+
+[P03765 | 333766:333771 | NORMAL_TEXT | TABLE row=5 col=1]
+TEXT
+
+[P03766 | 333772:333774 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P03767 | 333775:333816 | NORMAL_TEXT | TABLE row=5 col=3]
+Description of the maintenance activity.
+
+[P03768 | 333818:333837 | NORMAL_TEXT | TABLE row=6 col=0]
+maintenance_status
+
+[P03769 | 333838:333843 | NORMAL_TEXT | TABLE row=6 col=1]
+ENUM
+
+[P03770 | 333844:333846 | NORMAL_TEXT | TABLE row=6 col=2]
+ 
+
+[P03771 | 333847:333925 | NORMAL_TEXT | TABLE row=6 col=3]
+Maintenance status: Scheduled, In Progress, Completed, Overdue, or Cancelled.
+
+[P03772 | 333927:333936 | NORMAL_TEXT | TABLE row=7 col=0]
+pms_date
+
+[P03773 | 333937:333942 | NORMAL_TEXT | TABLE row=7 col=1]
+DATE
+
+[P03774 | 333943:333945 | NORMAL_TEXT | TABLE row=7 col=2]
+ 
+
+[P03775 | 333946:334024 | NORMAL_TEXT | TABLE row=7 col=3]
+Actual PMS date or latest preventive maintenance service date of the vehicle.
+
+[P03776 | 334026:334047 | NORMAL_TEXT | TABLE row=8 col=0]
+pms_mileage_interval
+
+[P03777 | 334048:334052 | NORMAL_TEXT | TABLE row=8 col=1]
+INT
+
+[P03778 | 334053:334056 | NORMAL_TEXT | TABLE row=8 col=2]
+11
+
+[P03779 | 334057:334131 | NORMAL_TEXT | TABLE row=8 col=3]
+Mileage interval used for PMS scheduling, such as every 5,000 kilometers.
+
+[P03780 | 334133:334147 | NORMAL_TEXT | TABLE row=9 col=0]
+next_pms_date
+
+[P03781 | 334148:334153 | NORMAL_TEXT | TABLE row=9 col=1]
+DATE
+
+[P03782 | 334154:334156 | NORMAL_TEXT | TABLE row=9 col=2]
+ 
+
+[P03783 | 334157:334234 | NORMAL_TEXT | TABLE row=9 col=3]
+Next scheduled PMS date based on maintenance interval or owner/admin record.
+
+[P03784 | 334236:334253 | NORMAL_TEXT | TABLE row=10 col=0]
+next_pms_mileage
+
+[P03785 | 334254:334258 | NORMAL_TEXT | TABLE row=10 col=1]
+INT
+
+[P03786 | 334259:334262 | NORMAL_TEXT | TABLE row=10 col=2]
+11
+
+[P03787 | 334263:334306 | NORMAL_TEXT | TABLE row=10 col=3]
+Odometer target for the next PMS schedule.
+
+[P03788 | 334308:334328 | NORMAL_TEXT | TABLE row=11 col=0]
+odometer_at_service
+
+[P03789 | 334329:334333 | NORMAL_TEXT | TABLE row=11 col=1]
+INT
+
+[P03790 | 334334:334337 | NORMAL_TEXT | TABLE row=11 col=2]
+11
+
+[P03791 | 334338:334413 | NORMAL_TEXT | TABLE row=11 col=3]
+Odometer reading of the vehicle when the maintenance or PMS was performed.
+
+[P03792 | 334415:334432 | NORMAL_TEXT | TABLE row=12 col=0]
+condition_before
+
+[P03793 | 334433:334438 | NORMAL_TEXT | TABLE row=12 col=1]
+ENUM
+
+[P03794 | 334439:334441 | NORMAL_TEXT | TABLE row=12 col=2]
+ 
+
+[P03795 | 334442:334569 | NORMAL_TEXT | TABLE row=12 col=3]
+Vehicle condition before service, such as Good, Needs Inspection, Needs Service, Damaged, Under Maintenance, or Not Available.
+
+[P03796 | 334571:334587 | NORMAL_TEXT | TABLE row=13 col=0]
+condition_after
+
+[P03797 | 334588:334593 | NORMAL_TEXT | TABLE row=13 col=1]
+ENUM
+
+[P03798 | 334594:334596 | NORMAL_TEXT | TABLE row=13 col=2]
+ 
+
+[P03799 | 334597:334723 | NORMAL_TEXT | TABLE row=13 col=3]
+Vehicle condition after service or inspection update. This supports owner/admin readiness checking before vehicle assignment.
+
+[P03800 | 334725:334740 | NORMAL_TEXT | TABLE row=14 col=0]
+scheduled_date
+
+[P03801 | 334741:334746 | NORMAL_TEXT | TABLE row=14 col=1]
+DATE
+
+[P03802 | 334747:334749 | NORMAL_TEXT | TABLE row=14 col=2]
+ 
+
+[P03803 | 334750:334794 | NORMAL_TEXT | TABLE row=14 col=3]
+Scheduled date of the maintenance activity.
+
+[P03804 | 334796:334811 | NORMAL_TEXT | TABLE row=15 col=0]
+completed_date
+
+[P03805 | 334812:334817 | NORMAL_TEXT | TABLE row=15 col=1]
+DATE
+
+[P03806 | 334818:334820 | NORMAL_TEXT | TABLE row=15 col=2]
+ 
+
+[P03807 | 334821:334871 | NORMAL_TEXT | TABLE row=15 col=3]
+Date when the maintenance activity was completed.
+
+[P03808 | 334873:334878 | NORMAL_TEXT | TABLE row=16 col=0]
+cost
+
+[P03809 | 334879:334887 | NORMAL_TEXT | TABLE row=16 col=1]
+DECIMAL
+
+[P03810 | 334888:334893 | NORMAL_TEXT | TABLE row=16 col=2]
+10,2
+
+[P03811 | 334894:334928 | NORMAL_TEXT | TABLE row=16 col=3]
+Cost of the maintenance activity.
+
+[P03812 | 334930:334943 | NORMAL_TEXT | TABLE row=17 col=0]
+performed_by
+
+[P03813 | 334944:334952 | NORMAL_TEXT | TABLE row=17 col=1]
+VARCHAR
+
+[P03814 | 334953:334957 | NORMAL_TEXT | TABLE row=17 col=2]
+150
+
+[P03815 | 334958:335024 | NORMAL_TEXT | TABLE row=17 col=3]
+Person, shop, or service provider that performed the maintenance.
+
+[P03816 | 335026:335046 | NORMAL_TEXT | TABLE row=18 col=0]
+maintenance_remarks
+
+[P03817 | 335047:335052 | NORMAL_TEXT | TABLE row=18 col=1]
+TEXT
+
+[P03818 | 335053:335055 | NORMAL_TEXT | TABLE row=18 col=2]
+ 
+
+[P03819 | 335056:335134 | NORMAL_TEXT | TABLE row=18 col=3]
+Additional service notes, inspection remarks, or maintenance history details.
+
+[P03820 | 335136:335148 | NORMAL_TEXT | TABLE row=19 col=0]
+recorded_by
+
+[P03821 | 335149:335153 | NORMAL_TEXT | TABLE row=19 col=1]
+INT
+
+[P03822 | 335154:335157 | NORMAL_TEXT | TABLE row=19 col=2]
+11
+
+[P03823 | 335158:335254 | NORMAL_TEXT | TABLE row=19 col=3]
+Foreign key that identifies the admin or authorized user who recorded the maintenance activity.
+
+[P03824 | 335256:335267 | NORMAL_TEXT | TABLE row=20 col=0]
+updated_by
+
+[P03825 | 335268:335272 | NORMAL_TEXT | TABLE row=20 col=1]
+INT
+
+[P03826 | 335273:335276 | NORMAL_TEXT | TABLE row=20 col=2]
+11
+
+[P03827 | 335277:335375 | NORMAL_TEXT | TABLE row=20 col=3]
+Foreign key that identifies the admin or authorized user who last updated the maintenance record.
+
+[P03828 | 335377:335388 | NORMAL_TEXT | TABLE row=21 col=0]
+created_at
+
+[P03829 | 335389:335399 | NORMAL_TEXT | TABLE row=21 col=1]
+TIMESTAMP
+
+[P03830 | 335400:335402 | NORMAL_TEXT | TABLE row=21 col=2]
+ 
+
+[P03831 | 335403:335453 | NORMAL_TEXT | TABLE row=21 col=3]
+Date and time the maintenance record was created.
+
+[P03832 | 335455:335466 | NORMAL_TEXT | TABLE row=22 col=0]
+updated_at
+
+[P03833 | 335467:335477 | NORMAL_TEXT | TABLE row=22 col=1]
+TIMESTAMP
+
+[P03834 | 335478:335480 | NORMAL_TEXT | TABLE row=22 col=2]
+ 
+
+[P03835 | 335481:335536 | NORMAL_TEXT | TABLE row=22 col=3]
+Date and time the maintenance record was last updated.
+
+[P03836 | 335537:335539 | NORMAL_TEXT]
+ 
+
+[P03837 | 335539:336007 | NORMAL_TEXT]
+Table 52 shows the table in the database named "Maintenance_Records," where vehicle maintenance activities are stored, including PMS records, repair and inspection details, mileage and odometer information, vehicle condition before and after service, service cost, service provider, remarks, and the authorized users who created or updated the record. These records support internal maintenance monitoring, vehicle readiness checking, and owner/admin accountability. 
+
+[P03838 | 336007:336009 | NORMAL_TEXT]
+ 
+
+[P03839 | 336009:336018 | NORMAL_TEXT]
+Table 53
+
+[P03840 | 336018:336055 | NORMAL_TEXT]
+Data Dictionary - Monitoring Records
+
+[P03841 | 336058:336089 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Monitoring_Records
+
+[P03842 | 336090:336091 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03843 | 336092:336093 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03844 | 336094:336095 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03845 | 336097:336108 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03846 | 336109:336119 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03847 | 336120:336131 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03848 | 336132:336144 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03849 | 336146:336160 | NORMAL_TEXT | TABLE row=2 col=0]
+monitoring_id
+
+[P03850 | 336161:336165 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P03851 | 336166:336169 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P03852 | 336170:336229 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each monitoring record.
+
+[P03853 | 336231:336241 | NORMAL_TEXT | TABLE row=3 col=0]
+rental_id
+
+[P03854 | 336242:336246 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P03855 | 336247:336250 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P03856 | 336251:336319 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the rental transaction being monitored.
+
+[P03857 | 336321:336332 | NORMAL_TEXT | TABLE row=4 col=0]
+vehicle_id
+
+[P03858 | 336333:336337 | NORMAL_TEXT | TABLE row=4 col=1]
+INT
+
+[P03859 | 336338:336341 | NORMAL_TEXT | TABLE row=4 col=2]
+11
+
+[P03860 | 336342:336393 | NORMAL_TEXT | TABLE row=4 col=3]
+Foreign key that identifies the monitored vehicle.
+
+[P03861 | 336395:336413 | NORMAL_TEXT | TABLE row=5 col=0]
+monitoring_source
+
+[P03862 | 336414:336419 | NORMAL_TEXT | TABLE row=5 col=1]
+ENUM
+
+[P03863 | 336420:336422 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P03864 | 336423:336518 | NORMAL_TEXT | TABLE row=5 col=3]
+Source of monitoring update, such as AKSH GPS, Apple Find My, AirTag, Manual Update, or Other.
+
+[P03865 | 336520:336534 | NORMAL_TEXT | TABLE row=6 col=0]
+location_note
+
+[P03866 | 336535:336543 | NORMAL_TEXT | TABLE row=6 col=1]
+VARCHAR
+
+[P03867 | 336544:336548 | NORMAL_TEXT | TABLE row=6 col=2]
+255
+
+[P03868 | 336549:336598 | NORMAL_TEXT | TABLE row=6 col=3]
+General location note or monitoring observation.
+
+[P03869 | 336600:336618 | NORMAL_TEXT | TABLE row=7 col=0]
+monitoring_status
+
+[P03870 | 336619:336624 | NORMAL_TEXT | TABLE row=7 col=1]
+ENUM
+
+[P03871 | 336625:336627 | NORMAL_TEXT | TABLE row=7 col=2]
+ 
+
+[P03872 | 336628:336691 | NORMAL_TEXT | TABLE row=7 col=3]
+Monitoring status: Normal, Needs Attention, or Issue Reported.
+
+[P03873 | 336693:336701 | NORMAL_TEXT | TABLE row=8 col=0]
+remarks
+
+[P03874 | 336702:336707 | NORMAL_TEXT | TABLE row=8 col=1]
+TEXT
+
+[P03875 | 336708:336710 | NORMAL_TEXT | TABLE row=8 col=2]
+ 
+
+[P03876 | 336711:336742 | NORMAL_TEXT | TABLE row=8 col=3]
+Additional monitoring remarks.
+
+[P03877 | 336744:336756 | NORMAL_TEXT | TABLE row=9 col=0]
+recorded_by
+
+[P03878 | 336757:336761 | NORMAL_TEXT | TABLE row=9 col=1]
+INT
+
+[P03879 | 336762:336765 | NORMAL_TEXT | TABLE row=9 col=2]
+11
+
+[P03880 | 336766:336859 | NORMAL_TEXT | TABLE row=9 col=3]
+Foreign key that identifies the admin or authorized user who recorded the monitoring update.
+
+[P03881 | 336861:336873 | NORMAL_TEXT | TABLE row=10 col=0]
+recorded_at
+
+[P03882 | 336874:336884 | NORMAL_TEXT | TABLE row=10 col=1]
+TIMESTAMP
+
+[P03883 | 336885:336887 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P03884 | 336888:336937 | NORMAL_TEXT | TABLE row=10 col=3]
+Date and time the monitoring record was created.
+
+[P03885 | 336938:336940 | NORMAL_TEXT]
+ 
+
+[P03886 | 336940:336942 | NORMAL_TEXT]
+ 
+
+[P03887 | 336942:337187 | NORMAL_TEXT]
+Table 53 shows the table in the database named "Monitoring_Records," where manual monitoring notes are stored, including the monitoring source, location note, monitoring status, remarks, and the admin or authorized user who recorded the update.
+
+[P03888 | 337187:337189 | NORMAL_TEXT]
+ 
+
+[P03889 | 337189:337198 | NORMAL_TEXT]
+Table 54
+
+[P03890 | 337198:337230 | NORMAL_TEXT]
+Data Dictionary - Trip Contexts
+
+[P03891 | 337233:337259 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Trip_Contexts
+
+[P03892 | 337260:337261 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P03893 | 337262:337263 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03894 | 337264:337265 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P03895 | 337267:337278 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P03896 | 337279:337289 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P03897 | 337290:337301 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P03898 | 337302:337314 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P03899 | 337316:337327 | NORMAL_TEXT | TABLE row=2 col=0]
+context_id
+
+[P03900 | 337328:337333 | NORMAL_TEXT | TABLE row=2 col=1]
+CHAR
+
+[P03901 | 337334:337337 | NORMAL_TEXT | TABLE row=2 col=2]
+36
+
+[P03902 | 337338:337398 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each context assessment.
+
+[P03903 | 337400:337411 | NORMAL_TEXT | TABLE row=3 col=0]
+booking_id
+
+[P03904 | 337412:337417 | NORMAL_TEXT | TABLE row=3 col=1]
+CHAR
+
+[P03905 | 337418:337421 | NORMAL_TEXT | TABLE row=3 col=2]
+36
+
+[P03906 | 337422:337514 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the booking related to the context assessment, when applicable.
+
+[P03907 | 337516:337534 | NORMAL_TEXT | TABLE row=4 col=0]
+recommendation_id
+
+[P03908 | 337535:337540 | NORMAL_TEXT | TABLE row=4 col=1]
+CHAR
+
+[P03909 | 337541:337544 | NORMAL_TEXT | TABLE row=4 col=2]
+36
+
+[P03910 | 337545:337662 | NORMAL_TEXT | TABLE row=4 col=3]
+Foreign key that identifies the branch allocation recommendation related to the context assessment, when applicable.
+
+[P03911 | 337664:337675 | NORMAL_TEXT | TABLE row=5 col=0]
+vehicle_id
+
+[P03912 | 337676:337681 | NORMAL_TEXT | TABLE row=5 col=1]
+CHAR
+
+[P03913 | 337682:337685 | NORMAL_TEXT | TABLE row=5 col=2]
+36
+
+[P03914 | 337686:337778 | NORMAL_TEXT | TABLE row=5 col=3]
+Foreign key that identifies the vehicle related to the context assessment, when applicable.
+
+[P03915 | 337780:337796 | NORMAL_TEXT | TABLE row=6 col=0]
+origin_location
+
+[P03916 | 337797:337802 | NORMAL_TEXT | TABLE row=6 col=1]
+TEXT
+
+[P03917 | 337803:337804 | NORMAL_TEXT | TABLE row=6 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03918 | 337805:337926 | NORMAL_TEXT | TABLE row=6 col=3]
+Origin label and coordinates, with geocoding provider and result-quality information. Allocation uses the source branch.
+
+[P03919 | 337928:337949 | NORMAL_TEXT | TABLE row=7 col=0]
+destination_location
+
+[P03920 | 337950:337955 | NORMAL_TEXT | TABLE row=7 col=1]
+TEXT
+
+[P03921 | 337956:337957 | NORMAL_TEXT | TABLE row=7 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03922 | 337958:338060 | NORMAL_TEXT | TABLE row=7 col=3]
+Destination label and coordinates, with geocoding provenance. Allocation uses the destination branch.
+
+[P03923 | 338062:338084 | NORMAL_TEXT | TABLE row=8 col=0]
+estimated_distance_km
+
+[P03924 | 338085:338093 | NORMAL_TEXT | TABLE row=8 col=1]
+DECIMAL
+
+[P03925 | 338094:338099 | NORMAL_TEXT | TABLE row=8 col=2]
+10,2
+
+[P03926 | 338100:338192 | NORMAL_TEXT | TABLE row=8 col=3]
+Estimated route distance in kilometers. This remains blank when route data are unavailable.
+
+[P03927 | 338194:338224 | NORMAL_TEXT | TABLE row=9 col=0]
+estimated_travel_time_minutes
+
+[P03928 | 338225:338233 | NORMAL_TEXT | TABLE row=9 col=1]
+DECIMAL
+
+[P03929 | 338234:338239 | NORMAL_TEXT | TABLE row=9 col=2]
+10,2
+
+[P03930 | 338240:338332 | NORMAL_TEXT | TABLE row=9 col=3]
+Estimated route travel time in minutes. This remains blank when route data are unavailable.
+
+[P03931 | 338334:338351 | NORMAL_TEXT | TABLE row=10 col=0]
+weather_provider
+
+[P03932 | 338352:338357 | NORMAL_TEXT | TABLE row=10 col=1]
+TEXT
+
+[P03933 | 338358:338359 | NORMAL_TEXT | TABLE row=10 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03934 | 338360:338451 | NORMAL_TEXT | TABLE row=10 col=3]
+Source used for weather: Open-Meteo, OpenWeather, authorized manual input, or unavailable.
+
+[P03935 | 338453:338471 | NORMAL_TEXT | TABLE row=11 col=0]
+weather_condition
+
+[P03936 | 338472:338477 | NORMAL_TEXT | TABLE row=11 col=1]
+TEXT
+
+[P03937 | 338478:338479 | NORMAL_TEXT | TABLE row=11 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03938 | 338480:338531 | NORMAL_TEXT | TABLE row=11 col=3]
+Weather condition returned by the selected source.
+
+[P03939 | 338533:338556 | NORMAL_TEXT | TABLE row=12 col=0]
+weather_classification
+
+[P03940 | 338557:338562 | NORMAL_TEXT | TABLE row=12 col=1]
+TEXT
+
+[P03941 | 338563:338564 | NORMAL_TEXT | TABLE row=12 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03942 | 338565:338670 | NORMAL_TEXT | TABLE row=12 col=3]
+Weather condition classification (Normal, Caution, Severe, or Unavailable) used as advisory information.
+
+[P03943 | 338672:338689 | NORMAL_TEXT | TABLE row=13 col=0]
+routing_provider
+
+[P03944 | 338690:338695 | NORMAL_TEXT | TABLE row=13 col=1]
+TEXT
+
+[P03945 | 338696:338697 | NORMAL_TEXT | TABLE row=13 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03946 | 338698:338793 | NORMAL_TEXT | TABLE row=13 col=3]
+Route provider, normally TomTom or HERE; geocoding provenance belongs to the location records.
+
+[P03947 | 338795:338817 | NORMAL_TEXT | TABLE row=14 col=0]
+road_context_provider
+
+[P03948 | 338818:338823 | NORMAL_TEXT | TABLE row=14 col=1]
+TEXT
+
+[P03949 | 338824:338825 | NORMAL_TEXT | TABLE row=14 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03950 | 338826:338941 | NORMAL_TEXT | TABLE row=14 col=3]
+Incident-information provider, normally TomTom Traffic or HERE Traffic; distinguish authorized manual information.
+
+[P03951 | 338943:338958 | NORMAL_TEXT | TABLE row=15 col=0]
+road_condition
+
+[P03952 | 338959:338964 | NORMAL_TEXT | TABLE row=15 col=1]
+TEXT
+
+[P03953 | 338965:338966 | NORMAL_TEXT | TABLE row=15 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03954 | 338967:339074 | NORMAL_TEXT | TABLE row=15 col=3]
+Road condition classification (Open, Caution, Closed/Impassable, or Unknown) used as advisory information.
+
+[P03955 | 339076:339094 | NORMAL_TEXT | TABLE row=16 col=0]
+route_feasibility
+
+[P03956 | 339095:339100 | NORMAL_TEXT | TABLE row=16 col=1]
+TEXT
+
+[P03957 | 339101:339102 | NORMAL_TEXT | TABLE row=16 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03958 | 339103:339230 | NORMAL_TEXT | TABLE row=16 col=3]
+Route feasibility classification (Feasible, Feasible with Caution, Not Feasible, or Unavailable) used as advisory information.
+
+[P03959 | 339232:339251 | NORMAL_TEXT | TABLE row=17 col=0]
+road_accessibility
+
+[P03960 | 339252:339257 | NORMAL_TEXT | TABLE row=17 col=1]
+TEXT
+
+[P03961 | 339258:339259 | NORMAL_TEXT | TABLE row=17 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03962 | 339260:339378 | NORMAL_TEXT | TABLE row=17 col=3]
+Route accessibility classification (Accessible, Limited, Closed/Restricted, or Unknown) used as advisory information.
+
+[P03963 | 339380:339411 | NORMAL_TEXT | TABLE row=18 col=0]
+reference_fuel_efficiency_kmpl
+
+[P03964 | 339412:339420 | NORMAL_TEXT | TABLE row=18 col=1]
+DECIMAL
+
+[P03965 | 339421:339426 | NORMAL_TEXT | TABLE row=18 col=2]
+10,2
+
+[P03966 | 339427:339514 | NORMAL_TEXT | TABLE row=18 col=3]
+Reference fuel-efficiency value in kilometers per liter used for the selected vehicle.
+
+[P03967 | 339516:339550 | NORMAL_TEXT | TABLE row=19 col=0]
+estimated_fuel_consumption_liters
+
+[P03968 | 339551:339559 | NORMAL_TEXT | TABLE row=19 col=1]
+DECIMAL
+
+[P03969 | 339560:339565 | NORMAL_TEXT | TABLE row=19 col=2]
+10,2
+
+[P03970 | 339566:339709 | NORMAL_TEXT | TABLE row=19 col=3]
+Estimated fuel consumption based on route distance and reference fuel efficiency. This remains blank when the required values are unavailable.
+
+[P03971 | 339711:339726 | NORMAL_TEXT | TABLE row=20 col=0]
+context_source
+
+[P03972 | 339727:339732 | NORMAL_TEXT | TABLE row=20 col=1]
+TEXT
+
+[P03973 | 339733:339734 | NORMAL_TEXT | TABLE row=20 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03974 | 339735:339828 | NORMAL_TEXT | TABLE row=20 col=3]
+Source of the context information: API, manual input, simulated data, mixed, or unavailable.
+
+[P03975 | 339830:339846 | NORMAL_TEXT | TABLE row=21 col=0]
+context_warning
+
+[P03976 | 339847:339852 | NORMAL_TEXT | TABLE row=21 col=1]
+TEXT
+
+[P03977 | 339853:339854 | NORMAL_TEXT | TABLE row=21 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03978 | 339855:339921 | NORMAL_TEXT | TABLE row=21 col=3]
+Warnings or limitations that require the Owner/Admin’s attention.
+
+[P03979 | 339923:339936 | NORMAL_TEXT | TABLE row=22 col=0]
+retrieved_at
+
+[P03980 | 339937:339947 | NORMAL_TEXT | TABLE row=22 col=1]
+TIMESTAMP
+
+[P03981 | 339948:339949 | NORMAL_TEXT | TABLE row=22 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03982 | 339950:340030 | NORMAL_TEXT | TABLE row=22 col=3]
+Date and time when external context information was retrieved, when applicable.
+
+[P03983 | 340032:340052 | NORMAL_TEXT | TABLE row=23 col=0]
+assessment_metadata
+
+[P03984 | 340053:340058 | NORMAL_TEXT | TABLE row=23 col=1]
+TEXT
+
+[P03985 | 340059:340060 | NORMAL_TEXT | TABLE row=23 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03986 | 340061:340245 | NORMAL_TEXT | TABLE row=23 col=3]
+Per-factor source and observation time, supported time coverage, freshness, fallback use, missing-data reasons, journey basis, fuel-reference source, and clearly identified test data.
+
+[P03987 | 340247:340259 | NORMAL_TEXT | TABLE row=24 col=0]
+recorded_by
+
+[P03988 | 340260:340265 | NORMAL_TEXT | TABLE row=24 col=1]
+CHAR
+
+[P03989 | 340266:340269 | NORMAL_TEXT | TABLE row=24 col=2]
+36
+
+[P03990 | 340270:340362 | NORMAL_TEXT | TABLE row=24 col=3]
+Required reference to profiles.id identifying the authorized user retaining the assessment.
+
+[P03991 | 340364:340375 | NORMAL_TEXT | TABLE row=25 col=0]
+created_at
+
+[P03992 | 340376:340386 | NORMAL_TEXT | TABLE row=25 col=1]
+TIMESTAMP
+
+[P03993 | 340387:340388 | NORMAL_TEXT | TABLE row=25 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P03994 | 340389:340445 | NORMAL_TEXT | TABLE row=25 col=3]
+Date and time when the context assessment was recorded.
+
+[P03995 | 340446:340448 | NORMAL_TEXT]
+ 
+
+[P03996 | 340448:340450 | NORMAL_TEXT]
+ 
+
+[P03997 | 340450:340991 | NORMAL_TEXT]
+Table 54 presents the proposed Trip_Contexts record, which stores the operational and external factors reviewed for a booking assignment or branch allocation. These factors include the origin and destination, route distance and travel time, weather and road information, route feasibility and accessibility, reference fuel efficiency, estimated fuel consumption, source details, warnings, and retrieval time. Context information supports the Owner/Admin’s review and does not automatically assign vehicles or transfer them between branches.
+
+[P03998 | 340991:340993 | NORMAL_TEXT]
+ 
+
+[P03999 | 340993:341002 | NORMAL_TEXT]
+Table 55
+
+[P04000 | 341002:341037 | NORMAL_TEXT]
+Data Dictionary - Demand Forecasts
+
+[P04001 | 341040:341069 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Demand_Forecasts
+
+[P04002 | 341070:341071 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P04003 | 341072:341073 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04004 | 341074:341075 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P04005 | 341077:341088 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P04006 | 341089:341099 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P04007 | 341100:341111 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P04008 | 341112:341124 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P04009 | 341126:341138 | NORMAL_TEXT | TABLE row=2 col=0]
+forecast_id
+
+[P04010 | 341139:341144 | NORMAL_TEXT | TABLE row=2 col=1]
+CHAR
+
+[P04011 | 341145:341148 | NORMAL_TEXT | TABLE row=2 col=2]
+36
+
+[P04012 | 341149:341199 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key of one branch-category-week forecast.
+
+[P04013 | 341201:341217 | NORMAL_TEXT | TABLE row=3 col=0]
+forecast_run_id
+
+[P04014 | 341218:341223 | NORMAL_TEXT | TABLE row=3 col=1]
+CHAR
+
+[P04015 | 341224:341227 | NORMAL_TEXT | TABLE row=3 col=2]
+36
+
+[P04016 | 341228:341311 | NORMAL_TEXT | TABLE row=3 col=3]
+Required reference to forecast_runs.id; groups every forecast produced by one run.
+
+[P04017 | 341313:341323 | NORMAL_TEXT | TABLE row=4 col=0]
+branch_id
+
+[P04018 | 341324:341329 | NORMAL_TEXT | TABLE row=4 col=1]
+CHAR
+
+[P04019 | 341330:341333 | NORMAL_TEXT | TABLE row=4 col=2]
+36
+
+[P04020 | 341334:341369 | NORMAL_TEXT | TABLE row=4 col=3]
+Required reference to branches.id.
+
+[P04021 | 341371:341391 | NORMAL_TEXT | TABLE row=5 col=0]
+vehicle_category_id
+
+[P04022 | 341392:341397 | NORMAL_TEXT | TABLE row=5 col=1]
+CHAR
+
+[P04023 | 341398:341401 | NORMAL_TEXT | TABLE row=5 col=2]
+36
+
+[P04024 | 341402:341447 | NORMAL_TEXT | TABLE row=5 col=3]
+Required reference to vehicle_categories.id.
+
+[P04025 | 341449:341457 | NORMAL_TEXT | TABLE row=6 col=0]
+horizon
+
+[P04026 | 341458:341462 | NORMAL_TEXT | TABLE row=6 col=1]
+INT
+
+[P04027 | 341463:341466 | NORMAL_TEXT | TABLE row=6 col=2]
+11
+
+[P04028 | 341467:341525 | NORMAL_TEXT | TABLE row=6 col=3]
+Forecast period: first, second, or third succeeding week.
+
+[P04029 | 341527:341545 | NORMAL_TEXT | TABLE row=7 col=0]
+target_week_start
+
+[P04030 | 341546:341551 | NORMAL_TEXT | TABLE row=7 col=1]
+DATE
+
+[P04031 | 341552:341553 | NORMAL_TEXT | TABLE row=7 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04032 | 341554:341608 | NORMAL_TEXT | TABLE row=7 col=3]
+Start of the target week in the Asia/Manila calendar.
+
+[P04033 | 341610:341626 | NORMAL_TEXT | TABLE row=8 col=0]
+target_week_end
+
+[P04034 | 341627:341632 | NORMAL_TEXT | TABLE row=8 col=1]
+DATE
+
+[P04035 | 341633:341634 | NORMAL_TEXT | TABLE row=8 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04036 | 341635:341727 | NORMAL_TEXT | TABLE row=8 col=3]
+Stored target-week end date; interpret consistently with the weekly aggregation boundaries.
+
+[P04037 | 341729:341747 | NORMAL_TEXT | TABLE row=9 col=0]
+forecasted_demand
+
+[P04038 | 341748:341756 | NORMAL_TEXT | TABLE row=9 col=1]
+DECIMAL
+
+[P04039 | 341757:341762 | NORMAL_TEXT | TABLE row=9 col=2]
+10,2
+
+[P04040 | 341763:341883 | NORMAL_TEXT | TABLE row=9 col=3]
+Nonnegative WMA estimate of confirmed booking starts. Retain calculation precision; this is not simultaneous occupancy.
+
+[P04041 | 341885:341908 | NORMAL_TEXT | TABLE row=10 col=0]
+required_vehicle_units
+
+[P04042 | 341909:341913 | NORMAL_TEXT | TABLE row=10 col=1]
+INT
+
+[P04043 | 341914:341917 | NORMAL_TEXT | TABLE row=10 col=2]
+11
+
+[P04044 | 341918:341986 | NORMAL_TEXT | TABLE row=10 col=3]
+Ceiling of forecasted_demand used as a planning proxy; nonnegative.
+
+[P04045 | 341988:342002 | NORMAL_TEXT | TABLE row=11 col=0]
+actual_demand
+
+[P04046 | 342003:342011 | NORMAL_TEXT | TABLE row=11 col=1]
+DECIMAL
+
+[P04047 | 342012:342017 | NORMAL_TEXT | TABLE row=11 col=2]
+10,2
+
+[P04048 | 342018:342115 | NORMAL_TEXT | TABLE row=11 col=3]
+Actual qualifying booking count for the same branch, vehicle category, and week, when available.
+
+[P04049 | 342117:342143 | NORMAL_TEXT | TABLE row=12 col=0]
+absolute_percentage_error
+
+[P04050 | 342144:342152 | NORMAL_TEXT | TABLE row=12 col=1]
+DECIMAL
+
+[P04051 | 342153:342158 | NORMAL_TEXT | TABLE row=12 col=2]
+10,2
+
+[P04052 | 342159:342259 | NORMAL_TEXT | TABLE row=12 col=3]
+Absolute percentage error of the forecast, calculated only when actual demand is greater than zero.
+
+[P04053 | 342261:342272 | NORMAL_TEXT | TABLE row=13 col=0]
+created_at
+
+[P04054 | 342273:342283 | NORMAL_TEXT | TABLE row=13 col=1]
+TIMESTAMP
+
+[P04055 | 342284:342285 | NORMAL_TEXT | TABLE row=13 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04056 | 342286:342335 | NORMAL_TEXT | TABLE row=13 col=3]
+Timestamp at which this forecast row was stored.
+
+[P04057 | 342337:342353 | NORMAL_TEXT | TABLE row=14 col=0]
+forecast_method
+
+[P04058 | 342354:342359 | NORMAL_TEXT | TABLE row=14 col=1]
+TEXT
+
+[P04059 | 342360:342361 | NORMAL_TEXT | TABLE row=14 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04060 | 342362:342446 | NORMAL_TEXT | TABLE row=14 col=3]
+Inherited from run_id, not a separate forecasts column. Existing run method is WMA.
+
+[P04061 | 342448:342461 | NORMAL_TEXT | TABLE row=15 col=0]
+generated_by
+
+[P04062 | 342462:342467 | NORMAL_TEXT | TABLE row=15 col=1]
+CHAR
+
+[P04063 | 342468:342471 | NORMAL_TEXT | TABLE row=15 col=2]
+36
+
+[P04064 | 342472:342559 | NORMAL_TEXT | TABLE row=15 col=3]
+Inherited run-level reference to profiles.id identifying the generating administrator.
+
+[P04065 | 342561:342574 | NORMAL_TEXT | TABLE row=16 col=0]
+generated_at
+
+[P04066 | 342575:342585 | NORMAL_TEXT | TABLE row=16 col=1]
+TIMESTAMP
+
+[P04067 | 342586:342587 | NORMAL_TEXT | TABLE row=16 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04068 | 342588:342676 | NORMAL_TEXT | TABLE row=16 col=3]
+Inherited run-generation time, retained for forecast timing and evaluation eligibility.
+
+[P04069 | 342677:342679 | NORMAL_TEXT]
+ 
+
+[P04070 | 342679:343112 | NORMAL_TEXT]
+Table 55 presents the Demand_Forecasts record, which stores the short-term weekly demand forecast for each branch and vehicle category. Each forecast identifies its forecast period, target week, forecasted booking demand, required vehicle units, and available actual demand and error values. Forecast demand represents confirmed booking starts and serves as a planning estimate rather than a count of vehicles simultaneously in use.
+
+[P04071 | 343112:343114 | NORMAL_TEXT]
+ 
+
+[P04072 | 343114:343123 | NORMAL_TEXT]
+Table 56
+
+[P04073 | 343123:343158 | NORMAL_TEXT]
+Data Dictionary - Forecast Details
+
+[P04074 | 343161:343190 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Forecast_Details
+
+[P04075 | 343191:343192 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P04076 | 343193:343194 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04077 | 343195:343196 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P04078 | 343198:343209 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P04079 | 343210:343220 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P04080 | 343221:343232 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P04081 | 343233:343245 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P04082 | 343247:343266 | NORMAL_TEXT | TABLE row=2 col=0]
+forecast_detail_id
+
+[P04083 | 343267:343272 | NORMAL_TEXT | TABLE row=2 col=1]
+CHAR
+
+[P04084 | 343273:343276 | NORMAL_TEXT | TABLE row=2 col=2]
+36
+
+[P04085 | 343277:343311 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key of an input snapshot.
+
+[P04086 | 343313:343325 | NORMAL_TEXT | TABLE row=3 col=0]
+forecast_id
+
+[P04087 | 343326:343331 | NORMAL_TEXT | TABLE row=3 col=1]
+CHAR
+
+[P04088 | 343332:343335 | NORMAL_TEXT | TABLE row=3 col=2]
+36
+
+[P04089 | 343336:343372 | NORMAL_TEXT | TABLE row=3 col=3]
+Required reference to forecasts.id.
+
+[P04090 | 343374:343392 | NORMAL_TEXT | TABLE row=4 col=0]
+source_week_start
+
+[P04091 | 343393:343398 | NORMAL_TEXT | TABLE row=4 col=1]
+DATE
+
+[P04092 | 343399:343400 | NORMAL_TEXT | TABLE row=4 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04093 | 343401:343533 | NORMAL_TEXT | TABLE row=4 col=3]
+Start date of the input week; its end is derived from the weekly calendar rather than stored in a separate input_period_end column.
+
+[P04094 | 343535:343547 | NORMAL_TEXT | TABLE row=5 col=0]
+input_order
+
+[P04095 | 343548:343552 | NORMAL_TEXT | TABLE row=5 col=1]
+INT
+
+[P04096 | 343553:343556 | NORMAL_TEXT | TABLE row=5 col=2]
+11
+
+[P04097 | 343557:343616 | NORMAL_TEXT | TABLE row=5 col=3]
+Relative recency: 1 is newest, 2 is next, and 3 is oldest.
+
+[P04098 | 343618:343630 | NORMAL_TEXT | TABLE row=6 col=0]
+source_type
+
+[P04099 | 343631:343636 | NORMAL_TEXT | TABLE row=6 col=1]
+TEXT
+
+[P04100 | 343637:343638 | NORMAL_TEXT | TABLE row=6 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04101 | 343639:343716 | NORMAL_TEXT | TABLE row=6 col=3]
+Identifies whether the input is an actual booking count or a forecast value.
+
+[P04102 | 343718:343731 | NORMAL_TEXT | TABLE row=7 col=0]
+source_value
+
+[P04103 | 343732:343740 | NORMAL_TEXT | TABLE row=7 col=1]
+DECIMAL
+
+[P04104 | 343741:343746 | NORMAL_TEXT | TABLE row=7 col=2]
+10,2
+
+[P04105 | 343747:343877 | NORMAL_TEXT | TABLE row=7 col=3]
+Input demand value preserved for reproducibility. Actual booking counts are whole numbers; recursive forecasts may be fractional.
+
+[P04106 | 343879:343886 | NORMAL_TEXT | TABLE row=8 col=0]
+weight
+
+[P04107 | 343887:343895 | NORMAL_TEXT | TABLE row=8 col=1]
+DECIMAL
+
+[P04108 | 343896:343900 | NORMAL_TEXT | TABLE row=8 col=2]
+4,2
+
+[P04109 | 343901:343950 | NORMAL_TEXT | TABLE row=8 col=3]
+Weight assigned by recency: 0.50, 0.30, or 0.20.
+
+[P04110 | 343952:343974 | NORMAL_TEXT | TABLE row=9 col=0]
+weighted_contribution
+
+[P04111 | 343975:343983 | NORMAL_TEXT | TABLE row=9 col=1]
+DECIMAL
+
+[P04112 | 343984:343989 | NORMAL_TEXT | TABLE row=9 col=2]
+10,2
+
+[P04113 | 343990:344058 | NORMAL_TEXT | TABLE row=9 col=3]
+source_value multiplied by weight, retaining calculation precision.
+
+[P04114 | 344060:344071 | NORMAL_TEXT | TABLE row=10 col=0]
+created_at
+
+[P04115 | 344072:344082 | NORMAL_TEXT | TABLE row=10 col=1]
+TIMESTAMP
+
+[P04116 | 344083:344084 | NORMAL_TEXT | TABLE row=10 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04117 | 344085:344121 | NORMAL_TEXT | TABLE row=10 col=3]
+Time the input snapshot was stored.
+
+[P04118 | 344122:344124 | NORMAL_TEXT]
+ 
+
+[P04119 | 344124:344431 | NORMAL_TEXT]
+Table 56 presents the Forecast_Details record, which stores the weekly values used in each Weighted Moving Average computation. It identifies the source week, input order, input type, demand value, assigned weight, and weighted contribution so that each forecast calculation can be reviewed and reproduced.
+
+[P04120 | 344431:344433 | NORMAL_TEXT]
+ 
+
+[P04121 | 344433:344435 | NORMAL_TEXT]
+ 
+
+[P04122 | 344435:344437 | NORMAL_TEXT]
+ 
+
+[P04123 | 344437:344439 | NORMAL_TEXT]
+ 
+
+[P04124 | 344439:344448 | NORMAL_TEXT]
+Table 57
+
+[P04125 | 344448:344493 | NORMAL_TEXT]
+Data Dictionary - Allocation Recommendations
+
+[P04126 | 344496:344535 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Allocation_Recommendations
+
+[P04127 | 344536:344537 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P04128 | 344538:344539 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04129 | 344540:344541 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P04130 | 344543:344554 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P04131 | 344555:344565 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P04132 | 344566:344577 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P04133 | 344578:344590 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P04134 | 344592:344621 | NORMAL_TEXT | TABLE row=2 col=0]
+allocation_recommendation_id
+
+[P04135 | 344622:344627 | NORMAL_TEXT | TABLE row=2 col=1]
+CHAR
+
+[P04136 | 344628:344631 | NORMAL_TEXT | TABLE row=2 col=2]
+36
+
+[P04137 | 344632:344675 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key of an advisory recommendation.
+
+[P04138 | 344677:344686 | NORMAL_TEXT | TABLE row=3 col=0]
+batch_id
+
+[P04139 | 344687:344692 | NORMAL_TEXT | TABLE row=3 col=1]
+CHAR
+
+[P04140 | 344693:344696 | NORMAL_TEXT | TABLE row=3 col=2]
+36
+
+[P04141 | 344697:344757 | NORMAL_TEXT | TABLE row=3 col=3]
+Required reference to allocation_recommendation_batches.id.
+
+[P04142 | 344759:344792 | NORMAL_TEXT | TABLE row=4 col=0]
+destination_supply_evaluation_id
+
+[P04143 | 344793:344798 | NORMAL_TEXT | TABLE row=4 col=1]
+CHAR
+
+[P04144 | 344799:344802 | NORMAL_TEXT | TABLE row=4 col=2]
+36
+
+[P04145 | 344803:344907 | NORMAL_TEXT | TABLE row=4 col=3]
+Required reference to supply_evaluations.id for the destination; that evaluation links to its forecast.
+
+[P04146 | 344909:344937 | NORMAL_TEXT | TABLE row=5 col=0]
+source_supply_evaluation_id
+
+[P04147 | 344938:344943 | NORMAL_TEXT | TABLE row=5 col=1]
+CHAR
+
+[P04148 | 344944:344947 | NORMAL_TEXT | TABLE row=5 col=2]
+36
+
+[P04149 | 344948:345047 | NORMAL_TEXT | TABLE row=5 col=3]
+Required reference to supply_evaluations.id for the source; that evaluation links to its forecast.
+
+[P04150 | 345049:345069 | NORMAL_TEXT | TABLE row=6 col=0]
+vehicle_category_id
+
+[P04151 | 345070:345075 | NORMAL_TEXT | TABLE row=6 col=1]
+CHAR
+
+[P04152 | 345076:345079 | NORMAL_TEXT | TABLE row=6 col=2]
+36
+
+[P04153 | 345080:345171 | NORMAL_TEXT | TABLE row=6 col=3]
+Required reference to vehicle_categories.id; source and destination use the same category.
+
+[P04154 | 345173:345190 | NORMAL_TEXT | TABLE row=7 col=0]
+source_branch_id
+
+[P04155 | 345191:345196 | NORMAL_TEXT | TABLE row=7 col=1]
+CHAR
+
+[P04156 | 345197:345200 | NORMAL_TEXT | TABLE row=7 col=2]
+36
+
+[P04157 | 345201:345270 | NORMAL_TEXT | TABLE row=7 col=3]
+Required reference to branches.id; must differ from the destination.
+
+[P04158 | 345272:345294 | NORMAL_TEXT | TABLE row=8 col=0]
+destination_branch_id
+
+[P04159 | 345295:345300 | NORMAL_TEXT | TABLE row=8 col=1]
+CHAR
+
+[P04160 | 345301:345304 | NORMAL_TEXT | TABLE row=8 col=2]
+36
+
+[P04161 | 345305:345380 | NORMAL_TEXT | TABLE row=8 col=3]
+Required reference to branches.id for the branch with a planning shortage.
+
+[P04162 | 345382:345399 | NORMAL_TEXT | TABLE row=9 col=0]
+forecast_horizon
+
+[P04163 | 345400:345404 | NORMAL_TEXT | TABLE row=9 col=1]
+INT
+
+[P04164 | 345405:345408 | NORMAL_TEXT | TABLE row=9 col=2]
+11
+
+[P04165 | 345409:345437 | NORMAL_TEXT | TABLE row=9 col=3]
+Evaluated forecast horizon.
+
+[P04166 | 345439:345457 | NORMAL_TEXT | TABLE row=10 col=0]
+target_week_start
+
+[P04167 | 345458:345463 | NORMAL_TEXT | TABLE row=10 col=1]
+DATE
+
+[P04168 | 345464:345465 | NORMAL_TEXT | TABLE row=10 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04169 | 345466:345502 | NORMAL_TEXT | TABLE row=10 col=3]
+Start of the evaluated target week.
+
+[P04170 | 345504:345520 | NORMAL_TEXT | TABLE row=11 col=0]
+target_week_end
+
+[P04171 | 345521:345526 | NORMAL_TEXT | TABLE row=11 col=1]
+DATE
+
+[P04172 | 345527:345528 | NORMAL_TEXT | TABLE row=11 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04173 | 345529:345574 | NORMAL_TEXT | TABLE row=11 col=3]
+Stored end date for the same evaluated week.
+
+[P04174 | 345576:345603 | NORMAL_TEXT | TABLE row=12 col=0]
+destination_required_units
+
+[P04175 | 345604:345608 | NORMAL_TEXT | TABLE row=12 col=1]
+INT
+
+[P04176 | 345609:345612 | NORMAL_TEXT | TABLE row=12 col=2]
+11
+
+[P04177 | 345613:345676 | NORMAL_TEXT | TABLE row=12 col=3]
+Destination forecast-based planning requirement at generation.
+
+[P04178 | 345678:345707 | NORMAL_TEXT | TABLE row=13 col=0]
+destination_projected_supply
+
+[P04179 | 345708:345712 | NORMAL_TEXT | TABLE row=13 col=1]
+INT
+
+[P04180 | 345713:345716 | NORMAL_TEXT | TABLE row=13 col=2]
+11
+
+[P04181 | 345717:345760 | NORMAL_TEXT | TABLE row=13 col=3]
+Eligible destination supply at evaluation.
+
+[P04182 | 345762:345783 | NORMAL_TEXT | TABLE row=14 col=0]
+destination_shortage
+
+[P04183 | 345784:345788 | NORMAL_TEXT | TABLE row=14 col=1]
+INT
+
+[P04184 | 345789:345792 | NORMAL_TEXT | TABLE row=14 col=2]
+11
+
+[P04185 | 345793:345879 | NORMAL_TEXT | TABLE row=14 col=3]
+Positive shortage snapshot: requirement minus eligible supply, bounded below by zero.
+
+[P04186 | 345881:345905 | NORMAL_TEXT | TABLE row=15 col=0]
+source_projected_supply
+
+[P04187 | 345906:345910 | NORMAL_TEXT | TABLE row=15 col=1]
+INT
+
+[P04188 | 345911:345914 | NORMAL_TEXT | TABLE row=15 col=2]
+11
+
+[P04189 | 345915:345953 | NORMAL_TEXT | TABLE row=15 col=3]
+Eligible source supply at evaluation.
+
+[P04190 | 345955:345977 | NORMAL_TEXT | TABLE row=16 col=0]
+source_required_units
+
+[P04191 | 345978:345982 | NORMAL_TEXT | TABLE row=16 col=1]
+INT
+
+[P04192 | 345983:345986 | NORMAL_TEXT | TABLE row=16 col=2]
+11
+
+[P04193 | 345987:346065 | NORMAL_TEXT | TABLE row=16 col=3]
+Source planning requirement reserved before calculating transferable surplus.
+
+[P04194 | 346067:346082 | NORMAL_TEXT | TABLE row=17 col=0]
+source_surplus
+
+[P04195 | 346083:346087 | NORMAL_TEXT | TABLE row=17 col=1]
+INT
+
+[P04196 | 346088:346091 | NORMAL_TEXT | TABLE row=17 col=2]
+11
+
+[P04197 | 346092:346158 | NORMAL_TEXT | TABLE row=17 col=3]
+Positive surplus snapshot after reserving the source requirement.
+
+[P04198 | 346160:346187 | NORMAL_TEXT | TABLE row=18 col=0]
+recommended_transfer_units
+
+[P04199 | 346188:346192 | NORMAL_TEXT | TABLE row=18 col=1]
+INT
+
+[P04200 | 346193:346196 | NORMAL_TEXT | TABLE row=18 col=2]
+11
+
+[P04201 | 346197:346320 | NORMAL_TEXT | TABLE row=18 col=3]
+Positive proposed quantity, bounded by destination shortage, source surplus, and the revalidated eligible candidate count.
+
+[P04202 | 346322:346346 | NORMAL_TEXT | TABLE row=19 col=0]
+approved_transfer_units
+
+[P04203 | 346347:346351 | NORMAL_TEXT | TABLE row=19 col=1]
+INT
+
+[P04204 | 346352:346355 | NORMAL_TEXT | TABLE row=19 col=2]
+11
+
+[P04205 | 346356:346486 | NORMAL_TEXT | TABLE row=19 col=3]
+Number of vehicle units approved by the Owner/Admin. Approval records the decision and does not automatically execute a transfer.
+
+[P04206 | 346488:346503 | NORMAL_TEXT | TABLE row=20 col=0]
+decision_state
+
+[P04207 | 346504:346509 | NORMAL_TEXT | TABLE row=20 col=1]
+TEXT
+
+[P04208 | 346510:346511 | NORMAL_TEXT | TABLE row=20 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04209 | 346512:346574 | NORMAL_TEXT | TABLE row=20 col=3]
+Recommendation review status: Pending, Approved, or Rejected.
+
+[P04210 | 346576:346587 | NORMAL_TEXT | TABLE row=21 col=0]
+decided_by
+
+[P04211 | 346588:346593 | NORMAL_TEXT | TABLE row=21 col=1]
+CHAR
+
+[P04212 | 346594:346597 | NORMAL_TEXT | TABLE row=21 col=2]
+36
+
+[P04213 | 346598:346669 | NORMAL_TEXT | TABLE row=21 col=3]
+Foreign key that identifies the Owner/Admin who recorded the decision.
+
+[P04214 | 346671:346682 | NORMAL_TEXT | TABLE row=22 col=0]
+decided_at
+
+[P04215 | 346683:346693 | NORMAL_TEXT | TABLE row=22 col=1]
+TIMESTAMP
+
+[P04216 | 346694:346695 | NORMAL_TEXT | TABLE row=22 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04217 | 346696:346757 | NORMAL_TEXT | TABLE row=22 col=3]
+Date and time when the recommendation decision was recorded.
+
+[P04218 | 346759:346770 | NORMAL_TEXT | TABLE row=23 col=0]
+created_at
+
+[P04219 | 346771:346781 | NORMAL_TEXT | TABLE row=23 col=1]
+TIMESTAMP
+
+[P04220 | 346782:346783 | NORMAL_TEXT | TABLE row=23 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04221 | 346784:346829 | NORMAL_TEXT | TABLE row=23 col=3]
+Time the recommendation snapshot was stored.
+
+[P04222 | 346831:346854 | NORMAL_TEXT | TABLE row=24 col=0]
+recommendation_summary
+
+[P04223 | 346855:346860 | NORMAL_TEXT | TABLE row=24 col=1]
+TEXT
+
+[P04224 | 346861:346862 | NORMAL_TEXT | TABLE row=24 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04225 | 346863:346981 | NORMAL_TEXT | TABLE row=24 col=3]
+Display explanation assembled from snapshots and candidate explanation codes; not a separately stored current column.
+
+[P04226 | 346983:346994 | NORMAL_TEXT | TABLE row=25 col=0]
+context_id
+
+[P04227 | 346995:347000 | NORMAL_TEXT | TABLE row=25 col=1]
+CHAR
+
+[P04228 | 347001:347004 | NORMAL_TEXT | TABLE row=25 col=2]
+36
+
+[P04229 | 347005:347099 | NORMAL_TEXT | TABLE row=25 col=3]
+Proposed foreign key that identifies the context assessment reviewed with the recommendation.
+
+[P04230 | 347101:347114 | NORMAL_TEXT | TABLE row=26 col=0]
+review_notes
+
+[P04231 | 347115:347120 | NORMAL_TEXT | TABLE row=26 col=1]
+TEXT
+
+[P04232 | 347121:347122 | NORMAL_TEXT | TABLE row=26 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04233 | 347123:347203 | NORMAL_TEXT | TABLE row=26 col=3]
+Proposed remarks recorded by the Owner/Admin when reviewing the recommendation.
+
+[P04234 | 347204:347206 | NORMAL_TEXT]
+ 
+
+[P04235 | 347206:347661 | NORMAL_TEXT]
+Table 57 presents the Allocation_Recommendations record, which stores an advisory proposal for moving eligible vehicles from a source branch with transferable surplus to a destination branch with a projected shortage. It records the relevant forecast period, branch supply and requirement values, proposed quantity, review status, and Owner/Admin decision. Approval records the decision only and does not automatically change a vehicle’s assigned branch.
+
+[P04236 | 347661:347663 | NORMAL_TEXT]
+ 
+
+[P04237 | 347663:347672 | NORMAL_TEXT]
+Table 58
+
+[P04238 | 347672:347722 | NORMAL_TEXT]
+Data Dictionary - Allocation Recommendation Items
+
+[P04239 | 347725:347769 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Allocation_Recommendation_Items
+
+[P04240 | 347770:347771 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P04241 | 347772:347773 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04242 | 347774:347775 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P04243 | 347777:347788 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P04244 | 347789:347799 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P04245 | 347800:347811 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P04246 | 347812:347824 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P04247 | 347826:347849 | NORMAL_TEXT | TABLE row=2 col=0]
+recommendation_item_id
+
+[P04248 | 347850:347855 | NORMAL_TEXT | TABLE row=2 col=1]
+CHAR
+
+[P04249 | 347856:347859 | NORMAL_TEXT | TABLE row=2 col=2]
+36
+
+[P04250 | 347860:347897 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key of a candidate snapshot.
+
+[P04251 | 347899:347917 | NORMAL_TEXT | TABLE row=3 col=0]
+recommendation_id
+
+[P04252 | 347918:347923 | NORMAL_TEXT | TABLE row=3 col=1]
+CHAR
+
+[P04253 | 347924:347927 | NORMAL_TEXT | TABLE row=3 col=2]
+36
+
+[P04254 | 347928:348045 | NORMAL_TEXT | TABLE row=3 col=3]
+Required reference to allocation_recommendations.id. Source and destination branches are inherited from that parent.
+
+[P04255 | 348047:348058 | NORMAL_TEXT | TABLE row=4 col=0]
+vehicle_id
+
+[P04256 | 348059:348064 | NORMAL_TEXT | TABLE row=4 col=1]
+CHAR
+
+[P04257 | 348065:348068 | NORMAL_TEXT | TABLE row=4 col=2]
+36
+
+[P04258 | 348069:348138 | NORMAL_TEXT | TABLE row=4 col=3]
+Required reference to vehicles.id; unique within the recommendation.
+
+[P04259 | 348140:348153 | NORMAL_TEXT | TABLE row=5 col=0]
+vehicle_name
+
+[P04260 | 348154:348159 | NORMAL_TEXT | TABLE row=5 col=1]
+TEXT
+
+[P04261 | 348160:348161 | NORMAL_TEXT | TABLE row=5 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04262 | 348162:348215 | NORMAL_TEXT | TABLE row=5 col=3]
+Vehicle name preserved at recommendation generation.
+
+[P04263 | 348217:348231 | NORMAL_TEXT | TABLE row=6 col=0]
+license_plate
+
+[P04264 | 348232:348237 | NORMAL_TEXT | TABLE row=6 col=1]
+TEXT
+
+[P04265 | 348238:348239 | NORMAL_TEXT | TABLE row=6 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04266 | 348240:348322 | NORMAL_TEXT | TABLE row=6 col=3]
+Vehicle registration or license-plate reference recorded with the recommendation.
+
+[P04267 | 348324:348334 | NORMAL_TEXT | TABLE row=7 col=0]
+idle_days
+
+[P04268 | 348335:348339 | NORMAL_TEXT | TABLE row=7 col=1]
+INT
+
+[P04269 | 348340:348343 | NORMAL_TEXT | TABLE row=7 col=2]
+11
+
+[P04270 | 348344:348446 | NORMAL_TEXT | TABLE row=7 col=3]
+Number of days the vehicle was considered idle when the recommendation was generated, when available.
+
+[P04271 | 348448:348463 | NORMAL_TEXT | TABLE row=8 col=0]
+idle_reference
+
+[P04272 | 348464:348474 | NORMAL_TEXT | TABLE row=8 col=1]
+TIMESTAMP
+
+[P04273 | 348475:348476 | NORMAL_TEXT | TABLE row=8 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04274 | 348477:348570 | NORMAL_TEXT | TABLE row=8 col=3]
+Date and time used as the basis for calculating the vehicle’s idle duration, when available.
+
+[P04275 | 348572:348591 | NORMAL_TEXT | TABLE row=9 col=0]
+eligibility_status
+
+[P04276 | 348592:348597 | NORMAL_TEXT | TABLE row=9 col=1]
+TEXT
+
+[P04277 | 348598:348599 | NORMAL_TEXT | TABLE row=9 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04278 | 348600:348684 | NORMAL_TEXT | TABLE row=9 col=3]
+Indicates whether the candidate was eligible when the recommendation was generated.
+
+[P04279 | 348686:348701 | NORMAL_TEXT | TABLE row=10 col=0]
+candidate_rank
+
+[P04280 | 348702:348706 | NORMAL_TEXT | TABLE row=10 col=1]
+INT
+
+[P04281 | 348707:348710 | NORMAL_TEXT | TABLE row=10 col=2]
+11
+
+[P04282 | 348711:348847 | NORMAL_TEXT | TABLE row=10 col=3]
+Positive deterministic order, unique within the recommendation; longest known idle duration first, with stable identifier tie-breaking.
+
+[P04283 | 348849:348871 | NORMAL_TEXT | TABLE row=11 col=0]
+recommendation_reason
+
+[P04284 | 348872:348877 | NORMAL_TEXT | TABLE row=11 col=1]
+TEXT
+
+[P04285 | 348878:348879 | NORMAL_TEXT | TABLE row=11 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04286 | 348880:348951 | NORMAL_TEXT | TABLE row=11 col=3]
+Reason the vehicle was included and ranked as an allocation candidate.
+
+[P04287 | 348953:348964 | NORMAL_TEXT | TABLE row=12 col=0]
+created_at
+
+[P04288 | 348965:348975 | NORMAL_TEXT | TABLE row=12 col=1]
+TIMESTAMP
+
+[P04289 | 348976:348977 | NORMAL_TEXT | TABLE row=12 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04290 | 348978:349018 | NORMAL_TEXT | TABLE row=12 col=3]
+Time the candidate snapshot was stored.
+
+[P04291 | 349019:349021 | NORMAL_TEXT]
+ 
+
+[P04292 | 349021:349453 | NORMAL_TEXT]
+Table 58 presents the Allocation_Recommendation_Items record, which stores the vehicles identified as eligible candidates for an allocation recommendation. It records each vehicle’s identifying information, idle-duration reference, eligibility status, rank, and explanation. Candidate vehicles remain advisory options and must be checked again for current booking, rental, and maintenance conditions before any branch reassignment.
+
+[P04293 | 349453:349455 | NORMAL_TEXT]
+ 
+
+[P04294 | 349455:349464 | NORMAL_TEXT]
+Table 59
+
+[P04295 | 349464:349498 | NORMAL_TEXT]
+Data Dictionary - Rental Policies
+
+[P04296 | 349501:349529 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Rental_Policies
+
+[P04297 | 349530:349531 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P04298 | 349532:349533 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04299 | 349534:349535 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P04300 | 349537:349548 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P04301 | 349549:349559 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P04302 | 349560:349571 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P04303 | 349572:349584 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P04304 | 349586:349596 | NORMAL_TEXT | TABLE row=2 col=0]
+policy_id
+
+[P04305 | 349597:349601 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P04306 | 349602:349605 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P04307 | 349606:349661 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each rental policy.
+
+[P04308 | 349663:349676 | NORMAL_TEXT | TABLE row=3 col=0]
+policy_title
+
+[P04309 | 349677:349685 | NORMAL_TEXT | TABLE row=3 col=1]
+VARCHAR
+
+[P04310 | 349686:349690 | NORMAL_TEXT | TABLE row=3 col=2]
+150
+
+[P04311 | 349691:349719 | NORMAL_TEXT | TABLE row=3 col=3]
+Title of the rental policy.
+
+[P04312 | 349721:349736 | NORMAL_TEXT | TABLE row=4 col=0]
+policy_content
+
+[P04313 | 349737:349742 | NORMAL_TEXT | TABLE row=4 col=1]
+TEXT
+
+[P04314 | 349743:349745 | NORMAL_TEXT | TABLE row=4 col=2]
+ 
+
+[P04315 | 349746:349781 | NORMAL_TEXT | TABLE row=4 col=3]
+Full content of the rental policy.
+
+[P04316 | 349783:349797 | NORMAL_TEXT | TABLE row=5 col=0]
+policy_status
+
+[P04317 | 349798:349803 | NORMAL_TEXT | TABLE row=5 col=1]
+ENUM
+
+[P04318 | 349804:349806 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P04319 | 349807:349849 | NORMAL_TEXT | TABLE row=5 col=3]
+Status of the policy: Active or Inactive.
+
+[P04320 | 349851:349862 | NORMAL_TEXT | TABLE row=6 col=0]
+created_by
+
+[P04321 | 349863:349867 | NORMAL_TEXT | TABLE row=6 col=1]
+INT
+
+[P04322 | 349868:349871 | NORMAL_TEXT | TABLE row=6 col=2]
+11
+
+[P04323 | 349872:349953 | NORMAL_TEXT | TABLE row=6 col=3]
+Foreign key that identifies the admin or authorized user who created the policy.
+
+[P04324 | 349955:349966 | NORMAL_TEXT | TABLE row=7 col=0]
+created_at
+
+[P04325 | 349967:349977 | NORMAL_TEXT | TABLE row=7 col=1]
+TIMESTAMP
+
+[P04326 | 349978:349980 | NORMAL_TEXT | TABLE row=7 col=2]
+ 
+
+[P04327 | 349981:350019 | NORMAL_TEXT | TABLE row=7 col=3]
+Date and time the policy was created.
+
+[P04328 | 350021:350032 | NORMAL_TEXT | TABLE row=8 col=0]
+updated_at
+
+[P04329 | 350033:350043 | NORMAL_TEXT | TABLE row=8 col=1]
+TIMESTAMP
+
+[P04330 | 350044:350046 | NORMAL_TEXT | TABLE row=8 col=2]
+ 
+
+[P04331 | 350047:350090 | NORMAL_TEXT | TABLE row=8 col=3]
+Date and time the policy was last updated.
+
+[P04332 | 350091:350093 | NORMAL_TEXT]
+ 
+
+[P04333 | 350093:350095 | NORMAL_TEXT]
+ 
+
+[P04334 | 350095:350097 | NORMAL_TEXT]
+ 
+
+[P04335 | 350097:350303 | NORMAL_TEXT]
+Table 59 shows the table in the database named "Rental_Policies," where rental rules, conditions, penalties, and other policy information are stored for customer reference and authorized system validation.
+
+[P04336 | 350303:350305 | NORMAL_TEXT]
+ 
+
+[P04337 | 350305:350314 | NORMAL_TEXT]
+Table 60
+
+[P04338 | 350314:350348 | NORMAL_TEXT]
+Data Dictionary - System Settings
+
+[P04339 | 350351:350379 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: System_Settings
+
+[P04340 | 350380:350381 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P04341 | 350382:350383 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04342 | 350384:350385 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P04343 | 350387:350398 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P04344 | 350399:350409 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P04345 | 350410:350421 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P04346 | 350422:350434 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P04347 | 350436:350447 | NORMAL_TEXT | TABLE row=2 col=0]
+setting_id
+
+[P04348 | 350448:350452 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P04349 | 350453:350456 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P04350 | 350457:350513 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each system setting.
+
+[P04351 | 350515:350528 | NORMAL_TEXT | TABLE row=3 col=0]
+setting_name
+
+[P04352 | 350529:350537 | NORMAL_TEXT | TABLE row=3 col=1]
+VARCHAR
+
+[P04353 | 350538:350542 | NORMAL_TEXT | TABLE row=3 col=2]
+100
+
+[P04354 | 350543:350596 | NORMAL_TEXT | TABLE row=3 col=3]
+Name of the configurable system or business setting.
+
+[P04355 | 350598:350612 | NORMAL_TEXT | TABLE row=4 col=0]
+setting_value
+
+[P04356 | 350613:350618 | NORMAL_TEXT | TABLE row=4 col=1]
+TEXT
+
+[P04357 | 350619:350621 | NORMAL_TEXT | TABLE row=4 col=2]
+ 
+
+[P04358 | 350622:350651 | NORMAL_TEXT | TABLE row=4 col=3]
+Stored value of the setting.
+
+[P04359 | 350653:350673 | NORMAL_TEXT | TABLE row=5 col=0]
+setting_description
+
+[P04360 | 350674:350679 | NORMAL_TEXT | TABLE row=5 col=1]
+TEXT
+
+[P04361 | 350680:350682 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P04362 | 350683:350728 | NORMAL_TEXT | TABLE row=5 col=3]
+Description of what the setting is used for.
+
+[P04363 | 350730:350741 | NORMAL_TEXT | TABLE row=6 col=0]
+updated_by
+
+[P04364 | 350742:350746 | NORMAL_TEXT | TABLE row=6 col=1]
+INT
+
+[P04365 | 350747:350750 | NORMAL_TEXT | TABLE row=6 col=2]
+11
+
+[P04366 | 350751:350833 | NORMAL_TEXT | TABLE row=6 col=3]
+Foreign key that identifies the admin or authorized user who updated the setting.
+
+[P04367 | 350835:350846 | NORMAL_TEXT | TABLE row=7 col=0]
+updated_at
+
+[P04368 | 350847:350857 | NORMAL_TEXT | TABLE row=7 col=1]
+TIMESTAMP
+
+[P04369 | 350858:350860 | NORMAL_TEXT | TABLE row=7 col=2]
+ 
+
+[P04370 | 350861:350905 | NORMAL_TEXT | TABLE row=7 col=3]
+Date and time the setting was last updated.
+
+[P04371 | 350906:350908 | NORMAL_TEXT]
+ 
+
+[P04372 | 350908:351333 | NORMAL_TEXT]
+Table 60 shows the table in the database named "System_Settings," where configurable business and system values are stored, including pricing rules, late return fee, cleaning fee, rental limits, cancellation window, business profile details, notification settings, and integration-related values. This table allows admin or authorized users to update selected operational settings without directly modifying the system code.
+
+[P04373 | 351333:351335 | NORMAL_TEXT]
+ 
+
+[P04374 | 351335:351344 | NORMAL_TEXT]
+Table 61
+
+[P04375 | 351344:351376 | NORMAL_TEXT]
+Data Dictionary - Notifications
+
+[P04376 | 351379:351405 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Notifications
+
+[P04377 | 351406:351407 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P04378 | 351408:351409 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04379 | 351410:351411 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P04380 | 351413:351424 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P04381 | 351425:351435 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P04382 | 351436:351447 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P04383 | 351448:351460 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P04384 | 351462:351478 | NORMAL_TEXT | TABLE row=2 col=0]
+notification_id
+
+[P04385 | 351479:351483 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P04386 | 351484:351487 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P04387 | 351488:351542 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each notification.
+
+[P04388 | 351544:351552 | NORMAL_TEXT | TABLE row=3 col=0]
+user_id
+
+[P04389 | 351553:351557 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P04390 | 351558:351561 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P04391 | 351562:351627 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the user receiving the notification.
+
+[P04392 | 351629:351639 | NORMAL_TEXT | TABLE row=4 col=0]
+renter_id
+
+[P04393 | 351640:351644 | NORMAL_TEXT | TABLE row=4 col=1]
+INT
+
+[P04394 | 351645:351648 | NORMAL_TEXT | TABLE row=4 col=2]
+11
+
+[P04395 | 351649:351716 | NORMAL_TEXT | TABLE row=4 col=3]
+Foreign key that identifies the renter receiving the notification.
+
+[P04396 | 351718:351729 | NORMAL_TEXT | TABLE row=5 col=0]
+booking_id
+
+[P04397 | 351730:351734 | NORMAL_TEXT | TABLE row=5 col=1]
+INT
+
+[P04398 | 351735:351738 | NORMAL_TEXT | TABLE row=5 col=2]
+11
+
+[P04399 | 351739:351810 | NORMAL_TEXT | TABLE row=5 col=3]
+Foreign key that identifies the booking connected to the notification.
+
+[P04400 | 351812:351818 | NORMAL_TEXT | TABLE row=6 col=0]
+title
+
+[P04401 | 351819:351827 | NORMAL_TEXT | TABLE row=6 col=1]
+VARCHAR
+
+[P04402 | 351828:351832 | NORMAL_TEXT | TABLE row=6 col=2]
+150
+
+[P04403 | 351833:351860 | NORMAL_TEXT | TABLE row=6 col=3]
+Title of the notification.
+
+[P04404 | 351862:351870 | NORMAL_TEXT | TABLE row=7 col=0]
+message
+
+[P04405 | 351871:351876 | NORMAL_TEXT | TABLE row=7 col=1]
+TEXT
+
+[P04406 | 351877:351879 | NORMAL_TEXT | TABLE row=7 col=2]
+ 
+
+[P04407 | 351880:351907 | NORMAL_TEXT | TABLE row=7 col=3]
+Full notification message.
+
+[P04408 | 351909:351927 | NORMAL_TEXT | TABLE row=8 col=0]
+notification_type
+
+[P04409 | 351928:351933 | NORMAL_TEXT | TABLE row=8 col=1]
+ENUM
+
+[P04410 | 351934:351936 | NORMAL_TEXT | TABLE row=8 col=2]
+ 
+
+[P04411 | 351937:352111 | NORMAL_TEXT | TABLE row=8 col=3]
+Type of notification, such as Booking Update, Quotation Update, Payment Reminder, Requirement Update, Return Reminder, Maintenance Alert, Low Availability Alert, or General.
+
+[P04412 | 352113:352121 | NORMAL_TEXT | TABLE row=9 col=0]
+is_read
+
+[P04413 | 352122:352130 | NORMAL_TEXT | TABLE row=9 col=1]
+BOOLEAN
+
+[P04414 | 352131:352133 | NORMAL_TEXT | TABLE row=9 col=2]
+1
+
+[P04415 | 352134:352184 | NORMAL_TEXT | TABLE row=9 col=3]
+Indicates whether the notification has been read.
+
+[P04416 | 352186:352197 | NORMAL_TEXT | TABLE row=10 col=0]
+created_at
+
+[P04417 | 352198:352208 | NORMAL_TEXT | TABLE row=10 col=1]
+TIMESTAMP
+
+[P04418 | 352209:352211 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P04419 | 352212:352256 | NORMAL_TEXT | TABLE row=10 col=3]
+Date and time the notification was created.
+
+[P04420 | 352257:352259 | NORMAL_TEXT]
+ 
+
+[P04421 | 352259:352515 | NORMAL_TEXT]
+Table 61 shows the table in the database named "Notifications," where system notifications are stored, including booking updates, quotation updates, payment reminders, requirement updates, return reminders, maintenance alerts, and low availability alerts.
+
+[P04422 | 352515:352517 | NORMAL_TEXT]
+ 
+
+[P04423 | 352517:352526 | NORMAL_TEXT]
+Table 62
+
+[P04424 | 352526:352555 | NORMAL_TEXT]
+Data Dictionary - Audit Logs
+
+[P04425 | 352558:352581 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Audit_Logs
+
+[P04426 | 352582:352583 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P04427 | 352584:352585 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04428 | 352586:352587 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P04429 | 352589:352600 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P04430 | 352601:352611 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P04431 | 352612:352623 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P04432 | 352624:352636 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P04433 | 352638:352647 | NORMAL_TEXT | TABLE row=2 col=0]
+audit_id
+
+[P04434 | 352648:352652 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P04435 | 352653:352656 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P04436 | 352657:352708 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each audit log.
+
+[P04437 | 352710:352718 | NORMAL_TEXT | TABLE row=3 col=0]
+user_id
+
+[P04438 | 352719:352723 | NORMAL_TEXT | TABLE row=3 col=1]
+INT
+
+[P04439 | 352724:352727 | NORMAL_TEXT | TABLE row=3 col=2]
+11
+
+[P04440 | 352728:352791 | NORMAL_TEXT | TABLE row=3 col=3]
+Foreign key that identifies the user who performed the action.
+
+[P04441 | 352793:352805 | NORMAL_TEXT | TABLE row=4 col=0]
+module_name
+
+[P04442 | 352806:352814 | NORMAL_TEXT | TABLE row=4 col=1]
+VARCHAR
+
+[P04443 | 352815:352819 | NORMAL_TEXT | TABLE row=4 col=2]
+100
+
+[P04444 | 352820:353009 | NORMAL_TEXT | TABLE row=4 col=3]
+Name of the system module or functional area affected by the action, such as Booking, Payment, Vehicle, Maintenance, Rental, Forecasting, Allocation, Reports, User Management, or Settings.
+
+[P04445 | 353011:353023 | NORMAL_TEXT | TABLE row=5 col=0]
+action_type
+
+[P04446 | 353024:353032 | NORMAL_TEXT | TABLE row=5 col=1]
+VARCHAR
+
+[P04447 | 353033:353037 | NORMAL_TEXT | TABLE row=5 col=2]
+100
+
+[P04448 | 353038:353157 | NORMAL_TEXT | TABLE row=5 col=3]
+Type of action performed, such as Create, Update, Delete, Approve, Reject, Verify, Generate, Export, Login, or Logout.
+
+[P04449 | 353159:353170 | NORMAL_TEXT | TABLE row=6 col=0]
+table_name
+
+[P04450 | 353171:353179 | NORMAL_TEXT | TABLE row=6 col=1]
+VARCHAR
+
+[P04451 | 353180:353184 | NORMAL_TEXT | TABLE row=6 col=2]
+100
+
+[P04452 | 353185:353222 | NORMAL_TEXT | TABLE row=6 col=3]
+Name of the affected database table.
+
+[P04453 | 353224:353234 | NORMAL_TEXT | TABLE row=7 col=0]
+record_id
+
+[P04454 | 353235:353239 | NORMAL_TEXT | TABLE row=7 col=1]
+INT
+
+[P04455 | 353240:353243 | NORMAL_TEXT | TABLE row=7 col=2]
+11
+
+[P04456 | 353244:353301 | NORMAL_TEXT | TABLE row=7 col=3]
+Identifier of the affected record in the affected table.
+
+[P04457 | 353303:353314 | NORMAL_TEXT | TABLE row=8 col=0]
+field_name
+
+[P04458 | 353315:353323 | NORMAL_TEXT | TABLE row=8 col=1]
+VARCHAR
+
+[P04459 | 353324:353328 | NORMAL_TEXT | TABLE row=8 col=2]
+100
+
+[P04460 | 353329:353448 | NORMAL_TEXT | TABLE row=8 col=3]
+Specific field or attribute changed, if the action affects a single field. This may be left blank for general actions.
+
+[P04461 | 353450:353460 | NORMAL_TEXT | TABLE row=9 col=0]
+old_value
+
+[P04462 | 353461:353466 | NORMAL_TEXT | TABLE row=9 col=1]
+TEXT
+
+[P04463 | 353467:353469 | NORMAL_TEXT | TABLE row=9 col=2]
+ 
+
+[P04464 | 353470:353529 | NORMAL_TEXT | TABLE row=9 col=3]
+Previous value before the action or update, if applicable.
+
+[P04465 | 353531:353541 | NORMAL_TEXT | TABLE row=10 col=0]
+new_value
+
+[P04466 | 353542:353547 | NORMAL_TEXT | TABLE row=10 col=1]
+TEXT
+
+[P04467 | 353548:353550 | NORMAL_TEXT | TABLE row=10 col=2]
+ 
+
+[P04468 | 353551:353604 | NORMAL_TEXT | TABLE row=10 col=3]
+New value after the action or update, if applicable.
+
+[P04469 | 353606:353618 | NORMAL_TEXT | TABLE row=11 col=0]
+description
+
+[P04470 | 353619:353624 | NORMAL_TEXT | TABLE row=11 col=1]
+TEXT
+
+[P04471 | 353625:353627 | NORMAL_TEXT | TABLE row=11 col=2]
+ 
+
+[P04472 | 353628:353680 | NORMAL_TEXT | TABLE row=11 col=3]
+Human-readable description of the performed action.
+
+[P04473 | 353682:353693 | NORMAL_TEXT | TABLE row=12 col=0]
+ip_address
+
+[P04474 | 353694:353702 | NORMAL_TEXT | TABLE row=12 col=1]
+VARCHAR
+
+[P04475 | 353703:353707 | NORMAL_TEXT | TABLE row=12 col=2]
+100
+
+[P04476 | 353708:353745 | NORMAL_TEXT | TABLE row=12 col=3]
+IP address of the user, if captured.
+
+[P04477 | 353747:353758 | NORMAL_TEXT | TABLE row=13 col=0]
+created_at
+
+[P04478 | 353759:353769 | NORMAL_TEXT | TABLE row=13 col=1]
+TIMESTAMP
+
+[P04479 | 353770:353772 | NORMAL_TEXT | TABLE row=13 col=2]
+ 
+
+[P04480 | 353773:353814 | NORMAL_TEXT | TABLE row=13 col=3]
+Date and time the audit log was created.
+
+[P04481 | 353815:353817 | NORMAL_TEXT]
+ 
+
+[P04482 | 353817:354036 | NORMAL_TEXT]
+Table 62 shows the table in the database named "Audit_Logs," where system actions are stored for accountability, including the user who performed the action, affected table, affected record, description, and timestamp.
+
+[P04483 | 354036:354038 | NORMAL_TEXT]
+ 
+
+[P04484 | 354038:354047 | NORMAL_TEXT]
+Table 63
+
+[P04485 | 354047:354077 | NORMAL_TEXT]
+Data Dictionary - Backup Logs
+
+[P04486 | 354080:354104 | NORMAL_TEXT | TABLE row=0 col=0]
+Table Name: Backup_Logs
+
+[P04487 | 354105:354106 | NORMAL_TEXT | TABLE row=0 col=1]
+⟦EMPTY PARAGRAPH⟧
+
+[P04488 | 354107:354108 | NORMAL_TEXT | TABLE row=0 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04489 | 354109:354110 | NORMAL_TEXT | TABLE row=0 col=3]
+⟦EMPTY PARAGRAPH⟧
+
+[P04490 | 354112:354123 | NORMAL_TEXT | TABLE row=1 col=0]
+Attributes
+
+[P04491 | 354124:354134 | NORMAL_TEXT | TABLE row=1 col=1]
+Data Type
+
+[P04492 | 354135:354146 | NORMAL_TEXT | TABLE row=1 col=2]
+Field Size
+
+[P04493 | 354147:354159 | NORMAL_TEXT | TABLE row=1 col=3]
+Description
+
+[P04494 | 354161:354171 | NORMAL_TEXT | TABLE row=2 col=0]
+backup_id
+
+[P04495 | 354172:354176 | NORMAL_TEXT | TABLE row=2 col=1]
+INT
+
+[P04496 | 354177:354180 | NORMAL_TEXT | TABLE row=2 col=2]
+11
+
+[P04497 | 354181:354233 | NORMAL_TEXT | TABLE row=2 col=3]
+Primary key, unique identifier for each backup log.
+
+[P04498 | 354235:354252 | NORMAL_TEXT | TABLE row=3 col=0]
+backup_file_path
+
+[P04499 | 354253:354261 | NORMAL_TEXT | TABLE row=3 col=1]
+VARCHAR
+
+[P04500 | 354262:354266 | NORMAL_TEXT | TABLE row=3 col=2]
+255
+
+[P04501 | 354267:354317 | NORMAL_TEXT | TABLE row=3 col=3]
+File path or storage location of the backup file.
+
+[P04502 | 354319:354333 | NORMAL_TEXT | TABLE row=4 col=0]
+backup_status
+
+[P04503 | 354334:354339 | NORMAL_TEXT | TABLE row=4 col=1]
+ENUM
+
+[P04504 | 354340:354342 | NORMAL_TEXT | TABLE row=4 col=2]
+ 
+
+[P04505 | 354343:354406 | NORMAL_TEXT | TABLE row=4 col=3]
+Status of the backup process: Successful, Failed, In Progress.
+
+[P04506 | 354408:354416 | NORMAL_TEXT | TABLE row=5 col=0]
+remarks
+
+[P04507 | 354417:354422 | NORMAL_TEXT | TABLE row=5 col=1]
+TEXT
+
+[P04508 | 354423:354425 | NORMAL_TEXT | TABLE row=5 col=2]
+ 
+
+[P04509 | 354426:354471 | NORMAL_TEXT | TABLE row=5 col=3]
+Additional remarks about the backup process.
+
+[P04510 | 354473:354484 | NORMAL_TEXT | TABLE row=6 col=0]
+created_by
+
+[P04511 | 354485:354489 | NORMAL_TEXT | TABLE row=6 col=1]
+INT
+
+[P04512 | 354490:354493 | NORMAL_TEXT | TABLE row=6 col=2]
+11
+
+[P04513 | 354494:354587 | NORMAL_TEXT | TABLE row=6 col=3]
+Foreign key that identifies the admin or authorized user who created or recorded the backup.
+
+[P04514 | 354589:354600 | NORMAL_TEXT | TABLE row=7 col=0]
+created_at
+
+[P04515 | 354601:354611 | NORMAL_TEXT | TABLE row=7 col=1]
+TIMESTAMP
+
+[P04516 | 354612:354614 | NORMAL_TEXT | TABLE row=7 col=2]
+ 
+
+[P04517 | 354615:354657 | NORMAL_TEXT | TABLE row=7 col=3]
+Date and time the backup log was created.
+
+[P04518 | 354658:354660 | NORMAL_TEXT]
+ 
+
+[P04519 | 354660:354895 | NORMAL_TEXT]
+Table 63 shows the table in the database named "Backup_Logs," where database backup activities are stored, including backup file location, backup status, remarks, admin or authorized user who recorded the backup, and date of creation.
+
+[P04520 | 354895:354896 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04521 | 354896:354897 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04522 | 354897:354936 | NORMAL_TEXT]
+Operational and Decision-Support Logic
+
+[P04523 | 354936:356035 | NORMAL_TEXT]
+This section presents the operational rules, computational procedures, and decision-support logic used by the proposed system. These mechanisms define how the system transforms booking, vehicle, maintenance, forecasting, and contextual data into analytical results and recommendations. The proposed system uses deterministic business rules, statistical computation, and rule-based decision support appropriate to the operational requirements of a small-scale multi-branch car rental business. Rule-based decision-support approaches are suitable for operational environments where decision criteria must remain explicit, interpretable, and auditable rather than dependent on complex or opaque models (Haber et al., 2026; Mavrin & Makarova, 2026; Meira et al., 2022; Mohamad et al., 2026). The generated outputs are intended to support decision-making and do not replace the judgment of the Owner/Admin. Final decisions regarding booking approval, payment verification, vehicle assignment, vehicle transfer, branch allocation, and other critical operational actions remain under authorized personnel.
+
+[P04524 | 356035:356084 | NORMAL_TEXT]
+A. Demand Definition and Weekly Data Aggregation
+
+[P04525 | 356084:356534 | NORMAL_TEXT]
+Historical rental and booking information can be used to identify demand patterns and support short-term planning and vehicle-allocation decisions in transportation and rental-related operations (Suganya et al., 2026; Zhao et al., 2021; Martin et al., 2021; Huang et al., 2021). In this study, vehicle demand shall be represented by the number of qualifying rental bookings recorded for a specific branch and vehicle category during a calendar week.
+
+[P04526 | 356534:356880 | NORMAL_TEXT]
+A booking shall contribute to historical demand when it has been accepted or confirmed as a valid rental request for the corresponding branch, vehicle category, and rental schedule. Rejected requests, duplicate requests, and customer-cancelled requests that did not proceed as valid rental transactions shall not be included in the demand count.
+
+[P04527 | 356880:357499 | NORMAL_TEXT]
+Weekly aggregation is adopted because the forecasting component is intended to support short-term operational planning rather than long-term strategic forecasting. Each weekly demand value shall count qualifying confirmed bookings whose scheduled rental start falls within that week, grouped by booking branch and requested vehicle category. Weeks shall run from Monday 00:00 to the following Monday 00:00 in Asia/Manila time. A booking is counted once; its duration does not multiply the demand count. This measure represents observed confirmed booking starts, not unmet demand, concurrent occupancy, or vehicle-days.
+
+[P04528 | 357499:357581 | NORMAL_TEXT]
+Weekly demand for branch [EQUATION], vehicle category [EQUATION], and week [EQUATION] is expressed as:
+
+[P04529 | 357581:357670 | NORMAL_TEXT]
+[EQUATION]
+
+[P04530 | 357670:357887 | NORMAL_TEXT]
+Demand values shall be grouped separately according to branch and vehicle category so that differences in customer demand across locations and vehicle types can be reflected in the forecasting and allocation process.
+
+[P04531 | 357887:357933 | NORMAL_TEXT]
+B. Weighted Moving Average Demand Forecasting
+
+[P04532 | 357933:358503 | NORMAL_TEXT]
+The proposed system shall use the Weighted Moving Average (WMA) method to generate short-term weekly demand forecasts for each branch and vehicle category. WMA assigns different weights to recent observations and gives greater influence to more recent demand information. The reviewed literature supports WMA as a practical, interpretable, and computationally lightweight method for short-term forecasting, particularly where historical data and computational resources are limited (Rahayu et al., 2022; Sariati et al., 2026; Paramitha & Saifuddin, 2023; Khalid, 2024).
+
+[P04533 | 358503:358758 | NORMAL_TEXT]
+Based on this principle, the study adopts a three-period WMA using fixed descending weights of 0.50, 0.30, and 0.20. The system shall maintain a rolling forecast horizon covering up to three succeeding weekly periods for each branch and vehicle category.
+
+[P04534 | 358758:358887 | NORMAL_TEXT]
+The first forecasted week shall be calculated entirely from the three most recently completed actual weekly demand observations:
+
+[P04535 | 358887:358934 | NORMAL_TEXT]
+[EQUATION]
+
+[P04536 | 358934:358941 | NORMAL_TEXT]
+where:
+
+[P04537 | 358941:359003 | NORMAL_TEXT]
+[EQUATION] = forecasted demand for the first succeeding week;
+
+[P04538 | 359003:359069 | NORMAL_TEXT]
+ [EQUATION] = actual demand during the most recently completed week;
+
+[P04539 | 359069:359135 | NORMAL_TEXT]
+[EQUATION] = actual demand during the second-most recent week; and
+
+[P04540 | 359135:359196 | NORMAL_TEXT]
+[EQUATION] = actual demand during the third-most recent week.
+
+[P04541 | 359196:359364 | NORMAL_TEXT]
+The second forecasted week shall be generated recursively by incorporating the first forecasted value together with the two most recent applicable actual observations:
+
+[P04542 | 359364:359411 | NORMAL_TEXT]
+[EQUATION]
+
+[P04543 | 359411:359541 | NORMAL_TEXT]
+The third forecasted week shall likewise be generated recursively using the most recently available forecasted and actual values:
+
+[P04544 | 359541:359588 | NORMAL_TEXT]
+[EQUATION]
+
+[P04545 | 359588:360224 | NORMAL_TEXT]
+At least three complete, consecutive historical weekly observations with trustworthy recording coverage shall be required before the system generates the initial three-week forecast horizon. A covered week with no qualifying bookings is a valid zero; an unrecorded or partially covered week is missing data and shall not be treated as zero. The incomplete current week shall not be included in the historical input. If fewer than three complete observations are available for a particular branch and vehicle category, the system shall indicate insufficient historical data rather than generate a forecast using incomplete observations.
+
+[P04546 | 360224:360604 | NORMAL_TEXT]
+Each forecast value may contain a decimal because it represents an estimated demand level. Decimal values shall be retained for analytical reporting, historical comparison, and forecast visualization. When a forecasted weekly value is used to determine the corresponding vehicle requirement for branch-allocation planning, it shall be rounded upward to the nearest whole vehicle:
+
+[P04547 | 360604:360650 | NORMAL_TEXT]
+[EQUATION]
+
+[P04548 | 360650:361590 | NORMAL_TEXT]
+At each weekly rollover, the system shall generate the three-week horizon from the three preceding completed weeks. Week +1 denotes the week immediately following the latest completed input week; Weeks +2 and +3 follow it. Each run shall retain its generation time, input weeks, input values, target weeks, and forecast values. A run generated after a target week has begun shall be identified as an in-period planning update and shall not be represented as a forecast available before that week began. Consequently, the dashboard may display historical Actual Demand and Forecasted Demand together and extend the most recent Forecasted Demand series through the next three weekly periods. The first-week forecast is based entirely on observed demand, while the second- and third-week forecasts progressively incorporate forecasted values and shall therefore be treated as longer-horizon planning projections rather than guaranteed demand.
+
+[P04549 | 361590:361736 | NORMAL_TEXT]
+All WMA outputs shall remain advisory and shall not automatically trigger vehicle transfer, branch reassignment, or any other operational action.
+
+[P04550 | 361736:361796 | NORMAL_TEXT]
+C. Forecast Evaluation Using Mean Absolute Percentage Error
+
+[P04551 | 361796:362144 | NORMAL_TEXT]
+Mean Absolute Percentage Error (MAPE) shall be used to evaluate the difference between forecasted demand and the corresponding actual demand after the forecast period. MAPE expresses the average absolute forecasting error as a percentage of actual observed demand and is commonly used in the evaluation of forecasting models (Rahayu et al., 2022).
+
+[P04552 | 362144:362171 | NORMAL_TEXT]
+MAPE shall be computed as:
+
+[P04553 | 362171:362218 | NORMAL_TEXT]
+[EQUATION]
+
+[P04554 | 362218:362225 | NORMAL_TEXT]
+where:
+
+[P04555 | 362225:362278 | NORMAL_TEXT]
+[EQUATION] = actual demand during the evaluated period;
+
+[P04556 | 362278:362341 | NORMAL_TEXT]
+[EQUATION] = forecasted demand for the corresponding period; and
+
+[P04557 | 362341:362414 | NORMAL_TEXT]
+[EQUATION] = number of valid forecast observations included in the calculation.
+
+[P04558 | 362414:362681 | NORMAL_TEXT]
+	MAPE shall only be calculated for observations where actual demand is greater than zero because percentage error is undefined when the actual value is zero. Periods with zero actual demand shall therefore be identified separately and excluded from the MAPE divisor.
+
+[P04559 | 362681:363012 | NORMAL_TEXT]
+The resulting MAPE shall be reported as the observed average percentage forecasting error. Lower MAPE values indicate smaller forecasting errors. The study shall not automatically assign qualitative classifications such as “Highly Accurate,” “Good,” or “Poor” unless a separately verified interpretation basis is formally adopted.
+
+[P04560 | 363012:363354 | NORMAL_TEXT]
+All WMA and MAPE examples and results reported in the current study are derived from the labeled synthetic dataset and shall be presented as illustrative or functional-test computations. They shall not be presented as evidence of actual client demand, empirical predictive accuracy, seasonal validity, or long-term forecasting effectiveness.
+
+[P04561 | 363354:364390 | NORMAL_TEXT]
+For consistency in forecast-error evaluation, the primary MAPE calculation shall use the original Week +1 forecast for the matching branch, vehicle category, and target week. The forecast snapshot shall be frozen at the weekly boundary before the target week's realized synthetic observations are incorporated, and later in-period runs shall be excluded. These timing rules allow the system's computation to be checked using a consistent forecast horizon. Because the current study has no genuine client history, this procedure constitutes synthetic functional backtesting and shall not be described as prospective real-world performance or an empirical historical backtest. If sufficient verified client or post-implementation history becomes available later, it may be evaluated separately using only the three completed weeks preceding each target. The second- and third-week forecasts may be retained for planning and visualization but shall not be combined with Week +1 errors unless performance is reported separately by horizon.
+
+[P04562 | 364390:364422 | NORMAL_TEXT]
+D. Vehicle Utilization Analysis
+
+[P04563 | 364422:364865 | NORMAL_TEXT]
+Vehicle utilization monitoring supports fleet planning by helping administrators identify frequently used, underutilized, and idle fleet units and by providing information useful for fleet deployment decisions. Studies in shared mobility and fleet management likewise show that historical vehicle usage and utilization indicators can support resource planning and operational decision-making (Abouelela et al., 2023; Eliyan & Kerbache, 2024).
+
+[P04564 | 364865:365066 | NORMAL_TEXT]
+In the proposed system, vehicle utilization shall measure the proportion of eligible operational days within a selected reporting period during which a vehicle was actually used for rental operations.
+
+[P04565 | 365066:365102 | NORMAL_TEXT]
+Vehicle utilization is computed as:
+
+[P04566 | 365102:365171 | NORMAL_TEXT]
+[EQUATION]
+
+[P04567 | 365171:365443 | NORMAL_TEXT]
+Rental Days refer to the number of calendar days within the reporting period during which the vehicle was associated with an active rental transaction. Eligible Operational Days refer to days during which the vehicle could reasonably have been used for rental operations.
+
+[P04568 | 365443:365749 | NORMAL_TEXT]
+Days when the vehicle was inactive or unavailable because of maintenance shall be excluded from Eligible Operational Days because the vehicle could not have been offered for rental during those periods. A reservation that does not proceed into an actual rental shall not be counted as vehicle utilization.
+
+[P04569 | 365749:366052 | NORMAL_TEXT]
+The administrative dashboard may use the most recent 30-day period as the default monitoring interval, while reports may allow a selected date range. The resulting utilization percentage shall serve as an analytical indicator and shall not independently determine vehicle transfer or branch allocation.
+
+[P04570 | 366052:366078 | NORMAL_TEXT]
+E. Idle Vehicle Detection
+
+[P04571 | 366078:366515 | NORMAL_TEXT]
+Idle-vehicle monitoring is relevant to fleet management because prolonged underutilization may indicate that a vehicle is positioned in a location where available supply exceeds current operational use. Research on fleet relocation and vehicle rebalancing shows that demand, availability, and idle-vehicle information can support improved fleet-distribution decisions (Eliyan & Kerbache, 2024; Zhu et al., 2024; Skrzynski et al., 2026).
+
+[P04572 | 366515:366672 | NORMAL_TEXT]
+In this study, idle vehicle detection shall identify vehicles that remain operationally available but have recorded no rental activity for a defined period.
+
+[P04573 | 366672:366883 | NORMAL_TEXT]
+A vehicle shall only be eligible for idle classification when it is active, rental-ready, not currently rented, not unavailable because of maintenance, and not otherwise prevented from being offered for rental.
+
+[P04574 | 366883:366919 | NORMAL_TEXT]
+Idle duration shall be computed as:
+
+[P04575 | 366919:366964 | NORMAL_TEXT]
+[EQUATION]
+
+[P04576 | 366964:367102 | NORMAL_TEXT]
+For a vehicle with no previous rental record, the date when the vehicle became operationally available may be used as the reference date.
+
+[P04577 | 367102:367267 | NORMAL_TEXT]
+For purposes of the proposed system, an eligible vehicle shall be classified as idle when it has recorded no rental activity for at least fourteen consecutive days:
+
+[P04578 | 367267:367316 | NORMAL_TEXT]
+[EQUATION]
+
+[P04579 | 367316:367757 | NORMAL_TEXT]
+The fourteen-day threshold is adopted by the study as an operational monitoring rule representing two consecutive weekly periods. It is intended to distinguish short temporary inactivity from more meaningful underutilization. Idle classification shall serve only as an administrative indicator. It shall not automatically cause vehicle transfer, but idle vehicles may be prioritized for review when another branch has a forecasted shortage.
+
+[P04580 | 367757:367783 | NORMAL_TEXT]
+F. Branch Demand Analysis
+
+[P04581 | 367783:368200 | NORMAL_TEXT]
+Multi-location fleet operations may experience uneven demand and vehicle imbalance when one location receives greater rental activity while another retains unused or underutilized vehicles (Boysen et al., 2024; Eliyan & Kerbache, 2024; Brandizzi et al., 2022). To provide descriptive branch-level analytics, the proposed system may calculate the proportion of qualifying booking activity associated with each branch.
+
+[P04582 | 368200:368235 | NORMAL_TEXT]
+Branch share shall be computed as:
+
+[P04583 | 368235:368291 | NORMAL_TEXT]
+[EQUATION]
+
+[P04584 | 368291:368704 | NORMAL_TEXT]
+This metric provides a descriptive comparison of booking activity between branches. Branch share shall be used for reporting and dashboard presentation and shall not independently determine whether vehicles should be transferred between branches. Branch-allocation decisions shall instead use the forecasted requirement, projected supply, shortage, and surplus calculations defined in the succeeding subsections.
+
+[P04585 | 368704:368743 | NORMAL_TEXT]
+G. Maintenance Readiness Determination
+
+[P04586 | 368743:369360 | NORMAL_TEXT]
+Maintenance status, mileage, vehicle condition, preventive maintenance schedules, and historical service information are important fleet-management factors because a vehicle may appear available in the booking schedule while still being unsuitable for rental operation. Studies on vehicle maintenance and fleet management support the use of mileage, maintenance records, service schedules, and vehicle condition as factors in determining fleet readiness and preventing operational use of vehicles requiring maintenance (Arena et al., 2022; Chen et al., 2024; Crespo del Castillo & Parlikad, 2024; Chen et al., 2025).
+
+[P04587 | 369360:369695 | NORMAL_TEXT]
+In the proposed system, maintenance information shall be treated as an operational eligibility condition rather than as an arbitrary numerical score. Before a vehicle is included in a customer recommendation, vehicle assignment, or branch-allocation recommendation, the system shall determine whether the vehicle is maintenance-ready.
+
+[P04588 | 369695:370071 | NORMAL_TEXT]
+A vehicle shall be treated as not maintenance-ready when at least one of the following conditions exists: an active maintenance activity remains in progress; required preventive maintenance is due or overdue; the recorded vehicle condition indicates that the vehicle is unsafe or unsuitable for rental; or an unresolved maintenance or repair concern prevents operational use.
+
+[P04589 | 370071:370199 | NORMAL_TEXT]
+When preventive maintenance is monitored using date and mileage criteria, a vehicle may be considered due for maintenance when:
+
+[P04590 | 370199:370239 | NORMAL_TEXT]
+[EQUATION]
+
+[P04591 | 370239:370242 | NORMAL_TEXT]
+or
+
+[P04592 | 370242:370274 | NORMAL_TEXT]
+[EQUATION]
+
+[P04593 | 370274:370349 | NORMAL_TEXT]
+depending on the applicable maintenance criteria recorded for the vehicle.
+
+[P04594 | 370349:370593 | NORMAL_TEXT]
+A vehicle classified as not maintenance-ready shall be excluded from Customer-Side Vehicle Recommendation results and from candidate vehicles considered for branch transfer until the relevant maintenance concern has been completed or resolved.
+
+[P04595 | 370593:370671 | NORMAL_TEXT]
+H. Travel Distance, Reference Fuel Efficiency, and Estimated Fuel Consumption
+
+[P04596 | 370671:371011 | NORMAL_TEXT]
+Fuel efficiency and estimated fuel consumption may serve as supporting factors in transportation and vehicle-selection decisions because distance and vehicle fuel characteristics influence projected trip fuel requirements and cost-related considerations (Vyas et al., 2022; Moawad et al., 2024; Şimşek et al., 2025; Alrashdi et al., 2025).
+
+[P04597 | 371011:371348 | NORMAL_TEXT]
+In this study, fuel efficiency shall be treated as estimated or reference vehicle information and shall be expressed in kilometers per liter (km/L). The reference value may be based on manufacturer specifications or owner-provided vehicle information. The system does not claim to continuously measure actual real-world fuel efficiency.
+
+[P04598 | 371348:371446 | NORMAL_TEXT]
+When travel-distance information is available, estimated fuel consumption shall be calculated as:
+
+[P04599 | 371446:371528 | NORMAL_TEXT]
+[EQUATION]
+
+[P04600 | 371528:371689 | NORMAL_TEXT]
+For example, if an estimated trip distance is 250 kilometers and the vehicle's recorded reference fuel efficiency is 10 km/L, the estimated fuel consumption is:
+
+[P04601 | 371689:371712 | NORMAL_TEXT]
+[EQUATION]
+
+[P04602 | 371712:372536 | NORMAL_TEXT]
+The calculated value represents only an operational estimate. The displayed distance shall identify whether it covers a one-way or explicitly defined return journey. Fuel estimates require a usable distance and a positive reference km/L value; missing inputs shall produce an unavailable estimate rather than zero fuel consumption. The estimate is expressed in liters and shall not be described as a monetary cost unless an explicit fuel-price input and calculation are also provided. Actual fuel consumption may vary because of traffic, driver behavior, passenger or cargo load, terrain, weather, road condition, vehicle condition, and other factors. Fuel-related information shall therefore serve only as supporting decision information and shall not independently determine final vehicle assignment or branch allocation.
+
+[P04603 | 372536:372582 | NORMAL_TEXT]
+I. Customer-Side Vehicle Recommendation Logic
+
+[P04604 | 372582:372927 | NORMAL_TEXT]
+Recommendation systems can support user decision-making by matching available options with user preferences or requirements, while rule-based approaches are appropriate when the recommendation criteria must remain simple, transparent, and interpretable (Sabet et al., 2022; Boteju & Munasinghe, 2020; Prabowol et al., 2019; Haber et al., 2026).
+
+[P04605 | 372927:373170 | NORMAL_TEXT]
+In the proposed system, the Customer-Side Vehicle Recommendation shall use rule-based eligibility filtering followed by deterministic ranking. It shall not use an unsupported numerical match percentage or arbitrary 0–100 recommendation score.
+
+[P04606 | 373170:373261 | NORMAL_TEXT]
+The recommendation process shall consist of two stages: eligibility filtering and ranking.
+
+[P04607 | 373261:373469 | NORMAL_TEXT]
+During eligibility filtering, the system shall exclude vehicles that are unavailable for the requested rental period, inactive, not maintenance-ready, or affected by a conflicting booking or rental schedule.
+
+[P04608 | 373469:373525 | NORMAL_TEXT]
+Passenger capacity shall operate as a hard requirement:
+
+[P04609 | 373525:373566 | NORMAL_TEXT]
+[EQUATION]
+
+[P04610 | 373566:373651 | NORMAL_TEXT]
+Vehicles with passenger capacity below the customer's requirement shall be excluded.
+
+[P04611 | 373651:374477 | NORMAL_TEXT]
+     The customer’s stated total rental budget is compared with a provisional daily-rate reference estimate for the requested duration. RentalDuration in the formula below means the number of started 24-hour periods, rounded upward with a minimum of one. This convention is used only for recommendation filtering; it does not encode 12-hour offers, promotional or long-term packages, overtime, delivery charges, deposits, or the final amount due. The budget is a screening input for this feature; customers shall still obtain final rate confirmation from the participating car rental business. Where commercial-policy boundaries remain unverified, the prototype uses a researcher-designed policy baseline for controlled testing; it does not claim current rate, refund, or penalty terms. The reference estimate is computed as:
+
+[P04612 | 374477:374534 | NORMAL_TEXT]
+[EQUATION]
+
+[P04613 | 374534:374797 | NORMAL_TEXT]
+	A vehicle whose estimated base rental cost exceeds the customer's stated budget shall be excluded. Charges that cannot yet be determined during the recommendation stage, such as penalties or other conditional charges, shall not be included in the base estimate.
+
+[P04614 | 374797:375517 | NORMAL_TEXT]
+     After eligibility filtering, the remaining vehicles shall be ranked using predefined preference rules. A vehicle matching the customer's preferred vehicle category shall be ranked ahead of an eligible non-matching category. Where several vehicles satisfy the same preference, the vehicle with the closest adequate passenger capacity shall be preferred. Large-luggage capacity shall also satisfy the stated large-bag count. Among otherwise equally ranked vehicles, the closest adequate luggage capacity shall be preferred, followed by the lower reference rental estimate, vehicle name, and a stable vehicle identifier. Fuel efficiency, fuel estimates, and destination context shall not affect this customer ranking.
+
+[P04615 | 375517:375823 | NORMAL_TEXT]
+     An optional destination or travel area shall be retained for administrative review of the booking. Any route, weather, road, or fuel context obtained for that review belongs to the administrative decision-support process and shall not be presented as a factor used in customer recommendation ranking.
+
+[P04616 | 375823:376112 | NORMAL_TEXT]
+     Instead of an unsupported match score, the system shall provide reasons for recommending a vehicle, such as matching the preferred category, satisfying the passenger requirement, remaining within the stated budget, being available for the selected dates, and being maintenance-ready.
+
+[P04617 | 376112:376318 | NORMAL_TEXT]
+     Customer-Side Vehicle Recommendation results shall serve only as vehicle-selection guidance before booking submission. They shall not constitute booking approval or guarantee final vehicle assignment.
+
+[P04618 | 376318:376389 | NORMAL_TEXT]
+J. Branch Vehicle Requirement, Projected Supply, Shortage, and Surplus
+
+[P04619 | 376389:376898 | NORMAL_TEXT]
+     Fleet-allocation studies emphasize that vehicle-distribution decisions are strengthened when expected demand and available supply are assessed together rather than independently (Favier et al., 2024; Eliyan & Kerbache, 2024; Skrzynski et al., 2026). In the proposed system, the branch-allocation process shall therefore compare the forecasted vehicle requirement with projected operational supply for the same branch, vehicle category, and evaluated weekly period within the three-week forecast horizon.
+
+[P04620 | 376898:377401 | NORMAL_TEXT]
+For this study, the rounded-up weekly booking-start forecast shall be used as a conservative planning proxy for vehicle requirements. It is not a direct estimate of simultaneous occupancy: one vehicle may serve several non-overlapping bookings, while a multi-day rental may occupy a vehicle across weeks. Shortage and surplus outputs shall therefore be labeled as planning indicators and checked against actual schedules before an operational decision. The planning requirement shall be represented as:
+
+[P04621 | 377401:377431 | NORMAL_TEXT]
+[EQUATION]
+
+[P04622 | 377431:377439 | NORMAL_TEXT]
+	where:
+
+[P04623 | 377439:377547 | NORMAL_TEXT]
+[EQUATION] = required number of vehicles for branch [EQUATION], vehicle category [EQUATION], and forecast horizon [EQUATION];
+
+[P04624 | 377547:377649 | NORMAL_TEXT]
+[EQUATION] = forecasted demand for branch [EQUATION], vehicle category [EQUATION], and forecast horizon [EQUATION]; and
+
+[P04625 | 377649:377724 | NORMAL_TEXT]
+[EQUATION], representing Week +1, Week +2, and Week +3, respectively.
+
+[P04626 | 377724:378006 | NORMAL_TEXT]
+Projected available supply, represented as [EQUATION] shall include vehicles assigned to the evaluated branch and vehicle category that are active, maintenance-ready, and not committed to conflicting reservations or rentals during the corresponding forecasted weekly period [EQUATION].
+
+[P04627 | 378006:378046 | NORMAL_TEXT]
+A branch shortage shall be computed as:
+
+[P04628 | 378046:378103 | NORMAL_TEXT]
+[EQUATION]
+
+[P04629 | 378103:378142 | NORMAL_TEXT]
+A branch surplus shall be computed as:
+
+[P04630 | 378142:378198 | NORMAL_TEXT]
+[EQUATION]
+
+[P04631 | 378198:378473 | NORMAL_TEXT]
+A shortage therefore indicates that projected operational supply is below the forecasted requirement, while a surplus indicates that supply exceeds the forecasted requirement. When supply equals the forecasted requirement, neither a shortage nor a surplus shall be recorded.
+
+[P04632 | 378473:378520 | NORMAL_TEXT]
+K. Rule-Based Branch Allocation Recommendation
+
+[P04633 | 378520:378969 | NORMAL_TEXT]
+Rule-based decision-support systems translate operational knowledge and constraints into explicit decision conditions, allowing recommendations to remain traceable and understandable to the decision-maker (Haber et al., 2026; Mavrin & Makarova, 2026; Meira et al., 2022; Mohamad et al., 2026). This approach is appropriate for the proposed system because branch-allocation outputs are intended to assist rather than replace administrative judgment.
+
+[P04634 | 378969:379237 | NORMAL_TEXT]
+The Branch Allocation Recommendation shall therefore use explicit operational rules instead of an arbitrary urgency or confidence score. Its purpose is to determine whether an expected shortage at one branch may be supported by an available surplus at another branch.
+
+[P04635 | 379237:379449 | NORMAL_TEXT]
+A potential branch-transfer recommendation may be produced when the destination branch has a forecasted shortage for a vehicle category and another branch has a forecasted surplus for the corresponding category.
+
+[P04636 | 379449:379711 | NORMAL_TEXT]
+The maximum recommended transfer quantity shall be limited by the destination shortage, the source surplus after reserving its own forecast-based planning requirement, and the number of revalidated eligible candidate vehicles. The shortage-and-surplus bound is:
+
+[P04637 | 379711:379814 | NORMAL_TEXT]
+[EQUATION]
+
+[P04638 | 379814:380290 | NORMAL_TEXT]
+For example, if the destination has a shortage of two SUVs and the source has a surplus of three SUVs after reserving its own planning requirement, up to two SUVs may be recommended if at least two candidates pass all eligibility checks. If only one candidate qualifies, the quantity is limited to one. Remaining shortage and surplus balances shall be updated within a recommendation batch, and a candidate shall not be counted in more than one conflicting proposed movement.
+
+[P04639 | 380290:380778 | NORMAL_TEXT]
+Candidate vehicles from the source branch shall be active, operationally available, maintenance-ready, and free of conflicting booking or rental commitments for the period in which transfer is being considered. Eligible candidates shall be ordered by longest known idle duration, with unknown idle duration placed after known values and a stable vehicle identifier used to resolve remaining ties. Unknown idle duration shall not be treated as zero or as evidence of prolonged inactivity.
+
+[P04640 | 380778:381070 | NORMAL_TEXT]
+The resulting recommendation shall identify the source branch, destination branch, vehicle category, forecast requirement, projected supply, shortage, surplus, recommended transfer quantity, applicable candidate vehicle or vehicles, and the operational reasons supporting the recommendation.
+
+[P04641 | 381070:381653 | NORMAL_TEXT]
+The system shall not automatically change a vehicle's branch assignment. The Owner/Admin shall review the proposed quantity, eligible candidates, supporting reasons, and available contextual information before approving, rejecting, or reducing the proposed quantity. The system shall retain the recommendation snapshot, review outcome, reviewer, timestamp, and decision remarks. Approval records an advisory decision; it does not execute a transfer or update a vehicle’s branch. Eligibility and scheduling conflicts shall be rechecked before any subsequent operational reassignment.
+
+[P04642 | 381653:381693 | NORMAL_TEXT]
+L. Context-Aware Operational Assessment
+
+[P04643 | 381693:382497 | NORMAL_TEXT]
+Context-aware transportation research shows that road condition, route feasibility, weather, travel distance, and related environmental or operational information can provide useful supporting information for transport decisions (Liu et al., 2022; Dubey et al., 2025; Gabbar et al., 2023). Weather-aware transportation studies also demonstrate that precipitation, visibility, and adverse weather conditions may affect route suitability and operational decision-making (Tobin et al., 2024; Hussein et al., 2021; Čelar et al., 2024; Pradeepraja et al., 2025). These contextual variables can be integrated through external APIs or other supplementary data sources where reliable and feasible data are available (Penumala & Naganaboina, 2025; Sandhip et al., 2025; Joshna et al., 2026; Vdovic et al., 2021).
+
+[P04644 | 382497:382748 | NORMAL_TEXT]
+In the proposed system, contextual information shall serve as supporting information after the system has evaluated its primary internal operational data, including forecasted demand, projected supply, vehicle availability, and maintenance readiness.
+
+[P04645 | 382748:383378 | NORMAL_TEXT]
+Applicable contextual information may include weather, incident-based road information, route availability and accessibility, travel distance, reference fuel efficiency, and estimated fuel consumption. For allocation review, the route shall connect the source and destination branches; for booking assignment, it shall use the relevant branch and recorded destination. The review shall identify the location or route assessed, retrieval or recording time, data source, and applicable time coverage. Current conditions shall not be presented as a reliable forecast for a future transfer date beyond the source’s supported horizon.
+
+[P04646 | 383378:383423 | NORMAL_TEXT]
+External API Selection and Fallback Strategy
+
+[P04647 | 383423:384119 | NORMAL_TEXT]
+The proposed system will use selected external Application Programming Interfaces (APIs) to obtain applicable weather, location, routing, and incident-based road information for administrative context-aware decision support. The API providers were selected based on the contextual information required by the proposed system, documented service capabilities, geographic coverage applicable to the Philippines, implementation feasibility, and the availability of a comparable secondary provider that can serve as a fallback. External API information will remain supporting information and will not independently determine vehicle assignment, branch allocation, or other final operational actions.
+
+[P04648 | 384119:384822 | NORMAL_TEXT]
+To reduce dependence on a single external service, the proposed system adopts a primary-and-fallback provider strategy. A designated primary provider will normally be used for each external contextual category. The corresponding fallback provider will only be requested when the primary provider is unavailable, times out, exceeds an applicable service limitation, lacks applicable coverage, or returns unusable or insufficiently current information. A valid adverse result returned by the primary provider, such as a road closure or adverse weather condition, shall not be treated as provider failure and shall not cause the system to request the fallback provider merely to obtain a different result.
+
+[P04649 | 384822:384830 | NORMAL_TEXT]
+Table X
+
+[P04650 | 384830:384900 | NORMAL_TEXT]
+Selected Primary and Fallback APIs for Context-Aware Decision Support
+
+[P04651 | 384903:384926 | NORMAL_TEXT | TABLE row=0 col=0]
+Contextual Information
+
+[P04652 | 384927:384944 | NORMAL_TEXT | TABLE row=0 col=1]
+Primary Provider
+
+[P04653 | 384945:384963 | NORMAL_TEXT | TABLE row=0 col=2]
+Fallback Provider
+
+[P04654 | 384964:384984 | NORMAL_TEXT | TABLE row=0 col=3]
+Intended System Use
+
+[P04655 | 384986:385004 | NORMAL_TEXT | TABLE row=1 col=0]
+Weather Condition
+
+[P04656 | 385005:385029 | NORMAL_TEXT | TABLE row=1 col=1]
+Open-Meteo Forecast API
+
+[P04657 | 385030:385059 | NORMAL_TEXT | TABLE row=1 col=2]
+OpenWeather One Call API 3.0
+
+[P04658 | 385060:385188 | NORMAL_TEXT | TABLE row=1 col=3]
+Obtain applicable current or forecast weather information that will be normalized into Normal, Caution, Severe, or Unavailable.
+
+[P04659 | 385190:385225 | NORMAL_TEXT | TABLE row=2 col=0]
+Destination / Location Coordinates
+
+[P04660 | 385226:385249 | NORMAL_TEXT | TABLE row=2 col=1]
+Geoapify Geocoding API
+
+[P04661 | 385250:385275 | NORMAL_TEXT | TABLE row=2 col=2]
+LocationIQ Geocoding API
+
+[P04662 | 385276:385400 | NORMAL_TEXT | TABLE row=2 col=3]
+Convert textual destinations, addresses, or travel areas into geographic coordinates for routing and contextual assessment.
+
+[P04663 | 385402:385444 | NORMAL_TEXT | TABLE row=3 col=0]
+Travel Distance and Estimated Travel Time
+
+[P04664 | 385445:385470 | NORMAL_TEXT | TABLE row=3 col=1]
+TomTom Orbis Routing API
+
+[P04665 | 385471:385491 | NORMAL_TEXT | TABLE row=3 col=2]
+HERE Routing API v8
+
+[P04666 | 385492:385583 | NORMAL_TEXT | TABLE row=3 col=3]
+Calculate an applicable driving route and obtain route distance and estimated travel time.
+
+[P04667 | 385585:385603 | NORMAL_TEXT | TABLE row=4 col=0]
+Route Feasibility
+
+[P04668 | 385604:385671 | NORMAL_TEXT | TABLE row=4 col=1]
+TomTom Orbis Routing API with TomTom Traffic Incidents information
+
+[P04669 | 385672:385717 | NORMAL_TEXT | TABLE row=4 col=2]
+HERE Routing API v8 with HERE Traffic API v7
+
+[P04670 | 385718:385871 | NORMAL_TEXT | TABLE row=4 col=3]
+Provide routing and incident information from which the system derives whether a route is Feasible, Feasible with Caution, Not Feasible, or Unavailable.
+
+[P04671 | 385873:385888 | NORMAL_TEXT | TABLE row=5 col=0]
+Road Condition
+
+[P04672 | 385889:385918 | NORMAL_TEXT | TABLE row=5 col=1]
+TomTom Traffic Incidents API
+
+[P04673 | 385919:385939 | NORMAL_TEXT | TABLE row=5 col=2]
+HERE Traffic API v7
+
+[P04674 | 385940:386116 | NORMAL_TEXT | TABLE row=5 col=3]
+Obtain incident-based operational road information such as road closures, lane closures, road works, flooding, dangerous conditions, accidents, and other relevant disruptions.
+
+[P04675 | 386118:386138 | NORMAL_TEXT | TABLE row=6 col=0]
+Route Accessibility
+
+[P04676 | 386139:386206 | NORMAL_TEXT | TABLE row=6 col=1]
+TomTom Orbis Routing API with TomTom Traffic Incidents information
+
+[P04677 | 386207:386252 | NORMAL_TEXT | TABLE row=6 col=2]
+HERE Routing API v8 with HERE Traffic API v7
+
+[P04678 | 386253:386421 | NORMAL_TEXT | TABLE row=6 col=3]
+Provide routing, restriction, and incident information from which the system derives whether an applicable route is Accessible, Limited, Closed/Restricted, or Unknown.
+
+[P04679 | 386423:386449 | NORMAL_TEXT | TABLE row=7 col=0]
+Reference Fuel Efficiency
+
+[P04680 | 386450:386474 | NORMAL_TEXT | TABLE row=7 col=1]
+Internal Reference data
+
+[P04681 | 386475:386493 | NORMAL_TEXT | TABLE row=7 col=2]
+Not API-dependent
+
+[P04682 | 386494:386642 | NORMAL_TEXT | TABLE row=7 col=3]
+Use a vehicle-specific reference value expressed in kilometers per liter (km/L) based on manufacturer specifications or owner-provided information.
+
+[P04683 | 386644:386671 | NORMAL_TEXT | TABLE row=8 col=0]
+Estimated Fuel Consumption
+
+[P04684 | 386672:386694 | NORMAL_TEXT | TABLE row=8 col=1]
+Internally calculated
+
+[P04685 | 386695:386713 | NORMAL_TEXT | TABLE row=8 col=2]
+Not API-dependent
+
+[P04686 | 386714:386843 | NORMAL_TEXT | TABLE row=8 col=3]
+Calculate estimated fuel consumption using applicable route distance and the vehicle's recorded reference fuel-efficiency value.
+
+[P04687 | 386844:386845 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04688 | 386845:387689 | NORMAL_TEXT]
+Open-Meteo is selected as the primary weather-data provider. Its Forecast API accepts geographic coordinates and provides weather information such as weather codes, precipitation, visibility, wind, and other forecast variables that may support operational weather assessment. The service supports forecasts of up to sixteen days. OpenWeather One Call API 3.0 is designated as the fallback weather provider and may be requested when the primary provider cannot provide sufficiently usable information. Because external weather-forecast availability does not necessarily cover the complete three-week demand-forecast horizon, the system shall only evaluate weather for periods where sufficiently current provider data are available. Weather information shall not be fabricated or extrapolated merely to cover all three forecasted demand periods.
+
+[P04689 | 387689:388617 | NORMAL_TEXT]
+Geoapify is selected as the primary geocoding provider, with LocationIQ as fallback. TomTom routing services are selected as the primary source for route information. TomTom's routing services provide route-related information including route distance and estimated travel time, while its documented routing and real-time traffic coverage includes the Philippines. TomTom Traffic Incidents information may additionally identify operational disruptions such as road closures, lane closures, road works, flooding, dangerous conditions, and other incidents that may affect route movement. Corresponding HERE Technologies services are designated as fallback providers. HERE Routing API v8 may provide route calculations and related information, while HERE Traffic API v7 may provide incident information when the corresponding primary service cannot provide usable data. Location-coordinate fallback remains assigned to LocationIQ.
+
+[P04690 | 388617:389471 | NORMAL_TEXT]
+Route feasibility, route accessibility, road-condition classification, and weather classification are not treated as direct provider-generated decision labels. External providers return provider-specific weather, route, restriction, and incident information, which the proposed system will normalize using predefined study-adopted operational rules. This allows the system to use consistent classifications even when primary and fallback providers use different response structures. Each classification shall retain its supporting condition and source. A returned route or absence of reported incidents shall not be treated as proof of safe travel, complete road coverage, or vehicle-specific permission to use the route. API errors and missing coverage shall remain unavailable information rather than a confirmed road closure or a favorable condition.
+
+[P04691 | 389471:389824 | NORMAL_TEXT]
+Reference fuel efficiency will not depend on an external API. The system will use a reference vehicle fuel-efficiency value expressed in kilometers per liter (km/L), based on manufacturer specifications or owner-provided information. When applicable travel-distance information is available, estimated fuel consumption will be calculated internally as:
+
+[P04692 | 389824:389906 | NORMAL_TEXT]
+[EQUATION]
+
+[P04693 | 389906:390666 | NORMAL_TEXT]
+If the designated primary external provider fails, the system shall attempt to obtain comparable information from the designated fallback provider. If neither provider supplies sufficiently usable information, authorized manual contextual information may be recorded when available. Manually supplied information shall be identified separately from API-derived information. If no reliable API-derived or manual information is available, the affected contextual factor shall remain Unavailable or Unknown. Internal demand forecasting, projected-supply analysis, maintenance-readiness checking, shortage and surplus calculations, vehicle-eligibility rules, and other available internal processes shall continue without assuming a favorable contextual condition.
+
+[P04694 | 390666:391088 | NORMAL_TEXT]
+External contextual information shall remain advisory. API-derived or manually recorded context shall not independently create a branch shortage or surplus, automatically select a vehicle, automatically transfer a vehicle between branches, or override internal availability and maintenance-readiness requirements. Final administrative vehicle-assignment and branch-allocation decisions shall remain under the Owner/Admin.
+
+[P04695 | 391088:391135 | NORMAL_TEXT]
+Context Classification and Normalization Rules
+
+[P04696 | 391135:391696 | NORMAL_TEXT]
+External API providers return raw weather, routing, restriction, and incident information using provider-specific formats. To ensure that contextual information is interpreted consistently within the proposed system, applicable external and authorized manual information shall be normalized into predefined operational classifications before being presented as administrative decision-support information. These classifications are adopted by the study for system implementation and do not represent classifications directly produced by the external providers.
+
+[P04697 | 391696:392682 | NORMAL_TEXT]
+Weather Classification. Available weather information shall be normalized as Normal, Caution, Severe, or Unavailable. Normal refers to generally clear, fair, cloudy, overcast, mist, or other available conditions without a significant adverse-weather indication affecting normal travel. Caution refers to rain, showers, drizzle, fog, thunderstorms without an identified severe condition, or another reported condition that may affect visibility, traction, or normal road travel but does not independently indicate that movement should not proceed. Severe refers to severe thunderstorms, very heavy precipitation, tropical-cyclone-related severe weather, an applicable official severe-weather warning or alert, or another reported condition that may materially affect safe travel. Unavailable shall be used when sufficiently current and usable weather information cannot be obtained from either the primary or fallback provider and no reliable authorized manual information is available.
+
+[P04698 | 392682:393669 | NORMAL_TEXT]
+Road-Condition Classification. For purposes of the proposed system, road condition refers to the incident-based operational state of an applicable route rather than continuous measurement of pavement roughness, potholes, or physical road-surface quality. Road condition shall be represented as Open, Caution, Closed/Impassable, or Unknown. Open shall indicate that an applicable route is available and no relevant blocking or cautionary road incident has been identified. Caution shall indicate that the route remains traversable but applicable information identifies road works, lane closures, non-blocking flooding, accidents affecting movement, dangerous conditions, or another relevant non-blocking disruption. Closed/Impassable shall indicate an explicit road closure, impassable flooding, blocking restriction, or another condition preventing the applicable road movement. Unknown shall be used when sufficiently reliable incident or road-condition information cannot be obtained.
+
+[P04699 | 393669:394438 | NORMAL_TEXT]
+Route-Feasibility Classification. Route feasibility shall be represented as Feasible, Feasible with Caution, Not Feasible, or Unavailable. Feasible shall indicate that a valid applicable driving route is available and no blocking or significant cautionary condition has been identified. Feasible with Caution shall indicate that a valid route remains available but applicable weather, road, restriction, or incident information requires administrative attention. Not Feasible shall indicate that available information confirms that the proposed movement cannot presently proceed because of an applicable closure, restriction, or impassable route. Unavailable shall indicate that sufficient routing or contextual information cannot be obtained to determine feasibility.
+
+[P04700 | 394438:395080 | NORMAL_TEXT]
+Route-Accessibility Classification. Route accessibility shall be represented as Accessible, Limited, Closed/Restricted, or Unknown. Accessible shall indicate that an applicable route is available without a material restriction affecting normal vehicle movement. Limited shall indicate that the route remains available but one or more applicable restrictions or incidents may limit normal movement. Closed/Restricted shall indicate that the applicable route or relevant road segment is closed, blocked, or otherwise restricted against the proposed movement. Unknown shall indicate that sufficient accessibility information cannot be obtained.
+
+[P04701 | 395080:395636 | NORMAL_TEXT]
+Context classifications shall supplement rather than replace the system's internal operational analysis. When weather is Normal, road condition is Open, route feasibility is Feasible, and route accessibility is Accessible, an applicable allocation recommendation may be presented without an additional contextual warning. When one or more applicable conditions are classified as Caution, Severe, Limited, or Feasible with Caution, the underlying operational recommendation may remain available but shall include an administrative warning requiring review.
+
+[P04702 | 395636:395637 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04703 | 395637:396164 | NORMAL_TEXT]
+When the route is classified as Not Feasible, or when the applicable road or accessibility information indicates a condition that prevents movement, the system shall retain the underlying demand, supply, shortage, surplus, and allocation-recommendation information but shall indicate that the proposed movement is **not presently feasible** under the recorded conditions. The existence of a forecasted shortage shall therefore remain distinguishable from the current feasibility of performing the recommended vehicle transfer.
+
+[P04704 | 396164:396165 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04705 | 396165:396510 | NORMAL_TEXT]
+When applicable contextual information cannot be reliably evaluated, the system shall indicate that the corresponding context is **Unavailable** or **Unknown**. Internal operational analysis may continue using available system records, but no unavailable contextual factor shall be silently interpreted as Normal, Open, Accessible, or Feasible.
+
+[P04706 | 396510:396511 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04707 | 396511:396980 | NORMAL_TEXT]
+For presentation purposes, the system may summarize the normalized context using the following non-numerical administrative states: **No Context Warning**, **Review Recommended**, **Movement Not Presently Feasible**, or **Context Unavailable**. These states shall not represent confidence scores, urgency scores, prediction probabilities, or numerical suitability ratings. They serve only as concise representations of the underlying normalized contextual information.
+
+[P04708 | 396980:396981 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04709 | 396981:397496 | NORMAL_TEXT]
+The fallback provider shall only be requested when the designated primary provider is unavailable, times out, exceeds an applicable service limitation, lacks applicable coverage, or returns unusable or insufficiently current information. A valid adverse condition returned by the primary provider shall not constitute provider failure. Therefore, the system shall not request a fallback provider merely because the primary provider reports adverse weather, flooding, road closure, or another unfavorable condition.
+
+[P04710 | 397496:397497 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04711 | 397497:398008 | NORMAL_TEXT]
+When neither the primary nor fallback provider supplies usable information, authorized manual contextual information may be recorded where available. Manual information shall be clearly identified as manually supplied and shall include the applicable recording time and authorized user. If no reliable API-derived or manual information is available, the corresponding contextual factor shall remain Unavailable or Unknown. The system shall not fabricate, extrapolate, or assume favorable contextual conditions.
+
+[P04712 | 398008:398009 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04713 | 398009:398010 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04714 | 398010:398402 | NORMAL_TEXT]
+Contextual conditions shall not independently create a branch shortage or surplus. The primary basis for a branch-allocation recommendation shall remain the relationship between forecasted requirement and projected available supply. Context shall instead assist the Owner/Admin in determining whether an otherwise valid recommendation is practical under the available operational conditions.
+
+[P04715 | 398402:398969 | NORMAL_TEXT]
+Route feasibility may be represented as Feasible, Feasible with Caution, Not Feasible, or Unavailable. A route may be considered Not Feasible when available information identifies a confirmed closure, impassable route, or another condition that prevents the proposed movement. A route may be classified as Feasible with Caution when a route remains available but relevant conditions require administrative attention. When reliable information cannot be obtained, the system shall report the contextual factor as Unavailable instead of assuming a favorable condition.
+
+[P04716 | 398969:399118 | NORMAL_TEXT]
+Road condition may be represented as Open, Caution, Closed/Impassable, or Unknown, based on the available source or authorized administrative input.
+
+[P04717 | 399118:399388 | NORMAL_TEXT]
+Weather information obtained from the selected source may be translated into operational presentation categories such as Normal, Caution, Severe, or Unavailable. These categories shall serve as advisory indicators and shall not independently choose or assign a vehicle.
+
+[P04718 | 399388:399765 | NORMAL_TEXT]
+When severe weather, cautionary road conditions, or another relevant contextual concern is identified, the system may retain the underlying operational recommendation while attaching a warning requiring administrative review. When the route is determined to be Not Feasible, the system shall indicate that the proposed movement should not proceed under the recorded condition.
+
+[P04719 | 399765:400088 | NORMAL_TEXT]
+If an external API or contextual data source is unavailable, the system shall continue evaluating the internal operational factors that remain available and shall clearly indicate that the unavailable contextual factor was not considered. Missing contextual information shall not be silently replaced using assumed values.
+
+[P04720 | 400088:400146 | NORMAL_TEXT]
+M. Human Decision Control and Recommendation Transparency
+
+[P04721 | 400146:400602 | NORMAL_TEXT]
+Interpretability and traceability are important advantages of rule-based decision-support approaches because recommendations can be linked directly to the conditions that produced them (Haber et al., 2026; Mohamad et al., 2026). Accordingly, forecasting, vehicle utilization, idle-vehicle detection, maintenance readiness, Customer-Side Vehicle Recommendation, and Branch Allocation Recommendation outputs shall be treated as decision-support information.
+
+[P04722 | 400602:400872 | NORMAL_TEXT]
+The proposed system shall not use unsupported confidence classifications, arbitrary urgency values, or unexplained 0–100 recommendation scores. Instead, recommendation results shall present traceable reasons based on the rules and data that produced the recommendation.
+
+[P04723 | 400872:401193 | NORMAL_TEXT]
+For example, a Branch Allocation Recommendation may indicate that the destination branch has a forecasted shortage of two vehicles, the source branch has a corresponding surplus of three vehicles, the proposed vehicle is maintenance-ready, has no conflicting booking, and has been idle for the defined monitoring period.
+
+[P04724 | 401193:401374 | NORMAL_TEXT]
+This reason-oriented approach is intended to make system-generated recommendations transparent and interpretable while preserving final operational authority under the Owner/Admin.
+
+[P04725 | 401374:401375 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04726 | 401375:401399 | NORMAL_TEXT]
+Development Methodology
+
+[P04727 | 401399:401988 | NORMAL_TEXT]
+This study will use a developmental and descriptive research design in the development and evaluation of the proposed web-based car rental management system with demand forecasting and context-aware fleet allocation. The study is developmental because it focuses on designing, developing, testing, and evaluating a functional system that addresses the identified operational problems of the participating car rental business. It is also descriptive because it examines the existing business workflow and evaluates the developed system based on selected quality and acceptability criteria.
+
+[P04728 | 401988:402483 | NORMAL_TEXT]
+For the software development process, the study will use the Iterative Waterfall Model. This model was selected because the proposed system requires clear documentation, organized development phases, structured system design outputs, and systematic testing before evaluation. At the same time, its iterative nature allows the researchers to revisit earlier phases when revisions are needed based on adviser feedback, client validation, prototype review, testing results, or evaluation findings.
+
+[P04729 | 402483:403492 | NORMAL_TEXT]
+The use of a structured development methodology is appropriate for this study because the proposed system includes several connected modules, such as booking management, customer and requirement verification, payment verification, vehicle and fleet management, rental transaction management, maintenance monitoring, report generation, demand forecasting, rule-based recommendation, context-aware decision support, and role-based access control. Related studies show that manual and semi-manual car rental operations commonly experience delays, fragmented records, overlapping reservations, and poor vehicle availability monitoring (Dhami et al., 2024; Mhatre et al., 2026; Rahman & Mohd Rusli, 2023). In addition, prior studies support the use of historical operational data for demand forecasting and the use of rule-based decision-support approaches for improving vehicle allocation and operational planning (Yu et al., 2020; Vateekul et al., 2021; Liu et al., 2021; You & Hsieh, 2025; Labib et al., 2026).
+
+[P04730 | 403492:404219 | NORMAL_TEXT]
+The development and evaluation of the system will also consider security, usability, reliability, and overall software quality. Since the system will handle customer records, uploaded requirements, proof of payment, booking records, fleet information, and operational reports, secure authentication and role-based access control will be implemented to protect sensitive information and restrict access based on user roles such as administrator, owner, and staff (Dedhia, 2026; Lu et al., 2024). The system will also include role-based access restrictions to ensure that only authorized users can access modules related to booking approval, payment verification, reports generation, user management, and operational monitoring.
+
+[P04731 | 404219:405233 | NORMAL_TEXT]
+The completed system will undergo unit testing, integration testing, security and access control testing, system testing, and user acceptance testing to verify whether the developed modules function correctly both individually and as an integrated system. Unit testing will separately evaluate the customer web application, admin or owner web application, and staff web application to ensure that each module performs according to its intended functionality. Integration testing will verify proper interaction between connected modules, including role-based access behavior across different user accounts and permissions. Security and access control testing will assess authentication, authorization, protected routes, and user permission restrictions to ensure that unauthorized access to sensitive records and modules is prevented. User acceptance testing will also be conducted with selected users to determine whether the developed system aligns with the operational workflow and requirements of the business.
+
+[P04732 | 405233:405516 | NORMAL_TEXT]
+The completed system will be evaluated using selected ISO/IEC 25010 software quality characteristics, which provide a structured basis for assessing web-based and multi-module information systems (Monteverde et al., 2023; Bondoc, 2023; Mendoza et al., 2025; Adyaputra et al., 2025).
+
+[P04733 | 405516:405517 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04734 | 405517:405531 | NORMAL_TEXT]
+Process Model
+
+[P04735 | 405531:406201 | NORMAL_TEXT]
+The proponents will use the Iterative Waterfall Model as the process model for the development of the proposed system. The model follows a structured sequence of phases, namely requirements analysis, system design, implementation, testing and validation, deployment preparation, and maintenance planning. Unlike the strictly linear waterfall approach, the iterative waterfall model allows the researchers to return to earlier phases when improvements or corrections are needed. This makes the model suitable for the study because the system may require refinement based on adviser feedback, client validation, prototype review, testing results, and evaluation findings.
+
+[P04736 | 406201:406202 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04737 | 406202:406240 | NORMAL_TEXT]
+Figure 60.  Iterative Waterfall Model
+
+[P04738 | 406240:406242 | NORMAL_TEXT]
+[INLINE_OBJECT kix.cst6l2urcyh2]
+
+[P04739 | 406242:406503 | NORMAL_TEXT]
+The first phase is requirements analysis. In this phase, the researchers will gather and analyze information from client interviews, workflow validation, observation, and document review to identify the functional and non-functional requirements of the system.
+
+[P04740 | 406503:406707 | NORMAL_TEXT]
+The second phase is system design. In this phase, the researchers will prepare the system architecture, use case diagrams, activity diagrams, database schema, data dictionary, and user interface designs.
+
+[P04741 | 406707:407049 | NORMAL_TEXT]
+The third phase is implementation. In this phase, the system modules will be developed, including booking management, requirement verification, payment verification, vehicle and fleet management, rental monitoring, maintenance monitoring, reports generation, demand forecasting, rule-based recommendation, and context-aware decision support.
+
+[P04742 | 407049:407268 | NORMAL_TEXT]
+The fourth phase is testing and validation. In this phase, the developed modules will be checked through unit testing, integration testing, and system testing to determine whether they meet the identified requirements.
+
+[P04743 | 407268:407458 | NORMAL_TEXT]
+The fifth phase is deployment preparation. In this phase, the system will be prepared for pilot use by configuring user roles, database records, access permissions, and basic user guidance.
+
+[P04744 | 407458:407637 | NORMAL_TEXT]
+The final phase is maintenance planning. In this phase, possible improvements, error corrections, backup procedures, security updates, and future enhancements will be identified.
+
+[P04745 | 407637:407638 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04746 | 407638:407656 | NORMAL_TEXT]
+Development Tools
+
+[P04747 | 407656:407665 | NORMAL_TEXT]
+Table 64
+
+[P04748 | 407665:407683 | NORMAL_TEXT]
+Development Tools
+
+[P04749 | 407686:407691 | NORMAL_TEXT | TABLE row=0 col=0]
+TYPE
+
+[P04750 | 407692:407701 | NORMAL_TEXT | TABLE row=0 col=1]
+SOFTWARE
+
+[P04751 | 407702:407712 | NORMAL_TEXT | TABLE row=0 col=2]
+SPECIFICS
+
+[P04752 | 407713:407725 | NORMAL_TEXT | TABLE row=0 col=3]
+DESCRIPTION
+
+[P04753 | 407727:407748 | NORMAL_TEXT | TABLE row=1 col=0]
+Frontend Development
+
+[P04754 | 407749:407768 | NORMAL_TEXT | TABLE row=1 col=1]
+Frontend Framework
+
+[P04755 | 407769:407794 | NORMAL_TEXT | TABLE row=1 col=2]
+React.js with TypeScript
+
+[P04756 | 407795:407944 | NORMAL_TEXT | TABLE row=1 col=3]
+Used for developing the frontend interface of the web-based car rental management system with improved maintainability, modularity, and type safety.
+
+[P04757 | 407946:407967 | NORMAL_TEXT | TABLE row=2 col=0]
+Frontend Development
+
+[P04758 | 407968:407979 | NORMAL_TEXT | TABLE row=2 col=1]
+Build Tool
+
+[P04759 | 407980:407985 | NORMAL_TEXT | TABLE row=2 col=2]
+Vite
+
+[P04760 | 407986:408063 | NORMAL_TEXT | TABLE row=2 col=3]
+Used for local development, project bundling, and optimized frontend builds.
+
+[P04761 | 408065:408086 | NORMAL_TEXT | TABLE row=3 col=0]
+Frontend Development
+
+[P04762 | 408087:408103 | NORMAL_TEXT | TABLE row=3 col=1]
+Routing Library
+
+[P04763 | 408104:408120 | NORMAL_TEXT | TABLE row=3 col=2]
+TanStack Router
+
+[P04764 | 408121:408219 | NORMAL_TEXT | TABLE row=3 col=3]
+Used for managing navigation and routing between customer, staff, administrator, and owner pages.
+
+[P04765 | 408221:408242 | NORMAL_TEXT | TABLE row=4 col=0]
+Frontend Development
+
+[P04766 | 408243:408261 | NORMAL_TEXT | TABLE row=4 col=1]
+Styling Framework
+
+[P04767 | 408262:408275 | NORMAL_TEXT | TABLE row=4 col=2]
+Tailwind CSS
+
+[P04768 | 408276:408368 | NORMAL_TEXT | TABLE row=4 col=3]
+Used for responsive and utility-based interface styling across desktop and mobile browsers.
+
+[P04769 | 408370:408391 | NORMAL_TEXT | TABLE row=5 col=0]
+Frontend Development
+
+[P04770 | 408392:408413 | NORMAL_TEXT | TABLE row=5 col=1]
+UI Component Library
+
+[P04771 | 408414:408437 | NORMAL_TEXT | TABLE row=5 col=2]
+shadcn/ui and Radix UI
+
+[P04772 | 408438:408558 | NORMAL_TEXT | TABLE row=5 col=3]
+Used for reusable and accessible interface components such as forms, dialogs, buttons, tables, and navigation elements.
+
+[P04773 | 408560:408580 | NORMAL_TEXT | TABLE row=6 col=0]
+Backend Development
+
+[P04774 | 408581:408601 | NORMAL_TEXT | TABLE row=6 col=1]
+Runtime Environment
+
+[P04775 | 408602:408610 | NORMAL_TEXT | TABLE row=6 col=2]
+Node.js
+
+[P04776 | 408611:408690 | NORMAL_TEXT | TABLE row=6 col=3]
+Used for handling backend operations, server-side logic, and system workflows.
+
+[P04777 | 408692:408712 | NORMAL_TEXT | TABLE row=7 col=0]
+Backend Development
+
+[P04778 | 408713:408730 | NORMAL_TEXT | TABLE row=7 col=1]
+Server Framework
+
+[P04779 | 408731:408781 | NORMAL_TEXT | TABLE row=7 col=2]
+TanStack Start Server Functions and Server Routes
+
+[P04780 | 408782:408880 | NORMAL_TEXT | TABLE row=7 col=3]
+Used for processing backend requests, server-side operations, and frontend-backend communication.
+
+[P04781 | 408881:408925 | NORMAL_TEXT]
+Continuation of Table 64. Development Tools
+
+[P04782 | 408928:408933 | NORMAL_TEXT | TABLE row=0 col=0]
+TYPE
+
+[P04783 | 408934:408943 | NORMAL_TEXT | TABLE row=0 col=1]
+SOFTWARE
+
+[P04784 | 408944:408954 | NORMAL_TEXT | TABLE row=0 col=2]
+SPECIFICS
+
+[P04785 | 408955:408967 | NORMAL_TEXT | TABLE row=0 col=3]
+DESCRIPTION
+
+[P04786 | 408969:408989 | NORMAL_TEXT | TABLE row=1 col=0]
+Database Management
+
+[P04787 | 408990:409028 | NORMAL_TEXT | TABLE row=1 col=1]
+Relational Database Management System
+
+[P04788 | 409029:409040 | NORMAL_TEXT | TABLE row=1 col=2]
+PostgreSQL
+
+[P04789 | 409041:409185 | NORMAL_TEXT | TABLE row=1 col=3]
+Used for storing and managing structured system records such as bookings, rentals, users, vehicles, payments, maintenance records, and reports.
+
+[P04790 | 409187:409207 | NORMAL_TEXT | TABLE row=2 col=0]
+Database Management
+
+[P04791 | 409208:409233 | NORMAL_TEXT | TABLE row=2 col=1]
+Backend Service Platform
+
+[P04792 | 409234:409243 | NORMAL_TEXT | TABLE row=2 col=2]
+Supabase
+
+[P04793 | 409244:409345 | NORMAL_TEXT | TABLE row=2 col=3]
+Used for hosted database services, backend management, authentication support, and storage services.
+
+[P04794 | 409347:409381 | NORMAL_TEXT | TABLE row=3 col=0]
+Authentication and Access Control
+
+[P04795 | 409382:409405 | NORMAL_TEXT | TABLE row=3 col=1]
+Authentication Service
+
+[P04796 | 409406:409420 | NORMAL_TEXT | TABLE row=3 col=2]
+Supabase Auth
+
+[P04797 | 409421:409576 | NORMAL_TEXT | TABLE row=3 col=3]
+Used for login authentication, account verification, password reset, and role-based access control for customer, staff, administrator, and owner accounts.
+
+[P04798 | 409578:409591 | NORMAL_TEXT | TABLE row=4 col=0]
+File Storage
+
+[P04799 | 409592:409614 | NORMAL_TEXT | TABLE row=4 col=1]
+Cloud Storage Service
+
+[P04800 | 409615:409632 | NORMAL_TEXT | TABLE row=4 col=2]
+Supabase Storage
+
+[P04801 | 409633:409740 | NORMAL_TEXT | TABLE row=4 col=3]
+Used for storing uploaded customer requirements, valid IDs, driver’s licenses, and proof-of-payment files.
+
+[P04802 | 409742:409761 | NORMAL_TEXT | TABLE row=5 col=0]
+Payment Processing
+
+[P04803 | 409762:409790 | NORMAL_TEXT | TABLE row=5 col=1]
+Manual Payment Verification
+
+[P04804 | 409791:409846 | NORMAL_TEXT | TABLE row=5 col=2]
+Proof-of-Payment Upload and Administrator Verification
+
+[P04805 | 409847:409968 | NORMAL_TEXT | TABLE row=5 col=3]
+Used for recording and manually verifying customer payment proof and transaction references before payment confirmation.
+
+[P04806 | 409970:409992 | NORMAL_TEXT | TABLE row=6 col=0]
+Notification Services
+
+[P04807 | 409993:410016 | NORMAL_TEXT | TABLE row=6 col=1]
+Email Delivery Service
+
+[P04808 | 410017:410043 | NORMAL_TEXT | TABLE row=6 col=2]
+Brevo transactional email
+
+[P04809 | 410044:410153 | NORMAL_TEXT | TABLE row=6 col=3]
+Used for sending booking updates, verification results, payment reminders, and rental-related notifications.
+
+[P04810 | 410155:410177 | NORMAL_TEXT | TABLE row=7 col=0]
+Notification Services
+
+[P04811 | 410178:410191 | NORMAL_TEXT | TABLE row=7 col=1]
+SMTP Service
+
+[P04812 | 410192:410229 | NORMAL_TEXT | TABLE row=7 col=2]
+Custom SMTP for Supabase Auth Emails
+
+[P04813 | 410230:410301 | NORMAL_TEXT | TABLE row=7 col=3]
+Used for account confirmation emails and password reset notifications.
+
+[P04814 | 410302:410303 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04815 | 410303:410347 | NORMAL_TEXT]
+Continuation of Table 64. Development Tools
+
+[P04816 | 410350:410355 | NORMAL_TEXT | TABLE row=0 col=0]
+TYPE
+
+[P04817 | 410356:410365 | NORMAL_TEXT | TABLE row=0 col=1]
+SOFTWARE
+
+[P04818 | 410366:410376 | NORMAL_TEXT | TABLE row=0 col=2]
+SPECIFICS
+
+[P04819 | 410377:410389 | NORMAL_TEXT | TABLE row=0 col=3]
+DESCRIPTION
+
+[P04820 | 410391:410420 | NORMAL_TEXT | TABLE row=1 col=0]
+Decision-Support Development
+
+[P04821 | 410421:410458 | NORMAL_TEXT | TABLE row=1 col=1]
+Forecasting and Recommendation Logic
+
+[P04822 | 410459:410536 | NORMAL_TEXT | TABLE row=1 col=2]
+TypeScript-Based Weighted Moving Average and Rule-Based Recommendation Logic
+
+[P04823 | 410537:410687 | NORMAL_TEXT | TABLE row=1 col=3]
+Used for implementing demand forecasting, utilization analysis, idle vehicle detection, vehicle recommendation, and branch allocation recommendation.
+
+[P04824 | 410689:410720 | NORMAL_TEXT | TABLE row=2 col=0]
+Context-Aware Decision Support
+
+[P04825 | 410721:410739 | NORMAL_TEXT | TABLE row=2 col=1]
+Weather Data APIs
+
+[P04826 | 410740:410794 | NORMAL_TEXT | TABLE row=2 col=2]
+Open-Meteo Forecast API; OpenWeather One Call API 3.0
+
+[P04827 | 410794:410795 | NORMAL_TEXT | TABLE row=2 col=2]
+⟦EMPTY PARAGRAPH⟧
+
+[P04828 | 410796:411006 | NORMAL_TEXT | TABLE row=2 col=3]
+Open-Meteo serves as the primary weather-data provider, while OpenWeather serves as the fallback provider for applicable weather information used by the administrative context-aware decision-support component.
+
+[P04829 | 411008:411039 | NORMAL_TEXT | TABLE row=3 col=0]
+Context-Aware Decision Support
+
+[P04830 | 411040:411082 | NORMAL_TEXT | TABLE row=3 col=1]
+Location, Routing, and Road-Incident APIs
+
+[P04831 | 411083:411147 | NORMAL_TEXT | TABLE row=3 col=2]
+Geoapify; LocationIQ; TomTom Orbis APIs; HERE Technologies APIs
+
+[P04832 | 411148:411464 | NORMAL_TEXT | TABLE row=3 col=3]
+Geoapify with LocationIQ fallback provides destination geocoding. TomTom Orbis Routing with HERE Routing fallback provides route distance and travel time. TomTom Traffic with HERE Traffic fallback provides incident information. Provider availability and location-quality checks determine whether a factor is usable.
+
+[P04833 | 411466:411479 | NORMAL_TEXT | TABLE row=4 col=0]
+UI/UX Design
+
+[P04834 | 411480:411508 | NORMAL_TEXT | TABLE row=4 col=1]
+Design and Prototyping Tool
+
+[P04835 | 411509:411515 | NORMAL_TEXT | TABLE row=4 col=2]
+Figma
+
+[P04836 | 411516:411592 | NORMAL_TEXT | TABLE row=4 col=3]
+Used for interface prototyping, layout planning, and user interface design.
+
+[P04837 | 411594:411613 | NORMAL_TEXT | TABLE row=5 col=0]
+System Diagramming
+
+[P04838 | 411614:411631 | NORMAL_TEXT | TABLE row=5 col=1]
+Diagramming Tool
+
+[P04839 | 411632:411643 | NORMAL_TEXT | TABLE row=5 col=2]
+Lucidchart
+
+[P04840 | 411644:411747 | NORMAL_TEXT | TABLE row=5 col=3]
+Used for creating use case diagrams, activity diagrams, data flow diagrams, and other system diagrams.
+
+[P04841 | 411749:411779 | NORMAL_TEXT | TABLE row=6 col=0]
+Testing and Quality Assurance
+
+[P04842 | 411780:411803 | NORMAL_TEXT | TABLE row=6 col=1]
+Unit Testing Framework
+
+[P04843 | 411804:411845 | NORMAL_TEXT | TABLE row=6 col=2]
+Node.js built-in test runner (node:test)
+
+[P04844 | 411846:411927 | NORMAL_TEXT | TABLE row=6 col=3]
+Used for automated tests of functions, server logic, and decision-support rules.
+
+[P04845 | 411929:411959 | NORMAL_TEXT | TABLE row=7 col=0]
+Testing and Quality Assurance
+
+[P04846 | 411960:411983 | NORMAL_TEXT | TABLE row=7 col=1]
+Component Testing Tool
+
+[P04847 | 411984:412056 | NORMAL_TEXT | TABLE row=7 col=2]
+React Testing Library (planned; not included in the current test suite)
+
+[P04848 | 412057:412183 | NORMAL_TEXT | TABLE row=7 col=3]
+Planned for component behavior and interaction tests; no React Testing Library suite is currently included in the repository.
+
+[P04849 | 412185:412215 | NORMAL_TEXT | TABLE row=8 col=0]
+Testing and Quality Assurance
+
+[P04850 | 412216:412240 | NORMAL_TEXT | TABLE row=8 col=1]
+End-to-End Testing Tool
+
+[P04851 | 412241:412252 | NORMAL_TEXT | TABLE row=8 col=2]
+Playwright
+
+[P04852 | 412253:412361 | NORMAL_TEXT | TABLE row=8 col=3]
+Used for testing complete workflows such as login, booking, payment upload, and role-based access behavior.
+
+[P04853 | 412363:412393 | NORMAL_TEXT | TABLE row=9 col=0]
+Testing and Quality Assurance
+
+[P04854 | 412394:412411 | NORMAL_TEXT | TABLE row=9 col=1]
+API Testing Tool
+
+[P04855 | 412412:412420 | NORMAL_TEXT | TABLE row=9 col=2]
+Postman
+
+[P04856 | 412421:412505 | NORMAL_TEXT | TABLE row=9 col=3]
+Used for testing backend routes, requests, responses, and API integration behavior.
+
+[P04857 | 412506:412507 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04858 | 412507:412551 | NORMAL_TEXT]
+Continuation of Table 64. Development Tools
+
+[P04859 | 412554:412559 | NORMAL_TEXT | TABLE row=0 col=0]
+TYPE
+
+[P04860 | 412560:412569 | NORMAL_TEXT | TABLE row=0 col=1]
+SOFTWARE
+
+[P04861 | 412570:412580 | NORMAL_TEXT | TABLE row=0 col=2]
+SPECIFICS
+
+[P04862 | 412581:412593 | NORMAL_TEXT | TABLE row=0 col=3]
+DESCRIPTION
+
+[P04863 | 412595:412625 | NORMAL_TEXT | TABLE row=1 col=0]
+Testing and Quality Assurance
+
+[P04864 | 412626:412641 | NORMAL_TEXT | TABLE row=1 col=1]
+Debugging Tool
+
+[P04865 | 412642:412666 | NORMAL_TEXT | TABLE row=1 col=2]
+Browser Developer Tools
+
+[P04866 | 412667:412740 | NORMAL_TEXT | TABLE row=1 col=3]
+Used for frontend debugging, responsive testing, and runtime inspection.
+
+[P04867 | 412742:412758 | NORMAL_TEXT | TABLE row=2 col=0]
+Version Control
+
+[P04868 | 412759:412791 | NORMAL_TEXT | TABLE row=2 col=1]
+Source Code Management Platform
+
+[P04869 | 412792:412807 | NORMAL_TEXT | TABLE row=2 col=2]
+Git and GitHub
+
+[P04870 | 412808:412907 | NORMAL_TEXT | TABLE row=2 col=3]
+Used for version control, collaboration, source code management, and tracking development changes.
+
+[P04871 | 412909:412932 | NORMAL_TEXT | TABLE row=3 col=0]
+Deployment and Hosting
+
+[P04872 | 412933:412963 | NORMAL_TEXT | TABLE row=3 col=1]
+Local Development Environment
+
+[P04873 | 412964:412974 | NORMAL_TEXT | TABLE row=3 col=2]
+Localhost
+
+[P04874 | 412975:413049 | NORMAL_TEXT | TABLE row=3 col=3]
+Used during development and defense demonstration of the proposed system.
+
+[P04875 | 413051:413074 | NORMAL_TEXT | TABLE row=4 col=0]
+Deployment and Hosting
+
+[P04876 | 413075:413099 | NORMAL_TEXT | TABLE row=4 col=1]
+Web Deployment Platform
+
+[P04877 | 413100:413107 | NORMAL_TEXT | TABLE row=4 col=2]
+Vercel
+
+[P04878 | 413108:413195 | NORMAL_TEXT | TABLE row=4 col=3]
+Used for deploying and hosting the web application when online deployment is required.
+
+[P04879 | 413197:413220 | NORMAL_TEXT | TABLE row=5 col=0]
+Deployment and Hosting
+
+[P04880 | 413221:413245 | NORMAL_TEXT | TABLE row=5 col=1]
+Hosted Backend Services
+
+[P04881 | 413246:413271 | NORMAL_TEXT | TABLE row=5 col=2]
+Supabase Hosted Services
+
+[P04882 | 413272:413353 | NORMAL_TEXT | TABLE row=5 col=3]
+Used for hosted database, authentication, storage, and backend-related services.
+
+[P04883 | 413354:413355 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04884 | 413355:413860 | NORMAL_TEXT]
+The development tools were selected based on the technical requirements of the proposed web-based car rental management system. React.js with TypeScript, Vite, TanStack Router, Tailwind CSS, shadcn/ui, and Radix UI will be utilized to develop a responsive and user-friendly interface for customers, staff, administrators, and owners. These technologies will support modular interface development, reusable components, responsive layouts, and browser-based accessibility across desktop and mobile devices.
+
+[P04885 | 413860:414573 | NORMAL_TEXT]
+For backend and data management, Node.js together with TanStack Start server functions and server routes will be utilized to handle server-side operations, backend workflows, and frontend-backend communication. PostgreSQL through Supabase will serve as the main database management platform for handling customer records, booking transactions, vehicle records, rental information, maintenance records, payment validation records, notifications, and operational reports. Supabase Auth will be implemented for authentication and role-based access control, while Supabase Storage will be utilized for storing uploaded customer requirements, valid identification cards, driver’s licenses, and proof-of-payment files.
+
+[P04886 | 414573:416102 | NORMAL_TEXT]
+The system will also incorporate notification and communication support through Brevo transactional email, while Supabase Auth emails such as account confirmation and password reset will use custom SMTP services. For payment processing, the system will support proof-of-payment upload, transaction-reference recording, payment-status tracking, and manual verification by an authorized owner or administrator against the business's external bank or e-wallet records. The system will not integrate an automated payment gateway within the current scope of the study. Context-aware decision support will obtain applicable weather information primarily through the Open-Meteo Forecast API, with the OpenWeather One Call API 3.0 serving as the fallback weather provider. Geoapify with LocationIQ fallback will provide destination geocoding. TomTom Orbis Routing with HERE Routing fallback will provide route distance and travel-time estimates, while TomTom Traffic with HERE Traffic fallback will provide incident information. Geocoding quality, source freshness, and coverage will be checked before these outputs support administrative decisions. When neither the primary nor fallback provider can supply sufficiently usable information, authorized manual contextual information may be recorded where available; otherwise, the affected contextual factor will be marked as Unavailable or Unknown. Simulated contextual data may be used during functional testing but shall not be represented as live API-derived operational information.
+
+[P04887 | 416102:417105 | NORMAL_TEXT]
+For the decision-support components, TypeScript-based logic will be implemented for Weighted Moving Average demand forecasting, vehicle utilization analysis, idle vehicle detection, Customer-Side Vehicle Recommendation, and rule-based Branch Allocation Recommendation. Figma will be utilized for interface design and prototyping, while Lucidchart will be used for creating system diagrams. Testing and quality assurance will be supported through Node.js built-in test runner (node:test), React Testing Library (planned; not included in the current test suite), Playwright, Postman, and Browser Developer Tools to verify system functionality, component behavior, role-based workflows, server routes, and user interaction processes. Git and GitHub will be used for version control and collaborative development. During development and defense, the system may be demonstrated through a localhost environment, while Vercel and Supabase hosted services may be used for online deployment and backend hosting.
+
+[P04888 | 417105:417106 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04889 | 417106:417134 | NORMAL_TEXT]
+Test Methodology/Procedures
+
+[P04890 | 417134:417988 | NORMAL_TEXT]
+To ensure the quality, functionality, reliability, security, and usability of the proposed Web-based Car Rental Management System, several testing procedures will be conducted throughout the development process. These procedures will determine whether the system meets the identified functional and non-functional requirements and whether it supports the actual workflow of the participating car rental business. The testing process will help the researchers identify errors, validate system outputs, check database transactions, verify access restrictions, and confirm that the system performs the required processes for customer account management, booking management, requirement verification, payment submission and verification, vehicle and fleet management, rental monitoring, reports generation, demand forecasting, and rule-based recommendation.
+
+[P04891 | 417988:417989 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04892 | 417989:418011 | NORMAL_TEXT]
+Test Case Description
+
+[P04893 | 418011:418384 | NORMAL_TEXT]
+Test cases will be prepared to guide the testing of the system’s major modules and workflows. Each test case will include the module or feature to be tested, test objective, input data, expected output, actual output, result status, and remarks. The test cases will be based on the identified system requirements, use case reports, activity diagrams, and system workflows.
+
+[P04894 | 418384:418781 | NORMAL_TEXT]
+The test cases will cover both valid and invalid inputs to determine whether the system can process correct data, reject incomplete or incorrect entries, display appropriate messages, and store records accurately. The test cases will also include role-based scenarios to verify whether customers, staff, administrators, and owners can only access the features and records assigned to their roles.
+
+[P04895 | 418781:418782 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04896 | 418782:418795 | NORMAL_TEXT]
+Unit Testing
+
+[P04897 | 418795:419152 | NORMAL_TEXT]
+Unit testing will be conducted to evaluate the individual components, modules, and functions of the system before they are integrated with other parts of the platform. This procedure will help determine whether each module accepts valid inputs, rejects invalid inputs, processes data correctly, stores records accurately, and produces the expected outputs.
+
+[P04898 | 419152:419594 | NORMAL_TEXT]
+For the Customer or Renter Web Application, unit testing will focus on account registration, login, vehicle catalog viewing, booking request submission, requirement upload, proof-of-payment upload, booking status tracking, rental policy viewing, and notification viewing. These tests will ensure that customers can properly enter booking details, submit required documents, upload payment proof, and monitor the status of their reservations.
+
+[P04899 | 419594:420063 | NORMAL_TEXT]
+For the Staff Web Application, unit testing will focus on the modules assigned to staff users, such as booking schedule viewing, reservation coordination, customer communication support, calendar monitoring, vehicle availability viewing, and operational status updating based on the access permissions granted to staff accounts. These tests will ensure that staff users can perform their intended operational tasks without accessing restricted owner-level information.
+
+[P04900 | 420063:420649 | NORMAL_TEXT]
+For the Admin or Owner Web Application, unit testing will focus on booking approval, customer and requirement verification, payment verification, vehicle and fleet management, rental transaction management, maintenance monitoring, reports generation, user and role management, demand forecasting, rule-based vehicle recommendation, and branch allocation recommendation. These tests will ensure that owner and administrator accounts can properly manage operational records, verify transactions, generate reports, and access decision-support features according to their authorized roles.
+
+[P04901 | 420649:421715 | NORMAL_TEXT]
+The decision-support features will also undergo unit testing. WMA tests shall verify confirmed-booking-start aggregation by branch, category, and Asia/Manila week; fixed weights; recursive horizons; valid zero-demand weeks; incomplete coverage; and preservation of forecast snapshots. Hand-calculated expected values shall be compared with system outputs. Allocation tests shall cover shortage and surplus calculations, source-demand protection, candidate-count limits, conflicting bookings and maintenance, duplicate candidate prevention, no feasible source, and no automatic branch change after approval. Customer recommendation tests shall use its separate capacity, luggage, budget, availability, and preference rules. Context tests shall cover valid primary responses, fallback after provider failure, adverse primary responses without favorable-result substitution, stale or missing data, supported time horizons, and distance-to-fuel calculations. Utilization and idle-duration tests shall verify their defined operational periods and eligibility conditions.
+
+[P04902 | 421715:421735 | NORMAL_TEXT]
+Integration Testing
+
+[P04903 | 421735:422261 | NORMAL_TEXT]
+Integration testing will be conducted after unit testing to verify whether the different modules of the system work together properly. Since the proposed system contains interconnected features, this testing phase will focus on checking the accuracy of data flow between the customer web application, staff web application, admin or owner web application, database, authentication service, file storage, payment records, vehicle records, rental records, notification services, reporting module, and decision-support features.
+
+[P04904 | 422261:422734 | NORMAL_TEXT]
+For the booking workflow, integration testing will validate the connection between customer registration, booking request submission, requirement upload, requirement verification, quotation or booking review, proof-of-payment upload, payment verification, vehicle assignment, booking confirmation, and customer notification. This will ensure that the booking process is properly connected from the customer’s initial request up to administrative approval and confirmation.
+
+[P04905 | 422734:423191 | NORMAL_TEXT]
+For the rental and fleet workflow, integration testing will verify the connection between confirmed bookings, vehicle records, rental records, vehicle release details, rental status updates, return processing, maintenance records, and generated reports. This will ensure that changes in booking and rental status are reflected in related records such as vehicle availability, branch assignment, payment records, maintenance status, and operational reports.
+
+[P04906 | 423191:423932 | NORMAL_TEXT]
+For the decision-support workflow, integration testing will check whether booking history, rental records, vehicle records, branch data, and selected context inputs are correctly used by the forecasting and recommendation modules. The test sequence shall trace a known booking-history dataset through the WMA forecast, projected-supply evaluation, shortage or surplus output, eligible candidate list, contextual review, and recorded administrative decision. Expected results and observed results shall be recorded at each step. Approval shall leave vehicle branch assignments unchanged, and missing external context shall remain visible. These tests establish conformance to the stated rules, not guaranteed real-world forecasting accuracy.
+
+[P04907 | 423932:424473 | NORMAL_TEXT]
+Role-based access testing will also be included during integration testing. This will verify whether each user role can access only the modules and records assigned to that role. Customer accounts should only access their own booking details and submitted requirements. Staff accounts should only access permitted booking, calendar, and operational coordination features. Admin or owner accounts should have access to approval, payment verification, reports, user management, and decision-support features based on the defined access rules.
+
+[P04908 | 424473:424474 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04909 | 424474:424489 | NORMAL_TEXT]
+System Testing
+
+[P04910 | 424489:424822 | NORMAL_TEXT]
+System testing will be conducted to evaluate the entire Web-based Car Rental Management System as a complete web-based platform. This testing will determine whether all major features function according to the system requirements and whether the system supports the actual business process from booking request to rental completion.
+
+[P04911 | 424822:425399 | NORMAL_TEXT]
+The researchers will test the complete workflow beginning with customer registration, booking request submission, requirement upload, staff or admin review, payment proof submission, payment verification, vehicle assignment, booking confirmation, vehicle release, rental monitoring, physical vehicle return, operational inspection, and report generation. Financial settlement is outside the current workflow. The purpose of this testing is to determine whether the system can complete the full operational workflow without errors, missing data, or inconsistent record updates.
+
+[P04912 | 425399:425862 | NORMAL_TEXT]
+System testing will also include checking database accuracy, record updating, status changes, file uploads, notifications, and transaction consistency. For example, when a booking is confirmed, the assigned vehicle status should update properly. When payment proof is uploaded, the payment record should be stored and made available only to authorized users. When a rental is completed, related reports and dashboard summaries should reflect the updated records.
+
+[P04913 | 425862:425863 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04914 | 425863:425887 | NORMAL_TEXT]
+User Acceptance Testing
+
+[P04915 | 425887:426221 | NORMAL_TEXT]
+User Acceptance Testing will be conducted to determine whether the system is acceptable and usable from the perspective of its intended users. Selected users, including customer or renter participants, staff users, administrators, and owner representatives, will be asked to perform common system tasks based on their assigned roles.
+
+[P04916 | 426221:426897 | NORMAL_TEXT]
+Customer or renter participants will test tasks such as account registration, vehicle browsing, booking request submission, requirement upload, proof-of-payment upload, booking status tracking, and notification viewing. Staff users will test tasks such as viewing booking schedules, monitoring calendar-related information, checking customer and booking records based on their access level, and updating permitted operational statuses. Admin or owner users will test tasks such as approving bookings, verifying requirements, checking payment records, managing vehicles, monitoring fleet status, generating reports, managing user roles, and reviewing decision-support outputs.
+
+[P04917 | 426897:427342 | NORMAL_TEXT]
+Feedback from users will be gathered to identify concerns related to ease of use, clarity of interface, accuracy of displayed information, mobile accessibility, access restrictions, and overall usefulness of the system. The results of User Acceptance Testing will help the researchers determine whether the system meets the operational needs of the participating car rental business and whether revisions are needed before final implementation.
+
+[P04918 | 427342:427343 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04919 | 427343:427363 | NORMAL_TEXT]
+Performance Testing
+
+[P04920 | 427363:427828 | NORMAL_TEXT]
+Performance testing will be conducted to determine whether the system responds within an acceptable time during common user activities. This testing will focus on practical system performance rather than large-scale stress testing. The researchers will check the response time of major pages and workflows such as login, dashboard loading, vehicle catalog viewing, booking request submission, file upload, report generation, and decision-support output generation.
+
+[P04921 | 427828:428531 | NORMAL_TEXT]
+The forecasting and recommendation features will be tested using a known, labeled synthetic dataset to determine whether the system follows the defined computation and allocation rules and produces results within a reasonable time. The test documentation will identify the dataset as synthetic and record the expected and observed outputs. Performance results from these records will demonstrate processing behavior only and will not be interpreted as empirical forecasting accuracy. Since the system will be used through desktop and mobile browsers, performance testing will help ensure that users can complete common tasks without unnecessary delays during development, demonstration, and evaluation.
+
+[P04922 | 428531:428532 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04923 | 428532:428568 | NORMAL_TEXT]
+Security and Access Control Testing
+
+[P04924 | 428568:428917 | NORMAL_TEXT]
+Security and access control testing will be conducted to verify whether the system properly protects sensitive records and restricts access based on user roles. This testing will focus on authentication, password reset, account verification, protected routes, role-based access control, file access restrictions, and unauthorized access prevention.
+
+[P04925 | 428917:429387 | NORMAL_TEXT]
+The researchers will test whether customers, staff, administrators, and owners are redirected only to the pages assigned to their roles. Attempts to access restricted pages or records will also be tested to ensure that unauthorized users cannot view or modify sensitive information. This includes customer requirements, valid IDs, driver’s licenses, proof-of-payment files, payment verification records, reports, user management functions, and decision-support outputs.
+
+[P04926 | 429387:429728 | NORMAL_TEXT]
+The testing will also check whether uploaded files are stored properly and can only be accessed by authorized users. Since the system will handle customer documents, payment proof, booking records, and operational reports, access control must be verified to prevent unauthorized viewing, editing, or downloading of confidential information.
+
+[P04927 | 429728:429729 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04928 | 429729:429770 | NORMAL_TEXT]
+Compatibility and Responsiveness Testing
+
+[P04929 | 429770:430132 | NORMAL_TEXT]
+Compatibility and responsiveness testing will be conducted to ensure that the system can be accessed through supported desktop, tablet, and mobile browsers. Since the participating car rental business uses laptops, iPads, iPhones, and mobile data during operations, the system will be tested on common browsers such as Google Chrome, Microsoft Edge, and Safari.
+
+[P04930 | 430132:430496 | NORMAL_TEXT]
+This testing will check whether pages, forms, tables, buttons, dialogs, calendars, uploaded files, dashboards, and notifications display and function properly across different screen sizes. It will also verify whether customer-side, staff-side, and admin or owner-side pages remain readable, responsive, and usable on mobile devices, tablets, and desktop screens.
+
+[P04931 | 430496:430497 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04932 | 430497:430515 | NORMAL_TEXT]
+Usability Testing
+
+[P04933 | 430515:430807 | NORMAL_TEXT]
+Usability testing will be conducted to determine whether the system is easy to understand, navigate, and operate for its intended users. This testing will focus on the clarity of labels, arrangement of menus, readability of information, ease of completing tasks, and overall user experience.
+
+[P04934 | 430807:431269 | NORMAL_TEXT]
+The researchers will observe whether users can complete common tasks such as submitting a booking request, uploading requirements, checking booking status, reviewing booking schedules, verifying payments, managing vehicles, generating reports, and reviewing dashboard information with minimal confusion. Feedback gathered from usability testing will be used to identify areas for improvement in interface design, navigation flow, form layout, and user guidance.
+
+[P04935 | 431269:431270 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04936 | 431270:431289 | NORMAL_TEXT]
+Test Documentation
+
+[P04937 | 431289:431790 | NORMAL_TEXT]
+The results of the testing procedures will be documented through test cases, test results, screenshots, issue logs, and tester remarks. Each test case will include the module tested, test objective, input data, expected output, actual output, result status, and remarks. Any errors, inconsistencies, access control issues, performance concerns, compatibility problems, or usability concerns found during testing will be recorded and corrected before proceeding to final evaluation and implementation.
+
+[P04938 | 431790:432524 | NORMAL_TEXT]
+Overall, the testing procedures will help ensure that the proposed Web-based Car Rental Management System functions as a reliable, secure, responsive, and usable web-based platform. Through test case preparation, unit testing, integration testing, system testing, user acceptance testing, performance testing, security and access control testing, compatibility and responsiveness testing, usability testing, and test documentation, the researchers will be able to verify whether the system supports the operational needs of the business and improves the management of bookings, requirement verification, payment processing, vehicle records, fleet monitoring, rental transactions, reports, forecasting, and rule-based recommendations.
+
+[P04939 | 432524:432525 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04940 | 432525:432545 | NORMAL_TEXT]
+System Requirements
+
+[P04941 | 432545:433016 | NORMAL_TEXT]
+The proposed the participating car rental business Management System is a web-based platform designed to run through standard browsers on staff and renter devices. Since the current operations rely on laptops, iPads, iPhones, home internet, and mobile data, the system requirements focus on browser compatibility, mobile accessibility, stable connectivity, lightweight performance, and secure data handling for booking, payment, vehicle, rental, and reporting processes.
+
+[P04942 | 433016:433025 | NORMAL_TEXT]
+Table 65
+
+[P04943 | 433025:433084 | NORMAL_TEXT]
+Desktop and Tablet System Requirements for Staff and Admin
+
+[P04944 | 433087:433097 | NORMAL_TEXT | TABLE row=0 col=0]
+COMPONENT
+
+[P04945 | 433098:433118 | NORMAL_TEXT | TABLE row=0 col=1]
+MINIMUM REQUIREMENT
+
+[P04946 | 433119:433143 | NORMAL_TEXT | TABLE row=0 col=2]
+RECOMMENDEDREQUIREMENT
+
+[P04947 | 433145:433162 | NORMAL_TEXT | TABLE row=1 col=0]
+Operating System
+
+[P04948 | 433163:433212 | NORMAL_TEXT | TABLE row=1 col=1]
+Windows 10 / macOS Monterey / iPadOS 15 or later
+
+[P04949 | 433213:433272 | NORMAL_TEXT | TABLE row=1 col=2]
+Latest Windows 11 / macOS Ventura or later / latest iPadOS
+
+[P04950 | 433274:433282 | NORMAL_TEXT | TABLE row=2 col=0]
+Browser
+
+[P04951 | 433283:433323 | NORMAL_TEXT | TABLE row=2 col=1]
+Google Chrome / Microsoft Edge / Safari
+
+[P04952 | 433324:433366 | NORMAL_TEXT | TABLE row=2 col=2]
+Latest version of Google Chrome or Safari
+
+[P04953 | 433368:433377 | NORMAL_TEXT | TABLE row=3 col=0]
+Internet
+
+[P04954 | 433378:433417 | NORMAL_TEXT | TABLE row=3 col=1]
+Stable Wi-Fi or mobile data connection
+
+[P04955 | 433418:433465 | NORMAL_TEXT | TABLE row=3 col=2]
+High-speed broadband, Wi-Fi, or 5G mobile data
+
+[P04956 | 433466:433552 | NORMAL_TEXT]
+	Continuation of Table 65. Desktop and Tablet System Requirements for Staff and Admin
+
+[P04957 | 433555:433565 | NORMAL_TEXT | TABLE row=0 col=0]
+COMPONENT
+
+[P04958 | 433566:433586 | NORMAL_TEXT | TABLE row=0 col=1]
+MINIMUM REQUIREMENT
+
+[P04959 | 433587:433611 | NORMAL_TEXT | TABLE row=0 col=2]
+RECOMMENDEDREQUIREMENT
+
+[P04960 | 433613:433617 | NORMAL_TEXT | TABLE row=1 col=0]
+RAM
+
+[P04961 | 433618:433623 | NORMAL_TEXT | TABLE row=1 col=1]
+4 GB
+
+[P04962 | 433624:433639 | NORMAL_TEXT | TABLE row=1 col=2]
+8 GB or higher
+
+[P04963 | 433641:433651 | NORMAL_TEXT | TABLE row=2 col=0]
+Processor
+
+[P04964 | 433652:433680 | NORMAL_TEXT | TABLE row=2 col=1]
+Dual-core CPU or equivalent
+
+[P04965 | 433681:433705 | NORMAL_TEXT | TABLE row=2 col=2]
+Quad-core CPU or better
+
+[P04966 | 433707:433715 | NORMAL_TEXT | TABLE row=3 col=0]
+Display
+
+[P04967 | 433716:433764 | NORMAL_TEXT | TABLE row=3 col=1]
+1366 x 768 resolution or iPad screen equivalent
+
+[P04968 | 433765:433812 | NORMAL_TEXT | TABLE row=3 col=2]
+1920 x 1080 resolution or larger tablet screen
+
+[P04969 | 433814:433826 | NORMAL_TEXT | TABLE row=4 col=0]
+Device Type
+
+[P04970 | 433827:433852 | NORMAL_TEXT | TABLE row=4 col=1]
+Laptop, desktop, or iPad
+
+[P04971 | 433853:433902 | NORMAL_TEXT | TABLE row=4 col=2]
+Laptop with updated browser or latest iPad model
+
+[P04972 | 433903:433904 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04973 | 433904:434597 | NORMAL_TEXT]
+Table 65 presents the minimum and recommended desktop and tablet system requirements for the internal users of the participating car rental business Management System including Operations Staff and Owner/Admin users. These requirements include the operating system, browser, internet connection, memory, processor, display, and device type needed to manage booking records, renter details, payment verification, vehicle availability, rental transactions, reports, and dashboard functions. Since the business currently uses laptops, iPads, and iPhones for daily operations, the system is designed to be accessible through standard web browsers without requiring separate software installation.
+
+[P04974 | 434597:434598 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04975 | 434598:434599 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04976 | 434599:434600 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04977 | 434600:434601 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P04978 | 434601:434610 | NORMAL_TEXT]
+Table 66
+
+[P04979 | 434610:434648 | NORMAL_TEXT]
+Mobile System Requirements for Renter
+
+[P04980 | 434651:434661 | NORMAL_TEXT | TABLE row=0 col=0]
+COMPONENT
+
+[P04981 | 434662:434682 | NORMAL_TEXT | TABLE row=0 col=1]
+MINIMUM REQUIREMENT
+
+[P04982 | 434683:434707 | NORMAL_TEXT | TABLE row=0 col=2]
+RECOMMENDEDREQUIREMENT
+
+[P04983 | 434709:434726 | NORMAL_TEXT | TABLE row=1 col=0]
+Operating System
+
+[P04984 | 434727:434758 | NORMAL_TEXT | TABLE row=1 col=1]
+Android 10 or iOS 14 and later
+
+[P04985 | 434759:434800 | NORMAL_TEXT | TABLE row=1 col=2]
+Android 12 or later / latest iOS version
+
+[P04986 | 434802:434810 | NORMAL_TEXT | TABLE row=2 col=0]
+Browser
+
+[P04987 | 434811:434851 | NORMAL_TEXT | TABLE row=2 col=1]
+Google Chrome / Safari / mobile browser
+
+[P04988 | 434852:434894 | NORMAL_TEXT | TABLE row=2 col=2]
+Latest version of Google Chrome or Safari
+
+[P04989 | 434896:434904 | NORMAL_TEXT | TABLE row=3 col=0]
+Storage
+
+[P04990 | 434905:434935 | NORMAL_TEXT | TABLE row=3 col=1]
+At least 300 MB of free space
+
+[P04991 | 434936:434962 | NORMAL_TEXT | TABLE row=3 col=2]
+500 MB or more free space
+
+[P04992 | 434964:434968 | NORMAL_TEXT | TABLE row=4 col=0]
+RAM
+
+[P04993 | 434969:434974 | NORMAL_TEXT | TABLE row=4 col=1]
+3 GB
+
+[P04994 | 434975:434990 | NORMAL_TEXT | TABLE row=4 col=2]
+4 GB or higher
+
+[P04995 | 434992:435001 | NORMAL_TEXT | TABLE row=5 col=0]
+Internet
+
+[P04996 | 435002:435030 | NORMAL_TEXT | TABLE row=5 col=1]
+Stable mobile data or Wi-Fi
+
+[P04997 | 435031:435066 | NORMAL_TEXT | TABLE row=5 col=2]
+High-speed Wi-Fi or 5G mobile data
+
+[P04998 | 435068:435080 | NORMAL_TEXT | TABLE row=6 col=0]
+Screen Size
+
+[P04999 | 435081:435102 | NORMAL_TEXT | TABLE row=6 col=1]
+5.0 inches or larger
+
+[P05000 | 435103:435124 | NORMAL_TEXT | TABLE row=6 col=2]
+6.0 inches or larger
+
+[P05001 | 435126:435147 | NORMAL_TEXT | TABLE row=7 col=0]
+Camera / File Upload
+
+[P05002 | 435148:435187 | NORMAL_TEXT | TABLE row=7 col=1]
+Built-in camera or file upload support
+
+[P05003 | 435188:435233 | NORMAL_TEXT | TABLE row=7 col=2]
+Clear camera and updated file upload support
+
+[P05004 | 435234:435235 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05005 | 435235:435829 | NORMAL_TEXT]
+Table 66 presents the minimum and recommended mobile system requirements for renters using the participating car rental business Management System. These requirements include the operating system, browser, storage, memory, internet connection, screen size, and camera or file upload support needed to access the vehicle catalog, submit booking requests, upload renter requirements, upload proof of payment, view booking status, and receive system notifications. Since renters may use different mobile devices, the system supports both Android and iOS devices through a browser-based interface.
+
+[P05006 | 435829:435830 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05007 | 435830:435831 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05008 | 435831:435844 | NORMAL_TEXT]
+Quality Plan
+
+[P05009 | 435844:436314 | NORMAL_TEXT]
+Throughout the development of the project, several quality assurance activities will be implemented to ensure that the system is reliable, functional, secure, and easy to use. The researchers will conduct system testing, review system functions, validate user workflows, and collect evaluation feedback from selected respondents. These activities will help identify errors, improve system usability, and ensure that the developed system meets its intended requirements.
+
+[P05010 | 436314:436697 | NORMAL_TEXT]
+The system will be evaluated based on selected ISO/IEC 25010 software quality characteristics, specifically functional suitability, performance efficiency, compatibility, interaction capability, reliability, security, maintainability, flexibility, and safety. These characteristics will serve as the basis for assessing the overall quality and acceptability of the developed system.
+
+[P05011 | 436697:437329 | NORMAL_TEXT]
+The evaluation will focus on the system’s ability to support customer-side and administrative-side functions. Customer-side functions include account registration, vehicle catalog viewing, Customer-Side Vehicle Recommendation, booking request submission, requirement upload, proof-of-payment upload, booking status tracking, notifications, and rental policy viewing. Administrative-side functions include booking management, customer verification, payment validation, vehicle records management, fleet monitoring, maintenance monitoring, demand forecasting, branch allocation recommendation, reports, and role-based access control.
+
+[P05012 | 437329:438028 | NORMAL_TEXT]
+The ISO/IEC 25010 standard will serve as the primary framework for the system evaluation and questionnaire used in this study. The research instrument will be adapted from an existing ISO/IEC 25010-based evaluation questionnaire, particularly the modified survey questionnaire used by Mission (2020) in evaluating a system based on software quality criteria. Since Mission’s instrument was based on an earlier ISO/IEC 25010 model, the researchers will not copy the instrument directly. Instead, the questionnaire structure and item construction will be adapted and revised according to the selected ISO/IEC 25010 characteristics, the system features, and the respondent groups of the present study.
+
+[P05013 | 438028:438410 | NORMAL_TEXT]
+A recent ISO/IEC 25010 based application evaluation study by Nugraha and Rachman (2024) will also be used as a supporting basis for aligning the instrument with the updated model. Prior to data gathering, the adapted questionnaire will be reviewed by qualified validators to ensure that the items are clear, relevant, and aligned with the selected software quality characteristics.
+
+[P05014 | 438410:438411 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05015 | 438411:438431 | NORMAL_TEXT]
+Implementation Plan
+
+[P05016 | 438431:438866 | NORMAL_TEXT]
+The implementation of the proposed web-based car rental management and decision-support system will be carried out in a controlled and systematic manner to ensure proper functionality, usability, and reliability. The system will be prepared for the participating car rental business, specifically for its Manila and Antipolo operations, with features intended for customers or renters, owners or administrators, and operational staff.
+
+[P05017 | 438866:439414 | NORMAL_TEXT]
+The customer-side system will be accessible through standard desktop and mobile web browsers. Customers will be able to register an account, view available vehicles, use the Customer-Side Vehicle Recommendation, submit booking requests, upload rental requirements, upload proof of payment, track booking status, view rental policies, and receive notifications. The Customer-Side Vehicle Recommendation will be tested to ensure that it properly accepts customer inputs and displays suitable vehicle suggestions based on predefined rule-based logic.
+
+[P05018 | 439414:439905 | NORMAL_TEXT]
+The administrative system will be implemented through a web-based platform accessible to authorized users. Owners, administrators, and staff will be given access according to their assigned roles. The administrative features will include booking management, customer verification, payment validation, vehicle and fleet management, maintenance monitoring, scheduling, demand forecasting, branch allocation recommendation, report generation, notification management, and user role management.
+
+[P05019 | 439905:440546 | NORMAL_TEXT]
+The implementation process will be conducted in phases. First, the researchers will configure the system and verify that all major modules are functional. Second, system testing will be conducted to check whether the customer-side and administrative-side features are working as intended. Third, selected users will be allowed to test the system by performing common tasks such as using the Customer-Side Vehicle Recommendation, submitting booking requests, uploading requirements, verifying payments, updating vehicle records, recording maintenance information, generating demand forecasts, and reviewing branch allocation recommendations.
+
+[P05020 | 440546:441020 | NORMAL_TEXT]
+After system testing, necessary revisions will be made based on observed issues, user feedback, and adviser or panel recommendations. Once the system has been configured, tested, revised, and validated through user feedback, it will be prepared for user acceptance testing. This implementation approach ensures that the system is introduced in a practical and manageable manner while allowing the researchers to assess whether the system supports its intended requirements.
+
+[P05021 | 441020:441036 | NORMAL_TEXT]
+Evaluation Plan
+
+[P05022 | 441036:441458 | NORMAL_TEXT]
+In order to assess the system’s performance, usability, technical quality, and overall level of user satisfaction, the study will employ purposive sampling and total enumeration depending on the respondent group. This approach ensures that data will be gathered from respondents who are directly involved in or have actual experience with the use of the system, thereby providing relevant and reliable evaluation results.
+
+[P05023 | 441458:441999 | NORMAL_TEXT]
+The evaluation will involve 50 to 80 customers or renters, who will assess the system based on their booking experience and use of the Customer-Side Vehicle Recommendation for vehicle selection. In addition, 1 to 3 owners/administrators, and staff will be included through total enumeration or actual available population and will evaluate the system from an operational management perspective, particularly in relation to booking management, fleet monitoring, maintenance tracking, demand forecasting, and branch allocation recommendation.
+
+[P05024 | 441999:442506 | NORMAL_TEXT]
+Furthermore, 3 to 5 IT expert evaluators will be selected purposely based on their professional background in information technology, software development, systems evaluation, database management, or related fields. They will assess the technical quality of the system in accordance with selected ISO/IEC 25010 software quality characteristics, including functional suitability, performance efficiency, compatibility, interaction capability, reliability, security, maintainability, flexibility, and safety.
+
+[P05025 | 442506:442796 | NORMAL_TEXT]
+The survey questionnaire will be distributed through printed or digital copies depending on the availability and accessibility of the participants. The questionnaire will be based on the ISO/IEC 25010 standard and will be aligned with the metrics used in the User Acceptance Testing phase.
+
+[P05026 | 442796:443349 | NORMAL_TEXT]
+This study will utilize three separate survey questionnaires to evaluate the proposed Web-based Car Rental Management System in accordance with the ISO/IEC 25010 System and Software Quality Model. The questionnaires will be designed for three distinct user groups: customer or renter respondents, owner/administrator/staff respondents, and IT expert evaluators. Although the instruments are grounded in the same quality framework, each questionnaire focuses on quality characteristics relevant to the respondents’ roles and level of system interaction.
+
+[P05027 | 443349:443358 | NORMAL_TEXT]
+Table 67
+
+[P05028 | 443358:443377 | NORMAL_TEXT]
+Respondent Profile
+
+[P05029 | 443380:443397 | NORMAL_TEXT | TABLE row=0 col=0]
+Respondent Group
+
+[P05030 | 443398:443417 | NORMAL_TEXT | TABLE row=0 col=1]
+Target Respondents
+
+[P05031 | 443418:443437 | NORMAL_TEXT | TABLE row=0 col=2]
+Sampling Technique
+
+[P05032 | 443438:443455 | NORMAL_TEXT | TABLE row=0 col=3]
+Evaluation Focus
+
+[P05033 | 443457:443485 | NORMAL_TEXT | TABLE row=1 col=0]
+Customer/Renter Respondents
+
+[P05034 | 443486:443555 | NORMAL_TEXT | TABLE row=1 col=1]
+Actual or potential renters of the participating car rental business
+
+[P05035 | 443556:443639 | NORMAL_TEXT | TABLE row=1 col=2]
+Slovin’s formula or purposive sampling, depending on available customer population
+
+[P05036 | 443640:443836 | NORMAL_TEXT | TABLE row=1 col=3]
+Customer-side features, Customer-Side Vehicle Recommendation, booking request, requirement upload, proof-of-payment upload, booking tracking, notifications, rental policy viewing, and ease of use
+
+[P05037 | 443838:443876 | NORMAL_TEXT | TABLE row=2 col=0]
+Owner/Administrator/Staff Respondents
+
+[P05038 | 443877:443962 | NORMAL_TEXT | TABLE row=2 col=1]
+Owner, administrator, and operational staff of the participating car rental business
+
+[P05039 | 443963:444018 | NORMAL_TEXT | TABLE row=2 col=2]
+Total enumeration, if all business users are available
+
+[P05040 | 444019:444207 | NORMAL_TEXT | TABLE row=2 col=3]
+Booking management, payment validation, customer verification, vehicle records, maintenance monitoring, fleet monitoring, reports, demand forecasting, and branch allocation recommendation
+
+[P05041 | 444209:444230 | NORMAL_TEXT | TABLE row=3 col=0]
+IT Expert Evaluators
+
+[P05042 | 444231:444256 | NORMAL_TEXT | TABLE row=3 col=1]
+Three to five IT experts
+
+[P05043 | 444257:444276 | NORMAL_TEXT | TABLE row=3 col=2]
+Purposive sampling
+
+[P05044 | 444277:444451 | NORMAL_TEXT | TABLE row=3 col=3]
+Functional suitability, performance efficiency, compatibility, interaction capability, reliability, security, maintainability, flexibility, safety, and technical correctness
+
+[P05045 | 444452:444453 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05046 | 444453:444668 | NORMAL_TEXT]
+Table 67 presents the profile of respondents who will participate in the system evaluation. The respondents are grouped according to their role in the system and the specific features they are expected to evaluate.
+
+[P05047 | 444668:444669 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05048 | 444669:444678 | NORMAL_TEXT]
+Table 68
+
+[P05049 | 444678:444707 | NORMAL_TEXT]
+Evaluation Respondent Matrix
+
+[P05050 | 444710:444743 | NORMAL_TEXT | TABLE row=0 col=0]
+System Feature / Evaluation Area
+
+[P05051 | 444744:444760 | NORMAL_TEXT | TABLE row=0 col=1]
+Customer/Renter
+
+[P05052 | 444761:444779 | NORMAL_TEXT | TABLE row=0 col=2]
+Owner/Admin/Staff
+
+[P05053 | 444780:444791 | NORMAL_TEXT | TABLE row=0 col=3]
+IT Experts
+
+[P05054 | 444793:444824 | NORMAL_TEXT | TABLE row=1 col=0]
+Account Registration and Login
+
+[P05055 | 444825:444829 | NORMAL_TEXT | TABLE row=1 col=1]
+Yes
+
+[P05056 | 444830:444834 | NORMAL_TEXT | TABLE row=1 col=2]
+Yes
+
+[P05057 | 444835:444839 | NORMAL_TEXT | TABLE row=1 col=3]
+Yes
+
+[P05058 | 444841:444865 | NORMAL_TEXT | TABLE row=2 col=0]
+Vehicle Catalog Viewing
+
+[P05059 | 444866:444870 | NORMAL_TEXT | TABLE row=2 col=1]
+Yes
+
+[P05060 | 444871:444875 | NORMAL_TEXT | TABLE row=2 col=2]
+Yes
+
+[P05061 | 444876:444880 | NORMAL_TEXT | TABLE row=2 col=3]
+Yes
+
+[P05062 | 444882:444919 | NORMAL_TEXT | TABLE row=3 col=0]
+Customer-Side Vehicle Recommendation
+
+[P05063 | 444920:444924 | NORMAL_TEXT | TABLE row=3 col=1]
+Yes
+
+[P05064 | 444925:444928 | NORMAL_TEXT | TABLE row=3 col=2]
+No
+
+[P05065 | 444929:444933 | NORMAL_TEXT | TABLE row=3 col=3]
+Yes
+
+[P05066 | 444935:444962 | NORMAL_TEXT | TABLE row=4 col=0]
+Booking Request Submission
+
+[P05067 | 444963:444967 | NORMAL_TEXT | TABLE row=4 col=1]
+Yes
+
+[P05068 | 444968:444972 | NORMAL_TEXT | TABLE row=4 col=2]
+Yes
+
+[P05069 | 444973:444977 | NORMAL_TEXT | TABLE row=4 col=3]
+Yes
+
+[P05070 | 444979:445015 | NORMAL_TEXT | TABLE row=5 col=0]
+Requirement Upload and Verification
+
+[P05071 | 445016:445020 | NORMAL_TEXT | TABLE row=5 col=1]
+Yes
+
+[P05072 | 445021:445025 | NORMAL_TEXT | TABLE row=5 col=2]
+Yes
+
+[P05073 | 445026:445030 | NORMAL_TEXT | TABLE row=5 col=3]
+Yes
+
+[P05074 | 445032:445079 | NORMAL_TEXT | TABLE row=6 col=0]
+Proof-of-Payment Upload and Payment Validation
+
+[P05075 | 445080:445084 | NORMAL_TEXT | TABLE row=6 col=1]
+Yes
+
+[P05076 | 445085:445089 | NORMAL_TEXT | TABLE row=6 col=2]
+Yes
+
+[P05077 | 445090:445094 | NORMAL_TEXT | TABLE row=6 col=3]
+Yes
+
+[P05078 | 445096:445138 | NORMAL_TEXT | TABLE row=7 col=0]
+Booking Status Tracking and Notifications
+
+[P05079 | 445139:445143 | NORMAL_TEXT | TABLE row=7 col=1]
+Yes
+
+[P05080 | 445144:445148 | NORMAL_TEXT | TABLE row=7 col=2]
+Yes
+
+[P05081 | 445149:445153 | NORMAL_TEXT | TABLE row=7 col=3]
+Yes
+
+[P05082 | 445155:445177 | NORMAL_TEXT | TABLE row=8 col=0]
+Rental Policy Viewing
+
+[P05083 | 445178:445182 | NORMAL_TEXT | TABLE row=8 col=1]
+Yes
+
+[P05084 | 445183:445187 | NORMAL_TEXT | TABLE row=8 col=2]
+Yes
+
+[P05085 | 445188:445192 | NORMAL_TEXT | TABLE row=8 col=3]
+Yes
+
+[P05086 | 445194:445223 | NORMAL_TEXT | TABLE row=9 col=0]
+Vehicle and Fleet Management
+
+[P05087 | 445224:445227 | NORMAL_TEXT | TABLE row=9 col=1]
+No
+
+[P05088 | 445228:445232 | NORMAL_TEXT | TABLE row=9 col=2]
+Yes
+
+[P05089 | 445233:445237 | NORMAL_TEXT | TABLE row=9 col=3]
+Yes
+
+[P05090 | 445239:445262 | NORMAL_TEXT | TABLE row=10 col=0]
+Maintenance Monitoring
+
+[P05091 | 445263:445266 | NORMAL_TEXT | TABLE row=10 col=1]
+No
+
+[P05092 | 445267:445271 | NORMAL_TEXT | TABLE row=10 col=2]
+Yes
+
+[P05093 | 445272:445276 | NORMAL_TEXT | TABLE row=10 col=3]
+Yes
+
+[P05094 | 445278:445307 | NORMAL_TEXT | TABLE row=11 col=0]
+Demand Forecasting using WMA
+
+[P05095 | 445308:445311 | NORMAL_TEXT | TABLE row=11 col=1]
+No
+
+[P05096 | 445312:445316 | NORMAL_TEXT | TABLE row=11 col=2]
+Yes
+
+[P05097 | 445317:445321 | NORMAL_TEXT | TABLE row=11 col=3]
+Yes
+
+[P05098 | 445323:445356 | NORMAL_TEXT | TABLE row=12 col=0]
+Branch Allocation Recommendation
+
+[P05099 | 445357:445360 | NORMAL_TEXT | TABLE row=12 col=1]
+No
+
+[P05100 | 445361:445365 | NORMAL_TEXT | TABLE row=12 col=2]
+Yes
+
+[P05101 | 445366:445370 | NORMAL_TEXT | TABLE row=12 col=3]
+Yes
+
+[P05102 | 445372:445394 | NORMAL_TEXT | TABLE row=13 col=0]
+Reports and Dashboard
+
+[P05103 | 445395:445398 | NORMAL_TEXT | TABLE row=13 col=1]
+No
+
+[P05104 | 445399:445403 | NORMAL_TEXT | TABLE row=13 col=2]
+Yes
+
+[P05105 | 445404:445408 | NORMAL_TEXT | TABLE row=13 col=3]
+Yes
+
+[P05106 | 445410:445436 | NORMAL_TEXT | TABLE row=14 col=0]
+Role-Based Access Control
+
+[P05107 | 445437:445440 | NORMAL_TEXT | TABLE row=14 col=1]
+No
+
+[P05108 | 445441:445445 | NORMAL_TEXT | TABLE row=14 col=2]
+Yes
+
+[P05109 | 445446:445450 | NORMAL_TEXT | TABLE row=14 col=3]
+Yes
+
+[P05110 | 445452:445495 | NORMAL_TEXT | TABLE row=15 col=0]
+Security, Reliability, and Maintainability
+
+[P05111 | 445496:445499 | NORMAL_TEXT | TABLE row=15 col=1]
+No
+
+[P05112 | 445500:445503 | NORMAL_TEXT | TABLE row=15 col=2]
+No
+
+[P05113 | 445504:445508 | NORMAL_TEXT | TABLE row=15 col=3]
+Yes
+
+[P05114 | 445509:445510 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05115 | 445510:445775 | NORMAL_TEXT]
+Table 68 shows the Evaluation Respondent Matrix of the study. It identifies which respondent group will evaluate each system feature or evaluation area. This ensures that each feature will be assessed by the respondents who are most familiar with its intended use.
+
+[P05116 | 445775:445776 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05117 | 445776:445813 | NORMAL_TEXT]
+Customer/Renter Survey Questionnaire
+
+[P05118 | 445813:446239 | NORMAL_TEXT]
+The Customer/Renter Survey Questionnaire was designed to assess user-facing quality characteristics of the system based on ISO/IEC 25010. It focuses on Functional Suitability, Performance Efficiency, Compatibility, Interaction Capability, Reliability, Security, Maintainability, Flexibility, and Safety, which are critical in evaluating customers’ experience in using the booking and vehicle selection features of the system.
+
+[P05119 | 446239:446240 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05120 | 446240:446266 | NORMAL_TEXT]
+A. Functional Suitability
+
+[P05121 | 446266:446583 | NORMAL_TEXT]
+In the ISO/IEC 25010 definition, functional suitability refers to how well a product or system provides the right functions to meet user needs under specified conditions, ensuring that all required functions are present, work correctly, and effectively support users in achieving their intended tasks and objectives.
+
+[P05122 | 446583:446652 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05123 | 446652:446741 | NORMAL_TEXT | LIST id=kix.bwlkvbdklvt level=0]
+The system provides all the features needed for submitting a car rental booking request.
+
+[P05124 | 446741:446814 | NORMAL_TEXT | LIST id=kix.bwlkvbdklvt level=0]
+The vehicle catalog allows customers to view available vehicles clearly.
+
+[P05125 | 446814:446915 | NORMAL_TEXT | LIST id=kix.bwlkvbdklvt level=0]
+The Customer-Side Vehicle Recommendation allows customers to input trip requirements before booking.
+
+[P05126 | 446915:447108 | NORMAL_TEXT | LIST id=kix.bwlkvbdklvt level=0]
+The Customer-Side Vehicle Recommendation provides vehicle suggestions that match the customer’s passenger capacity, destination or travel area, budget, rental duration, and vehicle preference.
+
+[P05127 | 447108:447197 | NORMAL_TEXT | LIST id=kix.bwlkvbdklvt level=0]
+The system allows customers to upload rental requirements and proof of payment properly.
+
+[P05128 | 447197:447256 | NORMAL_TEXT | LIST id=kix.bwlkvbdklvt level=0]
+The system allows customers to track their booking status.
+
+[P05129 | 447256:447595 | NORMAL_TEXT]
+These questions specifically address whether the system offers complete and appropriate customer-side features, covers essential booking functions, and supports vehicle selection before booking. By directly targeting these functional areas, the questions together measure the system’s functional suitability from the customer perspective.
+
+[P05130 | 447595:447596 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05131 | 447596:447622 | NORMAL_TEXT]
+B. Performance Efficiency
+
+[P05132 | 447622:447865 | NORMAL_TEXT]
+In the ISO/IEC 25010 definition, performance efficiency refers to the degree to which a product or system performs its functions within specified time and throughput parameters while efficiently utilizing resources under specified conditions.
+
+[P05133 | 447865:447934 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05134 | 447934:447994 | NORMAL_TEXT | LIST id=kix.qytq5vamju3 level=0]
+The system loads pages and forms within an acceptable time.
+
+[P05135 | 447994:448088 | NORMAL_TEXT | LIST id=kix.qytq5vamju3 level=0]
+The Customer-Side Vehicle Recommendation processes customer inputs without unnecessary delay.
+
+[P05136 | 448088:448156 | NORMAL_TEXT | LIST id=kix.qytq5vamju3 level=0]
+The system allows customers to submit booking requests efficiently.
+
+[P05137 | 448156:448254 | NORMAL_TEXT | LIST id=kix.qytq5vamju3 level=0]
+The system allows customers to upload requirements and proof of payment without noticeable delay.
+
+[P05138 | 448254:448466 | NORMAL_TEXT]
+These questions include response time, processing speed, booking submission, and file upload performance. These elements help assess the efficiency of the customer-side system from the perspective of the renter.
+
+[P05139 | 448466:448467 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05140 | 448467:448484 | NORMAL_TEXT]
+C. Compatibility
+
+[P05141 | 448484:448678 | NORMAL_TEXT]
+In the ISO/IEC 25010 definition, compatibility refers to the degree to which a product, system, or component can perform its required functions while sharing a common environment and resources.
+
+[P05142 | 448678:448747 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05143 | 448747:448799 | NORMAL_TEXT | LIST id=kix.9osuxsoqa1kc level=0]
+The system works properly on the device being used.
+
+[P05144 | 448799:448855 | NORMAL_TEXT | LIST id=kix.9osuxsoqa1kc level=0]
+The system can be accessed through common web browsers.
+
+[P05145 | 448855:448923 | NORMAL_TEXT | LIST id=kix.9osuxsoqa1kc level=0]
+The system interface remains usable on desktop and mobile browsers.
+
+[P05146 | 448923:448990 | NORMAL_TEXT | LIST id=kix.9osuxsoqa1kc level=0]
+The customer-side features work properly across supported devices.
+
+[P05147 | 448990:449207 | NORMAL_TEXT]
+These questions check whether the system works correctly across different user devices and common browsers. They help measure how compatible the system is for customers who may use laptops, tablets, or mobile phones.
+
+[P05148 | 449207:449208 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05149 | 449208:449234 | NORMAL_TEXT]
+D. Interaction Capability
+
+[P05150 | 449234:449492 | NORMAL_TEXT]
+In the ISO/IEC 25010 definition, interaction capability refers to the degree to which a product or system can be effectively interacted with by specified users through its user interface to exchange information and complete tasks in various contexts of use.
+
+[P05151 | 449492:449561 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05152 | 449561:449607 | NORMAL_TEXT | LIST id=kix.pm21ewjxmvcr level=0]
+The system is easy to understand and operate.
+
+[P05153 | 449607:449649 | NORMAL_TEXT | LIST id=kix.pm21ewjxmvcr level=0]
+The labels, buttons, and forms are clear.
+
+[P05154 | 449649:449740 | NORMAL_TEXT | LIST id=kix.pm21ewjxmvcr level=0]
+The Customer-Side Vehicle Recommendation is easy to use when selecting a suitable vehicle.
+
+[P05155 | 449740:449798 | NORMAL_TEXT | LIST id=kix.pm21ewjxmvcr level=0]
+Booking-related tasks can be completed without confusion.
+
+[P05156 | 449798:449862 | NORMAL_TEXT | LIST id=kix.pm21ewjxmvcr level=0]
+The system provides clear messages, prompts, and notifications.
+
+[P05157 | 449862:450019 | NORMAL_TEXT]
+These questions assess ease of use, independent task completion, clarity of design, and the ability of customers to complete system tasks without confusion.
+
+[P05158 | 450019:450020 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05159 | 450020:450035 | NORMAL_TEXT]
+E. Reliability
+
+[P05160 | 450035:450227 | NORMAL_TEXT]
+According to ISO/IEC 25010, reliability refers to the degree to which a system performs specified functions consistently and accurately under stated conditions for a specified period of time.
+
+[P05161 | 450227:450296 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05162 | 450296:450358 | NORMAL_TEXT | LIST id=kix.ru7ev0w6zray level=0]
+The system performs its customer-side functions consistently.
+
+[P05163 | 450358:450406 | NORMAL_TEXT | LIST id=kix.ru7ev0w6zray level=0]
+The system accurately records booking requests.
+
+[P05164 | 450406:450475 | NORMAL_TEXT | LIST id=kix.ru7ev0w6zray level=0]
+The system properly handles incomplete or incorrect customer inputs.
+
+[P05165 | 450475:450528 | NORMAL_TEXT | LIST id=kix.ru7ev0w6zray level=0]
+The system provides accurate booking status updates.
+
+[P05166 | 450528:450666 | NORMAL_TEXT]
+These questions assess whether the system can consistently support customer transactions and provide correct outputs during customer use.
+
+[P05167 | 450666:450667 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05168 | 450667:450679 | NORMAL_TEXT]
+F. Security
+
+[P05169 | 450679:450857 | NORMAL_TEXT]
+According to ISO/IEC 25010, security is the degree to which a system protects information and data so that unauthorized persons or systems cannot access, modify, or misuse them.
+
+[P05170 | 450857:450926 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05171 | 450926:451006 | NORMAL_TEXT | LIST id=kix.wwwvizqlzwzh level=0]
+The system requires customers to log in before accessing their booking records.
+
+[P05172 | 451006:451074 | NORMAL_TEXT | LIST id=kix.wwwvizqlzwzh level=0]
+The system protects customer information and uploaded requirements.
+
+[P05173 | 451074:451145 | NORMAL_TEXT | LIST id=kix.wwwvizqlzwzh level=0]
+The system protects proof-of-payment records from unauthorized access.
+
+[P05174 | 451145:451210 | NORMAL_TEXT | LIST id=kix.wwwvizqlzwzh level=0]
+The system separates customer access from administrative access.
+
+[P05175 | 451210:451400 | NORMAL_TEXT]
+These questions are justified under this characteristic because the proposed system will handle sensitive customer information, uploaded requirements, proof of payment, and booking records.
+
+[P05176 | 451400:451401 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05177 | 451401:451420 | NORMAL_TEXT]
+G. Maintainability
+
+[P05178 | 451420:451563 | NORMAL_TEXT]
+According to ISO/IEC 25010, maintainability refers to the ease with which a system can be modified, supported, and kept operational over time.
+
+[P05179 | 451563:451632 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05180 | 451632:451686 | NORMAL_TEXT | LIST id=kix.a2fa4z7coc4h level=0]
+The system appears organized and properly maintained.
+
+[P05181 | 451686:451767 | NORMAL_TEXT | LIST id=kix.a2fa4z7coc4h level=0]
+The system provides updated information about bookings and vehicle availability.
+
+[P05182 | 451767:451841 | NORMAL_TEXT | LIST id=kix.a2fa4z7coc4h level=0]
+The system allows customer-side information to be updated when necessary.
+
+[P05183 | 451841:451984 | NORMAL_TEXT]
+These questions help assess whether the system appears manageable and capable of supporting future improvements from the customer perspective.
+
+[P05184 | 451984:451985 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05185 | 451985:452000 | NORMAL_TEXT]
+H. Flexibility
+
+[P05186 | 452000:452145 | NORMAL_TEXT]
+According to ISO/IEC 25010, flexibility refers to the ability of a system to be adapted to different requirements, environments, and user needs.
+
+[P05187 | 452145:452214 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05188 | 452214:452268 | NORMAL_TEXT | LIST id=kix.3yyw7361xewd level=0]
+The system supports different customer booking needs.
+
+[P05189 | 452268:452364 | NORMAL_TEXT | LIST id=kix.3yyw7361xewd level=0]
+The Customer-Side Vehicle Recommendation allows customers to enter different trip requirements.
+
+[P05190 | 452364:452439 | NORMAL_TEXT | LIST id=kix.3yyw7361xewd level=0]
+The system can support different vehicle preferences and rental durations.
+
+[P05191 | 452439:452521 | NORMAL_TEXT | LIST id=kix.3yyw7361xewd level=0]
+The system can accommodate changes in customer booking details before submission.
+
+[P05192 | 452521:452672 | NORMAL_TEXT]
+These questions are justified under flexibility because they assess whether the system can support varied customer requirements and rental situations.
+
+[P05193 | 452672:452673 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05194 | 452673:452683 | NORMAL_TEXT]
+I. Safety
+
+[P05195 | 452683:452836 | NORMAL_TEXT]
+According to ISO/IEC 25010, safety concerns the degree to which a system reduces the risk of harm or negative consequences during its operation and use.
+
+[P05196 | 452836:452905 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05197 | 452905:452978 | NORMAL_TEXT | LIST id=kix.fyrnefv469un level=0]
+The system provides clear instructions that support safe and proper use.
+
+[P05198 | 452978:453059 | NORMAL_TEXT | LIST id=kix.fyrnefv469un level=0]
+The system helps prevent customers from selecting vehicles that are unavailable.
+
+[P05199 | 453059:453131 | NORMAL_TEXT | LIST id=kix.fyrnefv469un level=0]
+The system shows booking-related information clearly before submission.
+
+[P05200 | 453131:453214 | NORMAL_TEXT | LIST id=kix.fyrnefv469un level=0]
+The system ensures that final booking approval remains under authorized personnel.
+
+[P05201 | 453214:453366 | NORMAL_TEXT]
+These questions are justified under safety because they assess whether the system supports safe, controlled, and properly reviewed rental transactions.
+
+[P05202 | 453366:453367 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05203 | 453367:453414 | NORMAL_TEXT]
+Owner/Administrator/Staff Survey Questionnaire
+
+[P05204 | 453414:453945 | NORMAL_TEXT]
+The Owner/Administrator/Staff Survey Questionnaire was developed to evaluate system quality from an administrative and operational perspective, following the ISO/IEC 25010 quality model. This focuses on Functional Suitability, Performance Efficiency, Compatibility, Interaction Capability, Reliability, Security, Maintainability, Flexibility, and Safety related to booking management, vehicle records, payment verification, maintenance monitoring, demand forecasting, branch allocation recommendation, reports, and access control.
+
+[P05205 | 453945:453946 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05206 | 453946:453972 | NORMAL_TEXT]
+A. Functional Suitability
+
+[P05207 | 453972:454232 | NORMAL_TEXT]
+ISO/IEC 25010 defines functional appropriateness as how well a system’s functions meet both stated and unstated requirements. For administrators and staff, this means checking if the system offers enough tools for managing, monitoring, and running operations.
+
+[P05208 | 454232:454301 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05209 | 454301:454376 | NORMAL_TEXT | LIST id=kix.4l44ra9im34b level=0]
+The system provides the necessary functions for managing booking requests.
+
+[P05210 | 454376:454431 | NORMAL_TEXT | LIST id=kix.4l44ra9im34b level=0]
+The system supports customer requirement verification.
+
+[P05211 | 454431:454489 | NORMAL_TEXT | LIST id=kix.4l44ra9im34b level=0]
+The system supports manual proof-of-payment verification.
+
+[P05212 | 454489:454559 | NORMAL_TEXT | LIST id=kix.4l44ra9im34b level=0]
+The system allows administrators to manage vehicle and fleet records.
+
+[P05213 | 454559:454635 | NORMAL_TEXT | LIST id=kix.4l44ra9im34b level=0]
+The system supports maintenance monitoring and vehicle condition recording.
+
+[P05214 | 454635:454716 | NORMAL_TEXT | LIST id=kix.4l44ra9im34b level=0]
+The system provides demand forecasting using the Weighted Moving Average method.
+
+[P05215 | 454716:454797 | NORMAL_TEXT | LIST id=kix.4l44ra9im34b level=0]
+The system provides branch allocation recommendations for administrative review.
+
+[P05216 | 454797:454858 | NORMAL_TEXT | LIST id=kix.4l44ra9im34b level=0]
+The system generates useful reports and dashboard summaries.
+
+[P05217 | 454858:455089 | NORMAL_TEXT]
+These questions check if the system’s administrative features are complete and suitable. They look at whether administrators have the right tools to manage rental operations, track records, and support decision-making effectively.
+
+[P05218 | 455089:455090 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05219 | 455090:455116 | NORMAL_TEXT]
+B. Performance Efficiency
+
+[P05220 | 455116:455393 | NORMAL_TEXT]
+According to ISO/IEC 25010, performance efficiency refers to system performance relative to the number of resources used under stated conditions. In the admin context, this characteristic emphasizes timely task execution and efficient generation of reports and system outputs.
+
+[P05221 | 455393:455462 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05222 | 455462:455519 | NORMAL_TEXT | LIST id=kix.vc1k5zndh1k4 level=0]
+The system processes administrative records efficiently.
+
+[P05223 | 455519:455615 | NORMAL_TEXT | LIST id=kix.vc1k5zndh1k4 level=0]
+The system loads booking, customer, vehicle, and maintenance records within an acceptable time.
+
+[P05224 | 455615:455695 | NORMAL_TEXT | LIST id=kix.vc1k5zndh1k4 level=0]
+The system generates reports and dashboard summaries without unnecessary delay.
+
+[P05225 | 455695:455785 | NORMAL_TEXT | LIST id=kix.vc1k5zndh1k4 level=0]
+The system processes demand forecasting and branch allocation recommendation efficiently.
+
+[P05226 | 455785:456005 | NORMAL_TEXT]
+These questions assess performance efficiency by focusing on response time and processing speed. Efficient performance ensures that administrators can carry out tasks without delays, supporting smooth rental operations.
+
+[P05227 | 456005:456006 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05228 | 456006:456023 | NORMAL_TEXT]
+C. Compatibility
+
+[P05229 | 456023:456189 | NORMAL_TEXT]
+According to ISO/IEC 25010, compatibility refers to the degree to which a system can operate effectively while sharing an environment with other systems and devices.
+
+[P05230 | 456189:456258 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05231 | 456258:456323 | NORMAL_TEXT | LIST id=kix.j05us95hmzm2 level=0]
+The administrative system works properly on common web browsers.
+
+[P05232 | 456323:456387 | NORMAL_TEXT | LIST id=kix.j05us95hmzm2 level=0]
+The system can be accessed using the client’s existing devices.
+
+[P05233 | 456387:456451 | NORMAL_TEXT | LIST id=kix.j05us95hmzm2 level=0]
+The system supports the browser-based workflow of the business.
+
+[P05234 | 456451:456533 | NORMAL_TEXT | LIST id=kix.j05us95hmzm2 level=0]
+The system interface remains usable across supported desktop and mobile browsers.
+
+[P05235 | 456533:456671 | NORMAL_TEXT]
+These questions assess whether the system can operate within the client’s existing technical environment and browser-accessible workflow.
+
+[P05236 | 456671:456672 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05237 | 456672:456698 | NORMAL_TEXT]
+D. Interaction Capability
+
+[P05238 | 456698:456931 | NORMAL_TEXT]
+ISO/IEC 25010 says interaction capability is about how easily users can use a system to reach their goals. For administrators and staff, this means being able to finish tasks on their own, with easy navigation and a clear interface.
+
+[P05239 | 456931:457000 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05240 | 457000:457065 | NORMAL_TEXT | LIST id=kix.5otoemo5uugr level=0]
+The administrative interface is easy to understand and navigate.
+
+[P05241 | 457065:457104 | NORMAL_TEXT | LIST id=kix.5otoemo5uugr level=0]
+The system forms and labels are clear.
+
+[P05242 | 457104:457175 | NORMAL_TEXT | LIST id=kix.5otoemo5uugr level=0]
+Booking, payment, vehicle, and maintenance records are easy to manage.
+
+[P05243 | 457175:457230 | NORMAL_TEXT | LIST id=kix.5otoemo5uugr level=0]
+Reports and dashboard summaries are easy to interpret.
+
+[P05244 | 457230:457292 | NORMAL_TEXT | LIST id=kix.5otoemo5uugr level=0]
+The system provides clear prompts, alerts, and notifications.
+
+[P05245 | 457292:457466 | NORMAL_TEXT]
+These questions assess ease of use and clarity of the administrative system interface, especially for tasks related to booking, payments, vehicles, maintenance, and reports.
+
+[P05246 | 457466:457467 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05247 | 457467:457482 | NORMAL_TEXT]
+E. Reliability
+
+[P05248 | 457482:457643 | NORMAL_TEXT]
+According to ISO/IEC 25010, reliability refers to the degree to which a system performs specified functions consistently and accurately under stated conditions.
+
+[P05249 | 457643:457712 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05250 | 457712:457777 | NORMAL_TEXT | LIST id=kix.pkdsqa5xuhp3 level=0]
+The system consistently records booking and rental transactions.
+
+[P05251 | 457777:457859 | NORMAL_TEXT | LIST id=kix.pkdsqa5xuhp3 level=0]
+The system accurately stores customer, vehicle, payment, and maintenance records.
+
+[P05252 | 457859:457919 | NORMAL_TEXT | LIST id=kix.pkdsqa5xuhp3 level=0]
+The system properly handles incomplete or incorrect inputs.
+
+[P05253 | 457919:458001 | NORMAL_TEXT | LIST id=kix.pkdsqa5xuhp3 level=0]
+The system maintains accurate vehicle availability and rental status information.
+
+[P05254 | 458001:458085 | NORMAL_TEXT | LIST id=kix.pkdsqa5xuhp3 level=0]
+The system supports backup and recovery procedures to reduce the risk of data loss.
+
+[P05255 | 458085:458192 | NORMAL_TEXT]
+These questions evaluate whether the system can support accurate and consistent operational recordkeeping.
+
+[P05256 | 458192:458193 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05257 | 458193:458205 | NORMAL_TEXT]
+F. Security
+
+[P05258 | 458205:458355 | NORMAL_TEXT]
+According to ISO/IEC 25010, security is the degree to which a system protects information and data from unauthorized access, modification, or misuse.
+
+[P05259 | 458355:458424 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05260 | 458424:458482 | NORMAL_TEXT | LIST id=kix.4yil93urdbpj level=0]
+The system restricts access based on assigned user roles.
+
+[P05261 | 458482:458548 | NORMAL_TEXT | LIST id=kix.4yil93urdbpj level=0]
+The system protects customer documents and uploaded requirements.
+
+[P05262 | 458548:458618 | NORMAL_TEXT | LIST id=kix.4yil93urdbpj level=0]
+The system protects payment information and proof-of-payment records.
+
+[P05263 | 458618:458692 | NORMAL_TEXT | LIST id=kix.4yil93urdbpj level=0]
+The system limits sensitive administrative functions to authorized users.
+
+[P05264 | 458692:458774 | NORMAL_TEXT | LIST id=kix.4yil93urdbpj level=0]
+The system records important user actions through audit logs or activity records.
+
+[P05265 | 458774:458907 | NORMAL_TEXT]
+These questions assess whether the system provides access control and protects sensitive customer, payment, and operational records.
+
+[P05266 | 458907:458908 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05267 | 458908:458927 | NORMAL_TEXT]
+G. Maintainability
+
+[P05268 | 458927:459072 | NORMAL_TEXT]
+According to ISO/IEC 25010, maintainability refers to the ease with which a system can be modified, corrected, updated, and supported over time.
+
+[P05269 | 459072:459141 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05270 | 459141:459239 | NORMAL_TEXT | LIST id=kix.o8xfhs9cxze4 level=0]
+The system allows authorized users to update customer, vehicle, booking, and maintenance records.
+
+[P05271 | 459239:459298 | NORMAL_TEXT | LIST id=kix.o8xfhs9cxze4 level=0]
+The system supports maintenance history and audit records.
+
+[P05272 | 459298:459358 | NORMAL_TEXT | LIST id=kix.o8xfhs9cxze4 level=0]
+The system structure allows future updates and corrections.
+
+[P05273 | 459358:459457 | NORMAL_TEXT | LIST id=kix.o8xfhs9cxze4 level=0]
+The system can support future enhancements such as payment gateway integration or GPS integration.
+
+[P05274 | 459457:459595 | NORMAL_TEXT]
+These questions are included because the system must remain manageable, correctable, and capable of future improvement after development.
+
+[P05275 | 459595:459596 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05276 | 459596:459611 | NORMAL_TEXT]
+H. Flexibility
+
+[P05277 | 459611:459785 | NORMAL_TEXT]
+According to ISO/IEC 25010, flexibility refers to the ability of a system to adapt to different operational needs, changes in requirements, and possible future enhancements.
+
+[P05278 | 459785:459854 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05279 | 459854:459938 | NORMAL_TEXT | LIST id=kix.9qs4ii3raefx level=0]
+The system can support changes in vehicle records, rental policies, and user roles.
+
+[P05280 | 459938:460014 | NORMAL_TEXT | LIST id=kix.9qs4ii3raefx level=0]
+The system can accommodate additional vehicles, users, and booking records.
+
+[P05281 | 460014:460093 | NORMAL_TEXT | LIST id=kix.9qs4ii3raefx level=0]
+The system can support optional context inputs depending on data availability.
+
+[P05282 | 460093:460157 | NORMAL_TEXT | LIST id=kix.9qs4ii3raefx level=0]
+The system can be expanded for future operational requirements.
+
+[P05283 | 460157:460267 | NORMAL_TEXT]
+These questions assess whether the system can adjust to changing business needs and operational requirements.
+
+[P05284 | 460267:460268 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05285 | 460268:460278 | NORMAL_TEXT]
+I. Safety
+
+[P05286 | 460278:460414 | NORMAL_TEXT]
+According to ISO/IEC 25010, safety evaluates whether the system helps reduce operational risks and supports controlled decision-making.
+
+[P05287 | 460414:460483 | NORMAL_TEXT]
+The following statements were used as part of the survey instrument:
+
+[P05288 | 460483:460565 | NORMAL_TEXT | LIST id=kix.7ciyks2eluxu level=0]
+The system helps prevent unavailable vehicles from being recommended or assigned.
+
+[P05289 | 460565:460652 | NORMAL_TEXT | LIST id=kix.7ciyks2eluxu level=0]
+The system helps identify vehicles that are under maintenance or not ready for rental.
+
+[P05290 | 460652:460772 | NORMAL_TEXT | LIST id=kix.7ciyks2eluxu level=0]
+The system supports safer operational decisions by showing vehicle condition, maintenance status, and monitoring notes.
+
+[P05291 | 460772:460902 | NORMAL_TEXT | LIST id=kix.7ciyks2eluxu level=0]
+The system ensures that final booking approval, payment validation, and vehicle assignment remain under authorized human control.
+
+[P05292 | 460902:461043 | NORMAL_TEXT]
+These questions assess whether the system helps reduce operational risks in vehicle recommendation, booking approval, and rental processing.
+
+[P05293 | 461043:461044 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05294 | 461044:461079 | NORMAL_TEXT]
+IT Expert Evaluation Questionnaire
+
+[P05295 | 461079:461502 | NORMAL_TEXT]
+The IT Expert Evaluation Questionnaire was developed to assess the technical quality of the system based on the ISO/IEC 25010 quality model. This focuses on Functional Suitability, Performance Efficiency, Compatibility, Interaction Capability, Reliability, Security, Maintainability, Flexibility, and Safety related to system correctness, technical behavior, access control, maintainability, and future system improvement.
+
+[P05296 | 461502:461503 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05297 | 461503:461529 | NORMAL_TEXT]
+A. Functional Suitability
+
+[P05298 | 461529:461612 | NORMAL_TEXT]
+The following statements were used as part of the IT expert evaluation instrument:
+
+[P05299 | 461612:461675 | NORMAL_TEXT | LIST id=kix.4hwy3yivun44 level=0]
+The system functions are aligned with the stated requirements.
+
+[P05300 | 461675:461769 | NORMAL_TEXT | LIST id=kix.4hwy3yivun44 level=0]
+The Customer-Side Vehicle Recommendation performs according to its intended rule-based logic.
+
+[P05301 | 461769:461844 | NORMAL_TEXT | LIST id=kix.4hwy3yivun44 level=0]
+The demand forecasting feature follows the Weighted Moving Average method.
+
+[P05302 | 461844:461939 | NORMAL_TEXT | LIST id=kix.4hwy3yivun44 level=0]
+The branch allocation recommendation feature provides advisory outputs based on defined rules.
+
+[P05303 | 461939:462010 | NORMAL_TEXT | LIST id=kix.4hwy3yivun44 level=0]
+The system modules support the intended car rental management process.
+
+[P05304 | 462010:462162 | NORMAL_TEXT]
+These questions are included to determine whether the system meets the expected technical quality requirements under this ISO/IEC 25010 characteristic.
+
+[P05305 | 462162:462163 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05306 | 462163:462189 | NORMAL_TEXT]
+B. Performance Efficiency
+
+[P05307 | 462189:462272 | NORMAL_TEXT]
+The following statements were used as part of the IT expert evaluation instrument:
+
+[P05308 | 462272:462337 | NORMAL_TEXT | LIST id=kix.urwsf3n0qf36 level=0]
+The system responds within an acceptable time during normal use.
+
+[P05309 | 462337:462388 | NORMAL_TEXT | LIST id=kix.urwsf3n0qf36 level=0]
+The system processes database records efficiently.
+
+[P05310 | 462388:462476 | NORMAL_TEXT | LIST id=kix.urwsf3n0qf36 level=0]
+The system generates reports, forecasts, and recommendations without unnecessary delay.
+
+[P05311 | 462476:462551 | NORMAL_TEXT | LIST id=kix.urwsf3n0qf36 level=0]
+The system uses resources efficiently under expected operating conditions.
+
+[P05312 | 462551:462703 | NORMAL_TEXT]
+These questions are included to determine whether the system meets the expected technical quality requirements under this ISO/IEC 25010 characteristic.
+
+[P05313 | 462703:462704 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05314 | 462704:462721 | NORMAL_TEXT]
+C. Compatibility
+
+[P05315 | 462721:462804 | NORMAL_TEXT]
+The following statements were used as part of the IT expert evaluation instrument:
+
+[P05316 | 462804:462853 | NORMAL_TEXT | LIST id=kix.bia5cicxuab0 level=0]
+The system works properly on supported browsers.
+
+[P05317 | 462853:462924 | NORMAL_TEXT | LIST id=kix.bia5cicxuab0 level=0]
+The system can be accessed using supported desktop and mobile devices.
+
+[P05318 | 462924:462996 | NORMAL_TEXT | LIST id=kix.bia5cicxuab0 level=0]
+The system modules work properly within the same web-based environment.
+
+[P05319 | 462996:463058 | NORMAL_TEXT | LIST id=kix.bia5cicxuab0 level=0]
+The system supports the client’s browser-accessible workflow.
+
+[P05320 | 463058:463210 | NORMAL_TEXT]
+These questions are included to determine whether the system meets the expected technical quality requirements under this ISO/IEC 25010 characteristic.
+
+[P05321 | 463210:463211 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05322 | 463211:463237 | NORMAL_TEXT]
+D. Interaction Capability
+
+[P05323 | 463237:463320 | NORMAL_TEXT]
+The following statements were used as part of the IT expert evaluation instrument:
+
+[P05324 | 463320:463370 | NORMAL_TEXT | LIST id=kix.5fpw7ev1jita level=0]
+The system interface is clear and understandable.
+
+[P05325 | 463370:463435 | NORMAL_TEXT | LIST id=kix.5fpw7ev1jita level=0]
+The system provides appropriate prompts, messages, and feedback.
+
+[P05326 | 463435:463490 | NORMAL_TEXT | LIST id=kix.5fpw7ev1jita level=0]
+The user interface supports efficient task completion.
+
+[P05327 | 463490:463577 | NORMAL_TEXT | LIST id=kix.5fpw7ev1jita level=0]
+The system design is appropriate for both customer-side and administrative-side users.
+
+[P05328 | 463577:463729 | NORMAL_TEXT]
+These questions are included to determine whether the system meets the expected technical quality requirements under this ISO/IEC 25010 characteristic.
+
+[P05329 | 463729:463730 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05330 | 463730:463745 | NORMAL_TEXT]
+E. Reliability
+
+[P05331 | 463745:463828 | NORMAL_TEXT]
+The following statements were used as part of the IT expert evaluation instrument:
+
+[P05332 | 463828:463885 | NORMAL_TEXT | LIST id=kix.tprqadrsvmza level=0]
+The system performs its intended functions consistently.
+
+[P05333 | 463885:463927 | NORMAL_TEXT | LIST id=kix.tprqadrsvmza level=0]
+The system handles input errors properly.
+
+[P05334 | 463927:463973 | NORMAL_TEXT | LIST id=kix.tprqadrsvmza level=0]
+The system maintains accurate system records.
+
+[P05335 | 463973:464030 | NORMAL_TEXT | LIST id=kix.tprqadrsvmza level=0]
+The system supports data backup and recovery procedures.
+
+[P05336 | 464030:464182 | NORMAL_TEXT]
+These questions are included to determine whether the system meets the expected technical quality requirements under this ISO/IEC 25010 characteristic.
+
+[P05337 | 464182:464183 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05338 | 464183:464195 | NORMAL_TEXT]
+F. Security
+
+[P05339 | 464195:464278 | NORMAL_TEXT]
+The following statements were used as part of the IT expert evaluation instrument:
+
+[P05340 | 464278:464323 | NORMAL_TEXT | LIST id=kix.rdm7hrrqjv2d level=0]
+The system implements secure authentication.
+
+[P05341 | 464323:464369 | NORMAL_TEXT | LIST id=kix.rdm7hrrqjv2d level=0]
+The system applies role-based access control.
+
+[P05342 | 464369:464443 | NORMAL_TEXT | LIST id=kix.rdm7hrrqjv2d level=0]
+The system protects sensitive customer, payment, and operational records.
+
+[P05343 | 464443:464516 | NORMAL_TEXT | LIST id=kix.rdm7hrrqjv2d level=0]
+The system records important user actions through logs or audit records.
+
+[P05344 | 464516:464668 | NORMAL_TEXT]
+These questions are included to determine whether the system meets the expected technical quality requirements under this ISO/IEC 25010 characteristic.
+
+[P05345 | 464668:464687 | NORMAL_TEXT]
+G. Maintainability
+
+[P05346 | 464687:464770 | NORMAL_TEXT]
+The following statements were used as part of the IT expert evaluation instrument:
+
+[P05347 | 464770:464821 | NORMAL_TEXT | LIST id=kix.r5mzn6doj1ki level=0]
+The system structure supports future modification.
+
+[P05348 | 464821:464870 | NORMAL_TEXT | LIST id=kix.r5mzn6doj1ki level=0]
+The system modules are organized and manageable.
+
+[P05349 | 464870:464948 | NORMAL_TEXT | LIST id=kix.r5mzn6doj1ki level=0]
+The system can be corrected or updated without affecting unrelated functions.
+
+[P05350 | 464948:465006 | NORMAL_TEXT | LIST id=kix.r5mzn6doj1ki level=0]
+The database structure supports proper record management.
+
+[P05351 | 465006:465158 | NORMAL_TEXT]
+These questions are included to determine whether the system meets the expected technical quality requirements under this ISO/IEC 25010 characteristic.
+
+[P05352 | 465158:465159 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05353 | 465159:465174 | NORMAL_TEXT]
+H. Flexibility
+
+[P05354 | 465174:465257 | NORMAL_TEXT]
+The following statements were used as part of the IT expert evaluation instrument:
+
+[P05355 | 465257:465329 | NORMAL_TEXT | LIST id=kix.qulntj6rbhvk level=0]
+The system can support additional users, vehicles, and booking records.
+
+[P05356 | 465329:465373 | NORMAL_TEXT | LIST id=kix.qulntj6rbhvk level=0]
+The system can support future enhancements.
+
+[P05357 | 465373:465450 | NORMAL_TEXT | LIST id=kix.qulntj6rbhvk level=0]
+The system can accommodate changes in rules, policies, and operational data.
+
+[P05358 | 465450:465516 | NORMAL_TEXT | LIST id=kix.qulntj6rbhvk level=0]
+The system can be adapted to changes in data source availability.
+
+[P05359 | 465516:465668 | NORMAL_TEXT]
+These questions are included to determine whether the system meets the expected technical quality requirements under this ISO/IEC 25010 characteristic.
+
+[P05360 | 465668:465669 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05361 | 465669:465679 | NORMAL_TEXT]
+I. Safety
+
+[P05362 | 465679:465762 | NORMAL_TEXT]
+The following statements were used as part of the IT expert evaluation instrument:
+
+[P05363 | 465762:465836 | NORMAL_TEXT | LIST id=kix.3g2w04nkc34f level=0]
+The system helps reduce risks caused by incorrect vehicle recommendation.
+
+[P05364 | 465836:465912 | NORMAL_TEXT | LIST id=kix.3g2w04nkc34f level=0]
+The system prevents unauthorized users from accessing restricted functions.
+
+[P05365 | 465912:466004 | NORMAL_TEXT | LIST id=kix.3g2w04nkc34f level=0]
+The system supports human-controlled approval for booking, payment, and vehicle assignment.
+
+[P05366 | 466004:466086 | NORMAL_TEXT | LIST id=kix.3g2w04nkc34f level=0]
+The system provides system behavior that supports safe and controlled operations.
+
+[P05367 | 466086:466238 | NORMAL_TEXT]
+These questions are included to determine whether the system meets the expected technical quality requirements under this ISO/IEC 25010 characteristic.
+
+[P05368 | 466238:466239 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05369 | 466239:466282 | NORMAL_TEXT]
+Validity and Reliability of the Instrument
+
+[P05370 | 466282:466825 | NORMAL_TEXT]
+The evaluation instrument will undergo validation before it is administered to the final respondents. Since the study will use an existing ISO/IEC 25010-based evaluation instrument as a guide, the researchers will adapt the items according to the selected quality characteristics, system features, and respondent groups. The adapted questionnaire will be reviewed by qualified validators to determine whether the items are clear, relevant, aligned with the selected ISO/IEC 25010 characteristics, and appropriate for the intended respondents.
+
+[P05371 | 466825:467308 | NORMAL_TEXT]
+The validators may include an IT expert, a research or statistics validator, and a language or grammar validator. The IT expert may review the technical relevance of the items, the research or statistics validator may review the appropriateness of the instrument and scale, and the language or grammar validator may review the clarity and wording of the questionnaire. Revisions will be made based on their comments and suggestions before the final administration of the instrument.
+
+[P05372 | 467308:467765 | NORMAL_TEXT]
+To establish reliability, the revised questionnaire may be pilot-tested with respondents who are not part of the final evaluation group. The responses from the pilot test may be analyzed using Cronbach’s Alpha to determine the internal consistency of the instrument. If the reliability result does not meet the acceptable threshold required by the adviser or panel, the questionnaire items will be reviewed, revised, or removed before final administration.
+
+[P05373 | 467765:467766 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05374 | 467766:467789 | NORMAL_TEXT]
+Ethical Considerations
+
+[P05375 | 467789:468288 | NORMAL_TEXT]
+Ethical considerations will be observed throughout the conduct of the study to ensure responsible, respectful, and lawful handling of data during requirements gathering, system development, testing, and evaluation. Since the proposed system will involve customer information, booking records, uploaded requirements, proof of payment, vehicle records, rental transactions, maintenance records, and operational reports, the proponents will ensure that data privacy and confidentiality are maintained.
+
+[P05376 | 468288:468684 | NORMAL_TEXT]
+Before conducting interviews, surveys, testing, or evaluation, the participants will be informed about the purpose of the study and their role in the research. Participation will be voluntary, and respondents will have the right to refuse or withdraw from the activity without any penalty. The information gathered from respondents will be used only for academic and system development purposes.
+
+[P05377 | 468684:469391 | NORMAL_TEXT]
+The study will also observe the principles of the Data Privacy Act of 2012, or Republic Act No. 10173. No real client booking or rental records are used in the current development and evaluation dataset. The synthetic records will not contain real customer identities, contact information, identification documents, proof of payment, or other personal client data. If verified client records are obtained for a later authorized evaluation, the proponents will minimize, mask, or anonymize identifiable information and analyze those records separately from the synthetic dataset. Current synthetic results will remain clearly labeled and will not be presented as measured real-world forecasting performance.
+
+[P05378 | 469391:469854 | NORMAL_TEXT]
+The proposed system will also be designed to protect data through secure authentication, role-based access control, and restricted access to sensitive records. Customers will only be allowed to access their own account, booking details, uploaded requirements, and payment proof. Administrators will be allowed to manage operational records based on their assigned responsibilities. Owners will have access to financial, reporting, and decision-support functions.
+
+[P05379 | 469854:470375 | NORMAL_TEXT]
+The study will not include unauthorized tracking of vehicles or individuals. Although the client uses existing tools such as AKSH GPS, Apple Find My, and AirTags, the proposed system will not directly integrate live GPS tracking. The system will only record vehicle status, monitoring notes, rental status, condition records, and maintenance-related updates entered by authorized users. This ensures that the system remains aligned with its declared scope and avoids privacy concerns related to live location monitoring.
+
+[P05380 | 470375:470675 | NORMAL_TEXT]
+The proponents will also maintain academic integrity by properly citing all related literature, studies, systems, frameworks, and standards used in the manuscript. The proponents will not fabricate data, manipulate evaluation results, or claim features that are not included in the developed system.
+
+[P05381 | 470675:470676 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05382 | 470676:470716 | NORMAL_TEXT]
+Data Analysis (Procedure and Treatment)
+
+[P05383 | 470716:471236 | NORMAL_TEXT]
+After the system evaluation, the collected questionnaire responses will be checked, tabulated, and analyzed according to respondent group and ISO/IEC 25010 quality characteristics. The responses of customer or renter respondents will be used to evaluate customer-side features such as account registration, Customer-Side Vehicle Recommendation, vehicle browsing, booking request submission, requirement upload, proof-of-payment submission, booking status tracking, notifications, rental policy viewing, and ease of use.
+
+[P05384 | 471236:471841 | NORMAL_TEXT]
+The responses of owner, administrator, and staff respondents will be used to evaluate administrative and operational features such as booking management, customer verification, payment validation, vehicle records, maintenance monitoring, fleet monitoring, reports, demand forecasting, branch allocation recommendation, and role-based access control. The responses of IT expert evaluators will be used to assess technical quality characteristics such as functional suitability, performance efficiency, compatibility, interaction capability, reliability, security, maintainability, flexibility, and safety.
+
+[P05385 | 471841:472340 | NORMAL_TEXT]
+The data gathered from the evaluation questionnaire will be analyzed using frequency count, percentage, weighted mean, ranking, and verbal interpretation. Frequency count and percentage will be used to summarize respondent profiles and response distribution. Weighted means will be used to determine the level of acceptability of the system based on each ISO/IEC 25010 quality characteristic. Ranking will be used to identify the highest and lowest-rated quality characteristics or system features.
+
+[P05386 | 472340:473135 | NORMAL_TEXT]
+Because no real historical client records are currently available, Mean Absolute Percentage Error will be used only to verify forecast-error computation within the labeled synthetic time series. The calculation will match original Week +1 forecasts with the realized synthetic qualifying-demand values for the same branch, vehicle category, and target week and will report the synthetic coverage period, valid observation count, and excluded zero-demand periods. The resulting MAPE will be described as a functional-test result, not as evidence of empirical predictive accuracy, seasonal performance, or long-term operational effectiveness. A separate real-world accuracy evaluation may only be conducted if sufficient verified client or post-implementation observations later become available.
+
+[P05387 | 473135:473136 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05388 | 473136:473159 | NORMAL_TEXT]
+Statistical Treatments
+
+[P05389 | 473159:473168 | NORMAL_TEXT]
+Table 69
+
+[P05390 | 473168:473202 | NORMAL_TEXT]
+Likert Scale Interpretation Table
+
+[P05391 | 473205:473230 | NORMAL_TEXT | TABLE row=0 col=0]
+Likert-Scale Description
+
+[P05392 | 473231:473250 | NORMAL_TEXT | TABLE row=0 col=1]
+Likert-Scale Point
+
+[P05393 | 473251:473271 | NORMAL_TEXT | TABLE row=0 col=2]
+Weighted Mean Range
+
+[P05394 | 473273:473288 | NORMAL_TEXT | TABLE row=1 col=0]
+Strongly Agree
+
+[P05395 | 473289:473291 | NORMAL_TEXT | TABLE row=1 col=1]
+4
+
+[P05396 | 473292:473304 | NORMAL_TEXT | TABLE row=1 col=2]
+3.26 - 4.00
+
+[P05397 | 473306:473312 | NORMAL_TEXT | TABLE row=2 col=0]
+Agree
+
+[P05398 | 473313:473315 | NORMAL_TEXT | TABLE row=2 col=1]
+3
+
+[P05399 | 473316:473328 | NORMAL_TEXT | TABLE row=2 col=2]
+2.51 - 3.25
+
+[P05400 | 473330:473339 | NORMAL_TEXT | TABLE row=3 col=0]
+Disagree
+
+[P05401 | 473340:473342 | NORMAL_TEXT | TABLE row=3 col=1]
+2
+
+[P05402 | 473343:473355 | NORMAL_TEXT | TABLE row=3 col=2]
+1.76 - 2.50
+
+[P05403 | 473357:473375 | NORMAL_TEXT | TABLE row=4 col=0]
+Strongly Disagree
+
+[P05404 | 473376:473378 | NORMAL_TEXT | TABLE row=4 col=1]
+1
+
+[P05405 | 473379:473391 | NORMAL_TEXT | TABLE row=4 col=2]
+1.00 - 1.75
+
+[P05406 | 473392:473571 | NORMAL_TEXT]
+Table 69 presents the four-point Likert scale interpretation that will be used to determine the level of acceptability of the proposed system based on the computed weighted mean.
+
+[P05407 | 473571:473580 | NORMAL_TEXT]
+Table 70
+
+[P05408 | 473580:473625 | NORMAL_TEXT]
+Statistical Technique Used for Data Analysis
+
+[P05409 | 473628:473648 | NORMAL_TEXT | TABLE row=0 col=0]
+Data to be Analyzed
+
+[P05410 | 473649:473671 | NORMAL_TEXT | TABLE row=0 col=1]
+Statistical Technique
+
+[P05411 | 473673:473704 | NORMAL_TEXT | TABLE row=1 col=0]
+Number of responses per rating
+
+[P05412 | 473705:473721 | NORMAL_TEXT | TABLE row=1 col=1]
+Frequency Count
+
+[P05413 | 473723:473758 | NORMAL_TEXT | TABLE row=2 col=0]
+Distribution of respondent answers
+
+[P05414 | 473759:473770 | NORMAL_TEXT | TABLE row=2 col=1]
+Percentage
+
+[P05415 | 473772:473818 | NORMAL_TEXT | TABLE row=3 col=0]
+Acceptability of each ISO/IEC 25010 criterion
+
+[P05416 | 473819:473833 | NORMAL_TEXT | TABLE row=3 col=1]
+Weighted Mean
+
+[P05417 | 473835:473873 | NORMAL_TEXT | TABLE row=4 col=0]
+Comparison of quality characteristics
+
+[P05418 | 473874:473882 | NORMAL_TEXT | TABLE row=4 col=1]
+Ranking
+
+[P05419 | 473884:473929 | NORMAL_TEXT | TABLE row=5 col=0]
+Synthetic Week +1 forecast-error computation
+
+[P05420 | 473930:473961 | NORMAL_TEXT | TABLE row=5 col=1]
+Mean Absolute Percentage Error
+
+[P05421 | 473963:474001 | NORMAL_TEXT | TABLE row=6 col=0]
+Respondents’ comments and suggestions
+
+[P05422 | 474002:474023 | NORMAL_TEXT | TABLE row=6 col=1]
+Descriptive Analysis
+
+[P05423 | 474024:474144 | NORMAL_TEXT]
+Table 70 presents the statistical techniques that will be used to analyze and interpret the data gathered in the study.
+
+[P05424 | 474144:474145 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05425 | 474145:474161 | NORMAL_TEXT]
+Frequency Count
+
+[P05426 | 474161:474411 | NORMAL_TEXT]
+Frequency count will be used to determine the number of respondents who selected each rating in the evaluation questionnaire. This will help identify how many respondents rated each statement as strongly agree, agree, disagree, or strongly disagree.
+
+[P05427 | 474411:474420 | NORMAL_TEXT]
+Formula:
+
+[P05428 | 474420:474455 | NORMAL_TEXT]
+f = number of responses per rating
+
+[P05429 | 474455:474462 | NORMAL_TEXT]
+Where:
+
+[P05430 | 474462:474499 | NORMAL_TEXT]
+f = frequency or number of responses
+
+[P05431 | 474499:474500 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05432 | 474500:474511 | NORMAL_TEXT]
+Percentage
+
+[P05433 | 474511:474640 | NORMAL_TEXT]
+Percentage will be used to determine the proportion of responses for each rating in relation to the total number of respondents.
+
+[P05434 | 474640:474649 | NORMAL_TEXT]
+Formula:
+
+[P05435 | 474649:474667 | NORMAL_TEXT]
+P = (f / N) × 100
+
+[P05436 | 474667:474674 | NORMAL_TEXT]
+Where:
+
+[P05437 | 474674:474772 | NORMAL_TEXT]
+P = percentage f = frequency of responses N = total number of respondents 100 = constant value
+
+[P05438 | 474772:474773 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05439 | 474773:474787 | NORMAL_TEXT]
+Weighted Mean
+
+[P05440 | 474787:474923 | NORMAL_TEXT]
+Weighted mean will be used to determine the average rating for each evaluation indicator and each ISO/IEC 25010 quality characteristic.
+
+[P05441 | 474923:474932 | NORMAL_TEXT]
+Formula:
+
+[P05442 | 474932:474945 | NORMAL_TEXT]
+WM = Σfx / N
+
+[P05443 | 474945:474952 | NORMAL_TEXT]
+Where:
+
+[P05444 | 474952:475109 | NORMAL_TEXT]
+WM = weighted mean Σ = summation symbol f = frequency of responses x = assigned numerical value or weight of each rating N = total number of respondents
+
+[P05445 | 475109:475212 | NORMAL_TEXT]
+The computed weighted mean will be interpreted using the four-point Likert scale interpretation table.
+
+[P05446 | 475212:475213 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05447 | 475213:475221 | NORMAL_TEXT]
+Ranking
+
+[P05448 | 475221:475614 | NORMAL_TEXT]
+Ranking will be used to identify which ISO/IEC 25010 quality characteristics received the highest and lowest ratings. The quality characteristic with the highest weighted mean will be ranked first, while the characteristic with the lowest weighted mean will be ranked last. This will help the proponents determine the strongest and weakest areas of the system based on the evaluation results.
+
+[P05449 | 475614:475615 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05450 | 475615:475646 | NORMAL_TEXT]
+Mean Absolute Percentage Error
+
+[P05451 | 475646:477033 | NORMAL_TEXT]
+Mean Absolute Percentage Error (MAPE) will be used to verify the observed error calculation of the Weighted Moving Average forecasts within the labeled synthetic test dataset. In this evaluation, actual demand means the realized qualifying booking count for a completed week in the synthetic time series and does not represent empirical client demand. Forecast and realized values shall refer to the same branch, vehicle category, and weekly period, and the forecast used shall be the value originally generated when the target period was one week ahead. The evaluation shall follow the snapshot and timing rules in the forecasting methodology and report the evaluated branch-category series, synthetic coverage period, number of valid observations, and excluded zero-demand weeks. MAPE shall include only observations where the realized synthetic demand is greater than zero because percentage error is undefined when the denominator is zero. Zero-demand periods shall be reported separately and excluded from the MAPE divisor. Lower MAPE values indicate smaller errors within the synthetic test series, but the result shall be reported only as evidence of computational behavior and rule conformance. It shall not be interpreted as real-world predictive accuracy, seasonal validity, or long-term operational effectiveness, and no qualitative accuracy classification shall be assigned.
+
+[P05452 | 477033:477042 | NORMAL_TEXT]
+Formula:
+
+[P05453 | 477042:477114 | NORMAL_TEXT]
+MAPE = (1/n) Σ |(Actual Value - Forecasted Value) / Actual Value| × 100
+
+[P05454 | 477114:477121 | NORMAL_TEXT]
+Where:
+
+[P05455 | 477121:477241 | NORMAL_TEXT]
+n = number of observations Actual Value = actual demand value Forecasted Value = demand value estimated by the system
+
+[P05456 | 477241:477242 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05457 | 477242:477243 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05458 | 477243:477244 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05459 | 477244:477245 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05460 | 477245:477246 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05461 | 477246:477247 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05462 | 477247:477248 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05463 | 477248:477249 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05464 | 477249:477250 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05465 | 477250:477251 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05466 | 477251:477252 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05467 | 477252:477253 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05468 | 477253:477254 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05469 | 477254:477255 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05470 | 477255:477256 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05471 | 477256:477257 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05472 | 477257:477258 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05473 | 477258:477259 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05474 | 477259:477260 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05475 | 477260:477261 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05476 | 477261:477272 | NORMAL_TEXT]
+References
+
+[P05477 | 477272:477445 | NORMAL_TEXT]
+A Real-Time Traffic Congestion Prediction System Using Weather and Temporal Data. (2026). Iconic Research and Engineering Journals. https://doi.org/10.64388/IREV9I9-1715492
+
+[P05478 | 477445:477616 | NORMAL_TEXT]
+A. et al. (2023). A Smart Car Rental Management System using Data Mining. International Research Journal of Computer Science. https://doi.org/10.26562/irjcs.2023.v1005.10
+
+[P05479 | 477616:477765 | NORMAL_TEXT]
+Adhyapak, R. (2020). Scheduling and short-term demand forecasting in an on-demand ride service industry. https://doi.org/10.1504/ijsom.2020.10028881
+
+[P05480 | 477765:477940 | NORMAL_TEXT]
+Adisesha & Moula. (2026). Online Car Rental System. International Research Journal of Modernization in Engineering Technology & Science. https://doi.org/10.56726/irjmets87436
+
+[P05481 | 477940:478198 | NORMAL_TEXT]
+Adyaputra, R., Imtihan, K., & Saleh, M. (2025). Assessing user satisfaction of local government websites through ISO 25010 and Technology Acceptance Model (TAM). Journal of Information and Organizational Sciences, 49(2). https://doi.org/10.31341/jios.49.2.8
+
+[P05482 | 478198:478492 | NORMAL_TEXT]
+Agarwal, R., & Shinde, D. (2022). Vehicle allotment and route optimization for transportation services using logistics techniques in supply chain management. Proceedings of the International Conference on Industrial Engineering and Operations Management. https://doi.org/10.46254/IN02.20220034
+
+[P05483 | 478492:478740 | NORMAL_TEXT]
+Akay, B. (2024). Bibliometric analysis of carsharing and car rental research in the field of urban transportation and tourism transportation. Journal of Multidisciplinary Academic Tourism, 9(2), 113–126. https://doi.org/10.31822/jomat.2024-9-2-113
+
+[P05484 | 478740:478991 | NORMAL_TEXT]
+Alencar, V. A., Pessamilio, L. R., Rooke, F., Bernardino, H., & Vieira, A. (2021). Forecasting the carsharing service demand using uni and multivariable models. Journal of Internet Services and Applications. https://doi.org/10.1186/s13174-021-00137-8
+
+[P05485 | 478991:479291 | NORMAL_TEXT]
+Alrashdi, I., Ali, A. M., Sallam, K. M., & Abdel-Basset, M. (2025). Intelligent decision support framework for assessment of alternative vehicle technologies in transportation system: A sustainable approach toward environmental remedy. Sustainable Futures. https://doi.org/10.1016/j.sftr.2025.100472
+
+[P05486 | 479291:479518 | NORMAL_TEXT]
+Alzaidi, A., Shakya, S., & Khargharia, H. (2022). Investigating prediction models for vehicle demand in a service industry. International Joint Conference on Computational Intelligence. https://doi.org/10.5220/0011527400003332
+
+[P05487 | 479518:479692 | NORMAL_TEXT]
+Ariantini, M. S., & Supartha, I. K. D. G. (2022). Implementasi metode Weighted Moving Average (WMA) pada peramalan jumlah kunjungan. https://doi.org/10.36002/jutik.v8i2.1592
+
+[P05488 | 479692:479939 | NORMAL_TEXT]
+Bakale, S. C., Naware, A. M., Parab, S. V., Saxena, S. A., & Anjaria, S. A. (2023). MERN stack-based car rental website development. International Journal of Advanced Research in Computer Science, 14(2). https://doi.org/10.26483/ijarcs.v14i2.6971
+
+[P05489 | 479939:480182 | NORMAL_TEXT]
+Bhale & Singh. (2025). Comparative Analysis of Regression Techniques for Weather-Based Route Optimization. 2025 World Skills Conference on Universal Data Analytics and Sciences (WorldSUAS). https://doi.org/10.1109/WorldSUAS66815.2025.11198976
+
+[P05490 | 480182:480401 | NORMAL_TEXT]
+Bondoc, B. C. (2023). Web-based smart attendance monitoring system using QR code and GSM module for SMS notification. World Journal of Advanced Research and Reviews, 20(3). https://doi.org/10.30574/wjarr.2023.20.3.2644
+
+[P05491 | 480401:480597 | NORMAL_TEXT]
+Boysen, N., Briskorn, D., & Emde, S. (2024). Matching vs. individual choice: How to counter regional imbalance of carsharing demand. Transportation Science. https://doi.org/10.1287/trsc.2022.0067
+
+[P05492 | 480597:480891 | NORMAL_TEXT]
+Brandizzi, N., Russo, S., Galati, G., & Napoli, C. (2022). Addressing vehicle sharing through behavioral analysis: A solution to user clustering using recency-frequency-monetary and vehicle relocation based on neighborhood splits. Information, 13(11), 511. https://doi.org/10.3390/info13110511
+
+[P05493 | 480891:481118 | NORMAL_TEXT]
+Brar, A. S., Kasture, P., & Su, R. (2022). Supply-demand balancing model for EV rental fleet. 2022 IEEE 25th International Conference on Intelligent Transportation Systems (ITSC). https://doi.org/10.1109/ITSC55140.2022.9921775
+
+[P05494 | 481118:481470 | NORMAL_TEXT]
+Cardos, N. C., Empal, Z. K., Gabriel, C. E., & Prudente, R. S. (2025). Evaluating the impact of role-based access control and data privacy measures on user satisfaction and security compliance in the SEAIT OJT evaluation and feedback system. International Journal of Innovative Science and Research Technology. https://doi.org/10.38124/ijisrt/25may565
+
+[P05495 | 481470:481705 | NORMAL_TEXT]
+Chavhan, S., Gupta, D., Nagaraju, C., A., R., Khanna, A., & Rodrigues, J. (2022). An efficient context-aware vehicle incidents route service management for intelligent transportation systems. https://doi.org/10.1109/JSYST.2021.3066776
+
+[P05496 | 481705:481904 | NORMAL_TEXT]
+Dedhia, N. (2026). Secure web authentication using JWT and role-based access control. International Journal of Scientific Research in Engineering and Management. https://doi.org/10.55041/ijsrem60274
+
+[P05497 | 481904:482140 | NORMAL_TEXT]
+Dhami, A. S., Rout, H., Talom, Y., & Sakshi. (2024). Online vehicle rental management system. International Research Journal of Modernization in Engineering Technology and Science, 6(4), 6692–6698. https://doi.org/10.56726/IRJMETS53564
+
+[P05498 | 482140:482439 | NORMAL_TEXT]
+Dubey, S., Esakkiammal, U., Ugli, M. N. N., et al. (2025). On-the-fly path replanning using real-time road condition data. 2025 International Conference on Intelligent Systems and Pioneering Innovations in Robotics and Electric Mobility (INSPIRE). https://doi.org/10.1109/INSPIRE67328.2025.11300571
+
+[P05499 | 482439:482593 | NORMAL_TEXT]
+Eliyan, A. F., & Kerbache, L. (2024). Vehicle relocation in one-way carsharing: A review. Sustainability, 16(3), 1014. https://doi.org/10.3390/su16031014
+
+[P05500 | 482593:482864 | NORMAL_TEXT]
+Fajar, M., Atmaja, A. P., Hafidhoh, N., Ismar, M. R., & Ivansyah, M. N. (2026). Implementation of a rule-based expert system in the web-based SMK boarding and semi boarding admission system. Andalasian International Journal of Applied Science Engineering and Technology.
+
+[P05501 | 482864:483042 | NORMAL_TEXT]
+Fauzi, N. A., Sampurno, Y. G., Sudarwanto, & Wahyudi, K. S. (2025). Development of a centralized vehicle maintenance information system. https://doi.org/10.21831/jvars.v2i2.2527
+
+[P05502 | 483042:483267 | NORMAL_TEXT]
+Favier, J.-C., Ganguly, S., & Shalpegin, T. (2024). Optimal fleet policy of rental vehicles with relocation: A simulation study. Journal of Advanced Transportation, 2024, Article 7764326. https://doi.org/10.1155/2024/7764326
+
+[P05503 | 483267:483507 | NORMAL_TEXT]
+Fernández, C. M., Freitas, A. A., Morais, A. N., Lima, T., & Gaspar, P. (2020). Fleet management optimization in car rental industry: Decision aid models for management of information systems. https://doi.org/10.1109/DASA51403.2020.9317221
+
+[P05504 | 483507:483714 | NORMAL_TEXT]
+Gabbar, H. A., Chahid, A., Isham, M. U., et al. (2023). HAIS: Highways automated-inspection system. Technologies. https://www.researchgate.net/publication/369771890_HAIS_Highways_Automated-Inspection_System
+
+[P05505 | 483714:483973 | NORMAL_TEXT]
+Ganeshkar, V., Moze, A., Surwade, S., & Sonawane, S. (2021). An online car rental management system. International Journal of Innovative Research in Science, Engineering and Technology, 10(6), 7392–7396. https://www.ijirset.com/upload/2021/june/248_AN_NC.pdf
+
+[P05506 | 483973:483974 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05507 | 483974:484137 | NORMAL_TEXT]
+Gurusinghe, B. M. I. (2021). Automated fleet management system for CIT operations. https://www.semanticscholar.org/paper/f4875181581628673f0952a1d76cc3e84f653f95)
+
+[P05508 | 484137:484282 | NORMAL_TEXT]
+Haber et al. (2026). Rule-Based Expert System for Resource Planning in Liquid Transportation. Sustainability. https://doi.org/10.3390/su18063156
+
+[P05509 | 484282:484421 | NORMAL_TEXT]
+Harissa, F. V. (2025). Design and prototype implementation of a web-based car rental information system. https://doi.org/10.35314/wfaayr38
+
+[P05510 | 484421:484632 | NORMAL_TEXT]
+Heidari et al. (2024). A decision support system for resilient vehicle route planning using mathematical modeling and artificial neural networks: a case study. Kybernetes. https://doi.org/10.1108/K-10-2024-2935
+
+[P05511 | 484632:484893 | NORMAL_TEXT]
+Huang, K., An, K., Correia, G., Rich, J., & Ma, W. (2021). An innovative approach to solve the carsharing demand-supply imbalance problem under demand uncertainty. Transportation Research Part C: Emerging Technologies. https://doi.org/10.1016/j.trc.2021.103369
+
+[P05512 | 484893:485072 | NORMAL_TEXT]
+Hussein et al. (2021). Incorporating weather variables with probabilistic approach for trip planning. Case Studies on Transport Policy. https://doi.org/10.1016/j.cstp.2021.08.005
+
+[P05513 | 485072:485164 | NORMAL_TEXT]
+K. S., S. (2025). Online car rental management system. https://doi.org/10.55041/ijsrem42114
+
+[P05514 | 485164:485254 | NORMAL_TEXT]
+Khan, A. (2020). Car rental management system. https://doi.org/10.22214/ijraset.2020.6185
+
+[P05515 | 485254:485439 | NORMAL_TEXT]
+Lopez, S. K. R., Tipon, J. J. D., Visbal, J., & Castro, A. (2025). IoT-based fleet monitoring system with driver logging and OBD-II diagnostics. https://doi.org/10.1145/3787330.3787339
+
+[P05516 | 485439:485602 | NORMAL_TEXT]
+Maghfur, M. A., & Tranggono, T. (2025). Analysis of forecasting demand for wheel loader unit rental using the ARIMA method. https://doi.org/10.38035/rrj.v7i3.1368
+
+[P05517 | 485602:485771 | NORMAL_TEXT]
+Moein, E., & Awasthi, A. (2020). Carsharing customer demand forecasting using causal, time series and neural networks methods. https://doi.org/10.1504/ijsom.2020.104333
+
+[P05518 | 485771:485971 | NORMAL_TEXT]
+Naim, S. W., Nangraj, S. S., Khan, D., Hassan, S. M., & N. S. (2025). Reengineering logistics and fleet management: Integration of GPS, AI, and predictive analytics. https://doi.org/10.62019/qxdzeq92
+
+[P05519 | 485971:486125 | NORMAL_TEXT]
+Pawestri, C. R. R., & Putro, O. S. (2024). Sistem aplikasi rental mobil berbasis web untuk optimalisasi armada. https://doi.org/10.46808/informa.v9i2.257
+
+[P05520 | 486125:486351 | NORMAL_TEXT]
+Şimşek, A. İ., Gür, Y. E., & Ünal, E. (2025). Innovative MCDM-ML algorithms-based decision-support system for electric vehicle selection. Environment, Development and Sustainability. https://doi.org/10.1007/s10668-025-06476-x
+
+[P05521 | 486351:486606 | NORMAL_TEXT]
+Islam, M., Imran, R., & Hosain, S. (2021). The evaluation of enterprise resource planning using ISO 25010 based quality model. 2021 2nd International Informatics and Software Engineering Conference (IISEC). https://doi.org/10.1109/iisec54230.2021.9672349
+
+[P05522 | 486606:486607 | NORMAL_TEXT]
+⟦EMPTY PARAGRAPH⟧
+
+[P05523 | 486607:486893 | NORMAL_TEXT]
+Ismail, H., Andayani, D. D., & Kaswar, A. (2025). Development of a web-based information system for food availability and production at the Makassar City Food Security Agency. Journal of Embedded Systems, Security and Intelligent Systems, 6(1). https://doi.org/10.59562/jessi.v6i1.6824
+
+[P05524 | 486893:487105 | NORMAL_TEXT]
+Joshna et al. (2026). Real-Time Intelligent Travel Planning and Cost Management Using API-Driven Architecture. International Journal of Science and Research Archive. https://doi.org/10.30574/ijsra.2026.18.2.0304
+
+[P05525 | 487105:487305 | NORMAL_TEXT]
+Jyothi, P. C., & Sheethal, P. P. (2025). Car rental management system. International Journal of Sciences and Innovation Engineering, 2(12), 265–271. https://ijsci.com/index.php/home/article/view/1056
+
+[P05526 | 487305:487590 | NORMAL_TEXT]
+Kanagamalliga, S., Nath, S. S., Ganapathy, K., & Salaudeen, A. (2026). A robust access control and logging mechanism for sensitive information systems. 2026 International Conference on Visual Analytics and Data Visualization (ICVADV). https://doi.org/10.1109/ICVADV67766.2026.11470325
+
+[P05527 | 487590:487892 | NORMAL_TEXT]
+Karche, P., Kapare, K., Chapale, N., & Shirsath, P. (2025). Car rental booking system using MERN stack. International Research Journal of Modernization in Engineering Technology and Science, 7(10), 3470–3472. https://www.irjmets.com/upload_newfiles/irjmets71000102163/paper_file/irjmets71000102163.pdf
+
+[P05528 | 487892:488065 | NORMAL_TEXT]
+Khalid. (2024). Short-term and long-term product demand forecasting with time series models. Journal of Trends in Financial and Economics. https://doi.org/10.61784/jtfe3022
+
+[P05529 | 488065:488276 | NORMAL_TEXT]
+Ko, J., & Byun, Y. (2023). Analyzing factors affecting micro-mobility and predicting micro-mobility demand using ensemble voting regressor. Electronics, 12(21), 4410. https://doi.org/10.3390/electronics12214410
+
+[P05530 | 488276:488514 | NORMAL_TEXT]
+Kotsialos, A., & Vassilakopoulou, P. (2023). Fleet management enterprise systems and traffic control synergies: A literature review and research agenda. Procedia Computer Science, 219, 529–536. https://doi.org/10.1016/j.procs.2023.01.321
+
+[P05531 | 488514:488714 | NORMAL_TEXT]
+Kumar, R., & Singh, S. K. (2024). Online car rental system. International Journal for Technological Research in Engineering, 11(11), 33–42. https://ijtre.com/wp-content/uploads/2024/07/2024111105.pdf
+
+[P05532 | 488714:488950 | NORMAL_TEXT]
+Labib, A., Tǎnǎsuicǎ (Zotic), C., Seecharan, T. S., & Roman, M.-D. (2026). Data-driven fleet optimization using ML algorithms and a decision-making grid framework. Applied System Innovation, 9(3), 63. https://doi.org/10.3390/asi9030063
+
+[P05533 | 488950:489112 | NORMAL_TEXT]
+Lamouchi, N. (2021). Introduction to the monolithic architecture. Pro Java Microservices with Quarkus and Kubernetes. https://doi.org/10.1007/978-1-4842-7170-4_2
+
+[P05534 | 489112:489323 | NORMAL_TEXT]
+Laudza, N. A. S., & Sofyan, H. (2024). Evaluasi kualitas sistem informasi akademik dengan standar ISO/IEC 25010 (Studi kasus: Universitas ABC). Telematika, 21(2). https://doi.org/10.31315/telematika.v21i2.12406
+
+[P05535 | 489323:489558 | NORMAL_TEXT]
+Alhwety, R. N. H., & Elfadil, N. (2024). Vehicle tracking system approaches: A systematic literature review. International Journal of Computer Science and Mobile Computing, 13(8), 23–31. https://doi.org/10.47760/ijcsmc.2024.v13i08.003
+
+[P05536 | 489558:489998 | NORMAL_TEXT]
+Yu, E. Y. M., Hlaing, N. W., & Aung, P. P. (2026). Vehicle location and status tracking system using GPS, GSM/GPRS, and OBD technologies. In V. Bhateja, A. L. S. Hoong, J. D. Kong, & S. Urooj (Eds.), Smart computing paradigms: Intelligence and network applications: Proceedings of Seventh International Conference on Smart Computing and Informatics (SCI 2025), Volume 1 (pp. 213–225). Springer. https://doi.org/10.1007/978-3-032-08240-4_19
+
+[P05537 | 489998:490251 | NORMAL_TEXT]
+Ariningsih, P., & Muhammad, A. H. (2024). Quality evaluation of Ticketing Management System using ISO/IEC25010:2023 standards and AHP method. Intechno Journal: Information Technology Journal, 6(2).[https://doi.org/10.24076/intechnojournal.2024v6i2.1870](https://doi.org/10.24076/intechnojournal.2024v6i2.1870)
+
+[P05538 | 490251:490582 | NORMAL_TEXT]
+International Organization for Standardization, & International Electrotechnical Commission. (2023). ISO/IEC 25010:2023: Systems and software engineering—Systems and software Quality Requirements and Evaluation (SQuaRE)—Product quality model. International Organization for Standardization.[https://www.iso.org/standard/78176.html](https://www.iso.org/standard/78176.html)
+
+[P05539 | 490582:490884 | NORMAL_TEXT]
+Nugraha, U., & Rachman, M. A. N. (2024). Evaluation of Ixitask Application Quality Based on ISO/IEC 25010:2023 in Marketing Division. In Proceedings of the Widyatama International Conference on Engineering 2024 (WICOENG 2024) (pp. 139–147). Atlantis Press.[https://doi.org/10.2991/978-94-6463-618-5_15](https://doi.org/10.2991/978-94-6463-618-5_15)
+
+[P05540 | 490884:491084 | NORMAL_TEXT]
+Kankaraš, M., & Capecchi, S. (2025). Neither agree nor disagree: Use and misuse of the neutral response category in Likert-type scales. METRON, 83, 111–140.[https://doi.org/10.1007/s40300-024-00276-5](https://doi.org/10.1007/s40300-024-00276-5)
+
+[P05541 | 491084:491210 | NORMAL_TEXT]
+Koo, M., & Yang, S.-W. (2025). Likert-type scale. Encyclopedia, 5(1), Article 18.[https://doi.org/10.3390/encyclopedia5010018](https://doi.org/10.3390/encyclopedia5010018)
+
+[P05542 | 491210:491474 | NORMAL_TEXT]
+Mariano, L. T., Phillips, A., Estes, K., & Kilburn, M. R. (2024). Should survey Likert scales include neutral response categories? Evidence from a randomized school climate survey (Working Paper No. WR-A3135-2). RAND Corporation.[https://doi.org/10.7249/WRA3135-2](https://doi.org/10.7249/WRA3135-2)
+
+[P05543 | 491474:491678 | NORMAL_TEXT]
+Linghuraj, P. R., Aravind, K., & Giritharan, R. (2024). Car rental management system. International Journal of Novel Research and Development, 9(3), 200–215. https://www.ijnrd.org/papers/IJNRD2403623.pdf
+
+[P05544 | 491678:491889 | NORMAL_TEXT]
+Liu, D., Lu, J., & Ma, W. (2021). Real-time return demand prediction based on multisource data of one-way carsharing systems. Journal of Advanced Transportation, 2021, 1–14. https://doi.org/10.1155/2021/6654909
+
+[P05545 | 491889:492143 | NORMAL_TEXT]
+Liu, H., Tong, Y., Han, J., et al. (2022). Incorporating multi-source urban data for personalized and context-aware multi-modal transportation recommendation. IEEE Transactions on Knowledge and Data Engineering. https://doi.org/10.1109/TKDE.2020.2985954
+
+[P05546 | 492143:492351 | NORMAL_TEXT]
+Liu, L., & Wang, T. (2025). Optimizing urban last mile delivery efficiency through dynamic vehicle routing heuristics and traffic flow analysis. Scientific Reports. https://doi.org/10.1038/s41598-025-29861-y
+
+[P05547 | 492351:492539 | NORMAL_TEXT]
+Lope et al. (2023). Fast and Efficient Very Short-Term Load Forecasting Using Analogue and Moving Average Tools. IEEE Latin America Transactions. https://doi.org/10.1109/TLA.2023.10251808
+
+[P05548 | 492539:492838 | NORMAL_TEXT]
+Lu, Y., Yang, M., Guo, K., Zhang, N., Lu, X., & Li, B. (2024). Fusion of differential privacy algorithm and advanced AI: Innovating customer information protection in transaction data. International Conference on Computer Science and Artificial Intelligence. https://doi.org/10.1145/3709026.3709051
+
+[P05549 | 492838:493061 | NORMAL_TEXT]
+Manoj, Rajya, L. M., Venkata, S. B. K., & Karthikeya, K. (2025). Access control mechanisms for securing data during transmissions. i-manager's Journal on Software Engineering, 19(4). https://doi.org/10.26634/jse.19.4.21781
+
+[P05550 | 493061:493309 | NORMAL_TEXT]
+Marafo, M. P., Antonio, J. S., Palay-en, B. A., Toribio, C. M., & Guaki, G. S. (2025). Arkila: A progressive web app car rental management system for Kataguan Rides in La Trinidad, Benguet. Southeast Asian Journal of Science and Technology, 10(1).
+
+[P05551 | 493309:493577 | NORMAL_TEXT]
+Martin, G., Donain, M., Fromont, É., Guns, T., Rozé, L., & Termier, A. (2021). Prediction-based fleet relocation for free floating car sharing services. IEEE International Conference on Tools with Artificial Intelligence. https://doi.org/10.1109/ICTAI52525.2021.00187
+
+[P05552 | 493577:493739 | NORMAL_TEXT]
+Mavrin & Makarova. (2026). Developing a Decision Support System to Improve the Waste Transportation Process. Logistics. https://doi.org/10.3390/logistics10040078
+
+[P05553 | 493739:494022 | NORMAL_TEXT]
+Meira et al. (2022). Route Optimization For A Beer Deliver Decision Support System. Proceedings of the IV Workshop on Disruptive Information and Communication Technologies for Innovation and Digital Transformation: 18th June 2021 Online. https://doi.org/10.14201/0AQ00AQ020213125969
+
+[P05554 | 494022:494390 | NORMAL_TEXT]
+Mendoz, L. Y., Geraldo, M. K., Francisco, H. D., Domingo, M. L., Regencia, J. A., & Kagakit, M. (2025). WOMB: A web-based system for maternal support and infant health tracking with integrated data analytics and smart algorithms. International Journal of Latest Technology in Engineering Management & Applied Science. https://doi.org/10.51583/ijltemas.2025.1410000025
+
+[P05555 | 494390:494594 | NORMAL_TEXT]
+Mhatre, S., Patil, S., & Mhatre, M. (2026). Vehicle rental system. International Journal of Advanced Research in Science, Communication and Technology, 6(6), 637–640. https://ijarsct.co.in/Paper32086.pdf
+
+[P05556 | 494594:494761 | NORMAL_TEXT]
+Mizik, T. (2021). Economic aspects and sustainability of ethanol production—A systematic literature review. Energies, 14(19), 6137. https://doi.org/10.3390/en14196137
+
+[P05557 | 494761:494977 | NORMAL_TEXT]
+Moawad, A., Li, Z., Pancorbo, I., et al. (2024). A real-time energy and cost efficient vehicle route assignment neural recommender system. Expert Systems with Applications. https://doi.org/10.1016/j.eswa.2024.125634
+
+[P05558 | 494977:495229 | NORMAL_TEXT]
+Mohamad et al. (2026). Predictive Analytics for Vehicle Utilization and Fleet Decision Support in Higher Education. 2026 International Conference on Cognitive Systems and Computer Interaction (ICoSCI). https://doi.org/10.1109/ICoSCI66700.2026.11448071
+
+[P05559 | 495229:495501 | NORMAL_TEXT]
+Mohamad, S., Isa, N., & Mahmud, S. (2026). Predictive analytics for vehicle utilization and fleet decision support in higher education. 2026 International Conference on Cognitive Systems and Computer Interaction (ICoSCI). https://doi.org/10.1109/ICoSCI66700.2026.11448071
+
+[P05560 | 495501:495769 | NORMAL_TEXT]
+Monteverde, A. L., Maderazo, J. J. S., Cruz, K. C. M., & Magnaye, N. A. (2023). Web-based rental house smart finder using rapid application development basis for evaluation of ISO 25010. International Journal of Metaverse, 1(1). https://doi.org/10.54536/ijm.v1i1.1464
+
+[P05561 | 495769:496073 | NORMAL_TEXT]
+Mozafari, H., Soltanpour, A., Jazlan, F., Vosoughinia, S., Ghamami, M., & Zockaie, A. (2025). Leveraging alternative fuel vehicles in operation and asset management strategies to reduce fleet economic and societal impacts. Journal of Transportation Technologies. https://doi.org/10.4236/jtts.2025.153016
+
+[P05562 | 496073:496247 | NORMAL_TEXT]
+Nasser & Simon. (2025). Traffic and Weather Data Fusion for Traffic Prediction in Sustainable Cities. Journal of Advanced Transportation. https://doi.org/10.1155/atr/1580010
+
+[P05563 | 496247:496452 | NORMAL_TEXT]
+Niroshan et al. (2025). Design and implementation of a data sharing API for supporting urban governance schemes in environmental and traffic monitoring. MethodsX. https://doi.org/10.1016/j.mex.2025.103458
+
+[P05564 | 496452:496742 | NORMAL_TEXT]
+Nuzula, M. I. F., & Rochimah, S. (2023). Evaluation of service quality in human resource information systems using the ISO/IEC 25010. 2023 International Seminar on Application for Technology of Information and Communication (iSemantic). https://doi.org/10.1109/iSemantic59612.2023.10295365
+
+[P05565 | 496742:496910 | NORMAL_TEXT]
+Ogbiti, J. T., & Aaron, W. (2024). Development of a web-based car rental management system. Science World Journal, 19(3), 797–807. https://doi.org/10.4314/swj.v19i3.27
+
+[P05566 | 496910:497085 | NORMAL_TEXT]
+Paramitha & Z.S. (2023). FORECASTING ANALYSIS OF CAR WHEEL RIM DEMAND AT PT. XX TO REDUCE WASTE USING POM-QM SOFTWARE. Barometer. https://doi.org/10.35261/barometer.v8i2.7702
+
+[P05567 | 497085:497293 | NORMAL_TEXT]
+Park, C. R., Heo, H., Suh, C. H., & Shim, W. H. (2025). Uncover this tech term: Application programming interface for large language models. Korean Journal of Radiology. https://doi.org/10.3348/kjr.2025.0360
+
+[P05568 | 497293:497561 | NORMAL_TEXT]
+Peng, H., Zhou, J., Li, Z., et al. (2025). Aviation refueling strategies based on neural networks and optimization algorithms. International Conference on Natural Computation, Fuzzy Systems and Knowledge Discovery. https://doi.org/10.1109/ICNC-FSKD67701.2025.11198108
+
+[P05569 | 497561:497750 | NORMAL_TEXT]
+Penumala & Naganaboina. (2025). Contextually Aware Navigation Systems using Environmental and Interest-Based Data. IEEE India Conference. https://doi.org/10.1109/INDICON68490.2025.11392971
+
+[P05570 | 497750:498038 | NORMAL_TEXT]
+Pradeepraja et al. (2025). WeatherSync-ITS: An Adaptive Meteorological Intelligence Framework for Proactive Urban Traffic Management. 2025 5th International Conference on Evolutionary Computing and Mobile Sustainable Networks (ICECMSN). https://doi.org/10.1109/ICECMSN68058.2025.11383260
+
+[P05571 | 498038:498235 | NORMAL_TEXT]
+Purba, D. A., & Hidayasari, N. (2026). Implementation of role-based access control (RBAC) in a drug stock management information system. SISTEMASI, 15(2). https://doi.org/10.32520/stmsi.v15i2.5958
+
+[P05572 | 498235:498489 | NORMAL_TEXT]
+R et al. (2025). Intelligent Traffic Monitoring and Autonomous Navigation System with Real-Time Weather and Incident Alerts. 2025 International Conference on Data Science and Business Systems (ICDSBS). https://doi.org/10.1109/ICDSmoBS63635.2025.11031650
+
+[P05573 | 498489:498678 | NORMAL_TEXT]
+Rahayu et al. (2022). ANALYSIS OF PRODUCT STOCK INVENTORY FORECASTING USING WEIGHTED MOVING AVERAGE METHOD. Jurnal Teknik Informatika (Jutif). https://doi.org/10.20884/1.jutif.2022.3.6.421
+
+[P05574 | 498678:498903 | NORMAL_TEXT]
+Rahman, W. F. W. A., & Mohd Rusli, N. I. N. B. (2023). The development of a web-based car rental business management system. Journal of Mathematics and Computing Science, 9(2), 101–108. https://doi.org/10.24191/jmcs.v9i2.513
+
+[P05575 | 498903:499102 | NORMAL_TEXT]
+Rangasamy, T. (2026). Contextual computing and AI integration: Adaptive decision systems for enterprise environments. International Journal of Computational and Experimental Science and Engineering.
+
+[P05576 | 499102:499287 | NORMAL_TEXT]
+Reddy, Y. R., & Sharanya. (2025). Analysis of COVID-2019 by using weighted moving averages. Advanced International Journal for Research. https://doi.org/10.63363/aijfr.2025.v06i04.1195
+
+[P05577 | 499287:499473 | NORMAL_TEXT]
+Romadhan, H., & Mansur, M. (2026). Web-based educational payment information system using role-based access control security. SISTEMASI, 15(2). https://doi.org/10.32520/stmsi.v15i2.5920
+
+[P05578 | 499473:499642 | NORMAL_TEXT]
+Routaray & Kumar. (2024). Auto Mobilize Pro. International Journal of Advanced Research in Science, Communication and Technology. https://doi.org/10.48175/ijarsct-22510
+
+[P05579 | 499642:499820 | NORMAL_TEXT]
+Saderova, J., Cerevkova, K., Petrovska, I., & Kleinova, L. (2023). Evaluation of the use of transport means based on time and performance indicators. CLC Conference Proceedings.
+
+[P05580 | 499820:500126 | NORMAL_TEXT]
+Sangaraju, H. R., Balakrishnan, S., Subramanian, S. S., Chakrabarti, T., Chakrabarti, P., & Margala, M. (2024). An effective resource allocation and revenue generation for rental vehicles. International Journal of Transport Development and Integration, 8(3), 393–401. https://doi.org/10.18280/ijtdi.080303
+
+[P05581 | 500126:500355 | NORMAL_TEXT]
+Sariati et al. (2026). Implementation of Simple and Weighted Moving Average for Forecasting Tela-Tela Production in MSME X. RIGGS: Journal of Artificial Intelligence and Digital Business. https://doi.org/10.31004/riggs.v4i4.5205
+
+[P05582 | 500355:500719 | NORMAL_TEXT]
+Saritha, P., Srinivasu, N., Subhani, S. M., Reddy, P. S. K., & Rambabu, V. (2026). Distributed car rental reservation, fleet allocation and customer billing management. International Journal of Advanced Research in Computer and Communication Engineering. https://ijarcce.com/papers/distributed-car-rental-reservation-fleet-allocation-and-customer-billing-managem/
+
+[P05583 | 500719:500908 | NORMAL_TEXT]
+Schroer, K., Ketter, W., Lee, T., et al. (2021). Data-driven competitor-aware positioning in on-demand vehicle rental networks. Transportation Science. https://doi.org/10.2139/ssrn.3915466
+
+[P05584 | 500908:501233 | NORMAL_TEXT]
+Suganya, N. C., Csbs, B. T., Suganthan, M., Vishnu, T., Csbs, K. B. T., & Ragul, R. (2026). An integrated AI-driven forecasting and optimization framework for intelligent vehicle rental management using RentOptima. International Conferences on Information Science and System. https://doi.org/10.1109/ICISS67859.2026.11453753
+
+[P05585 | 501233:501511 | NORMAL_TEXT]
+Suganya, N. C., Suganthan, M., et al. (2026). An integrated AI-driven forecasting and optimization framework for intelligent vehicle rental management using RentOptima. International Conference on Information Science and System. https://doi.org/10.1109/ICISS67859.2026.11453753
+
+[P05586 | 501511:501771 | NORMAL_TEXT]
+Tobin et al. (2024). Towards the development of an impact-based decision support tool for surface-transportation hazards. Part I: Tying Weather Variables to Road Hazards and Quantifying Impacts. Weather and Forecasting. https://doi.org/10.1175/waf-d-23-0219.1
+
+[P05587 | 501771:502094 | NORMAL_TEXT]
+Vateekul, P., Sri-iesaranusorn, P., Aiemvaravutigul, P., Chanakitkarnchok, A., & Rojviboonchai, K. (2021). Recurrent neural-based vehicle demand forecasting and relocation optimization for car-sharing system: A real use case in Thailand. Journal of Advanced Transportation, 2021, 1–16. https://doi.org/10.1155/2021/8885671
+
+[P05588 | 502094:502316 | NORMAL_TEXT]
+Vdovic et al. (2021). An Application Programming Interface for Advanced Analytics of Contextually Enriched Automotive Data. International Conference on Telecommunications. https://doi.org/10.23919/ConTEL52528.2021.9495964
+
+[P05589 | 502316:502527 | NORMAL_TEXT]
+Vyas, J., Das, D., & Chaudhury, S. (2022). DriveBFR: Driver behavior and fuel-efficiency-based recommendation system. IEEE Transactions on Computational Social Systems. https://doi.org/10.1109/TCSS.2021.3112076
+
+[P05590 | 502527:502769 | NORMAL_TEXT]
+You, P.-S., & Hsieh, Y.-C. (2025). Dynamic allocation strategy for the car rental industry with multiple rental channels. International Journal of Engineering and Technology Innovation, 15(1), 68–84. https://doi.org/10.46604/ijeti.2024.13827
+
+[P05591 | 502769:502965 | NORMAL_TEXT]
+Yuliani, R., Handayani, T., & Desyanti, D. (2022). Sistem forecasting untuk pengadaan material biji plastik menggunakan metode Weighted Moving Average. https://doi.org/10.52072/jutekinf.v10i1.359
+
+[P05592 | 502965:503215 | NORMAL_TEXT]
+Yusuf, A., Afriansa, M., Annisa, A., et al. (2026). Penerapan teknologi web untuk smart transportation dan manajemen armada di era IoT: Systematic literature review 2020–2025. Jurnal Teknologi dan Bisnis Cerdas. https://doi.org/10.64476/jtbc.v2i1.22
+
+[P05593 | 503215:503467 | NORMAL_TEXT]
+Zhao, F., Wang, W., Sun, H., Yang, H., & Wu, J. (2021). Station-level short-term demand forecast of carsharing system via station-embedding-based hybrid neural network. Transportmetrica B: Transport Dynamics. https://doi.org/10.1080/21680566.2021.1951
+

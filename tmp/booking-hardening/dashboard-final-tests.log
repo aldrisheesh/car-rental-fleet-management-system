@@ -1,0 +1,12 @@
+✔ canonical operational KPIs use lifecycle and readiness definitions (0.65825ms)
+✔ Owner/Admin and Operations Staff receive operational-only role-specific responses (0.9155ms)
+✔ source failure rejects instead of becoming a zero snapshot (0.122917ms)
+✔ dashboard removes prototype widgets and implements honest load states (2.355833ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 72.350709

@@ -31,6 +31,7 @@ const authBoundaryMiddleware = createMiddleware().server(
     const destination = getUnauthorizedRecoveryDestination(
       pathname,
       !!principal,
+      principal?.accountStatus === "Active" ? principal.role : undefined,
     );
     const recoveryDestination =
       destination === "/sign-in" && pathname.startsWith("/bookings/")

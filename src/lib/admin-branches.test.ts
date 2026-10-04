@@ -36,80 +36,46 @@ test("branch vehicle counts use canonical branch assignments", () => {
   );
 });
 
-test("branch management renders canonical state without prototype analytics", async () => {
+test("location editor retains canonical counts and excludes prototype analytics", async () => {
   const source = await readFile(
     new URL("../routes/admin.branches.tsx", import.meta.url),
     "utf8",
   );
-
   assert.doesNotMatch(
     source,
     /@\/data\/admin|branchPerformance|Active rentals|Fleet on-site|Demand score|Monthly revenue|MoM|Flagship|Suburban hub/,
   );
-  assert.match(source, /fetchMasterData<BranchRecord>\("branches"\)/);
+  assert.match(source, /fetchMasterData<Branch>\("branches"\)/);
   assert.match(source, /fetchMasterData<ApiMasterVehicle>\("vehicles"\)/);
   assert.match(source, /buildAdminBranchRows\(branches, vehicles\)/);
-  assert.match(source, /label="Assigned vehicles"/);
+  assert.match(source, /assignedVehicleCount/);
+  assert.match(source, /AddressAutocomplete/);
+  assert.match(source, /id="location-address"/);
+  assert.match(source, /Find address/);
+  assert.doesNotMatch(source, /Matched address/);
+  assert.doesNotMatch(source, /DssLocationConfirmation/);
 });
 
-test("branch deactivation requires exact-entity confirmation on both controls", async () => {
+test("both inactive selection and quiet action pass through entity confirmation", async () => {
   const source = await readFile(
     new URL("../routes/admin.branches.tsx", import.meta.url),
     "utf8",
   );
-
-  assert.match(
-    source,
-    /function requestBranchToggle\([\s\S]*?branch: BranchRecord,[\s\S]*?trigger: HTMLButtonElement,[\s\S]*?\)[\s\S]*?if \(branch\.is_active\) \{[\s\S]*?deactivationTriggerRef\.current = trigger;[\s\S]*?setDeactivationBranch\(branch\);[\s\S]*?return;[\s\S]*?\}[\s\S]*?void toggleBranch\(branch\);/,
-  );
-  assert.match(
-    source,
-    /<BranchRow[\s\S]*?onToggle=\{\(trigger\) =>[\s\S]*?requestBranchToggle\(row\.record, trigger\)/,
-  );
-  assert.match(
-    source,
-    /<BranchDisclosure[\s\S]*?onToggle=\{\(trigger\) =>[\s\S]*?requestBranchToggle\(row\.record, trigger\)/,
-  );
-  assert.match(source, /<AlertDialog\s+open=\{Boolean\(deactivationBranch\)\}/);
-  assert.match(
-    source,
-    /<AlertDialogTitle[^>]*>[\s\S]*?Deactivate \{deactivationBranch\?\.name\}\?[\s\S]*?<\/AlertDialogTitle>/,
-  );
-  assert.match(
-    source,
-    /This branch will become inactive\.\s+Existing historical records\s+remain unchanged\./,
-  );
-  assert.match(
-    source,
-    /<AlertDialogCancel[\s\S]*?>\s*Cancel\s*<\/AlertDialogCancel>/,
-  );
-  assert.match(
-    source,
-    /<AlertDialogAction[\s\S]*?event\.preventDefault\(\);[\s\S]*?confirmBranchDeactivation\(\)/,
-  );
-  assert.match(
-    source,
-    /onCloseAutoFocus=\{\(event\) => \{[\s\S]*?deactivationTriggerRef\.current[\s\S]*?trigger\.focus\(\)/,
-  );
-  const cancelSection = source.match(
-    /<AlertDialogCancel[\s\S]*?<\/AlertDialogCancel>/,
-  )?.[0];
-  assert.ok(cancelSection);
-  assert.doesNotMatch(cancelSection, /toggleBranch|saveMasterData/);
-  assert.match(
-    source,
-    /const branch = deactivationBranch;[\s\S]*?if \(!branch \|\| deactivationSubmissionRef\.current\) return;[\s\S]*?toggleBranch\(branch\)/,
-  );
+  assert.match(source, /branch\.is_active && !active && !create/);
+  assert.match(source, /onClick=\{\(\) => setDeactivate\(true\)\}/);
+  assert.match(source, /Deactivate \{branch\.name\}\?/);
+  assert.match(source, /Historical records remain\s+unchanged/);
+  assert.match(source, /void save\(true\)/);
+  assert.match(source, /Discard unsaved changes/);
 });
 
-test("branch activation stays canonical and branch changes never use DELETE", async () => {
+test("activation and editing use one server save and never delete a location", async () => {
   const source = await readFile(
     new URL("../routes/admin.branches.tsx", import.meta.url),
     "utf8",
   );
-
-  assert.match(source, /isActive: !branch\.is_active/);
-  assert.match(source, /id: branch\.id/);
+  assert.match(source, /action: "save"/);
+  assert.match(source, /branchId: branch\.id/);
+  assert.match(source, /isActive: forceInactive \? false : active/);
   assert.doesNotMatch(source, /method:\s*["']DELETE["']/);
-  assert.doesNotMatch(source, /fetch\([^)]*,\s*\{[\s\S]*?DELETE/);
 });

@@ -1,0 +1,31 @@
+{
+  "bridgeVersion": "3.6",
+  "kind": "google-docs-trusted-read-receipt",
+  "status": "complete",
+  "target": {
+    "documentId": "1cFZhN-b0NAopEX3CzUlIvOgefVMTTXbi2eietaZWEbY",
+    "title": "Revised Database Schema and Dictionary",
+    "revisionId": "ANLCKQlLp0G3ZaGm-yajBhVcCig64FrF_gT1izPRUsIp30VsC6lrQOj-IRwlGnrC1ayMqWS6vqDnLbOqtBSEWCvsqH-HCo8L74k6tiDrW8Y",
+    "documentUrl": "https://docs.google.com/document/d/1cFZhN-b0NAopEX3CzUlIvOgefVMTTXbi2eietaZWEbY",
+    "selectedTabId": "t.tokiux2rhoh"
+  },
+  "dropdownMetadata": {
+    "status": "unavailable",
+    "resolvedTool": null,
+    "authoritative": false,
+    "count": 0
+  },
+  "controlAwareness": {
+    "hasProtectedControls": false,
+    "authoritativeDropdownCount": 0,
+    "opaqueControlCount": 0,
+    "affectedParagraphCount": 0,
+    "nativeElementCounts": {
+      "inlineObjectElement": 10
+    },
+    "preservationRequired": false,
+    "recommendedBehavior": "No protected controls were detected in the scanned scope."
+  },
+  "warnings": [],
+  "error": null
+}

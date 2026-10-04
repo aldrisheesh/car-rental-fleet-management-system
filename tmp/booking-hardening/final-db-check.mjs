@@ -1,0 +1,11 @@
+import {sql} from './db.mjs';import assert from 'node:assert/strict';
+const [r]=await sql`select *,started_at::text exact_started from rental_transactions where booking_id='dff20919-76aa-4c9f-9887-0b3b5593f936'`;
+const [admin]=await sql`select id from profiles where email='uat-a01@briah-uat.invalid'`;
+const payload={rentalId:r.id,depositDeduction:0.001,depositRefunded:2999.999,refundMethod:'Cash',refundAcknowledged:true,deductionReason:'Synthetic invalid cents'};
+await sql.begin(async tx=>{await tx`set local role service_role`;await tx`select public.close_rental_with_settlement(${r.booking_id},${admin.id},${sql.json(payload)}::jsonb)`;}).then(()=>assert.fail('Invalid cents accepted'),e=>assert.match(e.message,/invalid_deposit_settlement/));
+await sql.begin(async tx=>{await tx`set local role service_role`;await tx`select public.close_rental_with_settlement(${r.booking_id},${r.customer_id},${sql.json(payload)}::jsonb)`;}).then(()=>assert.fail('Customer actor accepted'),e=>assert.match(e.message,/forbidden/));
+const [f]=await sql`select * from rental_financial_records where rental_id=${r.id}`;assert.equal(Number(f.balance_collected),1000);assert.equal(Number(f.deposit_refunded),2750);assert.ok(r.ended_at);
+const [n]=await sql`select count(*)::integer count from notifications where notification_type='quote_issued' and related_entity_id=${r.booking_id}`;assert.equal(n.count,1);
+const [permissions]=await sql`select has_function_privilege('authenticated','public.close_rental_with_settlement(uuid,uuid,jsonb)','execute') client_rpc,has_table_privilege('authenticated','public.rental_financial_records','select') client_read`;assert.equal(permissions.client_rpc,false);assert.equal(permissions.client_read,false);
+console.log('PASS saved frontend collection/refund, quote notification, cent precision, customer actor denial, restricted client access.');
+await sql.end();

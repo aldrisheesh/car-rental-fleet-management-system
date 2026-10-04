@@ -1,0 +1,18 @@
+digraph ERD {
+graph [rankdir=LR, bgcolor="white", nodesep=0.5, ranksep=1.5, pad=0.4, splines=ortho, overlap=false, fontname="Arial", fontsize=20, labelloc=t, label="Notifications and audit\nPK = primary key; FK = foreign key. Labels show database-enforced multiplicity."];
+node [shape=plain,fontname="Arial",fontsize=11];
+edge [fontname="Arial",fontsize=9,color="#64748b",fontcolor="#334155",arrowsize=0.6];
+"notifications" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>notifications</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK recipient_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"notification_preferences" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>notification_preferences</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK FK recipient_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"operational_notification_conditions" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>operational_notification_conditions</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK condition_type</TD><TD ALIGN="LEFT">text</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">PK related_entity_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"email_deliveries" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>email_deliveries</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK recipient_user_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK notification_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"audit_events" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>audit_events</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK actor_user_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NULL</TD></TR><TR><TD ALIGN="LEFT">FK booking_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NULL</TD></TR></TABLE>>];
+"booking_requests" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#e2e8f0"><FONT COLOR="#263746"><B>booking_requests</B> (reference)</FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"profiles" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#e2e8f0"><FONT COLOR="#263746"><B>profiles</B> (reference)</FONT></TD></TR><TR><TD ALIGN="LEFT">PK FK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"audit_events" -> "profiles" [dir=none,taillabel="0..N",headlabel="0..1",labeldistance=2];
+"audit_events" -> "booking_requests" [dir=none,taillabel="0..N",headlabel="0..1",labeldistance=2];
+"email_deliveries" -> "notifications" [dir=none,taillabel="0..1",headlabel="1",labeldistance=2];
+"email_deliveries" -> "profiles" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+"notification_preferences" -> "profiles" [dir=none,taillabel="0..1",headlabel="1",labeldistance=2];
+"notifications" -> "profiles" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+}

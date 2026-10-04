@@ -49,6 +49,7 @@ test("branch reassignment preserves the complete canonical vehicle input", () =>
     licensePlate: null,
     transmission: "Automatic",
     seatCapacity: 7,
+    largeLuggageCapacity: null,
     dailyRate: 4321,
     isActive: true,
     fuelType: "Diesel",
@@ -118,17 +119,17 @@ test("the write uses PATCH with the exact selected vehicle and preserved input",
   });
 });
 
-test("Fleet resolves the canonical vehicle by the selected row ID", async () => {
+test("Fleet sends the selected vehicle to the guarded location endpoint", async () => {
   const source = await readFile(
     new URL("../routes/admin.fleet.tsx", import.meta.url),
     "utf8",
   );
 
   assert.match(source, /fetchMasterData<ApiMasterVehicle>\("vehicles"\)/);
-  assert.match(source, /candidate\.id === vehicle\.id/);
-  assert.match(source, /id: vehicle\.id/);
   assert.match(
     source,
-    /buildVehicleBranchUpdateInput\(canonicalVehicle, branchId\)/,
+    /\/api\/vehicle-location\?vehicleId=\$\{encodeURIComponent\(vehicle\.id\)\}/,
   );
+  assert.match(source, /vehicleId: vehicle\.id, branchId, acknowledgeImpacts/);
+  assert.doesNotMatch(source, /buildVehicleBranchUpdateInput/);
 });

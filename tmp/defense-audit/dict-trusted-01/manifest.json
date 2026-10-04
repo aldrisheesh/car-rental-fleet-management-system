@@ -1,0 +1,59 @@
+{
+  "bridgeVersion": "3.6",
+  "kind": "google-docs-trusted-read",
+  "status": "complete",
+  "outputDir": "/Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/tmp/defense-audit/dict-trusted-01",
+  "target": {
+    "documentId": "1cFZhN-b0NAopEX3CzUlIvOgefVMTTXbi2eietaZWEbY",
+    "title": "Revised Database Schema and Dictionary",
+    "revisionId": "ANLCKQlLp0G3ZaGm-yajBhVcCig64FrF_gT1izPRUsIp30VsC6lrQOj-IRwlGnrC1ayMqWS6vqDnLbOqtBSEWCvsqH-HCo8L74k6tiDrW8Y",
+    "documentUrl": "https://docs.google.com/document/d/1cFZhN-b0NAopEX3CzUlIvOgefVMTTXbi2eietaZWEbY",
+    "selectedTabId": "t.tokiux2rhoh"
+  },
+  "dropdownMetadata": {
+    "status": "unavailable",
+    "resolvedTool": null,
+    "authoritative": false,
+    "count": 0
+  },
+  "controlAwareness": {
+    "hasProtectedControls": false,
+    "authoritativeDropdownCount": 0,
+    "opaqueControlCount": 0,
+    "affectedParagraphCount": 0,
+    "nativeElementCounts": {
+      "inlineObjectElement": 10
+    },
+    "preservationRequired": false,
+    "recommendedBehavior": "No protected controls were detected in the scanned scope."
+  },
+  "warnings": [],
+  "files": {
+    "document_result": {
+      "path": "/Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/tmp/defense-audit/dict-trusted-01/document-result.json",
+      "bytes": 24944156,
+      "sha256": "7a8147775792ac4d101cab40ed31744f4a29d85a86f4740d27c3c1c0070c74a6"
+    },
+    "control_inventory": {
+      "path": "/Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/tmp/defense-audit/dict-trusted-01/control-inventory.json",
+      "bytes": 7486,
+      "sha256": "3769ef9eae59e8e3bc5348c249bb2186cf1cb44a75c056dce8217a67d3972d28"
+    },
+    "document_outline": {
+      "path": "/Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/tmp/defense-audit/dict-trusted-01/document-outline.json",
+      "bytes": 1290754,
+      "sha256": "a0fe6af3b72b4eec42455129454f5ac26ebf1524cc0c58414814947c1ab83ca3"
+    },
+    "document_text": {
+      "path": "/Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/tmp/defense-audit/dict-trusted-01/document-text.md",
+      "bytes": 193183,
+      "sha256": "fbb9513f0f3a58e835f34bf643ebe6b3fa464998c8623d8a0bd350da2ab52207"
+    },
+    "receipt": {
+      "path": "/Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/tmp/defense-audit/dict-trusted-01/receipt.json",
+      "bytes": 1022,
+      "sha256": "d0600e4281783675895cd44e499ca924db1e9759e90913d36b507f45261a2ecd"
+    }
+  },
+  "error": null
+}

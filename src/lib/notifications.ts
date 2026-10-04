@@ -1,9 +1,11 @@
+import { bookingReference } from "./booking-reference.ts";
 import { bookingPath } from "./customer-data.ts";
 
 export type NotificationType =
   | "requirements_needs_resubmission"
   | "requirements_verified"
   | "payment_needs_resubmission"
+  | "quote_issued"
   | "payment_verified"
   | "booking_confirmed"
   | "new_booking_request"
@@ -93,17 +95,18 @@ export function notificationRoute(
   audience: "admin" | "customer",
   customerBindings: readonly CustomerNotificationBinding[] = [],
   adminBindings: readonly AdminNotificationBinding[] = [],
+  staffView = false,
 ) {
   if (audience === "customer") {
     const bookingId = customerBookingId(notification, customerBindings);
     return bookingId ? bookingPath(bookingId) : "/customer";
   }
   if (notification.notificationType === "maintenance_attention")
-    return "/admin/maintenance";
+    return staffView ? "/admin" : "/admin/maintenance";
   if (notification.notificationType === "low_availability") return "/admin";
   if (notification.notificationType === "backup_attention")
     return "/admin/notifications";
-  if (notification.relatedEntityType === "payment")
+  if (notification.relatedEntityType === "payment" && !staffView)
     return `/admin/payments/${encodeURIComponent(notification.relatedEntityId)}`;
   const binding = adminBindings.find(
     (candidate) => candidate.notificationId === notification.id,
@@ -115,7 +118,7 @@ export function notificationRoute(
     : "/admin/bookings";
 }
 
-function customerBookingId(
+export function customerBookingId(
   notification: CanonicalNotification,
   customerBindings: readonly CustomerNotificationBinding[],
 ) {
@@ -135,4 +138,46 @@ function customerBookingId(
   });
 
   return matchingBindings.length === 1 ? matchingBindings[0].bookingId : null;
+}
+
+/** Validate entity projections at the API boundary instead of trusting generated inference. */
+export function notificationEntityBindings(
+  rows: unknown,
+): Array<{ id: string; booking_id: string }> {
+  if (!Array.isArray(rows)) return [];
+  return rows.flatMap((row: unknown) => {
+    if (
+      !row ||
+      typeof row !== "object" ||
+      !("id" in row) ||
+      !("booking_id" in row)
+    )
+      return [];
+    return typeof row.id === "string" &&
+      row.id.trim() &&
+      typeof row.booking_id === "string" &&
+      row.booking_id.trim()
+      ? [{ id: row.id, booking_id: row.booking_id }]
+      : [];
+  });
+}
+
+export function notificationReference(
+  notification: CanonicalNotification,
+  customerBindings: readonly CustomerNotificationBinding[] = [],
+  adminBindings: readonly AdminNotificationBinding[] = [],
+) {
+  const bookingId =
+    notification.relatedEntityType === "booking"
+      ? notification.relatedEntityId
+      : (customerBookingId(notification, customerBindings) ??
+        adminBindings.find((item) => item.notificationId === notification.id)
+          ?.bookingId);
+  if (bookingId) return `Booking ${bookingReference(bookingId)}`;
+  const entity =
+    notification.relatedEntityType === "backup_run"
+      ? "Backup run"
+      : notification.relatedEntityType[0].toUpperCase() +
+        notification.relatedEntityType.slice(1);
+  return `${entity} ${bookingReference(notification.relatedEntityId)}`;
 }

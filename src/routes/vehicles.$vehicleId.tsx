@@ -282,7 +282,10 @@ function VehicleDetailPage() {
               >
                 <div className="detail-gallery-main">
                   <VehicleImage
-                    src={galleryImages[activeImage]?.public_url ?? vehicle.image_url}
+                    src={
+                      galleryImages[activeImage]?.public_url ??
+                      vehicle.image_url
+                    }
                     alt={vehicle.name}
                     priority
                     sizes="(max-width: 767px) 100vw, 58vw"
@@ -299,7 +302,11 @@ function VehicleDetailPage() {
                         aria-pressed={activeImage === index}
                         onClick={() => setActiveImage(index)}
                       >
-                        <VehicleImage src={image.public_url} alt="" sizes="5rem" />
+                        <VehicleImage
+                          src={image.public_url}
+                          alt=""
+                          sizes="5rem"
+                        />
                       </button>
                     ))}
                   </div>
@@ -313,9 +320,7 @@ function VehicleDetailPage() {
                   </p>
                   <h1 id="vehicle-title">{vehicle.name}</h1>
                   <Rate value={vehicle.daily_rate} />
-                  <p className="detail-intro">
-                    {vehicleFitSummary(vehicle)}
-                  </p>
+                  <p className="detail-intro">{vehicleFitSummary(vehicle)}</p>
                 </div>
 
                 {finderStatus === "checking" ? (
@@ -357,7 +362,8 @@ function VehicleDetailPage() {
                   aria-labelledby="detail-rental-title"
                 >
                   <h2 id="detail-rental-title">
-                    <CalendarDays size={18} aria-hidden="true" /> Plan your rental
+                    <CalendarDays size={18} aria-hidden="true" /> Plan your
+                    rental
                   </h2>
                   {tripDates ? (
                     <>
@@ -375,7 +381,8 @@ function VehicleDetailPage() {
                       {rentalEstimate ? (
                         <div className="detail-rental-estimate">
                           <span>
-                            {rentalEstimate.rentalDays} {rentalEstimate.rentalDays === 1 ? "day" : "days"}
+                            {rentalEstimate.rentalDays}{" "}
+                            {rentalEstimate.rentalDays === 1 ? "day" : "days"}
                           </span>
                           <p>Estimated vehicle rental</p>
                           <strong>{formatMoney(rentalEstimate.total)}</strong>
@@ -384,7 +391,8 @@ function VehicleDetailPage() {
                     </>
                   ) : (
                     <p className="detail-rental-empty">
-                      Choose dates to see the estimated vehicle rental and request this car.
+                      Choose dates to see the estimated vehicle rental and
+                      request this car.
                     </p>
                   )}
                   <button
@@ -411,7 +419,7 @@ function VehicleDetailPage() {
                     </Link>
                   ) : null}
                   <p className="detail-action-note">
-                    Delivery details are confirmed after your request is approved.
+                    Choose pickup or delivery when completing your request.
                   </p>
                 </section>
               </section>

@@ -1,0 +1,730 @@
+// Paste this entire file into the dbdiagram.io DBML editor.
+// Repository baseline: 02705878169422ae1d7a01d937a9a9680c99bf95
+// Diagram representation: defaults, generated expressions, checks,
+// partial indexes, triggers, functions, and RLS are omitted.
+
+Project briah_car_rental {
+  database_type: 'PostgreSQL'
+  Note: 'Database schema for the Web-Based Car Rental Management System for Briah Car Rental. Forty public tables; auth.users is an external authentication reference.'
+}
+
+Table auth.users {
+  id uuid [pk, not null]
+  Note: 'External authentication reference. Only the referenced primary key is shown.'
+}
+
+Table public.profiles {
+  id uuid [pk, not null]
+  email text [null, unique]
+  full_name text [not null]
+  phone_number text [null]
+  user_type text [not null]
+  account_status text [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  street_address text [null]
+  barangay text [null]
+  city_municipality text [null]
+  province text [null]
+  postal_code text [null]
+}
+
+Table public.branches {
+  id uuid [pk, not null]
+  name text [not null, unique]
+  address text [null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table public.vehicle_categories {
+  id uuid [pk, not null]
+  name text [not null, unique]
+  description text [null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table public.vehicles {
+  id uuid [pk, not null]
+  name text [not null]
+  category_id uuid [not null]
+  branch_id uuid [not null]
+  license_plate text [null, unique]
+  transmission text [null]
+  fuel_type text [null]
+  seat_capacity integer [null]
+  daily_rate numeric(12,2) [null]
+  reference_fuel_efficiency_km_per_liter numeric(8,2) [null]
+  image_url text [null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  current_odometer_km numeric(12,1) [null]
+  condition_blocks_rental_use boolean [not null]
+  large_luggage_capacity integer [null]
+}
+
+Table public.booking_requests {
+  id uuid [pk, not null]
+  customer_id uuid [not null]
+  requested_vehicle_id uuid [not null]
+  assigned_vehicle_id uuid [null]
+  pickup_branch_id uuid [not null]
+  return_branch_id uuid [not null]
+  pickup_at timestamptz [not null]
+  return_at timestamptz [not null]
+  destination text [null]
+  purpose_of_use text [not null]
+  pickup_delivery_option text [not null]
+  pickup_location text [null]
+  dropoff_location text [null]
+  preferred_seat_count integer [null]
+  customer_contact_number text [null]
+  booking_status text [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  assigned_by uuid [null]
+  assigned_at timestamptz [null]
+  assignment_note text [null]
+  substitution_acknowledged boolean [not null]
+  cross_branch_acknowledged boolean [not null]
+  confirmed_by uuid [null]
+  confirmed_at timestamptz [null]
+  resolution_reason text [null]
+  resolved_by uuid [null]
+  resolved_at timestamptz [null]
+  confirmation_exception_code text [null]
+  confirmation_exception_message text [null]
+  confirmation_exception_at timestamptz [null]
+}
+
+Table public.renter_requirement_sets {
+  id uuid [pk, not null]
+  booking_id uuid [not null, unique]
+  customer_id uuid [not null]
+  status text [not null]
+  submitted_at timestamptz [null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table public.renter_requirement_documents {
+  id uuid [pk, not null]
+  requirement_set_id uuid [not null]
+  booking_id uuid [not null]
+  customer_id uuid [not null]
+  requirement_type text [not null]
+  storage_path text [not null, unique]
+  original_filename text [not null]
+  mime_type text [not null]
+  size_bytes bigint [not null]
+  version integer [not null]
+  is_current boolean [not null]
+  uploaded_at timestamptz [not null]
+  superseded_at timestamptz [null]
+}
+
+Table public.renter_requirement_reviews {
+  id uuid [pk, not null]
+  requirement_set_id uuid [not null]
+  reviewer_id uuid [not null]
+  government_id_document_id uuid [not null]
+  government_id_version integer [not null]
+  government_id_outcome text [not null]
+  government_id_reason text [null]
+  drivers_license_document_id uuid [not null]
+  drivers_license_version integer [not null]
+  drivers_license_outcome text [not null]
+  drivers_license_reason text [null]
+  identity_consistency text [not null]
+  lto_outcome text [not null]
+  lto_checked_at timestamptz [null]
+  resulting_status text [not null]
+  reviewed_at timestamptz [not null]
+  proof_of_billing_document_id uuid [null]
+  proof_of_billing_version integer [null]
+  proof_of_billing_outcome text [null]
+  proof_of_billing_reason text [null]
+  selfie_with_id_document_id uuid [null]
+  selfie_with_id_version integer [null]
+  selfie_with_id_outcome text [null]
+  selfie_with_id_reason text [null]
+}
+
+Table public.payment_methods {
+  id uuid [pk, not null]
+  code text [not null, unique]
+  label text [not null]
+  instructions text [not null]
+  is_demo boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  recipient_name text [null]
+  account_number text [null]
+  qr_image_path text [null]
+}
+
+Table public.payments {
+  id uuid [pk, not null]
+  booking_id uuid [not null, unique]
+  customer_id uuid [not null]
+  purpose text [not null]
+  currency text [not null]
+  required_amount numeric(12,2) [null]
+  submitted_amount numeric(12,2) [null]
+  payment_method_id uuid [null]
+  payment_method_label text [null]
+  transaction_reference text [null]
+  status text [not null]
+  resubmission_reason text [null]
+  reviewed_by uuid [null]
+  reviewed_at timestamptz [null]
+  reviewed_proof_version integer [null]
+  reviewed_submitted_amount numeric(12,2) [null]
+  reviewed_transaction_reference text [null]
+  submitted_at timestamptz [null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table public.payment_proofs {
+  id uuid [pk, not null]
+  payment_id uuid [not null]
+  booking_id uuid [not null]
+  customer_id uuid [not null]
+  storage_path text [not null, unique]
+  original_filename text [not null]
+  mime_type text [not null]
+  size_bytes bigint [not null]
+  version integer [not null]
+  is_current boolean [not null]
+  uploaded_at timestamptz [not null]
+  superseded_at timestamptz [null]
+}
+
+Table public.rental_transactions {
+  id uuid [pk, not null]
+  booking_id uuid [not null, unique]
+  customer_id uuid [not null]
+  vehicle_id uuid [not null]
+  scheduled_pickup_at timestamptz [not null]
+  scheduled_return_at timestamptz [not null]
+  started_at timestamptz [not null]
+  ended_at timestamptz [null]
+  released_by uuid [not null]
+  release_odometer numeric(12,2) [null]
+  release_fuel_level text [not null]
+  release_condition_summary text [not null]
+  existing_damage_notes text [null]
+  agreement_acknowledged boolean [not null]
+  condition_acknowledged boolean [not null]
+  return_schedule_acknowledged boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  returned_by uuid [null]
+  return_odometer numeric(12,2) [null]
+  return_fuel_level text [null]
+  return_condition_summary text [null]
+  observed_damage_notes text [null]
+  return_remarks text [null]
+  inspection_status text [not null]
+  inspection_remarks text [null]
+  inspected_at timestamptz [null]
+  inspected_by uuid [null]
+}
+
+Table public.maintenance_records {
+  id uuid [pk, not null]
+  vehicle_id uuid [not null]
+  maintenance_type text [not null]
+  description text [not null]
+  status text [not null]
+  blocks_rental_use boolean [not null]
+  service_started_at timestamptz [null]
+  completed_at timestamptz [null]
+  odometer_at_service numeric(12,1) [null]
+  next_service_odometer numeric(12,1) [null]
+  next_service_date date [null]
+  cost_php numeric(12,2) [null]
+  remarks text [null]
+  created_by uuid [not null]
+  updated_by uuid [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  scheduled_for timestamptz [null]
+  archived_at timestamptz [null]
+  archived_by uuid [null]
+}
+
+Table public.vehicle_operational_state_events {
+  id uuid [pk, not null]
+  vehicle_id uuid [not null]
+  is_active boolean [not null]
+  effective_at timestamptz [not null]
+  recorded_by uuid [null]
+  source text [not null]
+  created_at timestamptz [not null]
+}
+
+Table public.forecast_runs {
+  id uuid [pk, not null]
+  generated_at timestamptz [not null]
+  generated_by uuid [not null]
+  method text [not null]
+  idempotency_key text [not null, unique]
+  coverage_start date [null]
+}
+
+Table public.forecasts {
+  id uuid [pk, not null]
+  run_id uuid [not null]
+  branch_id uuid [not null]
+  vehicle_category_id uuid [not null]
+  horizon smallint [not null]
+  target_week_start date [not null]
+  target_week_end date [not null]
+  forecasted_demand numeric(18,8) [not null]
+  required_vehicle_units integer [not null]
+  actual_demand numeric(18,8) [null]
+  ape numeric(18,8) [null]
+  created_at timestamptz [not null]
+}
+
+Table public.forecast_inputs {
+  id uuid [pk, not null]
+  forecast_id uuid [not null]
+  source_type text [not null]
+  source_week_start date [not null]
+  source_value numeric(18,8) [not null]
+  input_order smallint [not null]
+  weight numeric(5,4) [not null]
+  weighted_contribution numeric(18,8) [not null]
+  created_at timestamptz [not null]
+}
+
+Table public.forecast_demand_coverage {
+  id smallint [pk, not null]
+  tracking_started_at timestamptz [not null]
+  created_at timestamptz [not null]
+}
+
+Table public.supply_evaluations {
+  id uuid [pk, not null]
+  forecast_id uuid [not null]
+  evaluated_at timestamptz [not null]
+  evaluated_by uuid [not null]
+  idempotency_key text [not null, unique]
+  required_units_snapshot integer [not null]
+  projected_supply integer [not null]
+  shortage_units integer [not null]
+  surplus_units integer [not null]
+  data_quality_state text [null]
+  created_at timestamptz [not null]
+}
+
+Table public.supply_evaluation_vehicles {
+  id uuid [pk, not null]
+  evaluation_id uuid [not null]
+  vehicle_id uuid [not null]
+  eligible boolean [not null]
+  booking_conflict boolean [not null]
+  rental_conflict boolean [not null]
+  future_maintenance_conflict boolean [not null]
+  exclusion_reasons jsonb [not null]
+  created_at timestamptz [not null]
+  indexes {
+    (evaluation_id, vehicle_id) [unique]
+  }
+}
+
+Table public.allocation_recommendation_batches {
+  id uuid [pk, not null]
+  generated_by uuid [not null]
+  generated_at timestamptz [not null]
+  idempotency_key text [not null, unique]
+  generation_context_fingerprint text [not null]
+  created_at timestamptz [not null]
+}
+
+Table public.allocation_recommendations {
+  id uuid [pk, not null]
+  batch_id uuid [not null]
+  source_supply_evaluation_id uuid [not null]
+  destination_supply_evaluation_id uuid [not null]
+  source_branch_id uuid [not null]
+  destination_branch_id uuid [not null]
+  vehicle_category_id uuid [not null]
+  forecast_horizon smallint [not null]
+  target_week_start date [not null]
+  target_week_end date [not null]
+  source_required_units_snapshot integer [not null]
+  source_projected_supply_snapshot integer [not null]
+  source_surplus_snapshot integer [not null]
+  destination_required_units_snapshot integer [not null]
+  destination_projected_supply_snapshot integer [not null]
+  destination_shortage_snapshot integer [not null]
+  recommended_transfer_units integer [not null]
+  decision_state text [not null]
+  approved_transfer_units integer [null]
+  decided_by uuid [null]
+  decided_at timestamptz [null]
+  created_at timestamptz [not null]
+  indexes {
+    (batch_id, source_supply_evaluation_id, destination_supply_evaluation_id) [unique]
+  }
+}
+
+Table public.allocation_recommendation_candidates {
+  id uuid [pk, not null]
+  recommendation_id uuid [not null]
+  vehicle_id uuid [not null]
+  vehicle_name_snapshot text [not null]
+  license_plate_snapshot text [null]
+  candidate_rank integer [not null]
+  idle_days_snapshot integer [null]
+  idle_reference_snapshot timestamptz [null]
+  revalidation_state text [not null]
+  explanation_codes jsonb [not null]
+  created_at timestamptz [not null]
+  indexes {
+    (recommendation_id, vehicle_id) [unique]
+    (recommendation_id, candidate_rank) [unique]
+  }
+}
+
+Table public.booking_finder_context {
+  booking_id uuid [pk, not null]
+  selected_vehicle_id uuid [not null]
+  requested_start timestamptz [not null]
+  requested_end timestamptz [not null]
+  passenger_count integer [not null]
+  maximum_budget numeric [not null]
+  preferred_category_id uuid [null]
+  destination text [null]
+  recommendation_rank integer [not null]
+  finder_baseline text [not null]
+  created_at timestamptz [not null]
+  large_bag_count integer [null]
+}
+
+Table public.booking_creation_idempotency {
+  customer_id uuid [not null]
+  idempotency_key uuid [not null]
+  request_fingerprint text [not null]
+  booking_id uuid [not null, unique]
+  created_at timestamptz [not null]
+  indexes {
+    (customer_id, idempotency_key) [pk]
+  }
+}
+
+Table public.notifications {
+  id uuid [pk, not null]
+  recipient_id uuid [not null]
+  notification_type text [not null]
+  title text [not null]
+  message text [not null]
+  related_entity_type text [not null]
+  related_entity_id uuid [not null]
+  event_key text [not null]
+  created_at timestamptz [not null]
+  read_at timestamptz [null]
+  indexes {
+    (recipient_id, event_key) [unique]
+  }
+}
+
+Table public.audit_events {
+  id uuid [pk, not null]
+  actor_type text [not null]
+  actor_user_id uuid [null]
+  action text [not null]
+  entity_type text [not null]
+  entity_id uuid [not null]
+  booking_id uuid [null]
+  metadata jsonb [not null]
+  occurred_at timestamptz [not null]
+}
+
+Table public.notification_preferences {
+  recipient_id uuid [pk, not null]
+  maintenance_attention_enabled boolean [not null]
+  low_availability_enabled boolean [not null]
+  updated_at timestamptz [not null]
+  email_notifications_enabled boolean [not null]
+}
+
+Table public.operational_notification_conditions {
+  condition_type text [not null]
+  related_entity_type text [not null]
+  related_entity_id uuid [not null]
+  is_active boolean [not null]
+  occurrence_count bigint [not null]
+  title text [not null]
+  message text [not null]
+  activated_at timestamptz [null]
+  resolved_at timestamptz [null]
+  last_evaluated_at timestamptz [not null]
+  indexes {
+    (condition_type, related_entity_id) [pk]
+  }
+}
+
+Table public.email_deliveries {
+  id uuid [pk, not null]
+  recipient_user_id uuid [not null]
+  notification_id uuid [not null, unique]
+  delivery_key text [not null, unique]
+  email_type text [not null]
+  status text [not null]
+  attempt_count integer [not null]
+  provider_message_id text [null]
+  last_error_code text [null]
+  next_attempt_at timestamptz [null]
+  created_at timestamptz [not null]
+  last_attempt_at timestamptz [null]
+  sent_at timestamptz [null]
+}
+
+Table public.backup_runs {
+  id uuid [pk, not null]
+  trigger text [not null]
+  status text [not null]
+  started_at timestamptz [not null]
+  completed_at timestamptz [null]
+  retention_until timestamptz [not null]
+  error_code text [null]
+  remarks text [null]
+  created_by uuid [null]
+  created_at timestamptz [not null]
+}
+
+Table public.backup_artifacts {
+  id uuid [pk, not null]
+  backup_run_id uuid [not null]
+  artifact_type text [not null]
+  artifact_key text [not null]
+  status text [not null]
+  size_bytes bigint [null]
+  sha256 text [null]
+  created_at timestamptz [not null]
+  indexes {
+    (backup_run_id, artifact_key) [unique]
+  }
+}
+
+Table public.recovery_drills {
+  id uuid [pk, not null]
+  backup_run_id uuid [not null]
+  target_environment text [not null]
+  status text [not null]
+  started_at timestamptz [not null]
+  completed_at timestamptz [null]
+  database_validation text [null]
+  storage_validation text [null]
+  error_code text [null]
+  remarks text [null]
+  created_at timestamptz [not null]
+}
+
+Table public.rate_cards {
+  id uuid [pk, not null]
+  vehicle_id uuid [not null]
+  package_code text [not null]
+  package_label text [not null]
+  duration_hours integer [not null]
+  base_rate numeric(12,2) [not null]
+  effective_from date [not null]
+  effective_until date [null]
+  is_active boolean [not null]
+  researcher_designed boolean [not null]
+  created_by uuid [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  indexes {
+    (vehicle_id, package_code, effective_from) [unique]
+  }
+}
+
+Table public.booking_rate_quotes {
+  id uuid [pk, not null]
+  booking_id uuid [not null, unique]
+  rate_card_id uuid [not null]
+  package_code text [not null]
+  package_label text [not null]
+  duration_hours integer [not null]
+  base_rental_amount numeric(12,2) [not null]
+  delivery_fee numeric(12,2) [not null]
+  approved_discount numeric(12,2) [not null]
+  approved_subtotal numeric(12,2) [null]
+  required_down_payment numeric(12,2) [null]
+  quote_version integer [not null]
+  status text [not null]
+  researcher_designed boolean [not null]
+  approved_by uuid [not null]
+  approved_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table public.vehicle_images {
+  id uuid [pk, not null]
+  vehicle_id uuid [not null]
+  storage_path text [not null, unique]
+  public_url text [not null]
+  alt_text text [null]
+  sort_order smallint [not null]
+  is_cover boolean [not null]
+  created_at timestamptz [not null]
+  indexes {
+    (vehicle_id, sort_order) [unique]
+  }
+}
+
+Table public.public_contact_settings {
+  id boolean [pk, not null]
+  phone text [not null]
+  email text [not null]
+  office_hours text [not null]
+  location_summary text [not null]
+  service_area text [not null]
+  reply_commitment text [not null]
+  updated_at timestamptz [not null]
+  updated_by uuid [null]
+}
+
+Table public.public_contact_locations {
+  id uuid [pk, not null]
+  name text [not null]
+  address text [not null]
+  note text [null]
+  sort_order smallint [not null, unique]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table public.contact_inquiries {
+  id uuid [pk, not null]
+  name text [not null]
+  email text [not null]
+  subject text [not null]
+  message text [not null]
+  status text [not null]
+  created_at timestamptz [not null]
+  read_at timestamptz [null]
+  read_by uuid [null]
+}
+
+Table public.booking_payment_quotes {
+  id uuid [pk, not null]
+  booking_id uuid [not null, unique]
+  vehicle_id uuid [not null]
+  daily_rate numeric(12,2) [not null]
+  pickup_at timestamptz [not null]
+  return_at timestamptz [not null]
+  grace_minutes integer [not null]
+  billable_days integer [not null]
+  rental_subtotal numeric(12,2) [not null]
+  delivery_fee numeric(12,2) [not null]
+  total_amount numeric(12,2) [not null]
+  down_payment_amount numeric(12,2) [not null]
+  remaining_balance_amount numeric(12,2) [not null]
+  security_deposit_amount numeric(12,2) [not null]
+  quote_version integer [not null]
+  issued_by uuid [not null]
+  issued_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+// Declared foreign-key relationships
+Ref profiles_id_fkey: auth.users.id - public.profiles.id [delete: cascade]
+Ref vehicles_category_id_fkey: public.vehicles.category_id > public.vehicle_categories.id [delete: no action]
+Ref vehicles_branch_id_fkey: public.vehicles.branch_id > public.branches.id [delete: no action]
+Ref booking_requests_customer_id_fkey: public.booking_requests.customer_id > public.profiles.id [delete: restrict]
+Ref booking_requests_requested_vehicle_id_fkey: public.booking_requests.requested_vehicle_id > public.vehicles.id [delete: restrict]
+Ref booking_requests_assigned_vehicle_id_fkey: public.booking_requests.assigned_vehicle_id > public.vehicles.id [delete: restrict]
+Ref booking_requests_pickup_branch_id_fkey: public.booking_requests.pickup_branch_id > public.branches.id [delete: restrict]
+Ref booking_requests_return_branch_id_fkey: public.booking_requests.return_branch_id > public.branches.id [delete: restrict]
+Ref booking_requests_assigned_by_fkey: public.booking_requests.assigned_by > public.profiles.id [delete: restrict]
+Ref booking_requests_confirmed_by_fkey: public.booking_requests.confirmed_by > public.profiles.id [delete: restrict]
+Ref booking_requests_resolved_by_fkey: public.booking_requests.resolved_by > public.profiles.id [delete: restrict]
+Ref renter_requirement_sets_booking_id_fkey: public.booking_requests.id - public.renter_requirement_sets.booking_id [delete: restrict]
+Ref renter_requirement_sets_customer_id_fkey: public.renter_requirement_sets.customer_id > public.profiles.id [delete: restrict]
+Ref renter_requirement_documents_requirement_set_id_fkey: public.renter_requirement_documents.requirement_set_id > public.renter_requirement_sets.id [delete: restrict]
+Ref renter_requirement_documents_booking_id_fkey: public.renter_requirement_documents.booking_id > public.booking_requests.id [delete: restrict]
+Ref renter_requirement_documents_customer_id_fkey: public.renter_requirement_documents.customer_id > public.profiles.id [delete: restrict]
+Ref renter_requirement_reviews_requirement_set_id_fkey: public.renter_requirement_reviews.requirement_set_id > public.renter_requirement_sets.id [delete: restrict]
+Ref renter_requirement_reviews_reviewer_id_fkey: public.renter_requirement_reviews.reviewer_id > public.profiles.id [delete: restrict]
+Ref renter_requirement_reviews_government_id_document_id_fkey: public.renter_requirement_reviews.government_id_document_id > public.renter_requirement_documents.id [delete: restrict]
+Ref renter_requirement_reviews_drivers_license_document_id_fkey: public.renter_requirement_reviews.drivers_license_document_id > public.renter_requirement_documents.id [delete: restrict]
+Ref renter_requirement_reviews_proof_of_billing_document_id_fkey: public.renter_requirement_reviews.proof_of_billing_document_id > public.renter_requirement_documents.id [delete: restrict]
+Ref renter_requirement_reviews_selfie_with_id_document_id_fkey: public.renter_requirement_reviews.selfie_with_id_document_id > public.renter_requirement_documents.id [delete: restrict]
+Ref payments_booking_id_fkey: public.booking_requests.id - public.payments.booking_id [delete: restrict]
+Ref payments_customer_id_fkey: public.payments.customer_id > public.profiles.id [delete: restrict]
+Ref payments_payment_method_id_fkey: public.payments.payment_method_id > public.payment_methods.id [delete: restrict]
+Ref payments_reviewed_by_fkey: public.payments.reviewed_by > public.profiles.id [delete: restrict]
+Ref payment_proofs_payment_id_fkey: public.payment_proofs.payment_id > public.payments.id [delete: restrict]
+Ref payment_proofs_booking_id_fkey: public.payment_proofs.booking_id > public.booking_requests.id [delete: restrict]
+Ref payment_proofs_customer_id_fkey: public.payment_proofs.customer_id > public.profiles.id [delete: restrict]
+Ref rental_transactions_booking_id_fkey: public.booking_requests.id - public.rental_transactions.booking_id [delete: restrict]
+Ref rental_transactions_customer_id_fkey: public.rental_transactions.customer_id > public.profiles.id [delete: restrict]
+Ref rental_transactions_vehicle_id_fkey: public.rental_transactions.vehicle_id > public.vehicles.id [delete: restrict]
+Ref rental_transactions_released_by_fkey: public.rental_transactions.released_by > public.profiles.id [delete: restrict]
+Ref rental_transactions_returned_by_fkey: public.rental_transactions.returned_by > public.profiles.id [delete: restrict]
+Ref rental_transactions_inspected_by_fkey: public.rental_transactions.inspected_by > public.profiles.id [delete: restrict]
+Ref maintenance_records_vehicle_id_fkey: public.maintenance_records.vehicle_id > public.vehicles.id [delete: no action]
+Ref maintenance_records_created_by_fkey: public.maintenance_records.created_by > auth.users.id [delete: no action]
+Ref maintenance_records_updated_by_fkey: public.maintenance_records.updated_by > auth.users.id [delete: no action]
+Ref maintenance_records_archived_by_fkey: public.maintenance_records.archived_by > public.profiles.id [delete: no action]
+Ref vehicle_operational_state_events_vehicle_id_fkey: public.vehicle_operational_state_events.vehicle_id > public.vehicles.id [delete: cascade]
+Ref vehicle_operational_state_events_recorded_by_fkey: public.vehicle_operational_state_events.recorded_by > auth.users.id [delete: no action]
+Ref forecast_runs_generated_by_fkey: public.forecast_runs.generated_by > public.profiles.id [delete: restrict]
+Ref forecasts_run_id_fkey: public.forecasts.run_id > public.forecast_runs.id [delete: restrict]
+Ref forecasts_branch_id_fkey: public.forecasts.branch_id > public.branches.id [delete: restrict]
+Ref forecasts_vehicle_category_id_fkey: public.forecasts.vehicle_category_id > public.vehicle_categories.id [delete: restrict]
+Ref forecast_inputs_forecast_id_fkey: public.forecast_inputs.forecast_id > public.forecasts.id [delete: restrict]
+Ref supply_evaluations_forecast_id_fkey: public.supply_evaluations.forecast_id > public.forecasts.id [delete: restrict]
+Ref supply_evaluations_evaluated_by_fkey: public.supply_evaluations.evaluated_by > public.profiles.id [delete: restrict]
+Ref supply_evaluation_vehicles_evaluation_id_fkey: public.supply_evaluation_vehicles.evaluation_id > public.supply_evaluations.id [delete: restrict]
+Ref supply_evaluation_vehicles_vehicle_id_fkey: public.supply_evaluation_vehicles.vehicle_id > public.vehicles.id [delete: restrict]
+Ref allocation_recommendation_batches_generated_by_fkey: public.allocation_recommendation_batches.generated_by > public.profiles.id [delete: restrict]
+Ref allocation_recommendations_batch_id_fkey: public.allocation_recommendations.batch_id > public.allocation_recommendation_batches.id [delete: restrict]
+Ref allocation_recommendations_source_supply_evaluation_id_fkey: public.allocation_recommendations.source_supply_evaluation_id > public.supply_evaluations.id [delete: restrict]
+Ref allocation_recommendations_destination_supply_evaluation_id_fkey: public.allocation_recommendations.destination_supply_evaluation_id > public.supply_evaluations.id [delete: restrict]
+Ref allocation_recommendations_source_branch_id_fkey: public.allocation_recommendations.source_branch_id > public.branches.id [delete: restrict]
+Ref allocation_recommendations_destination_branch_id_fkey: public.allocation_recommendations.destination_branch_id > public.branches.id [delete: restrict]
+Ref allocation_recommendations_vehicle_category_id_fkey: public.allocation_recommendations.vehicle_category_id > public.vehicle_categories.id [delete: restrict]
+Ref allocation_recommendations_decided_by_fkey: public.allocation_recommendations.decided_by > public.profiles.id [delete: restrict]
+Ref allocation_recommendation_candidates_recommendation_id_fkey: public.allocation_recommendation_candidates.recommendation_id > public.allocation_recommendations.id [delete: restrict]
+Ref allocation_recommendation_candidates_vehicle_id_fkey: public.allocation_recommendation_candidates.vehicle_id > public.vehicles.id [delete: restrict]
+Ref booking_finder_context_booking_id_fkey: public.booking_requests.id - public.booking_finder_context.booking_id [delete: restrict]
+Ref booking_finder_context_selected_vehicle_id_fkey: public.booking_finder_context.selected_vehicle_id > public.vehicles.id [delete: restrict]
+Ref booking_finder_context_preferred_category_id_fkey: public.booking_finder_context.preferred_category_id > public.vehicle_categories.id [delete: restrict]
+Ref booking_creation_idempotency_customer_id_fkey: public.booking_creation_idempotency.customer_id > public.profiles.id [delete: restrict]
+Ref booking_creation_idempotency_booking_id_fkey: public.booking_requests.id - public.booking_creation_idempotency.booking_id [delete: restrict]
+Ref notifications_recipient_id_fkey: public.notifications.recipient_id > public.profiles.id [delete: restrict]
+Ref audit_events_actor_user_id_fkey: public.audit_events.actor_user_id > public.profiles.id [delete: restrict]
+Ref audit_events_booking_id_fkey: public.audit_events.booking_id > public.booking_requests.id [delete: restrict]
+Ref notification_preferences_recipient_id_fkey: public.profiles.id - public.notification_preferences.recipient_id [delete: cascade]
+Ref email_deliveries_recipient_user_id_fkey: public.email_deliveries.recipient_user_id > public.profiles.id [delete: restrict]
+Ref email_deliveries_notification_id_fkey: public.notifications.id - public.email_deliveries.notification_id [delete: restrict]
+Ref backup_runs_created_by_fkey: public.backup_runs.created_by > public.profiles.id [delete: restrict]
+Ref backup_artifacts_backup_run_id_fkey: public.backup_artifacts.backup_run_id > public.backup_runs.id [delete: cascade]
+Ref recovery_drills_backup_run_id_fkey: public.recovery_drills.backup_run_id > public.backup_runs.id [delete: restrict]
+Ref rate_cards_vehicle_id_fkey: public.rate_cards.vehicle_id > public.vehicles.id [delete: restrict]
+Ref rate_cards_created_by_fkey: public.rate_cards.created_by > public.profiles.id [delete: restrict]
+Ref booking_rate_quotes_booking_id_fkey: public.booking_requests.id - public.booking_rate_quotes.booking_id [delete: restrict]
+Ref booking_rate_quotes_rate_card_id_fkey: public.booking_rate_quotes.rate_card_id > public.rate_cards.id [delete: restrict]
+Ref booking_rate_quotes_approved_by_fkey: public.booking_rate_quotes.approved_by > public.profiles.id [delete: restrict]
+Ref vehicle_images_vehicle_id_fkey: public.vehicle_images.vehicle_id > public.vehicles.id [delete: cascade]
+Ref public_contact_settings_updated_by_fkey: public.public_contact_settings.updated_by > public.profiles.id [delete: set null]
+Ref contact_inquiries_read_by_fkey: public.contact_inquiries.read_by > public.profiles.id [delete: set null]
+Ref booking_payment_quotes_booking_id_fkey: public.booking_requests.id - public.booking_payment_quotes.booking_id [delete: restrict]
+Ref booking_payment_quotes_vehicle_id_fkey: public.booking_payment_quotes.vehicle_id > public.vehicles.id [delete: restrict]
+Ref booking_payment_quotes_issued_by_fkey: public.booking_payment_quotes.issued_by > public.profiles.id [delete: restrict]
+
+
+

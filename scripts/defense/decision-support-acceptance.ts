@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import postgres from "postgres";
 
 import { PROJECT } from "./baseline-data.ts";
+import { acceptancePreflight } from "./acceptance-preflight.ts";
 
 type Evidence = {
   scenario: string;
@@ -31,9 +32,13 @@ function stable(value: unknown) {
 }
 
 async function main() {
-  if (!process.argv.includes("--apply"))
+  if (process.argv.includes("--apply") && process.argv.includes("--check"))
     throw new Error(
-      "This controlled acceptance run changes synthetic defense records. Re-run with --apply.",
+      "Choose either the read-only --check or the mutation --apply run.",
+    );
+  if (!process.argv.includes("--apply") && !process.argv.includes("--check"))
+    throw new Error(
+      "This controlled acceptance run changes synthetic defense records. Inspect its baseline first with --check; an authorized mutation run requires --apply.",
     );
 
   const baseUrl = new URL(
@@ -43,6 +48,20 @@ async function main() {
   );
   if (!["http:", "https:"].includes(baseUrl.protocol))
     throw new Error("The acceptance base URL must use HTTP or HTTPS.");
+
+  // Read-only preflight runs before authentication, API generation, or database
+  // mutation. Never test by overwriting somebody else's newer operational work.
+  const sourceVersion = acceptancePreflight();
+  if (process.argv.includes("--check")) {
+    console.log(
+      JSON.stringify(
+        { readOnly: true, baseUrl: baseUrl.origin, ...sourceVersion },
+        null,
+        2,
+      ),
+    );
+    return;
+  }
 
   const apiUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
   if (!apiUrl || new URL(apiUrl).hostname !== `${PROJECT}.supabase.co`)
@@ -422,7 +441,7 @@ async function main() {
 
   const report = {
     pass: !failure && evidence.every((item) => item.status === "PASS"),
-    branch: "stabilization/ui-refinement",
+    ...sourceVersion,
     baseUrl: baseUrl.origin,
     completedAt: new Date().toISOString(),
     evidence,
@@ -433,4 +452,9 @@ async function main() {
   if (!report.pass) process.exitCode = 1;
 }
 
-await main();
+await main().catch((error) => {
+  console.error(
+    error instanceof Error ? error.message : "Acceptance run failed.",
+  );
+  process.exitCode = 1;
+});

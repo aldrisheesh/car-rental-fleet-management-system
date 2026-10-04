@@ -5,6 +5,7 @@ import {
   buildAdminCalendar,
   loadAdminCalendar,
   parseCalendarPeriod,
+  pendingCalendarEventsForDate,
   type CalendarSources,
 } from "./admin-calendar.ts";
 
@@ -100,29 +101,24 @@ test("canonical bookings, rentals, and maintenance map to supported dates", () =
     result.events.map(({ date, kind, label }) => ({ date, kind, label })),
     [
       {
-        date: "2026-09-03",
-        kind: "reservation",
-        label: "Requested Vios reserved",
-      },
-      {
         date: "2026-09-07",
         kind: "pickup",
-        label: "Assigned Hiace deliver",
+        label: "Assigned Hiace pickup",
       },
       {
         date: "2026-09-08",
         kind: "return",
-        label: "Assigned Hiace returned",
+        label: "Assigned Hiace return",
       },
       {
         date: "2026-09-10",
         kind: "pickup",
-        label: "Rental Innova deliver",
+        label: "Rental Innova pickup",
       },
       {
         date: "2026-09-12",
         kind: "return",
-        label: "Rental Innova returned",
+        label: "Rental Innova return",
       },
       {
         date: "2026-09-15",
@@ -193,13 +189,10 @@ test("calendar page has real loading, error, empty, and month-navigation states"
   assert.match(page, /latestRequest\.current === request/);
   assert.match(page, /Loading calendar schedule/);
   assert.match(page, /Unable to load the calendar schedule/);
-  assert.match(page, /pickup: "Delivery"/);
+  assert.match(page, /pickup: "Pickup \/ delivery"/);
   assert.match(page, /return: "Return"/);
-  assert.match(page, /reservation: "Reserved"/);
-  assert.match(
-    page,
-    /No reservations, deliveries, returns, or maintenance are planned/,
-  );
+  assert.doesNotMatch(page, /reservation: "Reserved"/);
+  assert.match(page, /No pickups, returns, or maintenance are planned/);
   assert.match(page, /aria-label="Previous month"/);
   assert.match(page, /aria-label="Next month"/);
   assert.doesNotMatch(
@@ -208,4 +201,107 @@ test("calendar page has real loading, error, empty, and month-navigation states"
   );
   assert.match(api, /principal\.role === "Customer\/Renter"/);
   assert.match(api, /status: 403/);
+});
+
+test("scheduled service shows its time once, and ongoing service shows its start", () => {
+  const result = buildAdminCalendar("Owner/Admin", period, {
+    bookings: [],
+    rentals: [],
+    maintenance: [
+      {
+        id: "scheduled",
+        maintenance_type: "Preventive",
+        status: "Scheduled",
+        service_started_at: null,
+        scheduled_for: "2026-09-07T01:00:00Z",
+        next_service_date: "2026-09-07",
+        vehicle: { name: "Wigo" },
+      },
+      {
+        id: "ongoing",
+        maintenance_type: "Corrective",
+        status: "In Progress",
+        service_started_at: "2026-09-08T03:00:00Z",
+        next_service_date: null,
+        vehicle: { name: "Mirage" },
+      },
+    ],
+  });
+  assert.equal(result.events.length, 2);
+  assert.equal(result.events[0].dateTime, "2026-09-07T01:00:00Z");
+  assert.ok(result.events.every((e) => e.kind === "maintenance"));
+});
+
+test("delivery handovers are clearly labeled without duplicating rental events", () => {
+  const booking = {
+    ...sources.bookings.find((b) => b.booking_status === "Confirmed")!,
+    pickup_delivery_option: "delivery" as const,
+  };
+  const result = buildAdminCalendar("Owner/Admin", period, {
+    bookings: [booking],
+    rentals: [],
+    maintenance: [],
+  });
+  assert.equal(
+    result.events.find((e) => e.kind === "pickup")?.label,
+    "Assigned Hiace delivery",
+  );
+  const withRental = buildAdminCalendar("Owner/Admin", period, {
+    bookings: [booking],
+    maintenance: [],
+    rentals: [
+      {
+        id: "delivery-rental",
+        booking_id: booking.id,
+        scheduled_pickup_at: booking.pickup_at,
+        scheduled_return_at: booking.return_at,
+        vehicle: { name: "Assigned Hiace" },
+      },
+    ],
+  });
+  assert.equal(withRental.events.length, 2);
+  assert.equal(
+    withRental.events.find((e) => e.kind === "pickup")?.label,
+    "Assigned Hiace delivery",
+  );
+});
+
+test("completed handovers remain in calendar history but are excluded from dashboard due work", () => {
+  const events = buildAdminCalendar(
+    "Owner/Admin",
+    parseCalendarPeriod("2026-10"),
+    {
+      bookings: [],
+      maintenance: [],
+      rentals: [
+        {
+          id: "closed",
+          booking_id: "closed-booking",
+          scheduled_pickup_at: "2026-10-04T01:00:00Z",
+          scheduled_return_at: "2026-10-04T09:00:00Z",
+          started_at: "2026-10-04T01:00:00Z",
+          ended_at: "2026-10-04T08:00:00Z",
+          vehicle: { name: "Honda City" },
+        },
+        {
+          id: "active",
+          booking_id: "active-booking",
+          scheduled_pickup_at: "2026-10-03T01:00:00Z",
+          scheduled_return_at: "2026-10-04T10:00:00Z",
+          started_at: "2026-10-03T01:00:00Z",
+          ended_at: null,
+          vehicle: { name: "Toyota Vios" },
+        },
+      ],
+    },
+  ).events;
+  assert.equal(events.length, 4);
+  assert.equal(
+    events.find((event) => event.id === "rental:closed:return")?.completed,
+    true,
+  );
+  assert.deepEqual(
+    pendingCalendarEventsForDate(events, "2026-10-04").map((event) => event.id),
+    ["rental:active:return"],
+  );
 });

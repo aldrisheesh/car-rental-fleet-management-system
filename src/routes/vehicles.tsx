@@ -541,8 +541,9 @@ function FindCarPage() {
                 <p className="eyebrow">Find Your Ride</p>
                 <h1>Find the right car for your trip.</h1>
                 <p>
-                  Tell us who and what you&apos;re bringing. We&apos;ll match you
-                  with available cars that fit your group, luggage, and budget.
+                  Tell us who and what you&apos;re bringing. We&apos;ll match
+                  you with available cars that fit your group, luggage, and
+                  budget.
                 </p>
               </div>
             </div>
@@ -566,8 +567,8 @@ function FindCarPage() {
               aria-hidden={hasFullFinderCriteria && Boolean(finderResponse)}
             >
               <span>
-                    <SlidersHorizontal size={17} aria-hidden="true" /> Find your
-                    ride
+                <SlidersHorizontal size={17} aria-hidden="true" /> Find your
+                ride
               </span>
             </summary>
             <form
@@ -673,8 +674,11 @@ function FindCarPage() {
                   <span className="finder-preferences-summary-copy">
                     <SlidersHorizontal size={18} aria-hidden="true" />
                     <span>
-                      <strong>Refine your results</strong>
-                      <small>Add your group, bags &amp; total budget</small>
+                      <strong>Find your best match</strong>
+                      <small>
+                        For ranked recommendations, add your group, bags &amp;
+                        total budget
+                      </small>
                     </span>
                   </span>
                   <ChevronDown
@@ -796,7 +800,6 @@ function FindCarPage() {
                         message={finderErrors.maximumBudget}
                       />
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -812,9 +815,7 @@ function FindCarPage() {
                   type="submit"
                   disabled={finderLoading}
                   aria-label={
-                    finderLoading
-                      ? "Finding matching cars"
-                      : "Find my ride"
+                    finderLoading ? "Finding matching cars" : "Find my ride"
                   }
                 >
                   {finderLoading ? (
@@ -990,35 +991,32 @@ function FleetBrowseSection({
                   matchedVehicleIds && !matchedVehicleIds.has(vehicle.id),
                 );
                 return (
-                <VehicleCard
-                  key={vehicle.id}
-                  vehicle={vehicle}
-                  href={`${getCustomerSession() ? "/booking" : "/sign-in"}${encodeSearch({ ...search, vehicle: vehicle.id })}`}
-                  detailHref={`/vehicles/${encodeURIComponent(vehicle.id)}${encodeSearch({ ...search, vehicle: vehicle.id })}`}
-                  detailDisabled={
-                    vehicle.is_available === false || vehicleDoesNotMatch
-                  }
-                  bookingLabel="Request this car"
-                  actionDisabled={
-                    !hasDates ||
-                    vehicle.is_available === false ||
-                    Boolean(
-                      vehicleDoesNotMatch,
-                    )
-                  }
-                  disabledActionLabel={
-                    !hasDates
-                      ? "Choose dates to check availability"
-                      : vehicle.is_available === false
-                        ? "Unavailable for your dates"
-                        : "Does not match your trip"
-                  }
-                  availabilityUnavailable={vehicle.is_available === false}
-                  tripMismatch={Boolean(
-                    vehicle.is_available !== false &&
-                    vehicleDoesNotMatch,
-                  )}
-                />
+                  <VehicleCard
+                    key={vehicle.id}
+                    vehicle={vehicle}
+                    href={`${getCustomerSession() ? "/booking" : "/sign-in"}${encodeSearch({ ...search, vehicle: vehicle.id })}`}
+                    detailHref={`/vehicles/${encodeURIComponent(vehicle.id)}${encodeSearch({ ...search, vehicle: vehicle.id })}`}
+                    detailDisabled={
+                      vehicle.is_available === false || vehicleDoesNotMatch
+                    }
+                    bookingLabel="Request this car"
+                    actionDisabled={
+                      !hasDates ||
+                      vehicle.is_available === false ||
+                      Boolean(vehicleDoesNotMatch)
+                    }
+                    disabledActionLabel={
+                      !hasDates
+                        ? "Choose dates to check availability"
+                        : vehicle.is_available === false
+                          ? "Unavailable for your dates"
+                          : "Does not match your trip"
+                    }
+                    availabilityUnavailable={vehicle.is_available === false}
+                    tripMismatch={Boolean(
+                      vehicle.is_available !== false && vehicleDoesNotMatch,
+                    )}
+                  />
                 );
               })}
             </div>

@@ -1,0 +1,564 @@
+
+> build
+> vite build
+
+(node:3559) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+vite v7.3.3 building client environment for production...
+transforming...
+✓ 3753 modules transformed.
+rendering chunks...
+computing gzip size...
+.output/public/assets/tagaytay-BrtP7jTi.avif                        29.80 kB
+.output/public/assets/car-pickup-BFgtC-xX.jpg                       66.13 kB
+.output/public/assets/subic-B3C3FTux.jpg                            74.21 kB
+.output/public/assets/bagui-DXvCKOlo.webp                           77.38 kB
+.output/public/assets/vigan-ZODnFB3M.webp                          137.07 kB
+.output/public/assets/pampanga-ByEwRXUT.webp                       141.97 kB
+.output/public/assets/hero-car--lXeAzHD.jpg                        227.00 kB
+.output/public/assets/pdf.worker.min-Dswkl-cV.mjs                1,265.41 kB
+.output/public/assets/toyota_avanza-Dtba3J47.png                 1,624.53 kB
+.output/public/assets/nissan_urvan-2vopFopM.png                  1,636.79 kB
+.output/public/assets/ford_everest-BcsAZrrN.png                  1,639.26 kB
+.output/public/assets/toyota_innova-B-6xttoI.png                 1,704.84 kB
+.output/public/assets/honda_city-DAk3k0qS.png                    1,711.95 kB
+.output/public/assets/toyota_hiace-BOFoflD-.png                  1,747.43 kB
+.output/public/assets/toyota_rush-BdogY0OH.png                   1,784.14 kB
+.output/public/assets/toyota_vios-IkVL6BSH.png                   1,791.77 kB
+.output/public/assets/toyota_wigo-BFzvxFW6.png                   1,812.56 kB
+.output/public/assets/mitsubishi_mirage-DKSsl_4H.png             1,914.35 kB
+.output/public/assets/home-hero-editorial-CM0whNbX.png           2,101.87 kB
+.output/public/assets/home-vehicle-everest-hFc5jJNQ.png          2,561.33 kB
+.output/public/assets/home-vehicle-vios-CUfSjSY9.png             2,705.38 kB
+.output/public/assets/home-vehicle-city-DFA8cqyB.png             2,939.27 kB
+.output/public/assets/elyu-C02-uRsx.jpg                          3,911.30 kB
+.output/public/assets/styles-BGu4uPjO.css                          588.70 kB │ gzip:  95.16 kB
+.output/public/assets/admin.decisions.utilization-DtqBFgK5.js        0.04 kB │ gzip:   0.06 kB
+.output/public/assets/admin.decisions.forecast-DtqBFgK5.js           0.04 kB │ gzip:   0.06 kB
+.output/public/assets/admin.decisions.allocation-DtqBFgK5.js         0.04 kB │ gzip:   0.06 kB
+.output/public/assets/check-Dr7MXqU8.js                              0.13 kB │ gzip:   0.15 kB
+.output/public/assets/chevron-down-CQz18pw6.js                       0.14 kB │ gzip:   0.15 kB
+.output/public/assets/chevron-left-B9BQWSwP.js                       0.14 kB │ gzip:   0.15 kB
+.output/public/assets/chevron-right-C7nIgo1D.js                      0.14 kB │ gzip:   0.15 kB
+.output/public/assets/loader-circle-46ru8VAZ.js                      0.15 kB │ gzip:   0.16 kB
+.output/public/assets/plus-B5uKuIi2.js                               0.17 kB │ gzip:   0.16 kB
+.output/public/assets/x-Dp03uCYj.js                                  0.17 kB │ gzip:   0.16 kB
+.output/public/assets/clock-3-cyJvEHmm.js                            0.18 kB │ gzip:   0.17 kB
+.output/public/assets/arrow-right-RwutlVzX.js                        0.18 kB │ gzip:   0.17 kB
+.output/public/assets/arrow-left-BETjWHb3.js                         0.18 kB │ gzip:   0.17 kB
+.output/public/assets/search-Xe-v06iq.js                             0.18 kB │ gzip:   0.17 kB
+.output/public/assets/circle-check-C9KVOhP_.js                       0.19 kB │ gzip:   0.17 kB
+.output/public/assets/gauge-B45pWwZB.js                              0.19 kB │ gzip:   0.18 kB
+.output/public/assets/user-round-Cy7JYivT.js                         0.19 kB │ gzip:   0.18 kB
+.output/public/assets/skeleton-SP-xi7Rm.js                           0.21 kB │ gzip:   0.18 kB
+.output/public/assets/info-RR8khxeB.js                               0.21 kB │ gzip:   0.18 kB
+.output/public/assets/rotate-ccw-DDMoqykA.js                         0.21 kB │ gzip:   0.19 kB
+.output/public/assets/circle-x-DkuQWkuC.js                           0.21 kB │ gzip:   0.19 kB
+.output/public/assets/credit-card-BjpalXAV.js                        0.22 kB │ gzip:   0.20 kB
+.output/public/assets/mail-Crc_K4ph.js                               0.23 kB │ gzip:   0.21 kB
+.output/public/assets/booking-reference-BV8BYHt7.js                  0.24 kB │ gzip:   0.19 kB
+.output/public/assets/circle-alert-Bu-H7FuX.js                       0.26 kB │ gzip:   0.19 kB
+.output/public/assets/chart-column-B6iSFlHK.js                       0.26 kB │ gzip:   0.21 kB
+.output/public/assets/external-link-CiHCnBDK.js                      0.26 kB │ gzip:   0.21 kB
+.output/public/assets/map-pin-CH2VrH47.js                            0.27 kB │ gzip:   0.23 kB
+.output/public/assets/lock-keyhole-hf2YiX4P.js                       0.27 kB │ gzip:   0.23 kB
+.output/public/assets/triangle-alert-BnUbgJy3.js                     0.28 kB │ gzip:   0.23 kB
+.output/public/assets/bell-CyS41-wd.js                               0.30 kB │ gzip:   0.25 kB
+.output/public/assets/wrench-CMmcWeT4.js                             0.31 kB │ gzip:   0.25 kB
+.output/public/assets/pickup-arrangement-C3HBiZec.js                 0.31 kB │ gzip:   0.20 kB
+.output/public/assets/clipboard-check-BOC5SeaF.js                    0.31 kB │ gzip:   0.24 kB
+.output/public/assets/file-exclamation-point-C9xErs_I.js             0.32 kB │ gzip:   0.24 kB
+.output/public/assets/shield-check-BEQLYfo5.js                       0.33 kB │ gzip:   0.26 kB
+.output/public/assets/file-check-corner-C5FNk4Sk.js                  0.33 kB │ gzip:   0.25 kB
+.output/public/assets/fuel-BmzO23EL.js                               0.33 kB │ gzip:   0.23 kB
+.output/public/assets/refresh-cw-GuYu5kDi.js                         0.33 kB │ gzip:   0.24 kB
+.output/public/assets/save-BLS0J9qA.js                               0.34 kB │ gzip:   0.24 kB
+.output/public/assets/useRouterState-BBqISqbe.js                     0.35 kB │ gzip:   0.24 kB
+.output/public/assets/menu-9Tr-92wB.js                               0.38 kB │ gzip:   0.25 kB
+.output/public/assets/file-text-pBbvvkHH.js                          0.40 kB │ gzip:   0.26 kB
+.output/public/assets/car-front-b5eLxy9P.js                          0.41 kB │ gzip:   0.28 kB
+.output/public/assets/car-BvM9zE9p.js                                0.41 kB │ gzip:   0.29 kB
+.output/public/assets/calendar-range-D4BcF-lo.js                     0.43 kB │ gzip:   0.27 kB
+.output/public/assets/sliders-horizontal-Bj_I2fh4.js                 0.44 kB │ gzip:   0.25 kB
+.output/public/assets/master-data-client-Bd-rC02e.js                 0.46 kB │ gzip:   0.30 kB
+.output/public/assets/planning-week-BGgEtvfz.js                      0.50 kB │ gzip:   0.31 kB
+.output/public/assets/calendar-days-ChlJtUcg.js                      0.51 kB │ gzip:   0.28 kB
+.output/public/assets/phone-CIMXxoDT.js                              0.54 kB │ gzip:   0.33 kB
+.output/public/assets/public-contact-BgnHrC8R.js                     0.60 kB │ gzip:   0.45 kB
+.output/public/assets/admin.notifications-CHooAY_p.js                0.76 kB │ gzip:   0.44 kB
+.output/public/assets/rental-duration-B8KRJNtE.js                    0.89 kB │ gzip:   0.48 kB
+.output/public/assets/tslib.es6-Du-meQkk.js                          1.08 kB │ gzip:   0.54 kB
+.output/public/assets/booking-retrieval-DMU4WW0E.js                  1.20 kB │ gzip:   0.47 kB
+.output/public/assets/createLucideIcon-DxQKMlTT.js                   1.20 kB │ gzip:   0.69 kB
+.output/public/assets/customer_.notifications-CRCtktwx.js            1.61 kB │ gzip:   0.79 kB
+.output/public/assets/payment-details-DEwY1obf.js                    1.97 kB │ gzip:   1.06 kB
+.output/public/assets/elyu-CLJeCefe.js                               2.04 kB │ gzip:   0.92 kB
+.output/public/assets/admin-presentations-maT1bka7.js                2.37 kB │ gzip:   0.94 kB
+.output/public/assets/dialog-B1ysuZdK.js                             2.66 kB │ gzip:   1.17 kB
+.output/public/assets/auth.callback-DN1BdrTL.js                      2.78 kB │ gzip:   1.29 kB
+.output/public/assets/AddressAutocomplete-g6pVumBS.js                3.24 kB │ gzip:   1.55 kB
+.output/public/assets/button-CYnl3DLT.js                             3.68 kB │ gzip:   1.65 kB
+.output/public/assets/notifications-C93Hz-HE.js                      3.70 kB │ gzip:   1.61 kB
+.output/public/assets/admin.requirements-C9dsdD0i.js                 4.49 kB │ gzip:   1.91 kB
+.output/public/assets/sign-in-D8JNBa5L.js                            4.57 kB │ gzip:   1.70 kB
+.output/public/assets/alert-dialog-DRF1pOjL.js                       4.79 kB │ gzip:   1.80 kB
+.output/public/assets/MaintenanceRecordDialog-CPntTGmT.js            5.94 kB │ gzip:   2.14 kB
+.output/public/assets/admin.profile-pmVMiHQO.js                      6.05 kB │ gzip:   2.05 kB
+.output/public/assets/customer-lifecycle-B6X8-18K.js                 6.26 kB │ gzip:   1.89 kB
+.output/public/assets/ui-3PCW9b4Q.js                                 6.46 kB │ gzip:   2.23 kB
+.output/public/assets/index-BwPGlAzp.js                              6.50 kB │ gzip:   2.50 kB
+.output/public/assets/CustomerPrimitives-QZ3S3yq7.js                 6.72 kB │ gzip:   2.60 kB
+.output/public/assets/admin.calendar-DSFdlVgL.js                     7.03 kB │ gzip:   2.44 kB
+.output/public/assets/admin.settings-BnzB_DZ3.js                     7.08 kB │ gzip:   2.59 kB
+.output/public/assets/vehicles._vehicleId-ZEnokzZf.js                8.65 kB │ gzip:   3.30 kB
+.output/public/assets/contact-BhVDknk1.js                            9.28 kB │ gzip:   3.24 kB
+.output/public/assets/customer-CteDQaYq.js                           9.81 kB │ gzip:   3.05 kB
+.output/public/assets/customer_.profile-EekWKoS3.js                 10.05 kB │ gzip:   3.06 kB
+.output/public/assets/admin.users-Cm-Ocs1z.js                       11.39 kB │ gzip:   3.60 kB
+.output/public/assets/admin.payments._paymentId-CyiSZz2B.js         11.80 kB │ gzip:   3.98 kB
+.output/public/assets/index-C8TGDrPB.js                             12.06 kB │ gzip:   4.29 kB
+.output/public/assets/admin.branches-u8AJRzHW.js                    12.27 kB │ gzip:   4.47 kB
+.output/public/assets/NotificationsPanel-CA2gA5dj.js                13.77 kB │ gzip:   4.11 kB
+.output/public/assets/admin.customers-BiB8w1Pw.js                   15.04 kB │ gzip:   4.58 kB
+.output/public/assets/admin.requirements._bookingId-wfUWV_an.js     15.71 kB │ gzip:   4.87 kB
+.output/public/assets/admin.index-L7rK0EjP.js                       16.75 kB │ gzip:   4.63 kB
+.output/public/assets/admin.bookings-CamsatIG.js                    16.86 kB │ gzip:   5.03 kB
+.output/public/assets/vehicles-DKNZOsT6.js                          18.24 kB │ gzip:   5.98 kB
+.output/public/assets/customer-landing-DjhAEo_c.js                  19.51 kB │ gzip:   5.92 kB
+.output/public/assets/admin.activity-F4NEJmV-.js                    19.58 kB │ gzip:   5.52 kB
+.output/public/assets/admin.reports-CYR2TL7W.js                     20.03 kB │ gzip:   6.01 kB
+.output/public/assets/Header-CaGejZAd.js                            22.56 kB │ gzip:   6.39 kB
+.output/public/assets/admin.maintenance-DW1RlFqU.js                 24.04 kB │ gzip:   6.84 kB
+.output/public/assets/Combination-1oEJnlz3.js                       26.48 kB │ gzip:   9.46 kB
+.output/public/assets/index-D4cngLkh.js                             27.36 kB │ gzip:  10.50 kB
+.output/public/assets/utils-DclmTqRz.js                             27.55 kB │ gzip:   8.66 kB
+.output/public/assets/admin.payments-UtVdbKcU.js                    30.25 kB │ gzip:   8.47 kB
+.output/public/assets/booking-CK77q9es.js                           32.77 kB │ gzip:   8.42 kB
+.output/public/assets/admin.fleet-ZiyQQQMn.js                       35.54 kB │ gzip:   9.92 kB
+.output/public/assets/admin-MtjmHp7p.js                             43.10 kB │ gzip:  12.57 kB
+.output/public/assets/admin.bookings._bookingId-BMz4yY4d.js         66.16 kB │ gzip:  17.68 kB
+.output/public/assets/bookings._bookingId-CAchwOt9.js               66.59 kB │ gzip:  16.26 kB
+.output/public/assets/popover-BXkBNTcp.js                           83.02 kB │ gzip:  24.77 kB
+.output/public/assets/client-CNRf9Z8w.js                           218.97 kB │ gzip:  58.21 kB
+.output/public/assets/index-Dasx-ytQ.js                            408.44 kB │ gzip: 127.10 kB
+.output/public/assets/pdf-YYBQA8p7.js                              437.74 kB │ gzip: 130.66 kB
+.output/public/assets/admin.decisions-DEwYkT1g.js                  492.60 kB │ gzip: 134.21 kB
+✓ built in 4.60s
+vite v7.3.3 building ssr environment for production...
+transforming...
+"createRequestHandler", "defineHandlerCallback", "transformPipeableStreamWithRouter" and "transformReadableStreamWithRouter" are imported from external module "@tanstack/router-core/ssr/server" but never used in "node_modules/@tanstack/start-server-core/dist/esm/index.js".
+"RawStream" is imported from external module "@tanstack/router-core" but never used in "node_modules/@tanstack/start-client-core/dist/esm/index.js".
+"json" is imported from external module "@tanstack/router-core/ssr/client" but never used in "node_modules/@tanstack/start-client-core/dist/esm/index.js".
+✓ 2017 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/supabase/server.ts is dynamically imported by /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/external-context.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/forecasting.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/forecasting.server.ts but also statically imported by /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/admin-calendar.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/admin-dashboard.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/admin-fleet.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/admin-reports.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/allocation-recommendation.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/maintenance-readiness.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/operational-notifications.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/reminders.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/transactional-email.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/vehicle-analytics.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/lib/vehicle-finder.server.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.admin-fleet.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.admin-public-contact.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.admin-users.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.allocation-recommendations.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.audit-events.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.auth.account-status.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.backup-status.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.booking-master-data.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.bookings.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.contact-inquiries.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.dss-locations.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.forecasts.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.health.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.maintenance.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.master-data.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.notifications.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.operational-context.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.payment-methods.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.payment-quote.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.payment-terms.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.payments.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.public-contact.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.requirements.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.supply-evaluations.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.vehicle-images.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.vehicle-location.ts, /Users/aldrich/Developer/GitHub/car-rental-fleet-management-system/src/routes/api.vehicles.ts, dynamic import will not move module into another chunk.
+
+node_modules/.nitro/vite/services/ssr/assets/tagaytay-BrtP7jTi.avif                        29.80 kB
+node_modules/.nitro/vite/services/ssr/assets/car-pickup-BFgtC-xX.jpg                       66.13 kB
+node_modules/.nitro/vite/services/ssr/assets/subic-B3C3FTux.jpg                            74.21 kB
+node_modules/.nitro/vite/services/ssr/assets/bagui-DXvCKOlo.webp                           77.38 kB
+node_modules/.nitro/vite/services/ssr/assets/vigan-ZODnFB3M.webp                          137.07 kB
+node_modules/.nitro/vite/services/ssr/assets/pampanga-ByEwRXUT.webp                       141.97 kB
+node_modules/.nitro/vite/services/ssr/assets/hero-car--lXeAzHD.jpg                        227.00 kB
+node_modules/.nitro/vite/services/ssr/assets/toyota_avanza-Dtba3J47.png                 1,624.53 kB
+node_modules/.nitro/vite/services/ssr/assets/nissan_urvan-2vopFopM.png                  1,636.79 kB
+node_modules/.nitro/vite/services/ssr/assets/ford_everest-BcsAZrrN.png                  1,639.26 kB
+node_modules/.nitro/vite/services/ssr/assets/toyota_innova-B-6xttoI.png                 1,704.84 kB
+node_modules/.nitro/vite/services/ssr/assets/honda_city-DAk3k0qS.png                    1,711.95 kB
+node_modules/.nitro/vite/services/ssr/assets/toyota_hiace-BOFoflD-.png                  1,747.43 kB
+node_modules/.nitro/vite/services/ssr/assets/toyota_rush-BdogY0OH.png                   1,784.14 kB
+node_modules/.nitro/vite/services/ssr/assets/toyota_vios-IkVL6BSH.png                   1,791.77 kB
+node_modules/.nitro/vite/services/ssr/assets/toyota_wigo-BFzvxFW6.png                   1,812.56 kB
+node_modules/.nitro/vite/services/ssr/assets/mitsubishi_mirage-DKSsl_4H.png             1,914.35 kB
+node_modules/.nitro/vite/services/ssr/assets/home-hero-editorial-CM0whNbX.png           2,101.87 kB
+node_modules/.nitro/vite/services/ssr/assets/home-vehicle-everest-hFc5jJNQ.png          2,561.33 kB
+node_modules/.nitro/vite/services/ssr/assets/home-vehicle-vios-CUfSjSY9.png             2,705.38 kB
+node_modules/.nitro/vite/services/ssr/assets/home-vehicle-city-DFA8cqyB.png             2,939.27 kB
+node_modules/.nitro/vite/services/ssr/assets/elyu-C02-uRsx.jpg                          3,911.30 kB
+node_modules/.nitro/vite/services/ssr/assets/styles-BGu4uPjO.css                          588.70 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.decisions.utilization-BTU5dmpx.js        0.08 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.decisions.forecast-BTU5dmpx.js           0.08 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.decisions.allocation-BTU5dmpx.js         0.08 kB
+node_modules/.nitro/vite/services/ssr/assets/empty-plugin-adapters-BFgPZ6_d.js              0.13 kB
+node_modules/.nitro/vite/services/ssr/assets/utils-H80jjgLf.js                              0.15 kB
+node_modules/.nitro/vite/services/ssr/assets/check-BCjxeNMH.js                              0.22 kB
+node_modules/.nitro/vite/services/ssr/assets/chevron-down-D5_OZDiP.js                       0.24 kB
+node_modules/.nitro/vite/services/ssr/assets/chevron-left-TP5S23vW.js                       0.24 kB
+node_modules/.nitro/vite/services/ssr/assets/chevron-right-DYCgedcT.js                      0.24 kB
+node_modules/.nitro/vite/services/ssr/assets/x-CTsBqdQ_.js                                  0.25 kB
+node_modules/.nitro/vite/services/ssr/assets/loader-circle-HYqFUR4j.js                      0.26 kB
+node_modules/.nitro/vite/services/ssr/assets/plus-C43sxOGd.js                               0.26 kB
+node_modules/.nitro/vite/services/ssr/assets/skeleton-CoUJiN10.js                           0.28 kB
+node_modules/.nitro/vite/services/ssr/assets/arrow-left-RUvVekmp.js                         0.28 kB
+node_modules/.nitro/vite/services/ssr/assets/arrow-right-DvSdJS0b.js                        0.29 kB
+node_modules/.nitro/vite/services/ssr/assets/clock-3-OWnF-Paq.js                            0.29 kB
+node_modules/.nitro/vite/services/ssr/assets/gauge-UprDisq9.js                              0.29 kB
+node_modules/.nitro/vite/services/ssr/assets/search-BuVxGY3d.js                             0.29 kB
+node_modules/.nitro/vite/services/ssr/assets/user-round-DJBqaBme.js                         0.31 kB
+node_modules/.nitro/vite/services/ssr/assets/circle-check-CaFQB-pY.js                       0.31 kB
+node_modules/.nitro/vite/services/ssr/assets/rotate-ccw-Jx-qOLGz.js                         0.32 kB
+node_modules/.nitro/vite/services/ssr/assets/info-aQV2V3wO.js                               0.33 kB
+node_modules/.nitro/vite/services/ssr/assets/mail-C2VpbPqB.js                               0.33 kB
+node_modules/.nitro/vite/services/ssr/assets/circle-x-BYJWZ_vp.js                           0.34 kB
+node_modules/.nitro/vite/services/ssr/assets/credit-card-EbbQWBjG.js                        0.34 kB
+node_modules/.nitro/vite/services/ssr/assets/external-link-CPnoUWtN.js                      0.39 kB
+node_modules/.nitro/vite/services/ssr/assets/chart-column-Da4v7ldl.js                       0.39 kB
+node_modules/.nitro/vite/services/ssr/assets/circle-alert-FF5FmB_o.js                       0.40 kB
+node_modules/.nitro/vite/services/ssr/assets/lock-keyhole-vF81h-Qo.js                       0.40 kB
+node_modules/.nitro/vite/services/ssr/assets/map-pin-DVi-WirC.js                            0.40 kB
+node_modules/.nitro/vite/services/ssr/assets/bell-DLkf11EF.js                               0.43 kB
+node_modules/.nitro/vite/services/ssr/assets/triangle-alert-CiVAjJP9.js                     0.43 kB
+node_modules/.nitro/vite/services/ssr/assets/wrench-C5ulECl7.js                             0.44 kB
+node_modules/.nitro/vite/services/ssr/assets/refresh-cw-BUCeWHM4.js                         0.46 kB
+node_modules/.nitro/vite/services/ssr/assets/fuel-9mvSurWx.js                               0.46 kB
+node_modules/.nitro/vite/services/ssr/assets/pickup-arrangement-g3lHEXsN.js                 0.47 kB
+node_modules/.nitro/vite/services/ssr/assets/shield-check-Cagu5AoU.js                       0.47 kB
+node_modules/.nitro/vite/services/ssr/assets/save-doH5jdIk.js                               0.47 kB
+node_modules/.nitro/vite/services/ssr/assets/clipboard-check-DxGN89wh.js                    0.48 kB
+node_modules/.nitro/vite/services/ssr/assets/file-check-corner-DkGDPbOB.js                  0.48 kB
+node_modules/.nitro/vite/services/ssr/assets/file-exclamation-point-BOqG5tW0.js             0.49 kB
+node_modules/.nitro/vite/services/ssr/assets/planning-week-AL8RS_sk.js                      0.55 kB
+node_modules/.nitro/vite/services/ssr/assets/file-text-Dhw9s3cl.js                          0.56 kB
+node_modules/.nitro/vite/services/ssr/assets/car-BSv92lWo.js                                0.57 kB
+node_modules/.nitro/vite/services/ssr/assets/car-front-Bmdt9jZe.js                          0.57 kB
+node_modules/.nitro/vite/services/ssr/assets/menu-ErI1Sxyq.js                               0.58 kB
+node_modules/.nitro/vite/services/ssr/assets/calendar-range-wF7D2sh-.js                     0.60 kB
+node_modules/.nitro/vite/services/ssr/assets/sliders-horizontal-OqCSEbvi.js                 0.62 kB
+node_modules/.nitro/vite/services/ssr/assets/calendar-days-D_q7nWr9.js                      0.70 kB
+node_modules/.nitro/vite/services/ssr/assets/master-data-client-BOx7Bl3i.js                 0.71 kB
+node_modules/.nitro/vite/services/ssr/assets/phone-BOE8Pl8Q.js                              0.77 kB
+node_modules/.nitro/vite/services/ssr/assets/public-contact-DgsLrwNF.js                     0.79 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.notifications-IKmd4iGb.js                1.38 kB
+node_modules/.nitro/vite/services/ssr/assets/button-DA2gxxPy.js                             1.74 kB
+node_modules/.nitro/vite/services/ssr/assets/booking-retrieval-BvRtB5t5.js                  1.89 kB
+node_modules/.nitro/vite/services/ssr/assets/createLucideIcon-Dsn72aJU.js                   2.20 kB
+node_modules/.nitro/vite/services/ssr/assets/customer_.notifications-FUpSqKY4.js            2.36 kB
+node_modules/.nitro/vite/services/ssr/assets/client-BhOdX5i3.js                             2.69 kB
+node_modules/.nitro/vite/services/ssr/assets/payment-details-BypL_IEE.js                    3.13 kB
+node_modules/.nitro/vite/services/ssr/assets/start-C-VLDCWe.js                              3.43 kB
+node_modules/.nitro/vite/services/ssr/assets/alert-dialog-N6xqGEhh.js                       3.45 kB
+node_modules/.nitro/vite/services/ssr/index.js                                              3.86 kB
+node_modules/.nitro/vite/services/ssr/assets/elyu-CLgm8wG9.js                               3.92 kB
+node_modules/.nitro/vite/services/ssr/assets/admin-presentations-C7je9SaD.js                4.17 kB
+node_modules/.nitro/vite/services/ssr/assets/dialog-DmgK00FO.js                             4.43 kB
+node_modules/.nitro/vite/services/ssr/assets/auth.callback-BeruxO-y.js                      5.22 kB
+node_modules/.nitro/vite/services/ssr/assets/AddressAutocomplete-Bsc0FEqN.js                6.48 kB
+node_modules/.nitro/vite/services/ssr/assets/auth.server-cekxSpdL.js                        6.56 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.requirements-USiPIIys.js                 7.06 kB
+node_modules/.nitro/vite/services/ssr/assets/sign-in-CCpZVZWs.js                            7.65 kB
+node_modules/.nitro/vite/services/ssr/assets/customer-lifecycle-BaUDvFtA.js                 9.61 kB
+node_modules/.nitro/vite/services/ssr/assets/ui-Cf9Etva4.js                                 9.90 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.profile-CtB4-6jD.js                     10.32 kB
+node_modules/.nitro/vite/services/ssr/assets/MaintenanceRecordDialog-B1A5jko-.js           11.22 kB
+node_modules/.nitro/vite/services/ssr/assets/CustomerPrimitives-BKYqq-Um.js                11.37 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.settings-IiJhuFGj.js                    11.81 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.calendar-0zqh7j7a.js                    12.19 kB
+node_modules/.nitro/vite/services/ssr/assets/popover-DQe4-ZRE.js                           14.84 kB
+node_modules/.nitro/vite/services/ssr/assets/vehicles._vehicleId-DTnB0Kq4.js               15.11 kB
+node_modules/.nitro/vite/services/ssr/assets/contact-DRLiBVi6.js                           15.81 kB
+node_modules/.nitro/vite/services/ssr/assets/customer_.profile-DHl5rF7o.js                 16.65 kB
+node_modules/.nitro/vite/services/ssr/assets/customer-DfzG-PUp.js                          17.01 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.payments._paymentId-B7bBOiw4.js         19.09 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.users-qxvFDJcM.js                       19.18 kB
+node_modules/.nitro/vite/services/ssr/assets/index-CoRBSD7_.js                             21.31 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.branches-DbEM5Wna.js                    21.50 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.customers-CFVXuyKj.js                   24.01 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.requirements._bookingId-C7BG7ED5.js     25.37 kB
+node_modules/.nitro/vite/services/ssr/assets/NotificationsPanel-C5J6NOyP.js                25.65 kB
+node_modules/.nitro/vite/services/ssr/assets/customer-landing-D06jr307.js                  26.53 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.index-C7-AR4-E.js                       27.30 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.activity-jBww9-CJ.js                    27.38 kB
+node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-RmS-DSJW.js        27.86 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.bookings-D_uSTPV9.js                    28.20 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.reports-BnxM2ttn.js                     31.73 kB
+node_modules/.nitro/vite/services/ssr/assets/vehicles-D65dyDiD.js                          33.00 kB
+node_modules/.nitro/vite/services/ssr/assets/admin-CDSx5glv.js                             33.58 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.maintenance-mRswax_i.js                 40.87 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.payments-DNDn0stv.js                    51.14 kB
+node_modules/.nitro/vite/services/ssr/assets/Header-DiMjeitN.js                            54.06 kB
+node_modules/.nitro/vite/services/ssr/assets/booking-BvOnkiyW.js                           55.93 kB
+node_modules/.nitro/vite/services/ssr/assets/server-ByhDgA0o.js                            58.12 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.fleet-DW16dTnH.js                       61.12 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.bookings._bookingId-D9x4S2ve.js        110.83 kB
+node_modules/.nitro/vite/services/ssr/assets/bookings._bookingId-CLlQPRb5.js              113.04 kB
+node_modules/.nitro/vite/services/ssr/assets/admin.decisions-Big06h9k.js                  183.77 kB
+node_modules/.nitro/vite/services/ssr/assets/router-C8PH49rg.js                           421.97 kB
+✓ built in 2.85s
+
+[nitro] ◐ Building [Nitro] (preset: node-server, compatibility: 2026-10-04)
+[nitro] ✔ Generated public .output/public
+vite v7.3.3 building nitro environment for production...
+transforming...
+node_modules/@tanstack/react-router/dist/esm/index.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/index.js" was ignored.
+node_modules/sonner/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/sonner/dist/index.mjs" was ignored.
+node_modules/@tanstack/react-router/dist/esm/utils.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/utils.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/ClientOnly.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/ClientOnly.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/useNavigate.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/useNavigate.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/RouterProvider.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/RouterProvider.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/useRouterState.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/useRouterState.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/useLocation.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/useLocation.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/HeadContent.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/HeadContent.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/useBlocker.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/useBlocker.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/useRouter.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/useRouter.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/CatchBoundary.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/CatchBoundary.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/useMatch.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/useMatch.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/link.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/link.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/Matches.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/Matches.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/Match.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/Match.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/Asset.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/Asset.js" was ignored.
+node_modules/@radix-ui/react-popover/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-popover/dist/index.mjs" was ignored.
+node_modules/@radix-ui/react-dropdown-menu/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-dropdown-menu/dist/index.mjs" was ignored.
+node_modules/@radix-ui/react-dialog/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-dialog/dist/index.mjs" was ignored.
+node_modules/@radix-ui/react-alert-dialog/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-alert-dialog/dist/index.mjs" was ignored.
+node_modules/@tanstack/react-query/build/modern/useQueries.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/useQueries.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/useQuery.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/useQuery.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/useIsFetching.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/useIsFetching.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/useMutation.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/useMutation.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/useInfiniteQuery.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/useInfiniteQuery.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/IsRestoringProvider.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/IsRestoringProvider.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/useMutationState.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/useMutationState.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/useSuspenseInfiniteQuery.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseInfiniteQuery.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/useSuspenseQueries.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseQueries.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/useSuspenseQuery.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/useSuspenseQuery.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/routerContext.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/routerContext.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/matchContext.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/matchContext.js" was ignored.
+node_modules/@tanstack/react-router/dist/esm/Transitioner.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-router/dist/esm/Transitioner.js" was ignored.
+node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-focus-guards/dist/index.mjs" was ignored.
+node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs" was ignored.
+node_modules/@radix-ui/react-focus-scope/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-focus-scope/dist/index.mjs" was ignored.
+node_modules/@radix-ui/react-popper/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-popper/dist/index.mjs" was ignored.
+node_modules/@radix-ui/react-portal/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-portal/dist/index.mjs" was ignored.
+node_modules/@radix-ui/react-presence/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-presence/dist/index.mjs" was ignored.
+node_modules/@radix-ui/react-menu/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-menu/dist/index.mjs" was ignored.
+node_modules/@tanstack/react-query/build/modern/errorBoundaryUtils.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/errorBoundaryUtils.js" was ignored.
+node_modules/@tanstack/react-query/build/modern/useBaseQuery.js (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@tanstack/react-query/build/modern/useBaseQuery.js" was ignored.
+node_modules/@radix-ui/react-collection/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-collection/dist/index.mjs" was ignored.
+node_modules/@radix-ui/react-roving-focus/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "node_modules/@radix-ui/react-roving-focus/dist/index.mjs" was ignored.
+✓ 2024 modules transformed.
+ℹ Tracing dependencies:
+- tslib (2.8.1)
+✔ Traced 1 dependencies (4 files) in 18ms.
+ℹ Ensure your production environment matches the builder OS and architecture (darwin-arm64) to avoid native module issues.
+rendering chunks...
+.output/server/_libs/crossws.mjs                                         0.00 kB
+.output/server/_libs/hookable.mjs                                        0.00 kB
+.output/server/_libs/ohash.mjs                                           0.00 kB
+.output/server/_libs/ocache.mjs                                          0.00 kB
+.output/server/_libs/unstorage.mjs                                       0.00 kB
+.output/server/_libs/croner.mjs                                          0.00 kB
+.output/server/_libs/tanstack__store.mjs                                 0.00 kB
+.output/server/_libs/use-sync-external-store.mjs                         0.00 kB
+.output/server/_libs/detect-node-es.mjs                                  0.00 kB
+.output/server/_libs/babel__runtime.mjs                                  0.00 kB
+.output/server/_libs/dom-helpers.mjs                                     0.00 kB
+.output/server/_libs/tslib.mjs                                           0.00 kB
+.output/server/_libs/tanstack__react-store.mjs                           0.02 kB
+.output/server/_libs/@radix-ui/react-use-effect-event+[...].mjs          0.02 kB
+.output/server/_libs/react-transition-group.mjs                          0.05 kB
+.output/server/_ssr/admin.decisions.utilization-BTU5dmpx.mjs             0.08 kB
+.output/server/_ssr/admin.decisions.forecast-BTU5dmpx.mjs                0.08 kB
+.output/server/_ssr/admin.decisions.allocation-BTU5dmpx.mjs              0.08 kB
+.output/server/_ssr/empty-plugin-adapters-BFgPZ6_d.mjs                   0.13 kB
+.output/server/_libs/tiny-invariant.mjs                                  0.14 kB
+.output/server/_libs/get-nonce.mjs                                       0.16 kB
+.output/server/_libs/@radix-ui/react-use-layout-effect+[...].mjs         0.17 kB
+.output/server/_ssr/utils-H80jjgLf.mjs                                   0.19 kB
+.output/server/_libs/rou3.mjs                                            0.21 kB
+.output/server/_ssr/check-BCjxeNMH.mjs                                   0.22 kB
+.output/server/_ssr/chevron-down-D5_OZDiP.mjs                            0.24 kB
+.output/server/_ssr/chevron-left-TP5S23vW.mjs                            0.24 kB
+.output/server/_ssr/chevron-right-DYCgedcT.mjs                           0.24 kB
+.output/server/_ssr/x-CTsBqdQ_.mjs                                       0.25 kB
+.output/server/_ssr/loader-circle-HYqFUR4j.mjs                           0.26 kB
+.output/server/_ssr/plus-C43sxOGd.mjs                                    0.26 kB
+.output/server/_libs/radix-ui__react-direction.mjs                       0.28 kB
+.output/server/_ssr/arrow-left-RUvVekmp.mjs                              0.29 kB
+.output/server/_ssr/arrow-right-DvSdJS0b.mjs                             0.29 kB
+.output/server/_ssr/clock-3-OWnF-Paq.mjs                                 0.29 kB
+.output/server/_ssr/gauge-UprDisq9.mjs                                   0.29 kB
+.output/server/_ssr/search-BuVxGY3d.mjs                                  0.29 kB
+.output/server/_ssr/user-round-DJBqaBme.mjs                              0.31 kB
+.output/server/_ssr/circle-check-CaFQB-pY.mjs                            0.31 kB
+.output/server/_ssr/rotate-ccw-Jx-qOLGz.mjs                              0.32 kB
+.output/server/_ssr/skeleton-CoUJiN10.mjs                                0.32 kB
+.output/server/_ssr/info-aQV2V3wO.mjs                                    0.33 kB
+.output/server/_ssr/mail-C2VpbPqB.mjs                                    0.33 kB
+.output/server/_libs/@radix-ui/react-use-callback-ref+[...].mjs          0.34 kB
+.output/server/_ssr/circle-x-BYJWZ_vp.mjs                                0.34 kB
+.output/server/_ssr/credit-card-EbbQWBjG.mjs                             0.34 kB
+.output/server/_libs/radix-ui__primitive.mjs                             0.35 kB
+.output/server/_ssr/external-link-CPnoUWtN.mjs                           0.39 kB
+.output/server/_ssr/chart-column-Da4v7ldl.mjs                            0.39 kB
+.output/server/_ssr/circle-alert-FF5FmB_o.mjs                            0.40 kB
+.output/server/_ssr/lock-keyhole-vF81h-Qo.mjs                            0.40 kB
+.output/server/_ssr/map-pin-DVi-WirC.mjs                                 0.41 kB
+.output/server/_ssr/bell-DLkf11EF.mjs                                    0.43 kB
+.output/server/_ssr/triangle-alert-CiVAjJP9.mjs                          0.43 kB
+.output/server/_ssr/wrench-C5ulECl7.mjs                                  0.44 kB
+.output/server/_ssr/refresh-cw-BUCeWHM4.mjs                              0.46 kB
+.output/server/_ssr/fuel-9mvSurWx.mjs                                    0.46 kB
+.output/server/_libs/tanstack__react-query.mjs                           0.46 kB
+.output/server/_ssr/pickup-arrangement-g3lHEXsN.mjs                      0.47 kB
+.output/server/_ssr/shield-check-Cagu5AoU.mjs                            0.47 kB
+.output/server/_ssr/save-doH5jdIk.mjs                                    0.47 kB
+.output/server/_ssr/clipboard-check-DxGN89wh.mjs                         0.48 kB
+.output/server/_ssr/file-check-corner-DkGDPbOB.mjs                       0.48 kB
+.output/server/_ssr/file-exclamation-point-BOqG5tW0.mjs                  0.49 kB
+.output/server/_libs/clsx.mjs                                            0.51 kB
+.output/server/_libs/radix-ui__react-id.mjs                              0.51 kB
+.output/server/_ssr/planning-week-AL8RS_sk.mjs                           0.55 kB
+.output/server/_ssr/file-text-Dhw9s3cl.mjs                               0.56 kB
+.output/server/_ssr/car-BSv92lWo.mjs                                     0.57 kB
+.output/server/_ssr/car-front-Bmdt9jZe.mjs                               0.57 kB
+.output/server/_ssr/menu-ErI1Sxyq.mjs                                    0.58 kB
+.output/server/_chunks/ssr-renderer.mjs                                  0.61 kB
+.output/server/_ssr/calendar-range-wF7D2sh-.mjs                          0.61 kB
+.output/server/_ssr/sliders-horizontal-OqCSEbvi.mjs                      0.62 kB
+.output/server/_libs/@radix-ui/react-use-escape-keydown+[...].mjs        0.69 kB
+.output/server/_ssr/calendar-days-D_q7nWr9.mjs                           0.70 kB
+.output/server/_libs/radix-ui__react-arrow.mjs                           0.71 kB
+.output/server/_ssr/master-data-client-BOx7Bl3i.mjs                      0.71 kB
+.output/server/_ssr/phone-BOE8Pl8Q.mjs                                   0.77 kB
+.output/server/_ssr/public-contact-DgsLrwNF.mjs                          0.79 kB
+.output/server/_libs/radix-ui__react-portal.mjs                          0.83 kB
+.output/server/_libs/radix-ui__react-focus-guards.mjs                    0.93 kB
+.output/server/_libs/radix-ui__react-compose-refs.mjs                    0.96 kB
+.output/server/_libs/radix-ui__react-primitive.mjs                       1.12 kB
+.output/server/_libs/internmap.mjs                                       1.17 kB
+.output/server/_libs/radix-ui__react-use-size.mjs                        1.26 kB
+.output/server/_libs/ufo.mjs                                             1.31 kB
+.output/server/_libs/victory-vendor.mjs                                  1.37 kB
+.output/server/_libs/cookie-es.mjs                                       1.46 kB
+.output/server/_libs/seroval-plugins.mjs                                 1.47 kB
+.output/server/_libs/react-style-singleton.mjs                           1.67 kB
+.output/server/_libs/use-callback-ref.mjs                                1.75 kB
+.output/server/_ssr/button-DA2gxxPy.mjs                                  1.81 kB
+.output/server/_ssr/booking-retrieval-BvRtB5t5.mjs                       1.89 kB
+.output/server/_libs/class-variance-authority.mjs                        2.14 kB
+.output/server/_ssr/admin.notifications-IKmd4iGb.mjs                     2.19 kB
+.output/server/_ssr/createLucideIcon-Dsn72aJU.mjs                        2.27 kB
+.output/server/_libs/@radix-ui/react-use-controllable-state+[...].mjs    2.29 kB
+.output/server/_libs/prop-types.mjs                                      2.53 kB
+.output/server/_libs/isbot.mjs                                           2.56 kB
+.output/server/_libs/use-sidecar.mjs                                     2.65 kB
+.output/server/_ssr/client-BhOdX5i3.mjs                                  2.82 kB
+.output/server/_libs/radix-ui__react-collection.mjs                      3.22 kB
+.output/server/_ssr/customer_.notifications-FUpSqKY4.mjs                 3.26 kB
+.output/server/_libs/radix-ui__react-context.mjs                         3.36 kB
+.output/server/_libs/d3-path.mjs                                         3.36 kB
+.output/server/_ssr/alert-dialog-N6xqGEhh.mjs                            3.50 kB
+.output/server/_ssr/index.mjs                                            3.86 kB
+.output/server/_libs/react-remove-scroll-bar.mjs                         3.96 kB
+.output/server/_libs/aria-hidden.mjs                                     4.06 kB
+.output/server/_ssr/start-C-VLDCWe.mjs                                   4.08 kB
+.output/server/_libs/react-is.mjs                                        4.11 kB
+.output/server/_ssr/payment-details-BypL_IEE.mjs                         4.11 kB
+.output/server/_ssr/admin-presentations-C7je9SaD.mjs                     4.17 kB
+.output/server/_ssr/elyu-CLgm8wG9.mjs                                    4.25 kB
+.output/server/_libs/d3-interpolate.mjs                                  4.34 kB
+.output/server/_ssr/dialog-DmgK00FO.mjs                                  4.60 kB
+.output/server/_libs/radix-ui__react-presence.mjs                        4.86 kB
+.output/server/_libs/tanstack__history.mjs                               5.99 kB
+.output/server/_ssr/auth.callback-BeruxO-y.mjs                           6.29 kB
+.output/server/_libs/eventemitter3.mjs                                   6.52 kB
+.output/server/_ssr/auth.server-cekxSpdL.mjs                             6.58 kB
+.output/server/_ssr/AddressAutocomplete-Bsc0FEqN.mjs                     6.66 kB
+.output/server/_libs/radix-ui__react-alert-dialog.mjs                    7.10 kB
+.output/server/_libs/d3-array.mjs                                        7.16 kB
+.output/server/_libs/radix-ui__react-focus-scope.mjs                     8.07 kB
+.output/server/_libs/floating-ui__react-dom.mjs                          8.42 kB
+.output/server/_ssr/admin.requirements-USiPIIys.mjs                      8.46 kB
+.output/server/_libs/@radix-ui/react-dismissable-layer+[...].mjs         8.97 kB
+.output/server/_ssr/sign-in-CCpZVZWs.mjs                                 9.14 kB
+.output/server/_libs/floating-ui__utils.mjs                              9.47 kB
+.output/server/_libs/radix-ui__react-roving-focus.mjs                    9.53 kB
+.output/server/_ssr/customer-lifecycle-BaUDvFtA.mjs                      9.61 kB
+.output/server/_libs/d3-format.mjs                                       9.81 kB
+.output/server/_libs/date-fns__tz.mjs                                   10.22 kB
+.output/server/_libs/d3-color.mjs                                       10.63 kB
+.output/server/_libs/d3-time.mjs                                        10.78 kB
+.output/server/_ssr/ui-Cf9Etva4.mjs                                     10.81 kB
+.output/server/_libs/radix-ui__react-popper.mjs                         11.68 kB
+.output/server/_libs/radix-ui__react-dropdown-menu.mjs                  11.79 kB
+.output/server/_ssr/MaintenanceRecordDialog-B1A5jko-.mjs                12.01 kB
+.output/server/_libs/radix-ui__react-popover.mjs                        12.18 kB
+.output/server/_ssr/admin.profile-CtB4-6jD.mjs                          12.25 kB
+.output/server/_ssr/CustomerPrimitives-BKYqq-Um.mjs                     12.35 kB
+.output/server/_libs/supabase__functions-js.mjs                         12.42 kB
+.output/server/_libs/recharts-scale.mjs                                 12.43 kB
+.output/server/_ssr/admin.settings-IiJhuFGj.mjs                         13.08 kB
+.output/server/_libs/react-remove-scroll.mjs                            13.37 kB
+.output/server/_libs/radix-ui__react-dialog.mjs                         13.58 kB
+.output/server/_libs/fast-equals.mjs                                    13.70 kB
+.output/server/_ssr/admin.calendar-0zqh7j7a.mjs                         13.78 kB
+.output/server/_libs/h3.mjs                                             14.36 kB
+.output/server/_libs/iceberg-js.mjs                                     15.70 kB
+.output/server/_ssr/popover-DQe4-ZRE.mjs                                15.79 kB
+.output/server/_ssr/vehicles._vehicleId-DTnB0Kq4.mjs                    17.33 kB
+.output/server/_ssr/contact-DRLiBVi6.mjs                                18.29 kB
+.output/server/_libs/d3-time-format.mjs                                 18.50 kB
+.output/server/_ssr/customer_.profile-DHl5rF7o.mjs                      19.50 kB
+.output/server/_libs/h3-v2.mjs                                          19.71 kB
+.output/server/_ssr/customer-DfzG-PUp.mjs                               19.81 kB
+.output/server/_libs/react.mjs                                          20.14 kB
+.output/server/_libs/floating-ui__dom.mjs                               21.28 kB
+.output/server/_ssr/admin.payments._paymentId-B7bBOiw4.mjs              21.49 kB
+.output/server/_ssr/admin.users-qxvFDJcM.mjs                            22.36 kB
+.output/server/_libs/radix-ui__react-slot.mjs                           22.73 kB
+.output/server/_libs/floating-ui__core.mjs                              24.06 kB
+.output/server/_libs/d3-shape.mjs                                       24.56 kB
+.output/server/_ssr/index-CoRBSD7_.mjs                                  25.57 kB
+.output/server/_ssr/admin.branches-DbEM5Wna.mjs                         25.59 kB
+.output/server/_ssr/admin.customers-CFVXuyKj.mjs                        26.47 kB
+.output/server/_libs/decimal.js-light.mjs                               26.70 kB
+.output/server/_ssr/NotificationsPanel-C5J6NOyP.mjs                     27.62 kB
+.output/server/_libs/srvx.mjs                                           27.73 kB
+.output/server/_tanstack-start-manifest_v-RmS-DSJW.mjs                  27.86 kB
+.output/server/_ssr/admin.requirements._bookingId-C7BG7ED5.mjs          28.04 kB
+.output/server/_libs/d3-scale.mjs                                       29.02 kB
+.output/server/_ssr/customer-landing-D06jr307.mjs                       29.46 kB
+.output/server/_ssr/admin.index-C7-AR4-E.mjs                            31.02 kB
+.output/server/_ssr/admin.activity-jBww9-CJ.mjs                         31.29 kB
+.output/server/_ssr/admin.bookings-D_uSTPV9.mjs                         31.97 kB
+.output/server/_libs/supabase__supabase-js.mjs                          33.53 kB
+.output/server/_libs/radix-ui__react-menu.mjs                           34.50 kB
+.output/server/_ssr/admin.reports-BnxM2ttn.mjs                          36.37 kB
+.output/server/_ssr/admin-CDSx5glv.mjs                                  37.54 kB
+.output/server/_ssr/vehicles-D65dyDiD.mjs                               37.69 kB
+.output/server/_libs/react-smooth.mjs                                   38.16 kB
+.output/server/_libs/tanstack__react-router.mjs                         40.41 kB
+.output/server/index.mjs                                                43.94 kB
+.output/server/_ssr/admin.maintenance-mRswax_i.mjs                      46.90 kB
+.output/server/_libs/seroval.mjs                                        48.40 kB
+.output/server/_libs/date-fns.mjs                                       51.49 kB
+.output/server/_libs/tanstack__query-core.mjs                           54.77 kB
+.output/server/_libs/supabase__phoenix.mjs                              55.82 kB
+.output/server/_libs/sonner.mjs                                         56.10 kB
+.output/server/_ssr/Header-DiMjeitN.mjs                                 57.40 kB
+.output/server/_ssr/server-ByhDgA0o.mjs                                 57.79 kB
+.output/server/_ssr/admin.payments-DNDn0stv.mjs                         58.75 kB
+.output/server/_ssr/booking-BvOnkiyW.mjs                                64.28 kB
+.output/server/_ssr/admin.fleet-DW16dTnH.mjs                            68.84 kB
+.output/server/_libs/supabase__realtime-js.mjs                          81.29 kB
+.output/server/_libs/react-day-picker.mjs                               93.07 kB
+.output/server/_libs/tailwind-merge.mjs                                 99.21 kB
+.output/server/_libs/supabase__storage-js.mjs                          102.54 kB
+.output/server/_libs/supabase__postgrest-js.mjs                        107.90 kB
+.output/server/_libs/lodash.mjs                                        113.23 kB
+.output/server/_ssr/admin.bookings._bookingId-D9x4S2ve.mjs             123.71 kB
+.output/server/_ssr/bookings._bookingId-CLlQPRb5.mjs                   128.89 kB
+.output/server/_libs/tanstack__router-core.mjs                         159.57 kB
+.output/server/_ssr/admin.decisions-Big06h9k.mjs                       201.64 kB
+.output/server/_libs/supabase__auth-js.mjs                             311.93 kB
+.output/server/_ssr/router-C8PH49rg.mjs                                423.48 kB
+.output/server/_libs/recharts.mjs                                      501.76 kB
+.output/server/_libs/react-dom.mjs                                     509.17 kB
+.output/server/_libs/pdfjs-dist.mjs                                    856.75 kB
+✓ built in 4.29s
+ℹ Generated .output/nitro.json
+
+[nitro] ✔ You can preview this build using npx vite preview

@@ -1,3 +1,4 @@
+import everestImage from "@/assets/vehicles/ford_everest.png";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
@@ -51,8 +52,16 @@ export function VehicleImage({
   priority?: boolean;
   sizes?: string;
 }) {
-  const [failed, setFailed] = useState(false);
-  const shouldRenderImage = Boolean(src) && !failed;
+  src = src || (alt === "Ford Everest" ? everestImage : null);
+  const [failedSource, setFailedSource] = useState<string | null>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const shouldRenderImage = Boolean(src) && src !== failedSource;
+  useEffect(() => {
+    // A server-rendered image can fail before React attaches its error listener.
+    const image = imageRef.current;
+    if (image?.complete && image.naturalWidth === 0)
+      setFailedSource(src ?? null);
+  }, [src]);
 
   if (!shouldRenderImage) {
     return (
@@ -71,6 +80,7 @@ export function VehicleImage({
 
   return (
     <img
+      ref={imageRef}
       src={src ?? ""}
       alt={alt}
       width={1200}
@@ -78,7 +88,7 @@ export function VehicleImage({
       loading={priority ? "eager" : "lazy"}
       fetchPriority={priority ? "high" : "auto"}
       sizes={sizes}
-      onError={() => setFailed(true)}
+      onError={() => setFailedSource(src ?? null)}
       className={className}
     />
   );
@@ -253,7 +263,8 @@ function rationaleIcon(reason: string) {
   const normalized = reason.toLowerCase();
   if (normalized.includes("date")) return CalendarDays;
   if (normalized.includes("seat") || normalized.includes("group")) return Users;
-  if (normalized.includes("bag") || normalized.includes("luggage")) return Luggage;
+  if (normalized.includes("bag") || normalized.includes("luggage"))
+    return Luggage;
   if (normalized.includes("budget")) return CircleDollarSign;
   if (normalized.includes("maintenance") || normalized.includes("ready"))
     return Wrench;

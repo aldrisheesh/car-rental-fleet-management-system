@@ -22,14 +22,12 @@ const kindClass: Record<CalendarEventKind, string> = {
   pickup: "is-pickup",
   return: "is-return",
   maintenance: "is-maintenance",
-  reservation: "is-reservation",
 };
 
 const kindLabel: Record<CalendarEventKind, string> = {
-  pickup: "Delivery",
+  pickup: "Pickup / delivery",
   return: "Return",
   maintenance: "Maintenance",
-  reservation: "Reserved",
 };
 
 type LoadState =
@@ -89,7 +87,9 @@ function CalendarPage() {
     const today = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Asia/Manila",
     }).format(new Date());
-    return today.startsWith(currentManilaMonth()) ? today : `${currentManilaMonth()}-01`;
+    return today.startsWith(currentManilaMonth())
+      ? today
+      : `${currentManilaMonth()}-01`;
   });
   const latestRequest = useRef(0);
 
@@ -151,7 +151,10 @@ function CalendarPage() {
   const events = state.status === "ready" ? state.data.events : [];
   const selectedEvents = events.filter((event) => event.date === selectedDate);
   const selectedCounts = (Object.keys(kindLabel) as CalendarEventKind[]).map(
-    (kind) => ({ kind, value: selectedEvents.filter((event) => event.kind === kind).length }),
+    (kind) => ({
+      kind,
+      value: selectedEvents.filter((event) => event.kind === kind).length,
+    }),
   );
 
   const changeMonth = (amount: number) => {
@@ -163,11 +166,14 @@ function CalendarPage() {
   };
 
   return (
-    <div className="admin-calendar-workspace" aria-busy={state.status === "loading" || undefined}>
+    <div
+      className="admin-calendar-workspace"
+      aria-busy={state.status === "loading" || undefined}
+    >
       <header className="admin-calendar-heading">
         <div>
           <h1>Calendar</h1>
-          <p>Track reservations, delivery windows, returns, and maintenance.</p>
+          <p>Track confirmed pickups, deliveries, returns, and maintenance.</p>
         </div>
         <div className="admin-calendar-controls">
           <button
@@ -191,7 +197,10 @@ function CalendarPage() {
       </header>
 
       <div className="admin-calendar-layout">
-        <section className="admin-calendar-board" aria-labelledby="calendar-month-heading">
+        <section
+          className="admin-calendar-board"
+          aria-labelledby="calendar-month-heading"
+        >
           <div className="admin-calendar-board__heading">
             <h2 id="calendar-month-heading">{formatMonth(period)}</h2>
             <div className="admin-calendar-legend" aria-label="Calendar legend">
@@ -217,14 +226,20 @@ function CalendarPage() {
             <div className="admin-calendar-scroll">
               <div className="admin-calendar-grid">
                 <div className="admin-calendar-weekdays">
-                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                    <div key={day}>{day}</div>
-                  ))}
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                    (day) => (
+                      <div key={day}>{day}</div>
+                    ),
+                  )}
                 </div>
                 <div className="admin-calendar-days">
                   {calendar.cells.map((day, index) => {
-                    const date = day ? `${period}-${String(day).padStart(2, "0")}` : null;
-                    const dayEvents = date ? events.filter((event) => event.date === date) : [];
+                    const date = day
+                      ? `${period}-${String(day).padStart(2, "0")}`
+                      : null;
+                    const dayEvents = date
+                      ? events.filter((event) => event.date === date)
+                      : [];
                     const primaryEvent = dayEvents[0];
                     const isWeekend = index % 7 === 0 || index % 7 === 6;
                     return (
@@ -232,7 +247,11 @@ function CalendarPage() {
                         key={`${period}:${index}`}
                         type="button"
                         disabled={!date}
-                        aria-label={date ? `${formatSelectedDate(date)}${dayEvents.length ? `, ${dayEvents.length} scheduled item${dayEvents.length === 1 ? "" : "s"}` : ", no scheduled items"}` : undefined}
+                        aria-label={
+                          date
+                            ? `${formatSelectedDate(date)}${dayEvents.length ? `, ${dayEvents.length} scheduled item${dayEvents.length === 1 ? "" : "s"}` : ", no scheduled items"}`
+                            : undefined
+                        }
                         onClick={() => date && setSelectedDate(date)}
                         className={`admin-calendar-day ${isWeekend ? "is-weekend" : ""} ${date === selectedDate ? "is-selected" : ""} ${date === today ? "is-today" : ""}`}
                       >
@@ -240,12 +259,16 @@ function CalendarPage() {
                           <>
                             <span className="admin-calendar-date">{day}</span>
                             {primaryEvent ? (
-                              <span className={`admin-calendar-event ${kindClass[primaryEvent.kind]}`}>
+                              <span
+                                className={`admin-calendar-event ${kindClass[primaryEvent.kind]}`}
+                              >
                                 <i /> {primaryEvent.label}
                               </span>
                             ) : null}
                             {dayEvents.length > 1 ? (
-                              <span className="admin-calendar-more">+{dayEvents.length - 1} more</span>
+                              <span className="admin-calendar-more">
+                                +{dayEvents.length - 1} more
+                              </span>
                             ) : null}
                           </>
                         ) : null}
@@ -258,16 +281,27 @@ function CalendarPage() {
           )}
         </section>
 
-        <aside className="admin-calendar-drawer" aria-labelledby="day-schedule-heading">
+        <aside
+          className="admin-calendar-drawer"
+          aria-labelledby="day-schedule-heading"
+        >
           <header>
-            <h2 id="day-schedule-heading">{formatSelectedDate(selectedDate)}</h2>
-            <p>{selectedEvents.length} scheduled {selectedEvents.length === 1 ? "item" : "items"}</p>
+            <h2 id="day-schedule-heading">
+              {formatSelectedDate(selectedDate)}
+            </h2>
+            <p>
+              {selectedEvents.length} scheduled{" "}
+              {selectedEvents.length === 1 ? "item" : "items"}
+            </p>
           </header>
 
           <div className="admin-calendar-day-events">
             {state.status === "ready" && selectedEvents.length > 0 ? (
               selectedEvents.map((event) => (
-                <div key={event.id} className={`admin-calendar-day-event ${kindClass[event.kind]}`}>
+                <div
+                  key={event.id}
+                  className={`admin-calendar-day-event ${kindClass[event.kind]}`}
+                >
                   <time>{formatEventTime(event)}</time>
                   <span aria-hidden="true" />
                   <div>
@@ -279,12 +313,17 @@ function CalendarPage() {
             ) : state.status === "ready" ? (
               <div className="admin-calendar-day-empty">
                 <strong>No scheduled handoffs</strong>
-                <p>No reservations, deliveries, returns, or maintenance are planned for this date.</p>
+                <p>
+                  No pickups, returns, or maintenance are planned for this date.
+                </p>
               </div>
             ) : null}
           </div>
 
-          <section className="admin-calendar-signals" aria-labelledby="calendar-signals-heading">
+          <section
+            className="admin-calendar-signals"
+            aria-labelledby="calendar-signals-heading"
+          >
             <div>
               <h3 id="calendar-signals-heading">Day at a glance</h3>
               <span>{formatMonth(period)}</span>
@@ -310,9 +349,15 @@ function CalendarPage() {
 
 function CalendarLoading() {
   return (
-    <div className="admin-calendar-loading" aria-label="Loading calendar schedule">
+    <div
+      className="admin-calendar-loading"
+      aria-label="Loading calendar schedule"
+    >
       {Array.from({ length: 35 }, (_, index) => (
-        <div key={index}><i /><i /></div>
+        <div key={index}>
+          <i />
+          <i />
+        </div>
       ))}
     </div>
   );

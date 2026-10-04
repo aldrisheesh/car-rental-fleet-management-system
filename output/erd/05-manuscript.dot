@@ -1,0 +1,17 @@
+digraph ERD {
+graph [rankdir=LR, bgcolor="white", nodesep=0.5, ranksep=1.5, pad=0.4, splines=ortho, overlap=false, fontname="Arial", fontsize=20, labelloc=t, label="Demand forecasting\nPK = primary key; FK = foreign key. Labels show database-enforced multiplicity."];
+node [shape=plain,fontname="Arial",fontsize=11];
+edge [fontname="Arial",fontsize=9,color="#64748b",fontcolor="#334155",arrowsize=0.6];
+"forecast_runs" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>forecast_runs</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK generated_by</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"forecasts" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>forecasts</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK run_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK branch_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK vehicle_category_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"forecast_inputs" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>forecast_inputs</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK forecast_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"forecast_demand_coverage" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>forecast_demand_coverage</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">int2</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"branches" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#e2e8f0"><FONT COLOR="#263746"><B>branches</B> (reference)</FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"profiles" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#e2e8f0"><FONT COLOR="#263746"><B>profiles</B> (reference)</FONT></TD></TR><TR><TD ALIGN="LEFT">PK FK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"vehicle_categories" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#e2e8f0"><FONT COLOR="#263746"><B>vehicle_categories</B> (reference)</FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"forecast_inputs" -> "forecasts" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+"forecast_runs" -> "profiles" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+"forecasts" -> "branches" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+"forecasts" -> "forecast_runs" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+"forecasts" -> "vehicle_categories" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+}

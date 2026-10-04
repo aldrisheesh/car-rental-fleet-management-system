@@ -1,3 +1,4 @@
+import { bookingReference } from "@/lib/booking-reference";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   createFileRoute,
@@ -23,6 +24,8 @@ import { formatAdminDateTime, statusTone } from "@/lib/admin-presentations";
 
 export const Route = createFileRoute("/admin/requirements")({
   beforeLoad: () => {
+    // The principal view cookie is client-only; AdminShell gates rendering after hydration.
+    if (typeof window === "undefined") return;
     const session = getAdminSession();
     if (!session) throw redirect({ to: "/sign-in" });
     if (isStaffRole(session.role)) throw redirect({ to: "/admin" });
@@ -92,6 +95,7 @@ function RequirementsQueuePage() {
     return sets.filter((set) =>
       [
         set.booking_id,
+        bookingReference(set.booking_id),
         set.booking?.customer?.full_name,
         set.booking?.customer?.email,
         set.booking?.requested_vehicle?.name,

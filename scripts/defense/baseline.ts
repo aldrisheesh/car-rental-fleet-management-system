@@ -46,7 +46,9 @@ export function verifyRows(expected: Dataset, actual: Dataset) {
       rows
         .map(canonical)
         .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
-    if (digest(sort(expected[table])) !== digest(sort(actual[table])))
+    if (
+      digest(sort(expected[table] ?? [])) !== digest(sort(actual[table] ?? []))
+    )
       differences.push(table);
   }
   return differences;
@@ -124,7 +126,7 @@ async function replace(sql: any, data: Dataset) {
     await sql`update public.vehicles set ${sql(fields)} where id=${id}`;
   }
   for (const t of TABLES) {
-    const rows = data[t];
+    const rows = data[t] ?? [];
     if (!rows.length) continue;
     const cols = [...new Set(rows.flatMap((r) => Object.keys(r)))];
     const quoted = cols

@@ -61,6 +61,10 @@ import {
 } from "@/lib/business-time";
 import { resolvedReturnLocation } from "@/lib/customer-handoff";
 import {
+  bookingServiceErrors,
+  bookingServiceFields,
+} from "@/lib/booking-service";
+import {
   calculateRentalDays,
   formatRentalDuration,
 } from "@/lib/rental-duration";
@@ -103,12 +107,7 @@ function sameBookingDetails(left: BookingDraft, right: BookingDraft) {
     pickupAt: draft.pickupAt,
     returnAt: draft.returnAt,
     purposeOfUse: draft.purposeOfUse.trim(),
-    pickupLocation: draft.pickupLocation.trim(),
-    dropoffLocation: resolvedReturnLocation({
-      deliveryAddress: draft.pickupLocation,
-      alternateReturnAddress: draft.dropoffLocation,
-      sameReturnLocation: draft.sameReturnLocation,
-    }).trim(),
+    ...bookingServiceFields(draft),
     destination: draft.destination.trim(),
     preferredSeatCount: draft.preferredSeatCount,
   });
@@ -283,7 +282,8 @@ function RentalRequestPage() {
           pickupAt: dateTimeInputFromIso(booking.pickup_at),
           returnAt: dateTimeInputFromIso(booking.return_at),
           purposeOfUse: booking.purpose_of_use ?? "",
-          pickupDeliveryOption: "delivery",
+          pickupDeliveryOption:
+            booking.pickup_delivery_option === "pickup" ? "pickup" : "delivery",
           pickupLocation,
           dropoffLocation:
             pickupLocation === dropoffLocation ? "" : dropoffLocation,
@@ -349,7 +349,8 @@ function RentalRequestPage() {
       setDraft((current) => ({
         ...current,
         ...parsed,
-        pickupDeliveryOption: "delivery",
+        pickupDeliveryOption:
+          parsed.pickupDeliveryOption === "pickup" ? "pickup" : "delivery",
         sameReturnLocation: parsed.sameReturnLocation ?? true,
       }));
     } catch {
@@ -384,10 +385,7 @@ function RentalRequestPage() {
       nextErrors.returnAt = "Return must be after pickup.";
     if (!draft.purposeOfUse.trim())
       nextErrors.purposeOfUse = "Tell us the purpose of this rental.";
-    if (!draft.pickupLocation.trim())
-      nextErrors.pickupLocation = "Enter the delivery address.";
-    if (!draft.sameReturnLocation && !draft.dropoffLocation.trim())
-      nextErrors.dropoffLocation = "Enter the return address.";
+    Object.assign(nextErrors, bookingServiceErrors(draft));
     if (draft.destination.length > 200)
       nextErrors.destination = "Destination must be 200 characters or fewer.";
     return nextErrors;
@@ -461,13 +459,7 @@ function RentalRequestPage() {
       pickupAt: draft.pickupAt,
       returnAt: draft.returnAt,
       purposeOfUse: draft.purposeOfUse.trim(),
-      pickupDeliveryOption: "delivery",
-      pickupLocation: draft.pickupLocation.trim(),
-      dropoffLocation: resolvedReturnLocation({
-        deliveryAddress: draft.pickupLocation,
-        alternateReturnAddress: draft.dropoffLocation,
-        sameReturnLocation: draft.sameReturnLocation,
-      }),
+      ...bookingServiceFields(draft),
       destination: draft.destination.trim() || null,
       // Kept null for compatibility with existing booking records; the
       // customer form no longer asks for a seat preference.
@@ -624,6 +616,16 @@ function RentalRequestPage() {
           ) : step === 1 ? (
             <TripOverview
               draft={draft}
+              pickupArea={
+                masterData?.branches.find(
+                  (area) => area.id === draft.pickupBranchId,
+                )?.name ?? "Selected operating area"
+              }
+              returnArea={
+                masterData?.branches.find(
+                  (area) => area.id === draft.returnBranchId,
+                )?.name ?? "Selected operating area"
+              }
               errors={errors}
               vehicle={selectedVehicle}
               principal={principal}
@@ -634,9 +636,32 @@ function RentalRequestPage() {
             />
           ) : (
             <div className="request-layout request-review-layout">
-              <ReviewTripSidebar draft={draft} vehicle={selectedVehicle} />
+              <ReviewTripSidebar
+                draft={draft}
+                vehicle={selectedVehicle}
+                pickupArea={
+                  masterData?.branches.find(
+                    (area) => area.id === draft.pickupBranchId,
+                  )?.name ?? "Selected operating area"
+                }
+                returnArea={
+                  masterData?.branches.find(
+                    (area) => area.id === draft.returnBranchId,
+                  )?.name ?? "Selected operating area"
+                }
+              />
               <ReviewPanel
                 draft={draft}
+                pickupArea={
+                  masterData?.branches.find(
+                    (area) => area.id === draft.pickupBranchId,
+                  )?.name ?? "Selected operating area"
+                }
+                returnArea={
+                  masterData?.branches.find(
+                    (area) => area.id === draft.returnBranchId,
+                  )?.name ?? "Selected operating area"
+                }
                 acknowledged={reviewAcknowledged}
                 submitError={submitError}
                 submitting={submitting}
@@ -832,6 +857,8 @@ function ReviewRequestSkeleton() {
 
 function TripOverview({
   draft,
+  pickupArea,
+  returnArea,
   errors,
   vehicle,
   principal,
@@ -841,6 +868,8 @@ function TripOverview({
   isEditing,
 }: {
   draft: BookingDraft;
+  pickupArea: string;
+  returnArea: string;
   errors: BookingErrors;
   vehicle: CustomerVehicle;
   principal: ReturnType<typeof getClientPrincipal>;
@@ -852,6 +881,7 @@ function TripOverview({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   isEditing: boolean;
 }) {
+  const isDelivery = draft.pickupDeliveryOption === "delivery";
   const pickup = tripMoment(draft.pickupAt);
   const returned = tripMoment(draft.returnAt);
   const pickupInstant = manilaDateTimeLocalToInstant(draft.pickupAt);
@@ -935,7 +965,9 @@ function TripOverview({
           </h2>
           <div className="request-overview-timeline">
             <div className="request-overview-stop">
-              <span className="request-overview-stop-label">Pickup</span>
+              <span className="request-overview-stop-label">
+                {isDelivery ? "Delivery" : "Pickup"}
+              </span>
               <span className="request-overview-stop-icon" aria-hidden="true">
                 <CarFront size={21} strokeWidth={2} />
               </span>
@@ -945,7 +977,9 @@ function TripOverview({
                   {pickup.time}
                 </span>
                 <span className="request-overview-stop-address">
-                  {draft.pickupLocation.trim() || "Add a delivery address"}
+                  {isDelivery
+                    ? draft.pickupLocation.trim() || "Add a delivery address"
+                    : `${pickupArea} · Meeting point to be confirmed`}
                 </span>
               </div>
             </div>
@@ -968,11 +1002,13 @@ function TripOverview({
                   {returned.time}
                 </span>
                 <span className="request-overview-stop-address">
-                  {returnAddress.trim()
-                    ? `Collection at ${returnAddress.trim()}`
-                    : draft.sameReturnLocation
-                      ? "Same as delivery address"
-                      : "Add a collection address"}
+                  {!isDelivery
+                    ? `${returnArea} · Return point to be confirmed`
+                    : returnAddress.trim()
+                      ? `Collection at ${returnAddress.trim()}`
+                      : draft.sameReturnLocation
+                        ? "Same as delivery address"
+                        : "Add a collection address"}
                 </span>
               </div>
             </div>
@@ -989,52 +1025,113 @@ function TripOverview({
       <form className="request-overview-form" onSubmit={onSubmit} noValidate>
         <div className="request-overview-form-heading">
           <h2>{isEditing ? "Update your trip" : "Complete your request"}</h2>
-          <p>Tell us where to deliver the car and how you plan to use it.</p>
+          <p>Choose how to receive the car and tell us about your trip.</p>
         </div>
-        <div className="customer-field">
-          <label className="customer-label" htmlFor="pickup-location">
-            Delivery address
-          </label>
-          <AddressAutocomplete
-            id="pickup-location"
-            label="Delivery address"
-            value={draft.pickupLocation}
-            onChange={(value) => updateDraft("pickupLocation", value)}
-            error={errors.pickupLocation}
-          />
-          <FieldError id="pickup-location" message={errors.pickupLocation} />
-        </div>
-        <label className="request-same-location">
-          <input
-            type="checkbox"
-            checked={draft.sameReturnLocation}
-            onChange={(event) =>
-              updateDraft("sameReturnLocation", event.target.checked)
-            }
-          />
-          <span>
-            <strong>Return to the same address</strong>
-            <small>We’ll collect the car at your delivery address.</small>
-          </span>
-        </label>
-        {!draft.sameReturnLocation ? (
-          <div className="customer-field">
-            <label className="customer-label" htmlFor="dropoff-location">
-              Collection address
-            </label>
-            <AddressAutocomplete
-              id="dropoff-location"
-              label="Collection address"
-              value={draft.dropoffLocation}
-              onChange={(value) => updateDraft("dropoffLocation", value)}
-              error={errors.dropoffLocation}
-            />
-            <FieldError
-              id="dropoff-location"
-              message={errors.dropoffLocation}
-            />
+        <fieldset className="request-service-choice">
+          <legend>How would you like to receive the car?</legend>
+          <div className="request-service-options">
+            {(
+              [
+                {
+                  value: "pickup",
+                  title: "Pick up the car",
+                  detail: "Meet the team at an agreed location.",
+                },
+                {
+                  value: "delivery",
+                  title: "Have it delivered",
+                  detail: "We bring the car to your address.",
+                },
+              ] as const
+            ).map((option) => (
+              <label
+                key={option.value}
+                className={
+                  draft.pickupDeliveryOption === option.value
+                    ? "is-selected"
+                    : ""
+                }
+              >
+                <input
+                  type="radio"
+                  name="rental-service"
+                  value={option.value}
+                  checked={draft.pickupDeliveryOption === option.value}
+                  onChange={() =>
+                    updateDraft("pickupDeliveryOption", option.value)
+                  }
+                />
+                <span>
+                  <strong>{option.title}</strong>
+                  <small>{option.detail}</small>
+                </span>
+              </label>
+            ))}
           </div>
-        ) : null}
+        </fieldset>
+        {!isDelivery ? (
+          <div className="request-pickup-arrangement">
+            <MapPin size={18} aria-hidden="true" />
+            <div>
+              <strong>Pickup in {pickupArea}</strong>
+              <p>
+                The team will include the agreed meeting points with your quote
+                before payment. Return the car to the agreed location in{" "}
+                {returnArea}.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="customer-field">
+              <label className="customer-label" htmlFor="pickup-location">
+                Delivery address
+              </label>
+              <AddressAutocomplete
+                id="pickup-location"
+                label="Delivery address"
+                value={draft.pickupLocation}
+                onChange={(value) => updateDraft("pickupLocation", value)}
+                error={errors.pickupLocation}
+              />
+              <FieldError
+                id="pickup-location"
+                message={errors.pickupLocation}
+              />
+            </div>
+            <label className="request-same-location">
+              <input
+                type="checkbox"
+                checked={draft.sameReturnLocation}
+                onChange={(event) =>
+                  updateDraft("sameReturnLocation", event.target.checked)
+                }
+              />
+              <span>
+                <strong>Return to the same address</strong>
+                <small>We’ll collect the car at your delivery address.</small>
+              </span>
+            </label>
+            {!draft.sameReturnLocation ? (
+              <div className="customer-field">
+                <label className="customer-label" htmlFor="dropoff-location">
+                  Collection address
+                </label>
+                <AddressAutocomplete
+                  id="dropoff-location"
+                  label="Collection address"
+                  value={draft.dropoffLocation}
+                  onChange={(value) => updateDraft("dropoffLocation", value)}
+                  error={errors.dropoffLocation}
+                />
+                <FieldError
+                  id="dropoff-location"
+                  message={errors.dropoffLocation}
+                />
+              </div>
+            ) : null}
+          </>
+        )}
         <div className="customer-field">
           <label className="customer-label" htmlFor="purpose">
             Purpose of use
@@ -1121,11 +1218,16 @@ function TripOverview({
 
 function ReviewTripSidebar({
   draft,
+  pickupArea,
+  returnArea,
   vehicle,
 }: {
   draft: BookingDraft;
+  pickupArea: string;
+  returnArea: string;
   vehicle: CustomerVehicle;
 }) {
+  const isDelivery = draft.pickupDeliveryOption === "delivery";
   const pickup = manilaDateTimeLocalToInstant(draft.pickupAt);
   const returned = manilaDateTimeLocalToInstant(draft.returnAt);
   const rentalDays =
@@ -1183,14 +1285,22 @@ function ReviewTripSidebar({
       </dl>
       <div className="review-trip-sidebar-dates">
         <div>
-          <span>Delivery</span>
+          <span>{isDelivery ? "Delivery" : "Pickup"}</span>
           <strong>{tripSidebarMoment(draft.pickupAt)}</strong>
-          <small>{draft.pickupLocation}</small>
+          <small>
+            {isDelivery
+              ? draft.pickupLocation
+              : `${pickupArea} · Meeting point to be confirmed`}
+          </small>
         </div>
         <div>
           <span>Return</span>
           <strong>{tripSidebarMoment(draft.returnAt)}</strong>
-          <small>{returnLocation}</small>
+          <small>
+            {isDelivery
+              ? returnLocation
+              : `${returnArea} · Agreed return location`}
+          </small>
         </div>
       </div>
       <div className="review-trip-sidebar-total">
@@ -1204,7 +1314,9 @@ function ReviewTripSidebar({
         </small>
       </div>
       <p className="review-trip-sidebar-note">
-        Delivery and other charges are confirmed before payment.
+        {isDelivery
+          ? "Delivery and other charges are confirmed before payment."
+          : "Pickup arrangements and any other charges are confirmed before payment."}
       </p>
     </aside>
   );
@@ -1212,6 +1324,8 @@ function ReviewTripSidebar({
 
 function ReviewPanel({
   draft,
+  pickupArea,
+  returnArea,
   acknowledged,
   submitError,
   submitting,
@@ -1221,6 +1335,8 @@ function ReviewPanel({
   isEditing,
 }: {
   draft: BookingDraft;
+  pickupArea: string;
+  returnArea: string;
   acknowledged: boolean;
   submitError: string;
   submitting: boolean;
@@ -1229,6 +1345,7 @@ function ReviewPanel({
   onSend: () => void;
   isEditing: boolean;
 }) {
+  const isDelivery = draft.pickupDeliveryOption === "delivery";
   const returnLocation = resolvedReturnLocation({
     deliveryAddress: draft.pickupLocation,
     alternateReturnAddress: draft.dropoffLocation,
@@ -1257,12 +1374,16 @@ function ReviewPanel({
             <CarFront size={19} aria-hidden="true" />
           </div>
           <div>
-            <h3>Delivery</h3>
+            <h3>{isDelivery ? "Delivery" : "Pickup"}</h3>
             <p>
               {tripMoment(draft.pickupAt).date} at{" "}
               {tripMoment(draft.pickupAt).time}
             </p>
-            <small>{draft.pickupLocation}</small>
+            <small>
+              {isDelivery
+                ? draft.pickupLocation
+                : `${pickupArea} · Meeting point to be confirmed by the team`}
+            </small>
           </div>
           <button className="review-edit-link" type="button" onClick={onEdit}>
             Edit
@@ -1278,7 +1399,11 @@ function ReviewPanel({
               {tripMoment(draft.returnAt).date} at{" "}
               {tripMoment(draft.returnAt).time}
             </p>
-            <small>{returnLocation}</small>
+            <small>
+              {isDelivery
+                ? returnLocation
+                : `${returnArea} · Agreed return location`}
+            </small>
           </div>
           <button className="review-edit-link" type="button" onClick={onEdit}>
             Edit

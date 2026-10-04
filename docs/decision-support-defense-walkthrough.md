@@ -2,6 +2,18 @@
 
 Use the Owner/Admin account and the resettable synthetic defense baseline. State clearly that all displayed records are realistic synthetic data prepared for controlled evaluation.
 
+**October 3 acceptance prerequisite:** the old saved baseline is incompatible
+with the current schema. Review [the baseline procedure](defense-baseline.md)
+before resetting. `npm run defense:decision-support -- --check` performs a
+read-only preflight and refuses an incompatible or drifted baseline before
+authentication or test writes. `--apply` also requires that preflight to pass.
+The acceptance report identifies the actual Git branch, commit, and dirty-tree
+status. Its reported base URL is the tested server, not proof that production
+contains local uncommitted changes. This runner changes synthetic planning and
+maintenance records; its cleanup still requires the separately authorized
+baseline reset. It does not exercise the complete customer booking UI or a
+manual fleet movement.
+
 ## Prepare the baseline
 
 ```bash

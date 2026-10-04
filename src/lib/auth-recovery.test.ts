@@ -24,3 +24,34 @@ test("other unauthenticated customer-area recovery keeps sign-in routing", () =>
 test("authenticated unauthorized requests recover home", () => {
   assert.equal(getUnauthorizedRecoveryDestination("/customer", true), "/");
 });
+
+test("active internal users recover to their permitted dashboard on a denied admin URL", () => {
+  assert.equal(
+    getUnauthorizedRecoveryDestination(
+      "/admin/payments",
+      true,
+      "Operations Staff",
+    ),
+    "/admin",
+  );
+  assert.equal(
+    getUnauthorizedRecoveryDestination(
+      "/admin/requirements/booking-1",
+      true,
+      "Operations Staff",
+    ),
+    "/admin",
+  );
+  assert.equal(
+    getUnauthorizedRecoveryDestination(
+      "/admin/payments",
+      true,
+      "Customer/Renter",
+    ),
+    "/",
+  );
+  assert.equal(
+    getUnauthorizedRecoveryDestination("/admin/payments", true),
+    "/",
+  );
+});

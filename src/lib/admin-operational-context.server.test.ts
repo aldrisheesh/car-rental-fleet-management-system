@@ -373,10 +373,7 @@ test("Admin UI exposes exact booking detail links and staff-safe detail context"
     bookings,
     /to=\{`\/admin\/bookings\/\$\{encodeURIComponent\(booking\.id\)\}` as never\}/,
   );
-  assert.doesNotMatch(
-    bookings,
-    /\bselected\b|OperationalContextPanel|getAdminSession|staffView/,
-  );
+  assert.doesNotMatch(bookings, /OperationalContextPanel/);
   assert.match(
     bookingDetail,
     /createFileRoute\("\/admin\/bookings\/\$bookingId"\)/,
@@ -399,18 +396,23 @@ test("Admin UI exposes exact booking detail links and staff-safe detail context"
   assert.match(bookingDetail, /<StaffReadOnlyCard \/>/);
   assert.match(
     bookingDetail,
-    /Lifecycle mutations, requirement proofs, payment proofs, and[\s\S]*Owner\/Admin review controls are not shown/,
+    /Owner\/Admin review and lifecycle mutation controls are not available here/,
   );
   assert.doesNotMatch(bookingDetail, /OperationalContextPanel/);
-  assert.match(decisions, /title="Current route context"/);
-  assert.match(decisions, /do not change the WMA demand forecast/);
-  assert.match(decisions, /do not .*approve a transfer automatically/);
+  const allocationReview = await readFile(
+    new URL("../components/admin/allocation-review.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(decisions, /<AllocationReview/);
+  assert.match(allocationReview, /OperationalContextPanel/);
+  assert.match(
+    allocationReview,
+    /do not change WMA demand or authorize movement/,
+  );
+  assert.match(allocationReview, /moves automatically/);
   assert.doesNotMatch(decisions, /Vehicle recommendation/);
   assert.doesNotMatch(decisions, /RadarChart/);
-  assert.match(
-    decisions,
-    /setContextRecommendationId\(rows\[0\]\?\.id \?\? ""\)/,
-  );
+  assert.match(decisions, /setContextRecommendationId\(\(current\) =>/);
   assert.match(decisions, /setAllocationContext\(null\)/);
   assert.match(decisions, /allocationContextVersion/);
 });

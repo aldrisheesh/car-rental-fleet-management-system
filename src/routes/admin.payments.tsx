@@ -47,6 +47,8 @@ import { parseAdminBookingResponse } from "@/lib/booking-retrieval";
 
 export const Route = createFileRoute("/admin/payments")({
   beforeLoad: () => {
+    // The principal view cookie is client-only; AdminShell gates rendering after hydration.
+    if (typeof window === "undefined") return;
     const session = getAdminSession();
     if (!session) throw redirect({ to: "/sign-in" });
     if (isStaffRole(session.role)) throw redirect({ to: "/admin" });
@@ -90,6 +92,8 @@ type PaymentMethodDraft = {
   qrImage: File | null;
   existingQrImageUrl: string | null;
 };
+
+const paymentQueuePageSize = 10;
 
 const paymentChecklistStoragePrefix = "briah-payment-review-checklist:";
 
@@ -163,6 +167,7 @@ function PaymentsRouteComponent() {
 function PaymentsQueuePage() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(
     () =>
@@ -222,6 +227,7 @@ function PaymentsQueuePage() {
       return [
         payment.id,
         payment.booking_id,
+        bookingReference(payment.booking_id),
         payment.booking?.customer?.full_name,
         payment.booking?.customer?.email,
         payment.transaction_reference,
@@ -235,7 +241,18 @@ function PaymentsQueuePage() {
     });
   }, [payments, query, status]);
 
+  const pageCount = Math.max(
+    1,
+    Math.ceil(filtered.length / paymentQueuePageSize),
+  );
+  const currentPage = Math.min(page, pageCount);
+  const pageRows = filtered.slice(
+    (currentPage - 1) * paymentQueuePageSize,
+    currentPage * paymentQueuePageSize,
+  );
+
   const clearFilters = () => {
+    setPage(1);
     setQuery("");
     setStatus("");
   };
@@ -275,41 +292,46 @@ function PaymentsQueuePage() {
   );
 
   const selectedPayment = isFocusedReview
-    ? payments.find((payment) => payment.id === selectedPaymentId) ?? null
-    : filtered.find((payment) => payment.id === selectedPaymentId) ??
-      filtered.find((payment) => payment.status === "Pending Verification") ??
-      filtered[0] ??
-      null;
+    ? (payments.find((payment) => payment.id === selectedPaymentId) ?? null)
+    : (pageRows.find((payment) => payment.id === selectedPaymentId) ??
+      pageRows.find((payment) => payment.status === "Pending Verification") ??
+      pageRows[0] ??
+      null);
   return (
     <div
       className={`admin-payments-workspace${isFocusedReview ? " admin-payments-workspace--focused" : ""}`}
       aria-busy={state.status === "loading" || undefined}
     >
-      {!isFocusedReview ? <header className="admin-payments-heading">
-        <div>
-          <span>Operations</span>
-          <h1>Payment review</h1>
-          <p>
-            Check the submitted proof, then verify or return it for correction.
-          </p>
-        </div>
-        <div className="admin-payments-heading__actions">
-          <p className="admin-payments-heading__context">
-            Payment follows an approved rental request.
-          </p>
-          <Btn
-            variant="ghost"
-            className="border border-[#cbd8d4]"
-            onClick={() => setPaymentMethodsOpen(true)}
-          >
-            Manage payment methods
-          </Btn>
-        </div>
-      </header> : null}
-      {!isFocusedReview ? <PaymentMethodManager
-        open={paymentMethodsOpen}
-        onOpenChange={setPaymentMethodsOpen}
-      /> : null}
+      {!isFocusedReview ? (
+        <header className="admin-payments-heading">
+          <div>
+            <span>Operations</span>
+            <h1>Payment review</h1>
+            <p>
+              Check the submitted proof, then verify or return it for
+              correction.
+            </p>
+          </div>
+          <div className="admin-payments-heading__actions">
+            <p className="admin-payments-heading__context">
+              Payment follows an approved rental request.
+            </p>
+            <Btn
+              variant="ghost"
+              className="border border-[#cbd8d4]"
+              onClick={() => setPaymentMethodsOpen(true)}
+            >
+              Manage payment methods
+            </Btn>
+          </div>
+        </header>
+      ) : null}
+      {!isFocusedReview ? (
+        <PaymentMethodManager
+          open={paymentMethodsOpen}
+          onOpenChange={setPaymentMethodsOpen}
+        />
+      ) : null}
 
       {state.status === "loading" ? (
         <PaymentWorkspaceLoading />
@@ -370,14 +392,29 @@ function PaymentsQueuePage() {
           ) : selectedPayment ? (
             <div className="admin-payments-layout">
               <PaymentQueue
-                rows={filtered}
+                rows={pageRows}
+                total={filtered.length}
+                page={currentPage}
+                pageCount={pageCount}
+                onPageChange={(next) => {
+                  setPage(next);
+                  setSelectedPaymentId(null);
+                }}
                 allRows={payments}
                 selectedId={selectedPayment.id}
                 onSelect={setSelectedPaymentId}
                 query={query}
-                setQuery={setQuery}
+                setQuery={(value) => {
+                  setQuery(value);
+                  setPage(1);
+                  setSelectedPaymentId(null);
+                }}
                 status={status}
-                setStatus={setStatus}
+                setStatus={(value) => {
+                  setStatus(value);
+                  setPage(1);
+                  setSelectedPaymentId(null);
+                }}
                 statusOptions={statusOptions}
               />
               <PaymentReviewPreview
@@ -781,6 +818,10 @@ function PaymentMethodManager({
 
 function PaymentQueue({
   rows,
+  total,
+  page,
+  pageCount,
+  onPageChange,
   allRows,
   selectedId,
   onSelect,
@@ -791,6 +832,10 @@ function PaymentQueue({
   statusOptions,
 }: {
   rows: AdminPayment[];
+  total: number;
+  page: number;
+  pageCount: number;
+  onPageChange: (page: number) => void;
   allRows: AdminPayment[];
   selectedId: string;
   onSelect: (id: string) => void;
@@ -807,7 +852,7 @@ function PaymentQueue({
     >
       <header className="admin-payments-queue__header">
         <h2 id="payment-queue-heading">
-          Payment queue <span>({rows.length})</span>
+          Payment queue <span>({total})</span>
         </h2>
         <label className="relative block">
           <span className="sr-only">Search payment queue</span>
@@ -864,6 +909,36 @@ function PaymentQueue({
           />
         ))}
       </div>
+      <nav
+        className="admin-payments-pagination"
+        aria-label="Payment queue pagination"
+      >
+        <p aria-live="polite">
+          {(page - 1) * paymentQueuePageSize + 1}–
+          {Math.min(page * paymentQueuePageSize, total)} of {total}
+        </p>
+        <div>
+          <button
+            type="button"
+            aria-label="Previous payment queue page"
+            disabled={page <= 1}
+            onClick={() => onPageChange(page - 1)}
+          >
+            <ChevronLeft aria-hidden="true" />
+          </button>
+          <span>
+            Page {page} of {pageCount}
+          </span>
+          <button
+            type="button"
+            aria-label="Next payment queue page"
+            disabled={page >= pageCount}
+            onClick={() => onPageChange(page + 1)}
+          >
+            <ChevronRight aria-hidden="true" />
+          </button>
+        </div>
+      </nav>
     </section>
   );
 }
@@ -980,7 +1055,8 @@ function PaymentReviewPreview({
       if (typeof window !== "undefined")
         window.localStorage.removeItem(checklistKey);
       setFeedback(
-        confirmation?.message ?? "Payment verified. The queue has been refreshed.",
+        confirmation?.message ??
+          "Payment verified. The queue has been refreshed.",
       );
     } catch (error) {
       setFeedback(
@@ -1065,7 +1141,9 @@ function PaymentReviewPreview({
           </div>
           <span className="admin-payments-preview__sequence">
             <ChevronLeft aria-hidden="true" />
-            <span className="admin-payments-preview__sequence-label">1 of 1</span>
+            <span className="admin-payments-preview__sequence-label">
+              1 of 1
+            </span>
             <ChevronRight aria-hidden="true" />
           </span>
         </header>
@@ -1076,19 +1154,21 @@ function PaymentReviewPreview({
         <div className="admin-payments-preview__body">
           <PaymentProofViewer proof={proof} source={reviewContext.proof} />
           <div className="admin-payments-preview__details">
-            {!focused ? <section>
-              <div className="admin-payments-preview__title">
-                <div>
-                  <p>Booking reference</p>
-                  <h3>{bookingReference(payment.booking_id)}</h3>
+            {!focused ? (
+              <section>
+                <div className="admin-payments-preview__title">
+                  <div>
+                    <p>Booking reference</p>
+                    <h3>{bookingReference(payment.booking_id)}</h3>
+                  </div>
+                  <DomainStatus
+                    label={payment.status}
+                    tone={statusTone(payment.status)}
+                    compact
+                  />
                 </div>
-                <DomainStatus
-                  label={payment.status}
-                  tone={statusTone(payment.status)}
-                  compact
-                />
-              </div>
-            </section> : null}
+              </section>
+            ) : null}
             <section>
               <h4>Customer details</h4>
               <p>
@@ -1214,7 +1294,11 @@ function PaymentReviewPreview({
           onClick={() => void verify()}
         >
           <CreditCard className="h-4 w-4" aria-hidden="true" />{" "}
-          {saving ? "Verifying…" : "Verify payment"}
+          {saving
+            ? resubmissionOpen
+              ? "Requesting correction…"
+              : "Verifying…"
+            : "Verify payment"}
         </button>
         {feedback ? (
           <p className="admin-payments-preview__feedback" role="status">
@@ -1520,7 +1604,7 @@ function usePaymentReviewContext(
     return () => {
       active = false;
     };
-  }, [payment.booking_id, payment.id, proof?.id]);
+  }, [payment.booking_id, payment.id, proof]);
   return state;
 }
 
@@ -1551,9 +1635,11 @@ function BookingDetails({
             </dd>
           </div>
           <div>
-            <dt>Pickup</dt>
+            <dt>Service</dt>
             <dd>
-              {booking.pickup_delivery_option ?? "Pickup option unavailable"}
+              {booking.pickup_delivery_option === "delivery"
+                ? "Delivery"
+                : "Pickup"}
             </dd>
           </div>
           <div>

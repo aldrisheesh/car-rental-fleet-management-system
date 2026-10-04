@@ -1,0 +1,24 @@
+✔ admin queues keep their record review destinations coherent (3.9345ms)
+✔ the booking workflow shows the customer journey before rental operations (1.757833ms)
+✔ secure review previews reserve a browser tab during the click gesture (0.8425ms)
+✔ formats evaluated Finder criteria for people, not internal raw values (13.005292ms)
+✔ filters evaluated recommendations without changing canonical ordering or data (0.090667ms)
+✔ keeps complete Finder journeys distinct from direct browse across evaluation states (0.060834ms)
+✔ the vehicle route keeps Finder feedback within the canonical fleet browse (2.355834ms)
+✔ notification projection exposes only UI-safe fields (0.445625ms)
+✔ persistence enforces recipient event uniqueness, own-read RLS, and immutable content (0.219375ms)
+✔ VS019 event matrix is wired only to canonical transitions (0.11775ms)
+✔ retry deduplication and later submission cycles use stable persisted identities (0.063375ms)
+✔ transition notifications are transaction-local and payment proof submission is atomic (0.059458ms)
+✔ notification API scopes every read/update to the principal and returns newest first (0.089791ms)
+✔ operational types project and route without changing existing destinations (0.164166ms)
+✔ customer child notification routing fails safely without an exact owned binding (0.085708ms)
+✔ VS019 contains no external delivery, scheduler, or audit implementation (0.1315ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 91.727

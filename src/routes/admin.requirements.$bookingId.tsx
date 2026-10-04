@@ -1,3 +1,4 @@
+import { bookingReferenceLabel } from "@/lib/booking-reference";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
@@ -35,6 +36,8 @@ import { parseAdminBookingResponse } from "@/lib/booking-retrieval";
 
 export const Route = createFileRoute("/admin/requirements/$bookingId")({
   beforeLoad: () => {
+    // The principal view cookie is client-only; AdminShell gates rendering after hydration.
+    if (typeof window === "undefined") return;
     const session = getAdminSession();
     if (!session) throw redirect({ to: "/sign-in" });
     if (isStaffRole(session.role)) throw redirect({ to: "/admin" });
@@ -885,10 +888,4 @@ async function readJson<T>(response: Response) {
     );
   }
   return body as T;
-}
-
-function bookingReferenceLabel(id: string) {
-  return id
-    ? `Booking ${id.slice(0, 8).toUpperCase()}`
-    : "Booking reference unavailable";
 }

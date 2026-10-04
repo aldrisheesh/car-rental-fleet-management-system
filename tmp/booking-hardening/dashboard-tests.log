@@ -1,0 +1,20 @@
+✔ calendar period uses Manila month boundaries (1.401708ms)
+✔ canonical bookings, rentals, and maintenance map to supported dates (6.91575ms)
+✔ calendar filters events to the requested month and supports honest empty data (0.133167ms)
+✔ both internal roles are allowed and customer access is rejected before loading (0.198875ms)
+✔ calendar page has real loading, error, empty, and month-navigation states (3.787167ms)
+✔ scheduled service shows its time once, and ongoing service shows its start (0.449958ms)
+✔ delivery handovers are clearly labeled without duplicating rental events (0.128125ms)
+✔ completed handovers remain in calendar history but are excluded from dashboard due work (0.111875ms)
+✔ canonical operational KPIs use lifecycle and readiness definitions (1.549209ms)
+✔ Owner/Admin and Operations Staff receive operational-only role-specific responses (1.246125ms)
+✔ source failure rejects instead of becoming a zero snapshot (0.159625ms)
+✔ dashboard removes prototype widgets and implements honest load states (3.562583ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 101.687959

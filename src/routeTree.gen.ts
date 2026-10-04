@@ -42,6 +42,7 @@ import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
 import { Route as ApiMaintenanceRouteImport } from './routes/api.maintenance'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as ApiForecastsRouteImport } from './routes/api.forecasts'
+import { Route as ApiDssLocationsRouteImport } from './routes/api.dss-locations'
 import { Route as ApiContactInquiriesRouteImport } from './routes/api.contact-inquiries'
 import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
 import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-master-data'
@@ -78,6 +79,9 @@ import { Route as ApiAuthProfileRouteImport } from './routes/api.auth.profile'
 import { Route as ApiAuthAccountStatusRouteImport } from './routes/api.auth.account-status'
 import { Route as AdminRequirementsBookingIdRouteImport } from './routes/admin.requirements.$bookingId'
 import { Route as AdminPaymentsPaymentIdRouteImport } from './routes/admin.payments.$paymentId'
+import { Route as AdminDecisionsUtilizationRouteImport } from './routes/admin.decisions.utilization'
+import { Route as AdminDecisionsForecastRouteImport } from './routes/admin.decisions.forecast'
+import { Route as AdminDecisionsAllocationRouteImport } from './routes/admin.decisions.allocation'
 import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings.$bookingId'
 import { Route as ApiAuthOauthSessionRouteImport } from './routes/api.auth.oauth.session'
 
@@ -244,6 +248,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const ApiForecastsRoute = ApiForecastsRouteImport.update({
   id: '/api/forecasts',
   path: '/api/forecasts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDssLocationsRoute = ApiDssLocationsRouteImport.update({
+  id: '/api/dss-locations',
+  path: '/api/dss-locations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiContactInquiriesRoute = ApiContactInquiriesRouteImport.update({
@@ -428,6 +437,23 @@ const AdminPaymentsPaymentIdRoute = AdminPaymentsPaymentIdRouteImport.update({
   path: '/$paymentId',
   getParentRoute: () => AdminPaymentsRoute,
 } as any)
+const AdminDecisionsUtilizationRoute =
+  AdminDecisionsUtilizationRouteImport.update({
+    id: '/utilization',
+    path: '/utilization',
+    getParentRoute: () => AdminDecisionsRoute,
+  } as any)
+const AdminDecisionsForecastRoute = AdminDecisionsForecastRouteImport.update({
+  id: '/forecast',
+  path: '/forecast',
+  getParentRoute: () => AdminDecisionsRoute,
+} as any)
+const AdminDecisionsAllocationRoute =
+  AdminDecisionsAllocationRouteImport.update({
+    id: '/allocation',
+    path: '/allocation',
+    getParentRoute: () => AdminDecisionsRoute,
+  } as any)
 const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
   id: '/$bookingId',
   path: '/$bookingId',
@@ -454,7 +480,7 @@ export interface FileRoutesByFullPath {
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/customers': typeof AdminCustomersRoute
-  '/admin/decisions': typeof AdminDecisionsRoute
+  '/admin/decisions': typeof AdminDecisionsRouteWithChildren
   '/admin/fleet': typeof AdminFleetRoute
   '/admin/maintenance': typeof AdminMaintenanceRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -476,6 +502,7 @@ export interface FileRoutesByFullPath {
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/contact-inquiries': typeof ApiContactInquiriesRoute
+  '/api/dss-locations': typeof ApiDssLocationsRoute
   '/api/forecasts': typeof ApiForecastsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/maintenance': typeof ApiMaintenanceRoute
@@ -501,6 +528,9 @@ export interface FileRoutesByFullPath {
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
+  '/admin/decisions/allocation': typeof AdminDecisionsAllocationRoute
+  '/admin/decisions/forecast': typeof AdminDecisionsForecastRoute
+  '/admin/decisions/utilization': typeof AdminDecisionsUtilizationRoute
   '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
   '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
   '/api/auth/account-status': typeof ApiAuthAccountStatusRoute
@@ -526,7 +556,7 @@ export interface FileRoutesByTo {
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/customers': typeof AdminCustomersRoute
-  '/admin/decisions': typeof AdminDecisionsRoute
+  '/admin/decisions': typeof AdminDecisionsRouteWithChildren
   '/admin/fleet': typeof AdminFleetRoute
   '/admin/maintenance': typeof AdminMaintenanceRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -548,6 +578,7 @@ export interface FileRoutesByTo {
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/contact-inquiries': typeof ApiContactInquiriesRoute
+  '/api/dss-locations': typeof ApiDssLocationsRoute
   '/api/forecasts': typeof ApiForecastsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/maintenance': typeof ApiMaintenanceRoute
@@ -573,6 +604,9 @@ export interface FileRoutesByTo {
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin': typeof AdminIndexRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
+  '/admin/decisions/allocation': typeof AdminDecisionsAllocationRoute
+  '/admin/decisions/forecast': typeof AdminDecisionsForecastRoute
+  '/admin/decisions/utilization': typeof AdminDecisionsUtilizationRoute
   '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
   '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
   '/api/auth/account-status': typeof ApiAuthAccountStatusRoute
@@ -600,7 +634,7 @@ export interface FileRoutesById {
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/customers': typeof AdminCustomersRoute
-  '/admin/decisions': typeof AdminDecisionsRoute
+  '/admin/decisions': typeof AdminDecisionsRouteWithChildren
   '/admin/fleet': typeof AdminFleetRoute
   '/admin/maintenance': typeof AdminMaintenanceRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -622,6 +656,7 @@ export interface FileRoutesById {
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/contact-inquiries': typeof ApiContactInquiriesRoute
+  '/api/dss-locations': typeof ApiDssLocationsRoute
   '/api/forecasts': typeof ApiForecastsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/maintenance': typeof ApiMaintenanceRoute
@@ -647,6 +682,9 @@ export interface FileRoutesById {
   '/vehicles/$vehicleId': typeof VehiclesVehicleIdRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
+  '/admin/decisions/allocation': typeof AdminDecisionsAllocationRoute
+  '/admin/decisions/forecast': typeof AdminDecisionsForecastRoute
+  '/admin/decisions/utilization': typeof AdminDecisionsUtilizationRoute
   '/admin/payments/$paymentId': typeof AdminPaymentsPaymentIdRoute
   '/admin/requirements/$bookingId': typeof AdminRequirementsBookingIdRoute
   '/api/auth/account-status': typeof ApiAuthAccountStatusRoute
@@ -697,6 +735,7 @@ export interface FileRouteTypes {
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/contact-inquiries'
+    | '/api/dss-locations'
     | '/api/forecasts'
     | '/api/health'
     | '/api/maintenance'
@@ -722,6 +761,9 @@ export interface FileRouteTypes {
     | '/vehicles/$vehicleId'
     | '/admin/'
     | '/admin/bookings/$bookingId'
+    | '/admin/decisions/allocation'
+    | '/admin/decisions/forecast'
+    | '/admin/decisions/utilization'
     | '/admin/payments/$paymentId'
     | '/admin/requirements/$bookingId'
     | '/api/auth/account-status'
@@ -769,6 +811,7 @@ export interface FileRouteTypes {
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/contact-inquiries'
+    | '/api/dss-locations'
     | '/api/forecasts'
     | '/api/health'
     | '/api/maintenance'
@@ -794,6 +837,9 @@ export interface FileRouteTypes {
     | '/vehicles/$vehicleId'
     | '/admin'
     | '/admin/bookings/$bookingId'
+    | '/admin/decisions/allocation'
+    | '/admin/decisions/forecast'
+    | '/admin/decisions/utilization'
     | '/admin/payments/$paymentId'
     | '/admin/requirements/$bookingId'
     | '/api/auth/account-status'
@@ -842,6 +888,7 @@ export interface FileRouteTypes {
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/contact-inquiries'
+    | '/api/dss-locations'
     | '/api/forecasts'
     | '/api/health'
     | '/api/maintenance'
@@ -867,6 +914,9 @@ export interface FileRouteTypes {
     | '/vehicles/$vehicleId'
     | '/admin/'
     | '/admin/bookings/$bookingId'
+    | '/admin/decisions/allocation'
+    | '/admin/decisions/forecast'
+    | '/admin/decisions/utilization'
     | '/admin/payments/$paymentId'
     | '/admin/requirements/$bookingId'
     | '/api/auth/account-status'
@@ -901,6 +951,7 @@ export interface RootRouteChildren {
   ApiBookingMasterDataRoute: typeof ApiBookingMasterDataRoute
   ApiBookingsRoute: typeof ApiBookingsRoute
   ApiContactInquiriesRoute: typeof ApiContactInquiriesRoute
+  ApiDssLocationsRoute: typeof ApiDssLocationsRoute
   ApiForecastsRoute: typeof ApiForecastsRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMaintenanceRoute: typeof ApiMaintenanceRoute
@@ -1166,6 +1217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiForecastsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/dss-locations': {
+      id: '/api/dss-locations'
+      path: '/api/dss-locations'
+      fullPath: '/api/dss-locations'
+      preLoaderRoute: typeof ApiDssLocationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/contact-inquiries': {
       id: '/api/contact-inquiries'
       path: '/api/contact-inquiries'
@@ -1418,6 +1476,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPaymentsPaymentIdRouteImport
       parentRoute: typeof AdminPaymentsRoute
     }
+    '/admin/decisions/utilization': {
+      id: '/admin/decisions/utilization'
+      path: '/utilization'
+      fullPath: '/admin/decisions/utilization'
+      preLoaderRoute: typeof AdminDecisionsUtilizationRouteImport
+      parentRoute: typeof AdminDecisionsRoute
+    }
+    '/admin/decisions/forecast': {
+      id: '/admin/decisions/forecast'
+      path: '/forecast'
+      fullPath: '/admin/decisions/forecast'
+      preLoaderRoute: typeof AdminDecisionsForecastRouteImport
+      parentRoute: typeof AdminDecisionsRoute
+    }
+    '/admin/decisions/allocation': {
+      id: '/admin/decisions/allocation'
+      path: '/allocation'
+      fullPath: '/admin/decisions/allocation'
+      preLoaderRoute: typeof AdminDecisionsAllocationRouteImport
+      parentRoute: typeof AdminDecisionsRoute
+    }
     '/admin/bookings/$bookingId': {
       id: '/admin/bookings/$bookingId'
       path: '/$bookingId'
@@ -1445,6 +1524,22 @@ const AdminBookingsRouteChildren: AdminBookingsRouteChildren = {
 
 const AdminBookingsRouteWithChildren = AdminBookingsRoute._addFileChildren(
   AdminBookingsRouteChildren,
+)
+
+interface AdminDecisionsRouteChildren {
+  AdminDecisionsAllocationRoute: typeof AdminDecisionsAllocationRoute
+  AdminDecisionsForecastRoute: typeof AdminDecisionsForecastRoute
+  AdminDecisionsUtilizationRoute: typeof AdminDecisionsUtilizationRoute
+}
+
+const AdminDecisionsRouteChildren: AdminDecisionsRouteChildren = {
+  AdminDecisionsAllocationRoute: AdminDecisionsAllocationRoute,
+  AdminDecisionsForecastRoute: AdminDecisionsForecastRoute,
+  AdminDecisionsUtilizationRoute: AdminDecisionsUtilizationRoute,
+}
+
+const AdminDecisionsRouteWithChildren = AdminDecisionsRoute._addFileChildren(
+  AdminDecisionsRouteChildren,
 )
 
 interface AdminPaymentsRouteChildren {
@@ -1476,7 +1571,7 @@ interface AdminRouteChildren {
   AdminBranchesRoute: typeof AdminBranchesRoute
   AdminCalendarRoute: typeof AdminCalendarRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
-  AdminDecisionsRoute: typeof AdminDecisionsRoute
+  AdminDecisionsRoute: typeof AdminDecisionsRouteWithChildren
   AdminFleetRoute: typeof AdminFleetRoute
   AdminMaintenanceRoute: typeof AdminMaintenanceRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
@@ -1495,7 +1590,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBranchesRoute: AdminBranchesRoute,
   AdminCalendarRoute: AdminCalendarRoute,
   AdminCustomersRoute: AdminCustomersRoute,
-  AdminDecisionsRoute: AdminDecisionsRoute,
+  AdminDecisionsRoute: AdminDecisionsRouteWithChildren,
   AdminFleetRoute: AdminFleetRoute,
   AdminMaintenanceRoute: AdminMaintenanceRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
@@ -1544,6 +1639,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBookingMasterDataRoute: ApiBookingMasterDataRoute,
   ApiBookingsRoute: ApiBookingsRoute,
   ApiContactInquiriesRoute: ApiContactInquiriesRoute,
+  ApiDssLocationsRoute: ApiDssLocationsRoute,
   ApiForecastsRoute: ApiForecastsRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiMaintenanceRoute: ApiMaintenanceRoute,

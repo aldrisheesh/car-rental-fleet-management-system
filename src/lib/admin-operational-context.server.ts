@@ -293,7 +293,15 @@ function interpretedResponse(
     estimatedFuelLiters: context.estimatedFuelLiters ?? null,
     sources: sources(trip),
     explanations: readable(context.reasons, REASON_COPY),
-    limitations: readable(context.limitations, LIMITATION_COPY),
+    limitations: [
+      ...readable(context.limitations, LIMITATION_COPY),
+      ...(trip.routePointNote
+        ? [
+            trip.routePointNote,
+            "Road incident reports cover the area around the destination point; a reported incident is not proof that the calculated route crosses it.",
+          ]
+        : []),
+    ],
   };
 }
 
@@ -417,6 +425,7 @@ export async function resolveOperationalContext(
     {
       destination: destination.address || destination.name,
       pickupBranchId: origin.id,
+      destinationBranchId: destination.id,
       targetTime: evaluatedAt,
       ...(selectedCandidate ? { vehicleId: selectedCandidate.id } : {}),
       trafficAwareRoute: true,

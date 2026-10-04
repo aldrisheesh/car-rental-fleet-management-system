@@ -1,11 +1,7 @@
 import type { AppRole } from "./auth.ts";
 import { instantToManilaCalendarDate } from "./business-time.ts";
 
-export type CalendarEventKind =
-  | "pickup"
-  | "return"
-  | "maintenance"
-  | "reservation";
+export type CalendarEventKind = "pickup" | "return" | "maintenance";
 
 export type CalendarEvent = {
   id: string;
@@ -13,11 +9,13 @@ export type CalendarEvent = {
   dateTime: string | null;
   label: string;
   kind: CalendarEventKind;
+  completed?: boolean;
 };
 
 export type CalendarBookingRecord = {
   id: string;
   booking_status: string;
+  pickup_delivery_option?: "pickup" | "delivery";
   pickup_at: string;
   return_at: string;
   requested_vehicle: { name: string } | null;
@@ -29,14 +27,17 @@ export type CalendarRentalRecord = {
   booking_id: string;
   scheduled_pickup_at: string;
   scheduled_return_at: string;
+  started_at?: string | null;
+  ended_at?: string | null;
   vehicle: { name: string } | null;
 };
 
 export type CalendarMaintenanceRecord = {
   id: string;
   maintenance_type: string;
-  status: "Open" | "Completed" | "Cancelled";
-  service_started_at: string;
+  status: "Open" | "In Progress" | "Scheduled" | "Completed" | "Cancelled";
+  service_started_at: string | null;
+  scheduled_for?: string | null;
   next_service_date: string | null;
   vehicle: { name: string } | null;
 };
@@ -90,6 +91,7 @@ function eventFromInstant(
   dateTime: string,
   label: string,
   kind: CalendarEventKind,
+  completed = false,
 ): CalendarEvent {
   return {
     id,
@@ -97,6 +99,7 @@ function eventFromInstant(
     dateTime,
     label,
     kind,
+    ...(completed ? { completed: true } : {}),
   };
 }
 
@@ -115,6 +118,9 @@ export function buildAdminCalendar(
   if (role === "Customer/Renter") throw new Error("forbidden");
 
   const events: CalendarEvent[] = [];
+  const bookingById = new Map(
+    sources.bookings.map((booking) => [booking.id, booking]),
+  );
   const rentalBookingIds = new Set(
     sources.rentals.map((rental) => rental.booking_id),
   );
@@ -129,29 +135,18 @@ export function buildAdminCalendar(
       booking.assigned_vehicle,
       booking.requested_vehicle,
     );
-    if (booking.booking_status === "Submitted") {
-      events.push(
-        eventFromInstant(
-          `booking:${booking.id}:reservation`,
-          booking.pickup_at,
-          `${name} reserved`,
-          "reservation",
-        ),
-      );
-      continue;
-    }
     if (booking.booking_status === "Confirmed") {
       events.push(
         eventFromInstant(
           `booking:${booking.id}:pickup`,
           booking.pickup_at,
-          `${name} deliver`,
+          `${name} ${booking.pickup_delivery_option === "delivery" ? "delivery" : "pickup"}`,
           "pickup",
         ),
         eventFromInstant(
           `booking:${booking.id}:return`,
           booking.return_at,
-          `${name} returned`,
+          `${name} return`,
           "return",
         ),
       );
@@ -164,14 +159,16 @@ export function buildAdminCalendar(
       eventFromInstant(
         `rental:${rental.id}:pickup`,
         rental.scheduled_pickup_at,
-        `${name} deliver`,
+        `${name} ${bookingById.get(rental.booking_id)?.pickup_delivery_option === "delivery" ? "delivery" : "pickup"}`,
         "pickup",
+        Boolean(rental.started_at || rental.ended_at),
       ),
       eventFromInstant(
         `rental:${rental.id}:return`,
         rental.scheduled_return_at,
-        `${name} returned`,
+        `${name} return`,
         "return",
+        Boolean(rental.ended_at),
       ),
     );
   }
@@ -179,17 +176,30 @@ export function buildAdminCalendar(
   for (const record of sources.maintenance) {
     if (record.status === "Cancelled") continue;
     const name = vehicleName(record.vehicle);
-    if (record.status === "Open") {
+    const serviceTime =
+      record.status === "Scheduled"
+        ? record.scheduled_for
+        : ["Open", "In Progress"].includes(record.status)
+          ? record.service_started_at
+          : null;
+    if (serviceTime) {
       events.push(
         eventFromInstant(
           `maintenance:${record.id}:service`,
-          record.service_started_at,
+          serviceTime,
           `${name} · ${record.maintenance_type}`,
           "maintenance",
         ),
       );
     }
-    if (record.next_service_date) {
+    if (
+      record.next_service_date &&
+      !(
+        serviceTime &&
+        record.next_service_date ===
+          instantToManilaCalendarDate(new Date(serviceTime))
+      )
+    ) {
       events.push({
         id: `maintenance:${record.id}:next`,
         date: record.next_service_date,
@@ -224,4 +234,13 @@ export async function loadAdminCalendar(
 ) {
   if (role === "Customer/Renter") throw new Error("forbidden");
   return buildAdminCalendar(role, period, await loadSources());
+}
+
+export function pendingCalendarEventsForDate(
+  events: CalendarEvent[] | null,
+  date: string,
+) {
+  return (
+    events?.filter((event) => event.date === date && !event.completed) ?? []
+  );
 }

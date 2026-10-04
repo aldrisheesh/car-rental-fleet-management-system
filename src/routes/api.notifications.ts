@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requirePrincipal } from "@/lib/auth.server";
-import { projectNotification } from "@/lib/notifications";
+import {
+  notificationEntityBindings,
+  projectNotification,
+} from "@/lib/notifications";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 const errorResponse = (message: string, status: number) =>
@@ -92,15 +95,15 @@ async function notificationCustomerBindings(
       : Promise.resolve({ data: [] }),
   ]);
   return [
-    ...(requirements.data ?? []).map((item) => ({
+    ...notificationEntityBindings(requirements.data).map((item) => ({
       bookingId: item.booking_id,
       requirementSetId: item.id,
     })),
-    ...(payments.data ?? []).map((item) => ({
+    ...notificationEntityBindings(payments.data).map((item) => ({
       bookingId: item.booking_id,
       paymentId: item.id,
     })),
-    ...(rentals.data ?? []).map((item) => ({
+    ...notificationEntityBindings(rentals.data).map((item) => ({
       bookingId: item.booking_id,
       rentalId: item.id,
     })),
@@ -117,7 +120,10 @@ async function notificationAdminBindings(
   const rentalIds = notifications
     .filter((item) => item.relatedEntityType === "rental")
     .map((item) => item.relatedEntityId);
-  const [requirements, rentals] = await Promise.all([
+  const paymentIds = notifications
+    .filter((item) => item.relatedEntityType === "payment")
+    .map((item) => item.relatedEntityId);
+  const [requirements, rentals, payments] = await Promise.all([
     requirementIds.length
       ? client
           .from("renter_requirement_sets")
@@ -130,12 +136,27 @@ async function notificationAdminBindings(
           .select("id,booking_id")
           .in("id", rentalIds)
       : Promise.resolve({ data: [] }),
+    paymentIds.length
+      ? client.from("payments").select("id,booking_id").in("id", paymentIds)
+      : Promise.resolve({ data: [] }),
   ]);
+  const bookingByPayment = new Map(
+    notificationEntityBindings(payments.data).map((item) => [
+      item.id,
+      item.booking_id,
+    ]),
+  );
   const bookingByRequirement = new Map(
-    (requirements.data ?? []).map((item: any) => [item.id, item.booking_id]),
+    notificationEntityBindings(requirements.data).map((item) => [
+      item.id,
+      item.booking_id,
+    ]),
   );
   const bookingByRental = new Map(
-    (rentals.data ?? []).map((item: any) => [item.id, item.booking_id]),
+    notificationEntityBindings(rentals.data).map((item) => [
+      item.id,
+      item.booking_id,
+    ]),
   );
   return notifications.map((item) => ({
     notificationId: item.id,
@@ -144,7 +165,9 @@ async function notificationAdminBindings(
         ? (bookingByRequirement.get(item.relatedEntityId) ?? null)
         : item.relatedEntityType === "rental"
           ? (bookingByRental.get(item.relatedEntityId) ?? null)
-          : null,
+          : item.relatedEntityType === "payment"
+            ? (bookingByPayment.get(item.relatedEntityId) ?? null)
+            : null,
   }));
 }
 

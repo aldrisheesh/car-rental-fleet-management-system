@@ -1,0 +1,975 @@
+[
+  [
+    "toc",
+    "Title Page",
+    "i"
+  ],
+  [
+    "toc",
+    "Table of Contents",
+    "ii"
+  ],
+  [
+    "toc",
+    "List of Tables",
+    "iv"
+  ],
+  [
+    "toc",
+    "List of Figures",
+    "vii"
+  ],
+  [
+    "toc",
+    "1 INTRODUCTION",
+    "1"
+  ],
+  [
+    "toc",
+    "Project Context",
+    "1"
+  ],
+  [
+    "toc",
+    "Technical Background",
+    "4"
+  ],
+  [
+    "toc",
+    "Equipment/Hardware",
+    "5"
+  ],
+  [
+    "toc",
+    "Software",
+    "6"
+  ],
+  [
+    "toc",
+    "Peopleware/Manpower",
+    "7"
+  ],
+  [
+    "toc",
+    "Network Infrastructure/Architecture",
+    "9"
+  ],
+  [
+    "toc",
+    "Storage, Backup and Recovery Procedure",
+    "9"
+  ],
+  [
+    "toc",
+    "Security Procedures",
+    "10"
+  ],
+  [
+    "toc",
+    "Policies and Procedures",
+    "11"
+  ],
+  [
+    "toc",
+    "Problem Analysis",
+    "17"
+  ],
+  [
+    "toc",
+    "Fishbone Diagram",
+    "22"
+  ],
+  [
+    "toc",
+    "Problem and Solution Statement",
+    "25"
+  ],
+  [
+    "toc",
+    "Problem-Requirements Matrix",
+    "27"
+  ],
+  [
+    "toc",
+    "Purpose and Description",
+    "31"
+  ],
+  [
+    "toc",
+    "Specific Objectives",
+    "33"
+  ],
+  [
+    "toc",
+    "Scope and Limitations",
+    "35"
+  ],
+  [
+    "toc",
+    "Definition of Terms",
+    "43"
+  ],
+  [
+    "toc",
+    "2 REVIEW OF LITERATURE, STUDIES, AND SYSTEMS",
+    "55"
+  ],
+  [
+    "toc",
+    "Car Rental Industry and Operational Context",
+    "55"
+  ],
+  [
+    "toc",
+    "Fleet Management and Operational Decision-Making",
+    "79"
+  ],
+  [
+    "toc",
+    "Context-Aware Transportation and Operational Intelligence",
+    "107"
+  ],
+  [
+    "toc",
+    "Related Systems and Research Gaps",
+    "130"
+  ],
+  [
+    "toc",
+    "Synthesis of the Study",
+    "143"
+  ],
+  [
+    "toc",
+    "3 METHODOLOGY",
+    "150"
+  ],
+  [
+    "toc",
+    "Requirements Analysis",
+    "150"
+  ],
+  [
+    "toc",
+    "Requirements \u2013 Features Matrix",
+    "153"
+  ],
+  [
+    "toc",
+    "Use Case Diagrams",
+    "156"
+  ],
+  [
+    "toc",
+    "Use Case Reports",
+    "174"
+  ],
+  [
+    "toc",
+    "Design Specifications",
+    "192"
+  ],
+  [
+    "toc",
+    "Activity Diagram",
+    "192"
+  ],
+  [
+    "toc",
+    "Database Schema",
+    "209"
+  ],
+  [
+    "toc",
+    "Data Dictionary",
+    "220"
+  ],
+  [
+    "toc",
+    "Operational and Decision-Support Logic",
+    "265"
+  ],
+  [
+    "toc",
+    "Development Methodology",
+    "295"
+  ],
+  [
+    "toc",
+    "Process Model",
+    "298"
+  ],
+  [
+    "toc",
+    "Development Tools",
+    "299"
+  ],
+  [
+    "toc",
+    "Test Methodology/Procedures",
+    "305"
+  ],
+  [
+    "toc",
+    "System Requirements",
+    "315"
+  ],
+  [
+    "toc",
+    "Quality Plan",
+    "318"
+  ],
+  [
+    "toc",
+    "Implementation Plan",
+    "320"
+  ],
+  [
+    "toc",
+    "Evaluation Plan",
+    "321"
+  ],
+  [
+    "toc",
+    "Ethical Considerations",
+    "343"
+  ],
+  [
+    "toc",
+    "Data Analysis (Procedure and Treatment)",
+    "344"
+  ],
+  [
+    "toc",
+    "Statistical Treatments",
+    "346"
+  ],
+  [
+    "toc",
+    "REFERENCES",
+    "350"
+  ],
+  [
+    "toc",
+    "APPENDICES",
+    "367"
+  ],
+  [
+    "toc",
+    "Appendix 1          Data Gathering Instrument",
+    "368"
+  ],
+  [
+    "toc",
+    "Appendix 2          Client Forms and Reports",
+    "380"
+  ],
+  [
+    "table",
+    1,
+    "Existing Hardware of the Business",
+    "5"
+  ],
+  [
+    "table",
+    2,
+    "Existing Software and Digital Tools Used by the Business",
+    "6"
+  ],
+  [
+    "table",
+    3,
+    "System Users and Operational Roles of the Business",
+    "8"
+  ],
+  [
+    "table",
+    4,
+    "Problem \u2013 Requirements Matrix",
+    "27"
+  ],
+  [
+    "table",
+    5,
+    "Requirement \u2013 Features Matrix",
+    "153"
+  ],
+  [
+    "table",
+    6,
+    "Use Case Report \u2013 View Vehicle Catalog",
+    "174"
+  ],
+  [
+    "table",
+    7,
+    "Use Case Report \u2013 Use Smart Vehicle Finder",
+    "175"
+  ],
+  [
+    "table",
+    8,
+    "Use Case Report \u2013 Register Account",
+    "176"
+  ],
+  [
+    "table",
+    9,
+    "Use Case Report \u2013 Login",
+    "177"
+  ],
+  [
+    "table",
+    10,
+    "Use Case Report \u2013 Manage Reservations",
+    "178"
+  ],
+  [
+    "table",
+    11,
+    "Use Case Report \u2013 Verify Customer Requirements",
+    "179"
+  ],
+  [
+    "table",
+    12,
+    "Use Case Report \u2013 Verify Payment",
+    "180"
+  ],
+  [
+    "table",
+    13,
+    "Use Case Report \u2013 Manage Rental Transactions",
+    "181"
+  ],
+  [
+    "table",
+    14,
+    "Use Case Report \u2013 Process Vehicle Return",
+    "182"
+  ],
+  [
+    "table",
+    15,
+    "Use Case Report \u2013 View Dashboard",
+    "183"
+  ],
+  [
+    "table",
+    16,
+    "Use Case Report \u2013 Manage Customer Records",
+    "185"
+  ],
+  [
+    "table",
+    17,
+    "Use Case Report \u2013 Manage Vehicle Records",
+    "186"
+  ],
+  [
+    "table",
+    18,
+    "Use Case Report \u2013 Manage Maintenance Records",
+    "187"
+  ],
+  [
+    "table",
+    19,
+    "Use Case Report \u2013 View Forecasted Demand",
+    "188"
+  ],
+  [
+    "table",
+    20,
+    "Use Case Report \u2013 View Fleet Allocation Recommendation",
+    "189"
+  ],
+  [
+    "table",
+    21,
+    "Use Case Report \u2013 View Generated Reports",
+    "190"
+  ],
+  [
+    "table",
+    22,
+    "Use Case Report \u2013 View Notifications",
+    "191"
+  ],
+  [
+    "table",
+    23,
+    "Data Dictionary \u2013 User Profiles",
+    "220"
+  ],
+  [
+    "table",
+    24,
+    "Data Dictionary \u2013 Branches",
+    "221"
+  ],
+  [
+    "table",
+    25,
+    "Data Dictionary \u2013 Vehicle Categories",
+    "222"
+  ],
+  [
+    "table",
+    26,
+    "Data Dictionary \u2013 Vehicles",
+    "222"
+  ],
+  [
+    "table",
+    27,
+    "Data Dictionary \u2013 Vehicle Images",
+    "224"
+  ],
+  [
+    "table",
+    28,
+    "Data Dictionary \u2013 Vehicle Operational State Events",
+    "224"
+  ],
+  [
+    "table",
+    29,
+    "Data Dictionary \u2013 Booking Requests",
+    "225"
+  ],
+  [
+    "table",
+    30,
+    "Data Dictionary \u2013 Booking Finder Context",
+    "228"
+  ],
+  [
+    "table",
+    31,
+    "Data Dictionary \u2013 Booking Creation Idempotency",
+    "229"
+  ],
+  [
+    "table",
+    32,
+    "Data Dictionary \u2013 Renter Requirement Sets",
+    "229"
+  ],
+  [
+    "table",
+    33,
+    "Data Dictionary \u2013 Renter Requirement Documents",
+    "230"
+  ],
+  [
+    "table",
+    34,
+    "Data Dictionary \u2013 Renter Requirement Reviews",
+    "231"
+  ],
+  [
+    "table",
+    35,
+    "Data Dictionary \u2013 Booking Payment Quotes",
+    "233"
+  ],
+  [
+    "table",
+    36,
+    "Data Dictionary \u2013 Payment Methods",
+    "235"
+  ],
+  [
+    "table",
+    37,
+    "Data Dictionary \u2013 Payments",
+    "236"
+  ],
+  [
+    "table",
+    38,
+    "Data Dictionary \u2013 Payment Proofs",
+    "238"
+  ],
+  [
+    "table",
+    39,
+    "Data Dictionary \u2013 Rate Cards",
+    "239"
+  ],
+  [
+    "table",
+    40,
+    "Data Dictionary \u2013 Booking Rate Quotes",
+    "240"
+  ],
+  [
+    "table",
+    41,
+    "Data Dictionary \u2013 Rental Transactions",
+    "241"
+  ],
+  [
+    "table",
+    42,
+    "Data Dictionary \u2013 Maintenance Records",
+    "243"
+  ],
+  [
+    "table",
+    43,
+    "Data Dictionary \u2013 Forecast Runs",
+    "245"
+  ],
+  [
+    "table",
+    44,
+    "Data Dictionary \u2013 Demand Forecasts",
+    "245"
+  ],
+  [
+    "table",
+    45,
+    "Data Dictionary \u2013 Forecast Inputs",
+    "246"
+  ],
+  [
+    "table",
+    46,
+    "Data Dictionary \u2013 Forecast Demand Coverage",
+    "247"
+  ],
+  [
+    "table",
+    47,
+    "Data Dictionary \u2013 Supply Evaluations",
+    "248"
+  ],
+  [
+    "table",
+    48,
+    "Data Dictionary \u2013 Supply Evaluation Vehicles",
+    "249"
+  ],
+  [
+    "table",
+    49,
+    "Data Dictionary \u2013 Allocation Recommendation Batches",
+    "250"
+  ],
+  [
+    "table",
+    50,
+    "Data Dictionary \u2013 Allocation Recommendations",
+    "250"
+  ],
+  [
+    "table",
+    51,
+    "Data Dictionary \u2013 Allocation Recommendation Candidates",
+    "252"
+  ],
+  [
+    "table",
+    52,
+    "Data Dictionary \u2013 Notifications",
+    "253"
+  ],
+  [
+    "table",
+    53,
+    "Data Dictionary \u2013 Notification Preferences",
+    "255"
+  ],
+  [
+    "table",
+    54,
+    "Data Dictionary \u2013 Operational Notification Conditions",
+    "255"
+  ],
+  [
+    "table",
+    55,
+    "Data Dictionary \u2013 Email Deliveries",
+    "256"
+  ],
+  [
+    "table",
+    56,
+    "Data Dictionary \u2013 Audit Events",
+    "258"
+  ],
+  [
+    "table",
+    57,
+    "Data Dictionary \u2013 Backup Runs",
+    "260"
+  ],
+  [
+    "table",
+    58,
+    "Data Dictionary \u2013 Backup Artifacts",
+    "261"
+  ],
+  [
+    "table",
+    59,
+    "Data Dictionary \u2013 Recovery Drills",
+    "262"
+  ],
+  [
+    "table",
+    60,
+    "Data Dictionary \u2013 Public Contact Settings",
+    "263"
+  ],
+  [
+    "table",
+    61,
+    "Data Dictionary \u2013 Public Contact Locations",
+    "263"
+  ],
+  [
+    "table",
+    62,
+    "Data Dictionary \u2013 Contact Inquiries",
+    "264"
+  ],
+  [
+    "table",
+    63,
+    "Selected Primary and Fallback APIs for Context-Aware Decision Support",
+    "285"
+  ],
+  [
+    "table",
+    64,
+    "Development Tools",
+    "299"
+  ],
+  [
+    "table",
+    65,
+    "Desktop and Tablet System Requirements for Staff and Admin",
+    "315"
+  ],
+  [
+    "table",
+    66,
+    "Mobile System Requirements for Renter",
+    "317"
+  ],
+  [
+    "table",
+    67,
+    "Respondent Profile",
+    "323"
+  ],
+  [
+    "table",
+    68,
+    "Evaluation Respondent Matrix",
+    "325"
+  ],
+  [
+    "table",
+    69,
+    "Likert Scale Interpretation Table",
+    "346"
+  ],
+  [
+    "table",
+    70,
+    "Statistical Technique Used for Data Analysis",
+    "346"
+  ],
+  [
+    "figure",
+    1,
+    "Figure 1. Context Diagram - Level 0",
+    "13"
+  ],
+  [
+    "figure",
+    2,
+    "Figure 2. Data Flow Diagram - Level 1",
+    "15"
+  ],
+  [
+    "figure",
+    3,
+    "Figure 3. Fishbone Diagram",
+    "22"
+  ],
+  [
+    "figure",
+    4,
+    "Figure 4. General Use Case Diagram",
+    "156"
+  ],
+  [
+    "figure",
+    5,
+    "Figure 5. Use Case Diagram \u2013 View Vehicle Catalog",
+    "157"
+  ],
+  [
+    "figure",
+    6,
+    "Figure 6. Use Case Diagram - Use Smart Vehicle Finder",
+    "158"
+  ],
+  [
+    "figure",
+    7,
+    "Figure 7. Use Case Diagram - Register Account",
+    "159"
+  ],
+  [
+    "figure",
+    8,
+    "Figure 8. Use Case Diagram - Login",
+    "160"
+  ],
+  [
+    "figure",
+    9,
+    "Figure 9. Use Case Diagram - Manage Reservations",
+    "161"
+  ],
+  [
+    "figure",
+    10,
+    "Figure 10. Use Case Diagram - Verify Customer Requirements",
+    "162"
+  ],
+  [
+    "figure",
+    11,
+    "Figure 11. Use Case Diagram - Verify Payment",
+    "163"
+  ],
+  [
+    "figure",
+    12,
+    "Figure 12. Use Case Diagram - Manage Rental Transactions",
+    "164"
+  ],
+  [
+    "figure",
+    13,
+    "Figure 13. Use Case Diagram - Process Vehicle Return",
+    "165"
+  ],
+  [
+    "figure",
+    14,
+    "Figure 14. Use Case Diagram - View Dashboard",
+    "166"
+  ],
+  [
+    "figure",
+    15,
+    "Figure 15. Use Case Diagram - Manage Customer Records",
+    "167"
+  ],
+  [
+    "figure",
+    16,
+    "Figure 16. Use Case Diagram - Manage Vehicle Records",
+    "168"
+  ],
+  [
+    "figure",
+    17,
+    "Figure 17. Use Case Diagram - Manage Maintenance Records",
+    "169"
+  ],
+  [
+    "figure",
+    18,
+    "Figure 18. Use Case Diagram - View Forecasted Demand",
+    "170"
+  ],
+  [
+    "figure",
+    19,
+    "Figure 19. Use Case Diagram - View Fleet Allocation Recommendation",
+    "171"
+  ],
+  [
+    "figure",
+    20,
+    "Figure 20. Use Case Diagram - View Generated Reports",
+    "172"
+  ],
+  [
+    "figure",
+    21,
+    "Figure 21. Use Case Diagram - View Notifications",
+    "173"
+  ],
+  [
+    "figure",
+    22,
+    "Figure 22. View Vehicle Catalog",
+    "192"
+  ],
+  [
+    "figure",
+    23,
+    "Figure 23. Use Smart Vehicle Finder",
+    "193"
+  ],
+  [
+    "figure",
+    24,
+    "Figure 24. Register Account",
+    "194"
+  ],
+  [
+    "figure",
+    25,
+    "Figure 25. Login",
+    "195"
+  ],
+  [
+    "figure",
+    26,
+    "Figure 26. Manage Reservations",
+    "196"
+  ],
+  [
+    "figure",
+    27,
+    "Figure 27. Verify Customer Requirements",
+    "197"
+  ],
+  [
+    "figure",
+    28,
+    "Figure 28. Verify Payment",
+    "198"
+  ],
+  [
+    "figure",
+    29,
+    "Figure 29. Manage Rental Transactions",
+    "199"
+  ],
+  [
+    "figure",
+    30,
+    "Figure 30. Process Vehicle Return",
+    "200"
+  ],
+  [
+    "figure",
+    31,
+    "Figure 31. View Dashboard",
+    "201"
+  ],
+  [
+    "figure",
+    32,
+    "Figure 32. Manage Customer Records",
+    "202"
+  ],
+  [
+    "figure",
+    33,
+    "Figure 33. Manage Vehicle Records",
+    "203"
+  ],
+  [
+    "figure",
+    34,
+    "Figure 34. Manage Maintenance Records",
+    "204"
+  ],
+  [
+    "figure",
+    35,
+    "Figure 35. View Forecasted Demand",
+    "205"
+  ],
+  [
+    "figure",
+    36,
+    "Figure 36. View Fleet Allocation Recommendation",
+    "206"
+  ],
+  [
+    "figure",
+    37,
+    "Figure 37. View Generated Reports",
+    "207"
+  ],
+  [
+    "figure",
+    38,
+    "Figure 38. View Notifications",
+    "208"
+  ],
+  [
+    "figure",
+    39,
+    "Figure 39. Overall Database Schema",
+    "210"
+  ],
+  [
+    "figure",
+    40,
+    "Figure 40. Database Schema: Fleet and identity",
+    "211"
+  ],
+  [
+    "figure",
+    41,
+    "Figure 41. Database Schema: Bookings and requirements",
+    "212"
+  ],
+  [
+    "figure",
+    42,
+    "Figure 42. Database Schema: Payments and retained quotations",
+    "214"
+  ],
+  [
+    "figure",
+    43,
+    "Figure 43. Database Schema: Rental and maintenance",
+    "215"
+  ],
+  [
+    "figure",
+    44,
+    "Figure 44. Database Schema: Demand forecasting",
+    "216"
+  ],
+  [
+    "figure",
+    45,
+    "Figure 45. Database Schema: Supply and allocation",
+    "217"
+  ],
+  [
+    "figure",
+    46,
+    "Figure 46. Database Schema: Notifications and audit",
+    "218"
+  ],
+  [
+    "figure",
+    47,
+    "Figure 47. Database Schema: Recovery and public contact",
+    "219"
+  ],
+  [
+    "figure",
+    48,
+    "Figure 48.  Iterative Waterfall Model",
+    "298"
+  ]
+]

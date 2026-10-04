@@ -377,7 +377,7 @@ test("Booking reuses a key for retries and rotates it for a changed payload", as
     source,
     /idempotency\.current\.fingerprint !== fingerprint[\s\S]*crypto\.randomUUID\(\)/,
   );
-  assert.match(source, /idempotencyKey: idempotency\.current\.key/);
+  assert.match(source, /idempotencyKey: idempotency\.current\?\.key/);
 });
 
 test("Requirements operations stay bound to the exact booking route identity", async () => {
@@ -387,7 +387,7 @@ test("Requirements operations stay bound to the exact booking route identity", a
   );
   assert.match(
     source,
-    /bookings\.find\(\(candidate\) => candidate\.id === bookingId\)/,
+    /bookings\.find\(\s*\(candidate\) => candidate\.id === bookingId,?\s*\)/,
   );
   assert.match(
     source,
@@ -415,8 +415,11 @@ test("booking review presents an honest editable base-rental estimate", async ()
     "utf8",
   );
 
-  assert.match(source, /<h2>Rental estimate<\/h2>/);
+  assert.match(source, /Estimated vehicle rental/);
   assert.match(source, /calculateRentalDays\(pickup, returned\)/);
-  assert.match(source, /Daily-rate reference estimate/);
-  assert.match(source, /not a final quotation or the amount due/);
+  assert.match(source, /listed daily rate/);
+  assert.match(
+    source,
+    /Delivery and other charges are confirmed before payment/,
+  );
 });

@@ -1,0 +1,35 @@
+✔ acceptance requires a successfully validated, matching baseline (0.739292ms)
+✔ acceptance refuses current records added or edited after the baseline (0.105667ms)
+✔ consistent reproducible baseline 2026-09-29 (107.70075ms)
+✔ consistent reproducible baseline 2026-10-06 (75.73325ms)
+✔ conflicting confirmed bookings fail validation (21.311666ms)
+✔ drift detects new test rows and ignores row order (172.2565ms)
+✔ safe defaults and invalid input (0.27425ms)
+✔ calendar varies weekdays, handover times, durations and weekly volume (22.021917ms)
+✔ all vehicle history uses a non-decreasing odometer (23.196916ms)
+✔ October 4 handovers and December bookings respect all service slots (21.5595ms)
+✔ pickup and delivery service mix has coherent addresses, fees and payment totals (26.832708ms)
+✔ future requests have varied creation dates instead of vehicle-grouped timestamp ties (20.876125ms)
+✔ pickup baseline quotes and rentals require complete handover arrangements (26.925166ms)
+✔ exact project-ref match is required (0.554458ms)
+✔ wrong project is refused before any read can be attempted (0.218375ms)
+✔ complete manifest baseline passes (2.152458ms)
+✔ missing baseline booking is drift (0.836083ms)
+✔ modified baseline booking state is drift (0.732917ms)
+✔ unchanged baseline booking schedule passes (0.703208ms)
+✔ modified baseline pickup schedule is drift (0.731625ms)
+✔ modified baseline return schedule is drift (0.782333ms)
+✔ equivalent booking schedule timestamp representations pass (0.533958ms)
+✔ modified pickup and return schedules are both reported as drift (0.577458ms)
+✔ extra UAT account and booking do not corrupt the baseline classification (0.553667ms)
+✔ append-only audit rows and extra notifications are allowed (0.507333ms)
+✔ manifest mismatch is rejected before verification (0.197958ms)
+✔ console report does not expose private paths or secrets (0.641041ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 641.533375

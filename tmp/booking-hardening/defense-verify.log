@@ -1,0 +1,4 @@
+
+> defense:verify
+> node --env-file=.env.local --experimental-strip-types scripts/defense/verifier.ts
+

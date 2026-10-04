@@ -1,0 +1,77 @@
+{
+  "documentId": "1cFZhN-b0NAopEX3CzUlIvOgefVMTTXbi2eietaZWEbY",
+  "tabId": "t.tokiux2rhoh",
+  "url": "https://docs.google.com/document/d/1cFZhN-b0NAopEX3CzUlIvOgefVMTTXbi2eietaZWEbY/edit?tab=t.tokiux2rhoh",
+  "officialManuscriptId": "1_s6T6c0cyVwh-LFgxgBNejsC92rhiFcQFQUySJQTpjE",
+  "officialManuscriptChanged": false,
+  "figures": [
+    {
+      "number": 59,
+      "title": "Fleet and identity",
+      "png": "output/erd-editable/images/02-fleet-and-identity.png"
+    },
+    {
+      "number": 60,
+      "title": "Bookings and requirements",
+      "png": "output/erd-editable/images/03-bookings-and-requirements.png"
+    },
+    {
+      "number": 61,
+      "title": "Payments and retained quotations",
+      "png": "output/erd-editable/images/04-payments-and-retained-quotations.png"
+    },
+    {
+      "number": 62,
+      "title": "Rental and maintenance",
+      "png": "output/erd-editable/images/05-rental-and-maintenance.png"
+    },
+    {
+      "number": 63,
+      "title": "Demand forecasting",
+      "png": "output/erd-editable/images/06-demand-forecasting.png"
+    },
+    {
+      "number": 64,
+      "title": "Supply and allocation",
+      "png": "output/erd-editable/images/07-supply-and-allocation.png"
+    },
+    {
+      "number": 65,
+      "title": "Notifications and audit",
+      "png": "output/erd-editable/images/08-notifications-and-audit.png"
+    },
+    {
+      "number": 66,
+      "title": "Recovery and public contact",
+      "png": "output/erd-editable/images/09-recovery-and-public-contact.png"
+    }
+  ],
+  "ranges": {
+    "erd": {
+      "startIndex": 1,
+      "endIndex": 1277
+    },
+    "dictionary": {
+      "startIndex": 1277,
+      "endIndex": 68851
+    },
+    "combined": {
+      "startIndex": 1,
+      "endIndex": 68851
+    }
+  },
+  "verification": {
+    "dictionaryTextUnchanged": true,
+    "dictionaryTablesUnchanged": true,
+    "tables": 40,
+    "images": 8,
+    "otherTabsUnchanged": true,
+    "namedRanges": [
+      "DATA_DICTIONARY_TRANSFER_BLOCK",
+      "DATABASE_DESIGN_TRANSFER_BLOCK",
+      "ERD_PNG_TRANSFER_BLOCK"
+    ],
+    "revision": "ANLCKQnuXtWgUgGeDWtXcKe5IRDK47uhdAHUFjuEFSHr3mdBUl24ezFdXQZRd1erspp0Y1tn3VC0rgEMsj-niQJRCDJK18PVY_Em3eJk-3E"
+  },
+  "transferInstructions": "Transfer named ERD and dictionary blocks into the official Chapters 1–3 tab after identifying its current replacement boundaries. Preserve PNG aspect ratios, landscape ERD section breaks, portrait dictionary, and captions. Do not copy all 40 detail panels or the overview. Check final figure/table numbers, list of figures, and PDF pagination after transfer."
+}

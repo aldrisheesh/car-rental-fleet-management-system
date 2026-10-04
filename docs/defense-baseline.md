@@ -1,10 +1,17 @@
 # Resettable synthetic defense baseline
 
-All observations, historical forecast issuance timestamps, documents and payment proofs in this baseline are synthetic. They verify computation and workflow behavior; they are not real client records or evidence of predictive accuracy. Data covers 24 complete Manila weeks and six weeks of future bookings. External weather/route services remain live and are not frozen by the reset.
+All observations, historical forecast issuance timestamps, documents and payment proofs in this baseline are synthetic. They verify computation and workflow behavior; they are not real client records or evidence of predictive accuracy. The current October 4 baseline covers 24 complete Manila weeks and irregular future bookings through December 31, 2026. External weather/route services remain live and are not frozen by the reset.
 
 ## Commands
 
 Run from the repository with Node 22+ and the existing private `.env.local`:
+
+**October 3 release check:** the saved September 29 baseline fails the current
+schema signature check. Do not edit its signature to bypass that protection.
+A fresh October 3 `prepare --rehearse` succeeded with all database changes rolled
+back. Applying a replacement still requires agreement to discard newer
+operational test records. Rehearsing does not update `latest.txt` or make the old
+baseline compatible.
 
 ```sh
 # Inspect current database without changing it
@@ -55,3 +62,20 @@ The file's `expected` section records scenario IDs, dates, counts and synthetic 
 Applied to the synthetic project from `stabilization/ui-refinement` with reference date September 29, 2026: 231 bookings, 24 completed weeks of history, and future bookings through November 14. All 1,139 synthetic document/proof objects passed Storage verification. The transactional reset drill edited an existing draft and inserted a new booking, restored the saved baseline, and compared every reset table and vehicle row successfully. The drill was rolled back; a subsequent read-only reset preview reported no differences.
 
 Generator tests (5), defense tests (19), and forecasting/supply/maintenance tests (22) passed. Baseline-script lint passed. Project type-checking still reports two errors in `src/routes/booking.tsx` concerning the pickup/delivery option type; these remain outside the baseline work. These checks establish a repeatable demonstration dataset, not complete defense readiness or empirical forecasting accuracy.
+
+
+## October 4 calendar extension
+
+The replacement contains 278 synthetic booking requests, two October 4 pickups and six scheduled preventive service dates across October–December. Scheduled service days are left free of bookings; upcoming confirmations also avoid the pending review scenarios. The calendar displays confirmed Pickup, Return and Maintenance events only. Submitted requests remain in Bookings.
+
+See `codex-context/2026-10-04-calendar-december-baseline.md` for exact handover times, service dates, conflict checks and the preserved DSS example. This replaces the earlier September 29 and October 4 booking counts/end dates above; `latest.txt` identifies the active reset snapshot.
+
+## Pickup handover fixture repair (October 4)
+
+The latest reset snapshot now contains 279 requests, including the additional unpaid pickup walkthrough. Missing meeting addresses/instructions were filled on 165 existing synthetic pickup bookings; all 167 pickups now have complete arrangements. Already saved details were preserved, and delivery fields, schedules, prices, payments, rentals and maintenance were unchanged. Public landmarks and instructions are illustrative demo agreements, not client-approved locations. The generator now includes deterministic handover details, and validation rejects quoted/reserved pickup fixtures with missing details. See `codex-context/2026-10-04-handover-dataset-repair.md` for the backup and snapshot paths. The original generated scenario remains 278 requests; the extra walkthrough is retained in the latest reset snapshot.
+
+## October 4 booking finance hardening
+
+Release now records the actual remaining rental balance and refundable security deposit; return records agreed deductions and the deposit refund. `rental_financial_records` is included in reset/restore order. The latest baseline is a schema-compatible copy of the existing clean booking dataset, with no invented historical receipts. The original snapshot remains preserved. A transactional restore rehearsal passed after this upgrade. Live synthetic rehearsal bookings remain separate from the clean reset snapshot.
+
+See `codex-context/2026-10-04-booking-defense-hardening.md` for frontend and database verification, fixture identities, and the historical-record limitation. No real payment or refund was processed.

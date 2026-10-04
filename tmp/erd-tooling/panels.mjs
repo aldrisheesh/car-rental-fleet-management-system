@@ -1,0 +1,1 @@
+import fs from 'node:fs/promises';import sharp from 'sharp';const dir='output/erd-editable/print-panels';for(const f of await fs.readdir(dir)){if(!f.endsWith('.svg'))continue;await sharp(await fs.readFile(dir+'/'+f),{density:216}).flatten({background:'#fff'}).png().toFile(dir+'/'+f.replace('.svg','.png'));}

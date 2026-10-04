@@ -1,3 +1,4 @@
+import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Bell,
@@ -18,6 +19,7 @@ import {
   isUnread,
   NOTIFICATIONS_CHANGED_EVENT,
   notificationRoute,
+  notificationReference,
   type CanonicalNotification,
   type CustomerNotificationBinding,
   type NotificationsResponse,
@@ -148,9 +150,10 @@ export function NotificationsPanel({
     }
   }
 
-  if (audience === "customer") {
+  if (audience === "customer" || !compact) {
     return (
-      <CustomerNotificationInbox
+      <NotificationInbox
+        audience={audience}
         data={data}
         loading={loading}
         error={error}
@@ -193,7 +196,7 @@ export function NotificationsPanel({
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
               {audience === "admin"
-                ? "Booking, rental, payment, maintenance, and fleet updates for your account."
+                ? "Recorded booking, rental, payment, maintenance and fleet events. Open details for the current status."
                 : "Booking, rental, requirement, and payment updates for your account."}
             </p>
           </div>
@@ -242,7 +245,7 @@ export function NotificationsPanel({
         </div>
       )}
 
-      {loading ? (
+      {loading && !data ? (
         <div className="rounded-xl border border-border bg-card/60 p-8 text-center text-sm text-muted-foreground">
           Loading notifications…
         </div>
@@ -282,6 +285,7 @@ export function NotificationsPanel({
               audience={audience}
               customerBindings={customerBindings}
               adminBindings={data.adminBindings ?? []}
+              staffView={isStaffRole(getAdminSession()?.role)}
               marking={markingId === notification.id}
               onMarkRead={markRead}
             />
@@ -292,14 +296,10 @@ export function NotificationsPanel({
   );
 }
 
-type CustomerNotificationCategory =
-  | "all"
-  | "booking"
-  | "requirements"
-  | "payment"
-  | "rental";
+type NotificationCategory = "all" | CanonicalNotification["relatedEntityType"];
 
-function CustomerNotificationInbox({
+function NotificationInbox({
+  audience,
   data,
   loading,
   error,
@@ -311,6 +311,7 @@ function CustomerNotificationInbox({
   onMarkRead,
   onUpdateEmailPreference,
 }: {
+  audience: "admin" | "customer";
   data: NotificationsResponse | null;
   loading: boolean;
   error: string | null;
@@ -322,7 +323,7 @@ function CustomerNotificationInbox({
   onMarkRead: (notification: CanonicalNotification) => Promise<void>;
   onUpdateEmailPreference: (enabled: boolean) => Promise<void>;
 }) {
-  const [filter, setFilter] = useState<CustomerNotificationCategory>("all");
+  const [filter, setFilter] = useState<NotificationCategory>("all");
   const notifications = data?.notifications ?? [];
   const resolvedCustomerBindings = data?.customerBindings ?? customerBindings;
   const visibleNotifications = notifications.filter((notification) =>
@@ -330,32 +331,87 @@ function CustomerNotificationInbox({
   );
   const unreadCount = data?.unreadCount ?? 0;
   const filters: Array<{
-    id: CustomerNotificationCategory;
+    id: NotificationCategory;
     label: string;
     icon: typeof Bell;
     count: number;
   }> = [
-    { id: "all", label: "All activity", icon: Bell, count: notifications.length },
-    { id: "booking", label: "Bookings", icon: CalendarRange, count: groupedCounts.booking },
+    {
+      id: "all",
+      label: "All activity",
+      icon: Bell,
+      count: notifications.length,
+    },
+    {
+      id: "booking",
+      label: "Bookings",
+      icon: CalendarRange,
+      count: groupedCounts.booking,
+    },
     {
       id: "requirements",
       label: "Requirements",
       icon: FileCheck2,
       count: groupedCounts.requirements,
     },
-    { id: "payment", label: "Payments", icon: CreditCard, count: groupedCounts.payment },
-    { id: "rental", label: "Your rental", icon: Car, count: groupedCounts.rental },
+    {
+      id: "payment",
+      label: "Payments",
+      icon: CreditCard,
+      count: groupedCounts.payment,
+    },
+    {
+      id: "rental",
+      label: audience === "admin" ? "Rentals" : "Your rental",
+      icon: Car,
+      count: groupedCounts.rental,
+    },
   ];
 
+  if (audience === "admin") {
+    filters.push(
+      {
+        id: "vehicle",
+        label: "Maintenance",
+        icon: Wrench,
+        count: groupedCounts.vehicle,
+      },
+      { id: "branch", label: "Fleet", icon: Car, count: groupedCounts.branch },
+      {
+        id: "backup_run",
+        label: "Backup",
+        icon: TriangleAlert,
+        count: groupedCounts.backup_run,
+      },
+    );
+  }
+
   return (
-    <section className="customer-notification-inbox" aria-label="Notifications">
+    <section
+      className={cn(
+        "customer-notification-inbox",
+        audience === "admin" && "admin-notification-inbox",
+      )}
+      aria-label="Notifications"
+    >
       <aside className="customer-notification-inbox-rail">
         <div>
           <h1>Notifications</h1>
-          <p>{unreadCount > 0 ? `${unreadCount} unread` : "You’re all caught up"}</p>
+          <p aria-live="polite">
+            {!data
+              ? loading
+                ? "Checking your updates…"
+                : "Notifications unavailable"
+              : unreadCount > 0
+                ? `${unreadCount} unread`
+                : "You’re all caught up"}
+          </p>
         </div>
 
-        <nav aria-label="Notification categories" className="customer-notification-filters">
+        <nav
+          aria-label="Notification categories"
+          className="customer-notification-filters"
+        >
           {filters.map(({ id, label, icon: Icon, count }) => (
             <button
               key={id}
@@ -366,7 +422,7 @@ function CustomerNotificationInbox({
             >
               <Icon aria-hidden="true" />
               <span>{label}</span>
-              <strong>{count}</strong>
+              <strong>{data ? count : "—"}</strong>
             </button>
           ))}
         </nav>
@@ -378,16 +434,20 @@ function CustomerNotificationInbox({
               <label htmlFor="transactional-email-notifications">
                 Email preferences
               </label>
-              <input
-                id="transactional-email-notifications"
-                type="checkbox"
-                role="switch"
-                checked={data?.emailNotificationsEnabled ?? false}
-                disabled={!data || savingEmailPreference}
-                onChange={(event) =>
-                  void onUpdateEmailPreference(event.target.checked)
-                }
-              />
+              {data ? (
+                <input
+                  id="transactional-email-notifications"
+                  type="checkbox"
+                  role="switch"
+                  checked={data?.emailNotificationsEnabled ?? false}
+                  disabled={!data || savingEmailPreference}
+                  onChange={(event) =>
+                    void onUpdateEmailPreference(event.target.checked)
+                  }
+                />
+              ) : (
+                <span>{loading ? "Loading…" : "Unavailable"}</span>
+              )}
             </div>
             <p>Receive important booking and rental updates by email.</p>
           </div>
@@ -398,15 +458,31 @@ function CustomerNotificationInbox({
         <header className="customer-notification-inbox-heading">
           <div>
             <h2>Your updates</h2>
-            <p>Important details about your bookings and rentals.</p>
+            <p>
+              {audience === "admin"
+                ? "Recorded booking, rental, payment, maintenance and fleet events. Open details for the current status."
+                : "Recorded events about your bookings and rentals. Open details to check the current status."}
+            </p>
           </div>
-          <button type="button" onClick={() => void onRefresh()} disabled={loading}>
-            <RefreshCw className={cn(loading && "is-spinning")} aria-hidden="true" />
+          <button
+            type="button"
+            onClick={() => void onRefresh()}
+            disabled={loading}
+          >
+            <RefreshCw
+              className={cn(loading && "is-spinning")}
+              aria-hidden="true"
+            />
             Refresh
           </button>
         </header>
 
-        {loading ? (
+        {error && data ? (
+          <p className="customer-notification-error" role="alert">
+            {error}
+          </p>
+        ) : null}
+        {loading && !data ? (
           <CustomerNotificationSkeleton />
         ) : error && !data ? (
           <div className="customer-notification-message" role="alert">
@@ -417,14 +493,22 @@ function CustomerNotificationInbox({
           </div>
         ) : visibleNotifications.length === 0 ? (
           <div className="customer-notification-message">
-            <p>{filter === "all" ? "No notifications yet" : `No ${filter} updates`}</p>
+            <p>
+              {filter === "all"
+                ? "No notifications yet"
+                : `No ${filters.find((category) => category.id === filter)?.label.toLowerCase()} updates`}
+            </p>
             <span>New account updates will appear here.</span>
           </div>
         ) : (
           <div className="customer-notification-list">
-            {error ? <p className="customer-notification-error">{error}</p> : null}
             {visibleNotifications.map((notification) => (
-              <CustomerNotificationRow
+              <InboxNotificationRow
+                audience={audience}
+                adminBindings={data?.adminBindings ?? []}
+                staffView={
+                  audience === "admin" && isStaffRole(getAdminSession()?.role)
+                }
                 key={notification.id}
                 notification={notification}
                 customerBindings={resolvedCustomerBindings}
@@ -439,24 +523,42 @@ function CustomerNotificationInbox({
   );
 }
 
-function CustomerNotificationRow({
+function InboxNotificationRow({
+  audience,
+  adminBindings,
+  staffView,
   notification,
   customerBindings,
   marking,
   onMarkRead,
 }: {
+  audience: "admin" | "customer";
+  adminBindings: NonNullable<NotificationsResponse["adminBindings"]>;
+  staffView: boolean;
   notification: CanonicalNotification;
   customerBindings: readonly CustomerNotificationBinding[];
   marking: boolean;
   onMarkRead: (notification: CanonicalNotification) => Promise<void>;
 }) {
   const unread = isUnread(notification);
-  const presentation = customerNotificationPresentation(notification);
-  const destination = notificationRoute(notification, "customer", customerBindings);
+  const presentation = notificationPresentation(notification);
+  const destination = notificationRoute(
+    notification,
+    audience,
+    customerBindings,
+    adminBindings,
+    staffView,
+  );
   const Icon = presentation.icon;
 
   return (
-    <article className={cn("customer-notification-row", `is-${presentation.tone}`, unread && "is-unread")}>
+    <article
+      className={cn(
+        "customer-notification-row",
+        `is-${presentation.tone}`,
+        unread && "is-unread",
+      )}
+    >
       <span className="customer-notification-unread" aria-hidden="true" />
       <span className="customer-notification-icon" aria-hidden="true">
         <Icon />
@@ -468,7 +570,8 @@ function CustomerNotificationRow({
         </div>
         <p>{notification.message}</p>
         <time dateTime={notification.createdAt}>
-          {formatEntity(notification.relatedEntityType)} · {formatCreatedAt(notification.createdAt)}
+          {notificationReference(notification, customerBindings, adminBindings)}{" "}
+          · Event recorded {formatCreatedAt(notification.createdAt)}
         </time>
       </div>
       <div className="customer-notification-actions">
@@ -489,7 +592,13 @@ function CustomerNotificationRow({
   );
 }
 
-function customerNotificationPresentation(notification: CanonicalNotification) {
+function notificationPresentation(notification: CanonicalNotification) {
+  if (notification.relatedEntityType === "backup_run")
+    return { tone: "attention", icon: TriangleAlert };
+  if (notification.relatedEntityType === "vehicle")
+    return { tone: "attention", icon: Wrench };
+  if (notification.relatedEntityType === "branch")
+    return { tone: "booking", icon: Car };
   if (
     notification.notificationType === "requirements_needs_resubmission" ||
     notification.notificationType === "payment_needs_resubmission"
@@ -506,7 +615,10 @@ function customerNotificationPresentation(notification: CanonicalNotification) {
 
 function CustomerNotificationSkeleton() {
   return (
-    <div className="customer-notification-skeleton" aria-label="Loading notifications">
+    <div
+      className="customer-notification-skeleton"
+      aria-label="Loading notifications"
+    >
       {Array.from({ length: 4 }, (_, index) => (
         <div key={index}>
           <i />
@@ -527,6 +639,7 @@ function NotificationRow({
   audience,
   customerBindings,
   adminBindings,
+  staffView,
   marking,
   onMarkRead,
 }: {
@@ -534,6 +647,7 @@ function NotificationRow({
   audience: "admin" | "customer";
   customerBindings: readonly CustomerNotificationBinding[];
   adminBindings: NonNullable<NotificationsResponse["adminBindings"]>;
+  staffView: boolean;
   marking: boolean;
   onMarkRead: (notification: CanonicalNotification) => Promise<void>;
 }) {
@@ -559,6 +673,7 @@ function NotificationRow({
     audience,
     customerBindings,
     adminBindings,
+    staffView,
   );
 
   return (
@@ -588,8 +703,12 @@ function NotificationRow({
               {notification.message}
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
-              {formatEntity(notification.relatedEntityType)} ·{" "}
-              {formatCreatedAt(notification.createdAt)}
+              {notificationReference(
+                notification,
+                customerBindings,
+                adminBindings,
+              )}{" "}
+              · Event recorded {formatCreatedAt(notification.createdAt)}
             </p>
           </div>
         </div>
@@ -617,19 +736,12 @@ function NotificationRow({
   );
 }
 
-function formatEntity(entity: CanonicalNotification["relatedEntityType"]) {
-  return entity === "backup_run"
-    ? "Backup run"
-    : entity === "requirements"
-      ? "Requirements"
-      : entity[0].toUpperCase() + entity.slice(1);
-}
-
 function formatCreatedAt(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? "Recently"
     : new Intl.DateTimeFormat(undefined, {
+        timeZone: "Asia/Manila",
         dateStyle: "medium",
         timeStyle: "short",
       }).format(date);

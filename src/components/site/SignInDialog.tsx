@@ -1,3 +1,4 @@
+import { signInDestination } from "@/lib/sign-in-destination";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowRight, CircleAlert, Eye, EyeOff, Mail, X } from "lucide-react";
 
@@ -160,10 +161,11 @@ export function SignInDialog({
       setSubmitting(false);
       return;
     }
-    const destination =
-      result.principal?.role === "Owner/Admin"
-        ? (adminSuccessTo ?? "/admin")
-        : customerDestination();
+    const destination = signInDestination(
+      result.principal?.role,
+      customerDestination(),
+      adminSuccessTo,
+    );
     onAuthenticated?.();
     onOpenChange(false);
     if (result.principal?.role === "Customer/Renter" && customerSuccessSearch) {
@@ -239,7 +241,9 @@ export function SignInDialog({
     setSubmitting(true);
     const result = await continueWithProvider("google", customerDestination());
     if (!result.ok) {
-      setError(result.message ?? "Unable to continue with Google. Please try again.");
+      setError(
+        result.message ?? "Unable to continue with Google. Please try again.",
+      );
       setSubmitting(false);
     }
   }

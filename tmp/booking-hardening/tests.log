@@ -1,0 +1,36 @@
+✔ calendar period uses Manila month boundaries (1.994792ms)
+✔ canonical bookings, rentals, and maintenance map to supported dates (8.979416ms)
+✔ calendar filters events to the requested month and supports honest empty data (0.124375ms)
+✔ both internal roles are allowed and customer access is rejected before loading (0.200167ms)
+✔ calendar page has real loading, error, empty, and month-navigation states (4.313167ms)
+✔ scheduled service shows its time once, and ongoing service shows its start (0.210667ms)
+✔ delivery handovers are clearly labeled without duplicating rental events (0.1095ms)
+✔ operations queues use clear status and allocation-location language (6.65425ms)
+✔ mobile operations disclosures avoid nested interactive controls (9.1085ms)
+✔ active and returned rentals belong to return, while confirmed bookings await release (0.787333ms)
+✔ review steps and terminal records do not imply a release action (0.212584ms)
+✔ quote preparation precedes payment and remains gated by requirements (0.192125ms)
+✔ customer lifecycle distinguishes action-required and waiting states (1.469333ms)
+✔ terminal booking states preserve a recorded customer-facing reason (0.9025ms)
+✔ payment composition is bound to the exact booking (0.304958ms)
+✔ rental lifecycle uses canonical confirmation, release, and return data (0.472792ms)
+✔ known required amount gates verification (0.790667ms)
+✔ unresolved required amount remains explicitly ungated (0.452958ms)
+✔ customer projection excludes review and storage internals (0.334916ms)
+✔ customer payment retrieval accepts persisted payment states (0.729167ms)
+✔ customer payment retrieval rejects non-canonical payment states (0.209542ms)
+✔ customer payment retrieval preserves API failures (0.082167ms)
+✔ pickup arrangements require both addresses and useful instructions (0.476708ms)
+✔ map links encode the agreed address and omit missing locations (0.074375ms)
+✔ release follows Manila calendar days, including UTC boundary (21.808083ms)
+✔ deposit refund validates finite, exact-cent deductions within the deposit (0.224125ms)
+✔ customer rental projection excludes administrative release and return fields (0.700709ms)
+✔ canonical active-rental definition excludes ended and unstarted rentals (0.12525ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 152.591083

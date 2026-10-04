@@ -21,6 +21,7 @@ test("formats evaluated Finder criteria for people, not internal raw values", ()
   assert.deepEqual(finderCriteriaSummary(criteria), [
     { id: "dates", label: "Rental dates", value: "Oct 18 – Oct 20, 2026" },
     { id: "passengers", label: "Passengers", value: "5" },
+    { id: "largeBags", label: "Large bags", value: "Not recorded" },
     {
       id: "budget",
       label: "Maximum budget",

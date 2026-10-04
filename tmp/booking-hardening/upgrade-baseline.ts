@@ -1,0 +1,14 @@
+import {sql} from './db.mjs';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {digest} from '../../scripts/defense/baseline.ts';
+const previous=readFileSync('backup-artifacts/defense/latest.txt','utf8').trim();
+const envelope=JSON.parse(readFileSync(previous,'utf8'));
+if(envelope.sha256!==digest(envelope.baseline))throw Error('Existing snapshot failed integrity check');
+const schema=await sql`select c.relname as table_name,a.attname as column_name,format_type(a.atttypid,a.atttypmod) as type,a.attnotnull,pg_get_expr(d.adbin,d.adrelid) as default_value from pg_class c join pg_namespace n on n.oid=c.relnamespace join pg_attribute a on a.attrelid=c.oid and a.attnum>0 and not a.attisdropped left join pg_attrdef d on d.adrelid=c.oid and d.adnum=a.attnum where n.nspname='public' and c.relkind='r' order by c.relname,a.attnum`;
+if(digest(schema.filter(r=>r.table_name!=='rental_financial_records'))!==envelope.baseline.schema)throw Error('Unexpected schema drift beyond the new financial record table; snapshot not promoted');
+const baseline={...envelope.baseline,schema:digest(schema),data:{...envelope.baseline.data,rental_financial_records:[]}};
+const path='backup-artifacts/defense/baseline-finance-ready-'+new Date().toISOString().replaceAll(':','-')+'.json';
+writeFileSync(path,JSON.stringify({sha256:digest(baseline),baseline},null,2)+'\n',{mode:0o600,flag:'wx'});
+writeFileSync('backup-artifacts/defense/latest.txt',path+'\n');
+console.log('Created schema-compatible baseline copy. Original booking dataset and original snapshot preserved. No database rows changed.');
+await sql.end();

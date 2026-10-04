@@ -1,0 +1,767 @@
+[
+  {
+    "child": "allocation_recommendation_batches",
+    "field": "generated_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (generated_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "allocation_recommendation_candidates",
+    "field": "recommendation_id",
+    "parent": "allocation_recommendations",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (recommendation_id) REFERENCES allocation_recommendations(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "allocation_recommendation_candidates",
+    "field": "vehicle_id",
+    "parent": "vehicles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "allocation_recommendations",
+    "field": "batch_id",
+    "parent": "allocation_recommendation_batches",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (batch_id) REFERENCES allocation_recommendation_batches(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "allocation_recommendations",
+    "field": "decided_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (decided_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "allocation_recommendations",
+    "field": "destination_branch_id",
+    "parent": "branches",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (destination_branch_id) REFERENCES branches(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "allocation_recommendations",
+    "field": "destination_supply_evaluation_id",
+    "parent": "supply_evaluations",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (destination_supply_evaluation_id) REFERENCES supply_evaluations(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "allocation_recommendations",
+    "field": "source_branch_id",
+    "parent": "branches",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (source_branch_id) REFERENCES branches(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "allocation_recommendations",
+    "field": "source_supply_evaluation_id",
+    "parent": "supply_evaluations",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (source_supply_evaluation_id) REFERENCES supply_evaluations(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "allocation_recommendations",
+    "field": "vehicle_category_id",
+    "parent": "vehicle_categories",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (vehicle_category_id) REFERENCES vehicle_categories(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "audit_events",
+    "field": "actor_user_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (actor_user_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "audit_events",
+    "field": "booking_id",
+    "parent": "booking_requests",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (booking_id) REFERENCES booking_requests(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "backup_artifacts",
+    "field": "backup_run_id",
+    "parent": "backup_runs",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (backup_run_id) REFERENCES backup_runs(id) ON DELETE CASCADE"
+  },
+  {
+    "child": "backup_runs",
+    "field": "created_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_creation_idempotency",
+    "field": "booking_id",
+    "parent": "booking_requests",
+    "target": "id",
+    "optional": false,
+    "unique": true,
+    "definition": "FOREIGN KEY (booking_id) REFERENCES booking_requests(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_creation_idempotency",
+    "field": "customer_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (customer_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_finder_context",
+    "field": "booking_id",
+    "parent": "booking_requests",
+    "target": "id",
+    "optional": false,
+    "unique": true,
+    "definition": "FOREIGN KEY (booking_id) REFERENCES booking_requests(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_finder_context",
+    "field": "preferred_category_id",
+    "parent": "vehicle_categories",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (preferred_category_id) REFERENCES vehicle_categories(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_finder_context",
+    "field": "selected_vehicle_id",
+    "parent": "vehicles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (selected_vehicle_id) REFERENCES vehicles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_payment_quotes",
+    "field": "booking_id",
+    "parent": "booking_requests",
+    "target": "id",
+    "optional": false,
+    "unique": true,
+    "definition": "FOREIGN KEY (booking_id) REFERENCES booking_requests(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_payment_quotes",
+    "field": "issued_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (issued_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_payment_quotes",
+    "field": "vehicle_id",
+    "parent": "vehicles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_rate_quotes",
+    "field": "approved_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (approved_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_rate_quotes",
+    "field": "booking_id",
+    "parent": "booking_requests",
+    "target": "id",
+    "optional": false,
+    "unique": true,
+    "definition": "FOREIGN KEY (booking_id) REFERENCES booking_requests(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_rate_quotes",
+    "field": "rate_card_id",
+    "parent": "rate_cards",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (rate_card_id) REFERENCES rate_cards(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_requests",
+    "field": "assigned_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (assigned_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_requests",
+    "field": "assigned_vehicle_id",
+    "parent": "vehicles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (assigned_vehicle_id) REFERENCES vehicles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_requests",
+    "field": "confirmed_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (confirmed_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_requests",
+    "field": "customer_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (customer_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_requests",
+    "field": "pickup_branch_id",
+    "parent": "branches",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (pickup_branch_id) REFERENCES branches(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_requests",
+    "field": "requested_vehicle_id",
+    "parent": "vehicles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (requested_vehicle_id) REFERENCES vehicles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_requests",
+    "field": "resolved_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (resolved_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "booking_requests",
+    "field": "return_branch_id",
+    "parent": "branches",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (return_branch_id) REFERENCES branches(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "contact_inquiries",
+    "field": "read_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (read_by) REFERENCES profiles(id) ON DELETE SET NULL"
+  },
+  {
+    "child": "email_deliveries",
+    "field": "notification_id",
+    "parent": "notifications",
+    "target": "id",
+    "optional": false,
+    "unique": true,
+    "definition": "FOREIGN KEY (notification_id) REFERENCES notifications(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "email_deliveries",
+    "field": "recipient_user_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (recipient_user_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "forecast_inputs",
+    "field": "forecast_id",
+    "parent": "forecasts",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (forecast_id) REFERENCES forecasts(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "forecast_runs",
+    "field": "generated_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (generated_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "forecasts",
+    "field": "branch_id",
+    "parent": "branches",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "forecasts",
+    "field": "run_id",
+    "parent": "forecast_runs",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (run_id) REFERENCES forecast_runs(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "forecasts",
+    "field": "vehicle_category_id",
+    "parent": "vehicle_categories",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (vehicle_category_id) REFERENCES vehicle_categories(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "maintenance_records",
+    "field": "archived_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (archived_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "maintenance_records",
+    "field": "created_by",
+    "parent": "auth.users",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (created_by) REFERENCES auth.users(id)"
+  },
+  {
+    "child": "maintenance_records",
+    "field": "updated_by",
+    "parent": "auth.users",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (updated_by) REFERENCES auth.users(id)"
+  },
+  {
+    "child": "maintenance_records",
+    "field": "vehicle_id",
+    "parent": "vehicles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)"
+  },
+  {
+    "child": "notification_preferences",
+    "field": "recipient_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": true,
+    "definition": "FOREIGN KEY (recipient_id) REFERENCES profiles(id) ON DELETE CASCADE"
+  },
+  {
+    "child": "notifications",
+    "field": "recipient_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (recipient_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "payment_proofs",
+    "field": "booking_id",
+    "parent": "booking_requests",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (booking_id) REFERENCES booking_requests(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "payment_proofs",
+    "field": "customer_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (customer_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "payment_proofs",
+    "field": "payment_id",
+    "parent": "payments",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "payments",
+    "field": "booking_id",
+    "parent": "booking_requests",
+    "target": "id",
+    "optional": false,
+    "unique": true,
+    "definition": "FOREIGN KEY (booking_id) REFERENCES booking_requests(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "payments",
+    "field": "customer_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (customer_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "payments",
+    "field": "payment_method_id",
+    "parent": "payment_methods",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (payment_method_id) REFERENCES payment_methods(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "payments",
+    "field": "reviewed_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (reviewed_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "profiles",
+    "field": "id",
+    "parent": "auth.users",
+    "target": "id",
+    "optional": false,
+    "unique": true,
+    "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "child": "public_contact_settings",
+    "field": "updated_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (updated_by) REFERENCES profiles(id) ON DELETE SET NULL"
+  },
+  {
+    "child": "rate_cards",
+    "field": "created_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "rate_cards",
+    "field": "vehicle_id",
+    "parent": "vehicles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "recovery_drills",
+    "field": "backup_run_id",
+    "parent": "backup_runs",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (backup_run_id) REFERENCES backup_runs(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "rental_transactions",
+    "field": "booking_id",
+    "parent": "booking_requests",
+    "target": "id",
+    "optional": false,
+    "unique": true,
+    "definition": "FOREIGN KEY (booking_id) REFERENCES booking_requests(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "rental_transactions",
+    "field": "customer_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (customer_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "rental_transactions",
+    "field": "inspected_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (inspected_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "rental_transactions",
+    "field": "released_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (released_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "rental_transactions",
+    "field": "returned_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (returned_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "rental_transactions",
+    "field": "vehicle_id",
+    "parent": "vehicles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "renter_requirement_documents",
+    "field": "booking_id",
+    "parent": "booking_requests",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (booking_id) REFERENCES booking_requests(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "renter_requirement_documents",
+    "field": "customer_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (customer_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "renter_requirement_documents",
+    "field": "requirement_set_id",
+    "parent": "renter_requirement_sets",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (requirement_set_id) REFERENCES renter_requirement_sets(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "renter_requirement_reviews",
+    "field": "drivers_license_document_id",
+    "parent": "renter_requirement_documents",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (drivers_license_document_id) REFERENCES renter_requirement_documents(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "renter_requirement_reviews",
+    "field": "government_id_document_id",
+    "parent": "renter_requirement_documents",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (government_id_document_id) REFERENCES renter_requirement_documents(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "renter_requirement_reviews",
+    "field": "proof_of_billing_document_id",
+    "parent": "renter_requirement_documents",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (proof_of_billing_document_id) REFERENCES renter_requirement_documents(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "renter_requirement_reviews",
+    "field": "requirement_set_id",
+    "parent": "renter_requirement_sets",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (requirement_set_id) REFERENCES renter_requirement_sets(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "renter_requirement_reviews",
+    "field": "reviewer_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (reviewer_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "renter_requirement_reviews",
+    "field": "selfie_with_id_document_id",
+    "parent": "renter_requirement_documents",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (selfie_with_id_document_id) REFERENCES renter_requirement_documents(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "renter_requirement_sets",
+    "field": "booking_id",
+    "parent": "booking_requests",
+    "target": "id",
+    "optional": false,
+    "unique": true,
+    "definition": "FOREIGN KEY (booking_id) REFERENCES booking_requests(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "renter_requirement_sets",
+    "field": "customer_id",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (customer_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "supply_evaluation_vehicles",
+    "field": "evaluation_id",
+    "parent": "supply_evaluations",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (evaluation_id) REFERENCES supply_evaluations(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "supply_evaluation_vehicles",
+    "field": "vehicle_id",
+    "parent": "vehicles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "supply_evaluations",
+    "field": "evaluated_by",
+    "parent": "profiles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (evaluated_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "supply_evaluations",
+    "field": "forecast_id",
+    "parent": "forecasts",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (forecast_id) REFERENCES forecasts(id) ON DELETE RESTRICT"
+  },
+  {
+    "child": "vehicle_images",
+    "field": "vehicle_id",
+    "parent": "vehicles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE"
+  },
+  {
+    "child": "vehicle_operational_state_events",
+    "field": "recorded_by",
+    "parent": "auth.users",
+    "target": "id",
+    "optional": true,
+    "unique": false,
+    "definition": "FOREIGN KEY (recorded_by) REFERENCES auth.users(id)"
+  },
+  {
+    "child": "vehicle_operational_state_events",
+    "field": "vehicle_id",
+    "parent": "vehicles",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE"
+  },
+  {
+    "child": "vehicles",
+    "field": "branch_id",
+    "parent": "branches",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id)"
+  },
+  {
+    "child": "vehicles",
+    "field": "category_id",
+    "parent": "vehicle_categories",
+    "target": "id",
+    "optional": false,
+    "unique": false,
+    "definition": "FOREIGN KEY (category_id) REFERENCES vehicle_categories(id)"
+  }
+]

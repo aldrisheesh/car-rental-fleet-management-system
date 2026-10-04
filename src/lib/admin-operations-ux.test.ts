@@ -7,19 +7,16 @@ test("operations queues use clear status and allocation-location language", asyn
     readFile(new URL("../routes/admin.fleet.tsx", import.meta.url), "utf8"),
     readFile(new URL("../routes/admin.bookings.tsx", import.meta.url), "utf8"),
     readFile(new URL("../routes/admin.payments.tsx", import.meta.url), "utf8"),
-    readFile(
-      new URL("../routes/admin.branches.tsx", import.meta.url),
-      "utf8",
-    ),
+    readFile(new URL("../routes/admin.branches.tsx", import.meta.url), "utf8"),
   ]);
 
-  for (const source of [fleet, bookings, payments]) {
-    assert.match(source, /All Status/);
-  }
-  assert.match(fleet, /Allocation locations are internal operations bases/);
-  assert.match(bookings, /Allocation \/ service/);
+  assert.match(bookings, /All booking statuses/);
+  assert.match(fleet, /label: "All vehicles", status: "All"/);
+  assert.match(payments, /Filter payment queue/);
+  assert.match(fleet, /Allocation location/);
+  assert.match(bookings, /Location & service/);
   assert.match(locations, /Operational locations/);
-  assert.match(locations, /not customer delivery addresses/);
+  assert.match(locations, /Confirm a map pin for each location/);
 });
 
 test("mobile operations disclosures avoid nested interactive controls", async () => {
@@ -36,5 +33,12 @@ test("mobile operations disclosures avoid nested interactive controls", async ()
     /function FleetDisclosure[\s\S]*?<summary[\s\S]*?<button[\s\S]*?<\/summary>/,
   );
   assert.match(fleet, /<summary\s+[\s\S]*?onClick=\{onSelect\}/);
-  assert.match(maintenance, /min-h-11 cursor-pointer list-none/);
+  assert.match(
+    maintenance,
+    /aria-pressed=\{previewRecord\?\.id === record\.id\}/,
+  );
+  assert.doesNotMatch(
+    maintenance,
+    /<summary[\s\S]*?<button[\s\S]*?<\/summary>/,
+  );
 });

@@ -1,0 +1,20 @@
+{
+  "Briah-ERD-Manuscript-Detail-Panels.drawio": {
+    "pages": 40,
+    "public_tables": 40,
+    "foreign_keys": 85,
+    "complete_attributes": "keys only"
+  },
+  "Briah-ERD-Complete-Attributes.drawio": {
+    "pages": 40,
+    "public_tables": 40,
+    "foreign_keys": 85,
+    "complete_attributes": 478
+  },
+  "Briah-ERD-Manuscript.drawio": {
+    "pages": 9,
+    "public_tables": 40,
+    "foreign_keys": 85,
+    "complete_attributes": "keys only"
+  }
+}

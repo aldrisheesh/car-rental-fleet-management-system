@@ -1,3 +1,4 @@
+import { bookingReferenceLabel } from "@/lib/booking-reference";
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
@@ -35,6 +36,8 @@ import { parseAdminBookingResponse } from "@/lib/booking-retrieval";
 
 export const Route = createFileRoute("/admin/payments/$paymentId")({
   beforeLoad: () => {
+    // The principal view cookie is client-only; AdminShell gates rendering after hydration.
+    if (typeof window === "undefined") return;
     const session = getAdminSession();
     if (!session) throw redirect({ to: "/sign-in" });
     if (isStaffRole(session.role)) throw redirect({ to: "/admin" });
@@ -384,7 +387,7 @@ function PaymentReviewPage() {
         <Card>
           <CardHeader
             title="Payment submission"
-            hint="Review the submitted record exactly as returned by the payment API."
+            hint="Check the amount, method and transaction reference against the proof."
           />
           <div className="grid gap-x-8 gap-y-5 px-5 py-5 sm:grid-cols-2">
             <DetailField label="Method" value={method} />
@@ -409,7 +412,7 @@ function PaymentReviewPage() {
               value={formatAdminDateTime(payment.updated_at)}
             />
             <DetailField
-              label="Canonical required amount"
+              label="Required downpayment"
               value={
                 formatAdminMoney(payment.required_amount) ??
                 "Unavailable in this record"
@@ -427,7 +430,7 @@ function PaymentReviewPage() {
         <Card as="aside">
           <CardHeader
             title="Current proof"
-            hint="Proof access uses the exact payment proof identity and a short-lived signed URL."
+            hint="Open the uploaded proof for this payment."
           />
           <div className="px-5 py-5">
             {proof ? (
@@ -489,7 +492,7 @@ function PaymentReviewPage() {
         <Card>
           <CardHeader
             title="Booking context"
-            hint="This context is joined using the exact payment.booking_id."
+            hint="Trip and vehicle details associated with this payment."
           />
           {booking ? (
             <div className="grid gap-x-8 gap-y-5 px-5 py-5 sm:grid-cols-2">
@@ -548,7 +551,7 @@ function ReviewActionPanel({
         title="Review action"
         hint={
           reviewable
-            ? "Owner/Admin actions are sent to the canonical payment review endpoint."
+            ? "Verify the payment or return the proof with a clear reason for correction."
             : "This payment is no longer in a server-reviewable state."
         }
       />
@@ -660,10 +663,4 @@ function DetailField({
       </dd>
     </div>
   );
-}
-
-function bookingReferenceLabel(id: string) {
-  return id
-    ? `Booking ${id.slice(0, 8).toUpperCase()}`
-    : "Booking reference unavailable";
 }

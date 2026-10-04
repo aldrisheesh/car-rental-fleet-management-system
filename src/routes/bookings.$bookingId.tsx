@@ -1,3 +1,8 @@
+import {
+  meetingMapUrl,
+  pickupArrangementReady,
+} from "@/lib/pickup-arrangement";
+import { bookingReference } from "@/lib/booking-reference";
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
@@ -16,10 +21,12 @@ import {
   MapPin,
   Phone,
   RefreshCw,
+  RotateCcw,
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 
+import { HandoverRow } from "@/components/customer/HandoverRow";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import {
@@ -370,35 +377,38 @@ function BookingDetailPage() {
             </div>
           ) : null}
 
-          {!isPaymentWaiting && !isActiveRental && !isReturnedRental ? <div className="booking-detail-heading">
-            <div>
-              {lifecycle.state !== "confirmed" &&
-              lifecycle.state !== "confirmation-resolution" ? (
-                <p className="booking-detail-eyebrow">Your rental request</p>
-              ) : null}
-              <h1>{lifecycle.title}</h1>
-              {lifecycle.state === "confirmed" ? (
-                <p className="booking-detail-confirmation-message">
-                  Thank you for choosing Briah&apos;s Car Rental. We&apos;ve
-                  sent a confirmation to your email with all the booking
-                  details.
-                </p>
-              ) : null}
-            </div>
-            {lifecycle.state === "confirmed" ? (
-              <div className="booking-confirmation-mark">
-                <span aria-hidden="true">
-                  <CheckCircle2 size={28} strokeWidth={1.8} />
-                </span>
-                <strong>Booking Confirmed</strong>
-                <small>Reference #{booking.id.slice(0, 8).toUpperCase()}</small>
+          {!isPaymentWaiting && !isActiveRental && !isReturnedRental ? (
+            <div className="booking-detail-heading">
+              <div>
+                {lifecycle.state !== "confirmed" &&
+                lifecycle.state !== "confirmation-resolution" ? (
+                  <p className="booking-detail-eyebrow">Your rental request</p>
+                ) : null}
+                <h1>{lifecycle.title}</h1>
+                {lifecycle.state === "confirmed" ? (
+                  <p className="booking-detail-confirmation-message">
+                    Your booking details and meeting arrangements are below.
+                    Review them before your trip.
+                  </p>
+                ) : null}
               </div>
-            ) : lifecycle.state === "confirmation-resolution" ? null : (
-              <p className={`booking-detail-stage is-${lifecycle.statusTone}`}>
-                {lifecycle.statusLabel}
-              </p>
-            )}
-          </div> : null}
+              {lifecycle.state === "confirmed" ? (
+                <div className="booking-confirmation-mark">
+                  <span aria-hidden="true">
+                    <CheckCircle2 size={28} strokeWidth={1.8} />
+                  </span>
+                  <strong>Booking Confirmed</strong>
+                  <small>Reference {bookingReference(booking.id)}</small>
+                </div>
+              ) : lifecycle.state === "confirmation-resolution" ? null : (
+                <p
+                  className={`booking-detail-stage is-${lifecycle.statusTone}`}
+                >
+                  {lifecycle.statusLabel}
+                </p>
+              )}
+            </div>
+          ) : null}
 
           {compositionErrors.length > 0 ? (
             <StatusCallout
@@ -575,9 +585,16 @@ function PaymentAwaitingSkeleton() {
       </section>
       <main id="main-content" className="booking-detail-main">
         <div className="customer-container">
-          <div className="booking-payment-awaiting-skeleton" role="status" aria-live="polite">
+          <div
+            className="booking-payment-awaiting-skeleton"
+            role="status"
+            aria-live="polite"
+          >
             <span className="sr-only">Loading payment details…</span>
-            <div className="booking-payment-awaiting-skeleton__primary" aria-hidden="true">
+            <div
+              className="booking-payment-awaiting-skeleton__primary"
+              aria-hidden="true"
+            >
               <i className="booking-payment-awaiting-skeleton__title" />
               <i className="booking-payment-awaiting-skeleton__copy" />
               <section className="booking-payment-awaiting-skeleton__handoff">
@@ -592,13 +609,33 @@ function PaymentAwaitingSkeleton() {
               <section className="booking-payment-awaiting-skeleton__trip">
                 <i />
                 <div>
-                  <section><i /><div><i /><i /><i /></div></section>
-                  <section><i /><div><i /><i /></div></section>
+                  <section>
+                    <i />
+                    <div>
+                      <i />
+                      <i />
+                      <i />
+                    </div>
+                  </section>
+                  <section>
+                    <i />
+                    <div>
+                      <i />
+                      <i />
+                    </div>
+                  </section>
                 </div>
               </section>
             </div>
-            <aside className="booking-payment-awaiting-skeleton__summary" aria-hidden="true">
-              <i /><i /><i /><i /><i />
+            <aside
+              className="booking-payment-awaiting-skeleton__summary"
+              aria-hidden="true"
+            >
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
             </aside>
           </div>
         </div>
@@ -842,6 +879,7 @@ function BookingStateContent({
     case "payment-resubmission":
       return (
         <PaymentSubmission
+          booking={booking}
           bookingId={booking.id}
           payment={composition.payment}
           methods={composition.paymentMethods}
@@ -852,14 +890,22 @@ function BookingStateContent({
     case "payment-waiting":
       return <PaymentAwaitingAmount booking={booking} />;
     case "payment-review":
-      return <PaymentUnderReview payment={composition.payment} />;
+      return (
+        <>
+          <PaymentUnderReview payment={composition.payment} />
+          <QuoteHandover booking={booking} />
+        </>
+      );
     case "confirmation-resolution":
       return (
-        <BookingResolution
-          booking={booking}
-          payment={composition.payment}
-          vehicle={vehicle}
-        />
+        <>
+          <QuoteHandover booking={booking} />
+          <BookingResolution
+            booking={booking}
+            payment={composition.payment}
+            vehicle={vehicle}
+          />
+        </>
       );
     case "confirmed":
       return <ConfirmedBooking booking={booking} vehicle={vehicle} />;
@@ -1012,6 +1058,9 @@ function BookingSummary({
           ? "Your booking"
           : "Your rental request"}
       </h2>
+      <p className="booking-display-reference" title={booking.id}>
+        Booking {bookingReference(booking.id)}
+      </p>
       <div className="booking-summary-image">
         <VehicleImage
           src={vehicle?.image_url}
@@ -1044,14 +1093,23 @@ function BookingSummary({
         }
         showBranch={false}
       />
-      {lifecycle.state !== "confirmed" ? (
+      {lifecycle.state !== "confirmed" &&
+      lifecycle.state !== "payment-review" &&
+      lifecycle.state !== "payment-action" &&
+      lifecycle.state !== "payment-resubmission" ? (
         <dl className="booking-summary-facts">
           <div>
-            <dt>Delivery</dt>
+            <dt>
+              {booking.pickup_delivery_option === "pickup"
+                ? "Pickup"
+                : "Delivery"}
+            </dt>
             <dd>
               {formatInstant(booking.pickup_at)}
               <small>
-                {booking.pickup_location ??
+                {(booking.pickup_delivery_option === "pickup"
+                  ? booking.pickup_meeting_address
+                  : booking.pickup_location) ??
                   booking.pickup_branch?.name ??
                   "Not recorded"}
               </small>
@@ -1062,13 +1120,29 @@ function BookingSummary({
             <dd>
               {formatInstant(booking.return_at)}
               <small>
-                {booking.dropoff_location ??
+                {(booking.pickup_delivery_option === "pickup"
+                  ? booking.return_meeting_address
+                  : booking.dropoff_location) ??
                   booking.return_branch?.name ??
                   "Not recorded"}
               </small>
             </dd>
           </div>
         </dl>
+      ) : null}
+      {booking.pickup_delivery_option === "pickup" && booking.rental ? (
+        <div className="booking-meeting-summary">
+          <h3>Pickup meeting point</h3>
+          <MeetingInstructions
+            address={booking.pickup_meeting_address}
+            instructions={booking.pickup_meeting_instructions}
+          />
+          <h3>Return meeting point</h3>
+          <MeetingInstructions
+            address={booking.return_meeting_address}
+            instructions={booking.return_meeting_instructions}
+          />
+        </div>
       ) : null}
       {showRequestManagement && booking.requested_vehicle ? (
         <Link
@@ -1509,7 +1583,7 @@ function PdfDocumentThumbnail({
     let cancelled = false;
     let loadingTask: {
       destroy?: () => void | Promise<void>;
-      promise: Promise<any>;
+      promise: Promise<import("pdfjs-dist").PDFDocumentProxy>;
     } | null = null;
     async function renderThumbnail() {
       try {
@@ -1535,7 +1609,7 @@ function PdfDocumentThumbnail({
         canvas.height = Math.ceil(viewport.height);
         const context = canvas.getContext("2d");
         if (!context) throw new Error("The PDF preview canvas is unavailable.");
-        await page.render({ canvasContext: context, viewport }).promise;
+        await page.render({ canvas, canvasContext: context, viewport }).promise;
         if (!cancelled) setThumbnail(canvas.toDataURL("image/png"));
         pdf.cleanup?.();
       } catch {
@@ -1572,7 +1646,7 @@ function PdfDocumentPreview({
     let cancelled = false;
     let loadingTask: {
       destroy?: () => void | Promise<void>;
-      promise: Promise<any>;
+      promise: Promise<import("pdfjs-dist").PDFDocumentProxy>;
     } | null = null;
 
     async function renderPdf() {
@@ -1609,6 +1683,7 @@ function PdfDocumentPreview({
           if (!context)
             throw new Error("The PDF preview canvas is unavailable.");
           await page.render({
+            canvas,
             canvasContext: context,
             transform: [pixelRatio, 0, 0, pixelRatio, 0, 0],
             viewport,
@@ -1733,13 +1808,77 @@ function RequirementDocumentList({
   );
 }
 
+function QuoteHandover({ booking }: { booking: CustomerBooking }) {
+  const pickup = booking.pickup_delivery_option === "pickup";
+  if (pickup && !pickupArrangementReady(booking))
+    return (
+      <section
+        className="booking-quote-handover"
+        aria-label="Pickup and return arrangements"
+      >
+        <h2>Pickup & return</h2>
+        <p>
+          Your meeting points have not been recorded yet. Contact the team to
+          agree the pickup and return locations.
+        </p>
+      </section>
+    );
+  return (
+    <section
+      className="booking-quote-handover"
+      aria-label={
+        pickup
+          ? "Agreed pickup and return points"
+          : "Delivery and return arrangements"
+      }
+    >
+      <h2>{pickup ? "Pickup & return" : "Delivery & return"}</h2>
+      <p>
+        {pickup
+          ? "Your agreed pickup and return points, including the times and handover instructions."
+          : "Review your delivery address and return arrangement alongside your rental quote."}
+      </p>
+      <div className="booking-quote-handover__rows">
+        <HandoverRow
+          label={pickup ? "Pickup" : "Delivery"}
+          locationLabel={pickup ? "Pickup meeting point" : "Delivery address"}
+          Icon={CarFront}
+          at={booking.pickup_at}
+          address={
+            pickup ? booking.pickup_meeting_address : booking.pickup_location
+          }
+          instructions={
+            pickup ? booking.pickup_meeting_instructions : undefined
+          }
+        />
+        <HandoverRow
+          label="Return"
+          locationLabel={pickup ? "Return meeting point" : "Return arrangement"}
+          Icon={RotateCcw}
+          at={booking.return_at}
+          address={
+            pickup
+              ? booking.return_meeting_address
+              : booking.dropoff_location || booking.pickup_location
+          }
+          instructions={
+            pickup ? booking.return_meeting_instructions : undefined
+          }
+        />
+      </div>
+    </section>
+  );
+}
+
 function PaymentSubmission({
+  booking,
   bookingId,
   payment,
   methods,
   state,
   onRefresh,
 }: {
+  booking: CustomerBooking;
   bookingId: string;
   payment: CustomerPayment | null;
   methods: CustomerPaymentMethod[];
@@ -1773,7 +1912,11 @@ function PaymentSubmission({
   const submittedAmount = Number(amount);
   const hasRequiredAmount =
     Number.isFinite(submittedAmount) && submittedAmount > 0;
+  const arrangementsReady =
+    booking.pickup_delivery_option !== "pickup" ||
+    pickupArrangementReady(booking);
   const canSubmitPayment =
+    arrangementsReady &&
     Boolean(method) &&
     hasRequiredAmount &&
     Boolean(reference.trim()) &&
@@ -1826,6 +1969,12 @@ function PaymentSubmission({
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!arrangementsReady) {
+      setSubmitError(
+        "The team needs to confirm your pickup and return points before payment.",
+      );
+      return;
+    }
     const nextErrors: Record<string, string> = {};
     if (!method)
       nextErrors.method = "Choose one of the available payment methods.";
@@ -1865,6 +2014,8 @@ function PaymentSubmission({
       setSubmitting(false);
     }
   }
+
+  if (!arrangementsReady) return <QuoteHandover booking={booking} />;
 
   return (
     <section
@@ -1931,11 +2082,11 @@ function PaymentSubmission({
                 <dd>{formatCurrency(numericValue(quote.total_amount) ?? 0)}</dd>
               </div>
               <div>
-                <dt>Less: Down payment (50%)</dt>
+                <dt>Required downpayment (50%)</dt>
                 <dd>{formatCurrency(requiredAmount ?? 0)}</dd>
               </div>
               <div className="booking-payment-quote__remaining">
-                <dt>Remaining balance</dt>
+                <dt>Balance at handover after verified downpayment</dt>
                 <dd>
                   {formatCurrency(
                     numericValue(quote.remaining_balance_amount) ?? 0,
@@ -1947,10 +2098,11 @@ function PaymentSubmission({
           <div className="booking-payment-request__deposit">
             <ShieldCheck aria-hidden="true" />
             <div>
-              <strong>Refundable security deposit (upon vehicle return)</strong>
+              <strong>Security deposit — payable at handover</strong>
               <p>
                 The security deposit will be collected upon vehicle handover and
-                refunded in full, subject to our terms and condition.
+                refunded after vehicle return, subject to our terms and
+                conditions.
               </p>
             </div>
             <b>
@@ -1962,6 +2114,7 @@ function PaymentSubmission({
         </div>
       </section>
 
+      <QuoteHandover booking={booking} />
       <ErrorSummary errors={errors} focusKey={focusKey} />
       {submitError ? (
         <StatusCallout tone="error" title="Payment not submitted">
@@ -2593,10 +2746,15 @@ function ConfirmedBooking({
 }) {
   const pickup = confirmationSchedule(booking.pickup_at);
   const rentalReturn = confirmationSchedule(booking.return_at);
-  const deliveryAddress =
-    booking.pickup_location ?? "Delivery address not recorded";
-  const returnAddress =
-    booking.dropoff_location ?? "Return address not recorded";
+  const isPickup = booking.pickup_delivery_option === "pickup";
+  const deliveryAddress = isPickup
+    ? (booking.pickup_meeting_address ??
+      "Pickup meeting point awaiting confirmation")
+    : (booking.pickup_location ?? "Delivery address not recorded");
+  const returnAddress = isPickup
+    ? (booking.return_meeting_address ??
+      "Return meeting point awaiting confirmation")
+    : (booking.dropoff_location ?? "Return address not recorded");
 
   return (
     <section
@@ -2616,14 +2774,26 @@ function ConfirmedBooking({
           <small>{pickup.weekdayAndTime}</small>
         </div>
         <div className="booking-confirmation-details">
-          <p>Scheduled delivery</p>
-          <h3>Delivery to {deliveryAddress}</h3>
+          <p>{isPickup ? "Scheduled pickup" : "Scheduled delivery"}</p>
+          <h3>
+            {isPickup ? "Meet at" : "Delivery to"} {deliveryAddress}
+          </h3>
+          {isPickup ? (
+            <MeetingInstructions
+              address={booking.pickup_meeting_address}
+              instructions={booking.pickup_meeting_instructions}
+            />
+          ) : null}
           <dl>
             <div>
               <Clock3 size={20} aria-hidden="true" />
               <div>
                 <dt>{pickup.weekdayAndTime}</dt>
-                <dd>We&apos;ll deliver the vehicle at this scheduled time.</dd>
+                <dd>
+                  {isPickup
+                    ? "Meet the team at this scheduled time."
+                    : "We’ll deliver the vehicle at this scheduled time."}
+                </dd>
               </div>
             </div>
           </dl>
@@ -2642,6 +2812,12 @@ function ConfirmedBooking({
         <div className="booking-confirmation-details">
           <p>Rental return</p>
           <h3>Return to {returnAddress}</h3>
+          {isPickup ? (
+            <MeetingInstructions
+              address={booking.return_meeting_address}
+              instructions={booking.return_meeting_instructions}
+            />
+          ) : null}
           <dl>
             <div>
               <Clock3 size={20} aria-hidden="true" />
@@ -2673,7 +2849,11 @@ function ConfirmedBooking({
             <CarFront size={24} aria-hidden="true" />
             <div>
               <strong>Meet the team for handover</strong>
-              <p>Our team will meet you at the delivery address and time.</p>
+              <p>
+                {isPickup
+                  ? "Meet our team at the agreed pickup address and time."
+                  : "Our team will meet you at the delivery address and time."}
+              </p>
             </div>
           </li>
           <li>
@@ -2709,9 +2889,21 @@ function ActiveRental({
   const started = activeRentalDate(startedAt);
   const rentalReturn = activeRentalDate(returnAt);
   const pickupLocation =
-    booking.pickup_location ?? booking.pickup_branch?.name ?? "Not recorded";
+    booking.pickup_delivery_option === "pickup"
+      ? (booking.pickup_meeting_address ??
+        booking.pickup_branch?.name ??
+        "Not recorded")
+      : (booking.pickup_location ??
+        booking.pickup_branch?.name ??
+        "Not recorded");
   const returnLocation =
-    booking.dropoff_location ?? booking.return_branch?.name ?? "Not recorded";
+    booking.pickup_delivery_option === "pickup"
+      ? (booking.return_meeting_address ??
+        booking.return_branch?.name ??
+        "Not recorded")
+      : (booking.dropoff_location ??
+        booking.return_branch?.name ??
+        "Not recorded");
   const daysRemaining = Math.max(
     0,
     Math.ceil((new Date(returnAt).getTime() - Date.now()) / 86_400_000),
@@ -2724,7 +2916,10 @@ function ActiveRental({
     >
       <header className="booking-active-rental__header">
         <h1 id="active-rental-title">Your rental is active.</h1>
-        <p>You&apos;re all set. Enjoy the drive, and let us know if you need anything.</p>
+        <p>
+          You&apos;re all set. Enjoy the drive, and let us know if you need
+          anything.
+        </p>
       </header>
 
       <section
@@ -2753,8 +2948,12 @@ function ActiveRental({
           </div>
           <div className="booking-active-rental__remaining">
             <strong>{daysRemaining}</strong>
-            <span>{daysRemaining === 1 ? "day remaining" : "days remaining"}</span>
-            <p>Return on {rentalReturn.date} at {rentalReturn.time}.</p>
+            <span>
+              {daysRemaining === 1 ? "day remaining" : "days remaining"}
+            </span>
+            <p>
+              Return on {rentalReturn.date} at {rentalReturn.time}.
+            </p>
           </div>
         </dl>
       </section>
@@ -2770,11 +2969,15 @@ function ActiveRental({
         </Link>
       </div>
 
-      <section className="booking-active-rental__condition" aria-labelledby="vehicle-condition-title">
+      <section
+        className="booking-active-rental__condition"
+        aria-labelledby="vehicle-condition-title"
+      >
         <h2 id="vehicle-condition-title">Vehicle condition</h2>
         <p>
           <CarFront size={21} aria-hidden="true" />
-          {vehicle?.name ?? "Your vehicle"} was released for this trip. If you notice an issue during your rental, contact us right away.
+          {vehicle?.name ?? "Your vehicle"} was released for this trip. If you
+          notice an issue during your rental, contact us right away.
         </p>
       </section>
     </section>
@@ -2796,9 +2999,21 @@ function ReturnedRental({
   const started = activeRentalDate(startedAt);
   const returned = activeRentalDate(returnedAt);
   const pickupLocation =
-    booking.pickup_location ?? booking.pickup_branch?.name ?? "Not recorded";
+    booking.pickup_delivery_option === "pickup"
+      ? (booking.pickup_meeting_address ??
+        booking.pickup_branch?.name ??
+        "Not recorded")
+      : (booking.pickup_location ??
+        booking.pickup_branch?.name ??
+        "Not recorded");
   const returnLocation =
-    booking.dropoff_location ?? booking.return_branch?.name ?? "Not recorded";
+    booking.pickup_delivery_option === "pickup"
+      ? (booking.return_meeting_address ??
+        booking.return_branch?.name ??
+        "Not recorded")
+      : (booking.dropoff_location ??
+        booking.return_branch?.name ??
+        "Not recorded");
 
   return (
     <section
@@ -2842,11 +3057,68 @@ function ReturnedRental({
               <CheckCircle2 size={30} strokeWidth={1.8} aria-hidden="true" />
               <strong>Return recorded</strong>
             </div>
-            <p>We&apos;ll review the return and email any final update.</p>
+            <p>
+              {booking.financial_record?.settled_at
+                ? "Your return inspection and deposit settlement are recorded below."
+                : "Contact the team for any remaining charges or deposit refund details."}
+            </p>
           </div>
         </dl>
       </section>
 
+      {booking.financial_record ? (
+        <section
+          className="booking-finance"
+          aria-label="Rental payment and deposit summary"
+        >
+          <h2>Payment &amp; security deposit</h2>
+          <dl>
+            <div>
+              <dt>Rental balance received at handover</dt>
+              <dd>
+                {formatCurrency(
+                  Number(booking.financial_record.balance_collected),
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt>Security deposit received</dt>
+              <dd>
+                {formatCurrency(
+                  Number(booking.financial_record.deposit_collected),
+                )}
+              </dd>
+            </div>
+            {booking.financial_record.settled_at ? (
+              <>
+                <div>
+                  <dt>Deposit deduction</dt>
+                  <dd>
+                    {formatCurrency(
+                      Number(booking.financial_record.deposit_deduction),
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Deposit refunded</dt>
+                  <dd>
+                    {formatCurrency(
+                      Number(booking.financial_record.deposit_refunded),
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Refund method</dt>
+                  <dd>{booking.financial_record.refund_method}</dd>
+                </div>
+              </>
+            ) : null}
+          </dl>
+          {booking.financial_record.deduction_reason ? (
+            <p>{booking.financial_record.deduction_reason}</p>
+          ) : null}
+        </section>
+      ) : null}
       <div className="booking-active-rental__help">
         <h2>Questions about your return?</h2>
         <a href="tel:+639175550142">
@@ -2962,7 +3234,8 @@ function serviceLabel(booking: CustomerBooking) {
     ].filter(Boolean);
     return locations.length ? `Delivery: ${locations.join(" → ")}` : "Delivery";
   }
-  if (booking.pickup_delivery_option === "pickup") return "Pick up at branch";
+  if (booking.pickup_delivery_option === "pickup")
+    return `Pickup · ${booking.pickup_branch?.name ?? "Agreed meeting point"}`;
   return "Service method not recorded";
 }
 
@@ -3108,4 +3381,32 @@ function fallbackVehicle(booking: CustomerBooking): CustomerVehicle | null {
     branch: booking.pickup_branch,
     category: null,
   };
+}
+
+function MeetingInstructions({
+  address,
+  instructions,
+}: {
+  address?: string | null;
+  instructions?: string | null;
+}) {
+  const map = meetingMapUrl(address);
+  return (
+    <div className="booking-meeting-instructions">
+      <p>
+        {instructions ||
+          "Please contact the team to confirm the exact meeting details before travelling."}
+      </p>
+      {map ? (
+        <a
+          className="booking-meeting-map"
+          href={map}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open in Maps
+        </a>
+      ) : null}
+    </div>
+  );
 }

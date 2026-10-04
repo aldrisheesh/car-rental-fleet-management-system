@@ -1,3 +1,4 @@
+import { DialogThemeProvider } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -14,6 +15,7 @@ import {
   CalendarRange,
   Car,
   ChevronDown,
+  ClipboardList,
   CreditCard,
   ExternalLink,
   LayoutDashboard,
@@ -21,6 +23,7 @@ import {
   Menu,
   ScrollText,
   ShieldCheck,
+  UserRound,
   Wrench,
   X,
 } from "lucide-react";
@@ -64,14 +67,35 @@ type NavEntry = NavItem | NavGroup;
 
 const ownerNav: NavEntry[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/decisions", label: "Decision Support", icon: Brain },
+  {
+    id: "decision-support",
+    label: "Decision Support",
+    icon: Brain,
+    items: [
+      {
+        to: "/admin/decisions/forecast",
+        label: "Demand Forecast",
+        icon: BarChart3,
+      },
+      {
+        to: "/admin/decisions/allocation",
+        label: "Fleet Allocation",
+        icon: Car,
+      },
+      {
+        to: "/admin/decisions/utilization",
+        label: "Vehicle Utilization",
+        icon: CalendarRange,
+      },
+    ],
+  },
   {
     id: "operations",
     label: "Operations",
     icon: CalendarRange,
     items: [
       { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
-      { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
+      { to: "/admin/bookings", label: "Bookings", icon: ClipboardList },
       { to: "/admin/payments", label: "Payments", icon: CreditCard },
     ],
   },
@@ -109,7 +133,7 @@ const staffNav: NavEntry[] = [
     icon: CalendarRange,
     items: [
       { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
-      { to: "/admin/bookings", label: "Bookings", icon: CalendarRange },
+      { to: "/admin/bookings", label: "Bookings", icon: ClipboardList },
       { to: "/admin/notifications", label: "Notifications", icon: Bell },
     ],
   },
@@ -117,6 +141,11 @@ const staffNav: NavEntry[] = [
 ];
 
 function isActive(pathname: string, item: NavItem) {
+  if (
+    pathname === "/admin/decisions" &&
+    item.to === "/admin/decisions/forecast"
+  )
+    return true;
   return item.exact ? pathname === item.to : pathname.startsWith(item.to);
 }
 
@@ -193,11 +222,11 @@ function SidebarLinks({
                 }
                 aria-expanded={expanded}
                 aria-controls={regionId}
-                className={`group flex min-h-11 w-full cursor-pointer items-center gap-2.5 rounded-md border border-transparent px-2.5 text-left text-[13px] font-semibold transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${groupActive ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
+                className={`admin-sidebar-group group flex min-h-11 w-full cursor-pointer items-center gap-2.5 rounded-md border border-transparent px-2.5 text-left text-[13px] font-semibold transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${groupActive ? "is-active border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
               >
                 <Icon
                   aria-hidden="true"
-                  className={`h-5 w-5 shrink-0 ${groupActive ? "text-primary" : "text-[#19385e]"}`}
+                  className={`admin-sidebar-icon h-5 w-5 shrink-0 ${groupActive ? "text-primary" : "text-[#19385e]"}`}
                   strokeWidth={1.9}
                 />
                 <span className="min-w-0 flex-1 truncate">{entry.label}</span>
@@ -212,7 +241,7 @@ function SidebarLinks({
                 className={`grid overflow-hidden transition-[grid-template-rows] duration-200 ${expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
               >
                 <ul
-                  className={`ml-5 min-h-0 overflow-hidden pl-2 ${expanded ? "border-l border-[#c9d8d2] py-1.5" : "py-0"}`}
+                  className={`admin-sidebar-subnav ml-5 min-h-0 overflow-hidden pl-2 ${expanded ? "border-l border-[#c9d8d2] py-1.5" : "py-0"}`}
                 >
                   {entry.items.map((item) => {
                     const active = isActive(pathname, item);
@@ -221,17 +250,22 @@ function SidebarLinks({
                       <li key={item.to}>
                         <Link
                           to={item.to as never}
+                          search={
+                            item.to.startsWith("/admin/decisions/")
+                              ? true
+                              : undefined
+                          }
                           activeOptions={
                             item.exact ? { exact: true } : undefined
                           }
                           onClick={onNavigate}
                           aria-current={active ? "page" : undefined}
                           tabIndex={expanded ? undefined : -1}
-                          className={`group flex min-h-10 items-center gap-2.5 rounded-md px-2.5 text-sm transition-[background-color,color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "bg-[#e2ece6] font-semibold text-primary" : "text-muted-foreground"}`}
+                          className={`admin-sidebar-item group flex min-h-10 items-center gap-2.5 rounded-md px-2.5 text-sm transition-[background-color,color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "is-active bg-[#e2ece6] font-semibold text-primary" : "text-muted-foreground"}`}
                         >
                           <ItemIcon
                             aria-hidden="true"
-                            className={`h-4 w-4 shrink-0 ${active ? "text-primary" : "text-[#526c7b]"}`}
+                            className={`admin-sidebar-icon h-4 w-4 shrink-0 ${active ? "text-primary" : "text-[#526c7b]"}`}
                             strokeWidth={1.9}
                           />
                           <span className="min-w-0 truncate">{item.label}</span>
@@ -255,11 +289,11 @@ function SidebarLinks({
               activeOptions={item.exact ? { exact: true } : undefined}
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
-              className={`group flex min-h-11 items-center gap-3 rounded-md border border-transparent px-3 text-sm font-medium transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
+              className={`admin-sidebar-item group flex min-h-11 items-center gap-3 rounded-md border border-transparent px-3 text-sm font-medium transition-[background-color,color,border-color] duration-150 hover:bg-secondary hover:text-foreground ${active ? "is-active border-primary/10 bg-[#e7efec] text-primary" : "text-muted-foreground"}`}
             >
               <Icon
                 aria-hidden="true"
-                className={`h-5 w-5 shrink-0 ${active ? "text-primary" : "text-[#19385e]"}`}
+                className={`admin-sidebar-icon h-5 w-5 shrink-0 ${active ? "text-primary" : "text-[#19385e]"}`}
                 strokeWidth={1.9}
               />
               <span className="min-w-0 truncate">{item.label}</span>
@@ -292,7 +326,10 @@ export function AdminShell() {
     const activeSession = getAdminSession();
     if (!activeSession) {
       setSession(null);
-      void navigate({ to: "/sign-in", replace: true });
+      void navigate({
+        to: "/sign-in",
+        replace: true,
+      });
       return;
     }
     setSession(activeSession);
@@ -316,13 +353,10 @@ export function AdminShell() {
       "/admin/bookings",
       "/admin/calendar",
       "/admin/notifications",
+      "/admin/profile",
       "/admin/reports",
     ];
-    const unsupportedSharedPaths = [
-      "/admin/customers",
-      "/admin/profile",
-      "/admin/settings",
-    ];
+    const unsupportedSharedPaths = ["/admin/customers", "/admin/settings"];
     const staffCanStay =
       pathname === "/admin" ||
       staffPrefixes.some(
@@ -404,14 +438,19 @@ export function AdminShell() {
         Skip to main content
       </a>
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-border bg-white lg:flex">
-        <Link to="/admin" className="border-b border-border px-7 py-6">
-          <div className="text-[1.65rem] font-semibold leading-7 tracking-[-0.045em] text-primary">
-            Briah&apos;s Car Rental
-          </div>
-          <div className="mt-1 text-base text-muted-foreground">
+      <aside className="admin-sidebar fixed inset-y-0 left-0 z-40 hidden w-[236px] flex-col border-r border-border bg-white lg:flex">
+        <Link
+          to="/admin"
+          className="admin-sidebar-brand border-b border-border px-7 py-6"
+          translate="no"
+        >
+          <span className="admin-sidebar-wordmark">
+            <span>Briah&apos;s</span>
+            <small>Car Rental</small>
+          </span>
+          <span className="admin-sidebar-context mt-2 block text-base text-muted-foreground">
             {staffView ? "Operations Staff" : "Admin Operations"}
-          </div>
+          </span>
         </Link>
 
         <nav
@@ -485,40 +524,11 @@ export function AdminShell() {
             </nav>
 
             <div className="ml-auto flex items-center gap-3">
-              <a
-                href="/vehicles"
-                target="_blank"
-                rel="noreferrer"
-                className="touch-target inline-flex items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
-                aria-label="View customer site in a new tab"
-              >
-                <ExternalLink aria-hidden="true" className="h-4 w-4" />
-                <span className="hidden lg:inline">View customer site</span>
-              </a>
-              <Link
-                to="/admin/notifications"
-                className="touch-target relative inline-flex items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
-                aria-label={`Notifications${notificationUnreadCount ? `, ${notificationUnreadCount} unread` : ""}`}
-              >
-                <Bell aria-hidden="true" className="h-5 w-5" />
-                <span className="hidden md:inline">Notifications</span>
-                {notificationUnreadCount > 0 ? (
-                  <span className="absolute right-0 top-1 grid h-4 min-w-4 -translate-y-1/2 translate-x-1/2 place-items-center rounded-full bg-[#b43b3b] px-1 text-[10px] font-bold text-white">
-                    {notificationUnreadCount > 99
-                      ? "99+"
-                      : notificationUnreadCount}
-                  </span>
-                ) : null}
-              </Link>
-              <span
-                aria-hidden="true"
-                className="hidden h-8 w-px bg-border md:block"
-              />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="touch-target inline-flex items-center gap-2 rounded-md px-1.5 text-left hover:bg-secondary"
+                    className="admin-account-trigger touch-target inline-flex items-center gap-2 rounded-md px-1.5 text-left hover:bg-secondary"
                     aria-label="Open account menu"
                   >
                     <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-semibold text-white">
@@ -547,16 +557,39 @@ export function AdminShell() {
                       {session.name}
                     </span>
                     <span className="block text-xs font-normal text-muted-foreground">
-                      {session.role}
+                      {session.email}
                     </span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/admin/notifications">
-                      <Bell aria-hidden="true" className="h-4 w-4" />
-                      Notifications
+                    <Link to="/admin/profile">
+                      <UserRound aria-hidden="true" className="h-4 w-4" />
+                      Profile &amp; account
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to="/admin/notifications"
+                      aria-label={`Notifications${notificationUnreadCount ? `, ${notificationUnreadCount} unread` : ""}`}
+                    >
+                      <Bell aria-hidden="true" className="h-4 w-4" />
+                      <span>Notifications</span>
+                      {notificationUnreadCount > 0 ? (
+                        <span className="admin-account-notification-count">
+                          {notificationUnreadCount > 99
+                            ? "99+"
+                            : notificationUnreadCount}
+                        </span>
+                      ) : null}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <a href="/vehicles" target="_blank" rel="noreferrer">
+                      <ExternalLink aria-hidden="true" className="h-4 w-4" />
+                      View customer site
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={handleSignOut}>
                     <LogOut aria-hidden="true" className="h-4 w-4" />
                     Sign out
@@ -585,7 +618,9 @@ export function AdminShell() {
           tabIndex={-1}
           className="min-w-0 flex-1 px-5 py-7 md:px-8 md:py-8 xl:px-10"
         >
-          <Outlet />
+          <DialogThemeProvider value="admin">
+            <Outlet />
+          </DialogThemeProvider>
         </main>
       </div>
     </div>
@@ -597,6 +632,7 @@ function currentLabel(pathname: string) {
   if (pathname.startsWith("/admin/requirements")) return "Booking requirements";
   if (pathname.startsWith("/admin/payments")) return "Payment review";
   if (pathname.startsWith("/admin/notifications")) return "Notifications";
+  if (pathname.startsWith("/admin/profile")) return "Profile & account";
   return (
     flatNavItems([...ownerNav, ...staffNav]).find((item) =>
       isActive(pathname, item),

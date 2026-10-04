@@ -29,8 +29,8 @@ test("fleet and maintenance project canonical state without persisted readiness"
   ]);
 
   assert.match(fleet, /fetch\("\/api\/admin-fleet"/);
-  assert.match(fleet, /Ready — derived/);
-  assert.match(fleet, /Canonical returns/);
+  assert.match(fleet, /vehicle\.maintenanceReady/);
+  assert.match(fleet, /pendingInspection/);
   assert.doesNotMatch(fleet, /setReady|readyState|statusOverrides/);
   assert.match(maintenance, /fetch\("\/api\/maintenance"/);
   assert.match(maintenance, /method: "POST"/);
@@ -47,10 +47,10 @@ test("branches, users, reports, decision support, and audit stay within accepted
     routeSource("admin.activity.tsx"),
   ]);
 
-  assert.match(branches, /fetchMasterData<BranchRecord>\("branches"\)/);
+  assert.match(branches, /fetchMasterData<Branch>\("branches"\)/);
   assert.match(branches, /fetchMasterData<ApiMasterVehicle>\("vehicles"\)/);
   assert.match(branches, /buildAdminBranchRows\(branches, vehicles\)/);
-  assert.match(branches, /label="Assigned vehicles"/);
+  assert.match(branches, /assignedVehicleCount/);
   assert.doesNotMatch(branches, /monthly revenue|staffing capacity|geofenc/i);
 
   assert.match(users, /APP_ROLES/);
@@ -63,7 +63,11 @@ test("branches, users, reports, decision support, and audit stay within accepted
   assert.match(reports, /\/api\/admin-reports/);
   assert.match(reports, /Apply/);
   assert.match(reports, /Reset/);
-  assert.doesNotMatch(reports, /revenue|profit|export controls/i);
+  assert.match(
+    reports,
+    /not represent business income, profit or final settlement/,
+  );
+  assert.doesNotMatch(reports, /export controls/i);
 
   assert.match(decisions, /\/api\/forecasts/);
   assert.match(decisions, /\/api\/supply-evaluations/);
@@ -74,7 +78,7 @@ test("branches, users, reports, decision support, and audit stay within accepted
 
   assert.match(audit, /\/api\/audit-events/);
   assert.match(audit, /summarizeAuditEvent/);
-  assert.match(audit, /Apply/);
+  assert.match(audit, /onClick=\{applyFilters\}/);
   assert.match(audit, /Clear/);
   assert.doesNotMatch(audit, /method: "(PATCH|DELETE)"/);
 });

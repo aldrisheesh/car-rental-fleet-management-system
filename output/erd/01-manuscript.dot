@@ -1,0 +1,18 @@
+digraph ERD {
+graph [rankdir=LR, bgcolor="white", nodesep=0.5, ranksep=1.5, pad=0.4, splines=ortho, overlap=false, fontname="Arial", fontsize=20, labelloc=t, label="Fleet and identity\nPK = primary key; FK = foreign key. Labels show database-enforced multiplicity."];
+node [shape=plain,fontname="Arial",fontsize=11];
+edge [fontname="Arial",fontsize=9,color="#64748b",fontcolor="#334155",arrowsize=0.6];
+"profiles" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>profiles</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK FK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"branches" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>branches</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"vehicle_categories" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>vehicle_categories</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"vehicles" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>vehicles</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK category_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK branch_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"vehicle_images" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>vehicle_images</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK vehicle_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"vehicle_operational_state_events" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>vehicle_operational_state_events</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK vehicle_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK recorded_by</TD><TD ALIGN="LEFT">uuid</TD><TD>NULL</TD></TR></TABLE>>];
+"auth.users" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#e2e8f0"><FONT COLOR="#263746"><B>auth.users</B> (reference)</FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"profiles" -> "auth.users" [dir=none,taillabel="0..1",headlabel="1",labeldistance=2];
+"vehicle_images" -> "vehicles" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+"vehicle_operational_state_events" -> "auth.users" [dir=none,taillabel="0..N",headlabel="0..1",labeldistance=2];
+"vehicle_operational_state_events" -> "vehicles" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+"vehicles" -> "branches" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+"vehicles" -> "vehicle_categories" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+}

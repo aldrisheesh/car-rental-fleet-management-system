@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/auth/profile")({
           )
           .eq("id", principal.userId)
           .maybeSingle();
-        if (error || !profile || profile.user_type !== "Customer/Renter") {
+        if (error || !profile || profile.user_type !== principal.role) {
           return Response.json(
             { message: "Unable to load your profile." },
             { status: 403 },
@@ -66,9 +66,28 @@ export const Route = createFileRoute("/api/auth/profile")({
             { status: 400 },
           );
 
-        if (principal.role !== "Customer/Renter") {
+        if (
+          phoneNumber &&
+          (phoneNumber.replace(/\D/g, "").length < 10 ||
+            phoneNumber.length > 32)
+        ) {
           return Response.json(
-            { message: "Customer profile access is required." },
+            { message: "Please enter a valid contact number." },
+            { status: 400 },
+          );
+        }
+        if (fullName.length > 160) {
+          return Response.json(
+            { message: "Full name must be 160 characters or fewer." },
+            { status: 400 },
+          );
+        }
+        if (
+          principal.role === "Operations Staff" &&
+          fullName !== principal.fullName
+        ) {
+          return Response.json(
+            { message: "Your name is managed by the owner/admin." },
             { status: 403 },
           );
         }
@@ -79,19 +98,29 @@ export const Route = createFileRoute("/api/auth/profile")({
         const cityMunicipality = textField("cityMunicipality");
         const province = textField("province");
         const postalCode = textField("postalCode");
-        const { error } = await getServerAuthClient(accessToken)
+        const { data: savedProfile, error } = await getServerAuthClient(
+          accessToken,
+        )
           .from("profiles")
           .update({
             full_name: fullName,
             phone_number: phoneNumber,
-            street_address: streetAddress,
-            barangay,
-            city_municipality: cityMunicipality,
-            province,
-            postal_code: postalCode,
+            ...(principal.role === "Customer/Renter"
+              ? {
+                  street_address: streetAddress,
+                  barangay,
+                  city_municipality: cityMunicipality,
+                  province,
+                  postal_code: postalCode,
+                }
+              : {}),
           })
-          .eq("id", principal.userId);
-        if (error)
+          .eq("id", principal.userId)
+          .select(
+            "id, email, full_name, phone_number, street_address, barangay, city_municipality, province, postal_code, user_type, account_status, updated_at",
+          )
+          .maybeSingle();
+        if (error || !savedProfile)
           return Response.json(
             { message: "Unable to update your profile." },
             { status: 400 },
@@ -102,15 +131,7 @@ export const Route = createFileRoute("/api/auth/profile")({
           setAuthView(updated);
           return Response.json({
             principal: updated,
-            profile: {
-              full_name: fullName,
-              phone_number: phoneNumber,
-              street_address: streetAddress,
-              barangay,
-              city_municipality: cityMunicipality,
-              province,
-              postal_code: postalCode,
-            },
+            profile: savedProfile,
           });
         }
         return Response.json({ message: "Session expired." }, { status: 401 });

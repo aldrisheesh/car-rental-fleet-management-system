@@ -1,0 +1,182 @@
+[
+  {
+    "file": "00-overview",
+    "title": "ERD overview - keys and relationships",
+    "tables": [
+      "allocation_recommendation_batches",
+      "allocation_recommendation_candidates",
+      "allocation_recommendations",
+      "audit_events",
+      "backup_artifacts",
+      "backup_runs",
+      "booking_creation_idempotency",
+      "booking_finder_context",
+      "booking_payment_quotes",
+      "booking_rate_quotes",
+      "booking_requests",
+      "branches",
+      "contact_inquiries",
+      "email_deliveries",
+      "forecast_demand_coverage",
+      "forecast_inputs",
+      "forecast_runs",
+      "forecasts",
+      "maintenance_records",
+      "notification_preferences",
+      "notifications",
+      "operational_notification_conditions",
+      "payment_methods",
+      "payment_proofs",
+      "payments",
+      "profiles",
+      "public_contact_locations",
+      "public_contact_settings",
+      "rate_cards",
+      "recovery_drills",
+      "rental_transactions",
+      "renter_requirement_documents",
+      "renter_requirement_reviews",
+      "renter_requirement_sets",
+      "supply_evaluation_vehicles",
+      "supply_evaluations",
+      "vehicle_categories",
+      "vehicle_images",
+      "vehicle_operational_state_events",
+      "vehicles"
+    ]
+  },
+  {
+    "file": "01-fleet-and-identity",
+    "title": "Fleet and identity",
+    "tables": [
+      "profiles",
+      "branches",
+      "vehicle_categories",
+      "vehicles",
+      "vehicle_images",
+      "vehicle_operational_state_events"
+    ]
+  },
+  {
+    "file": "02-bookings-and-requirements",
+    "title": "Bookings and requirements",
+    "tables": [
+      "booking_requests",
+      "booking_creation_idempotency",
+      "booking_finder_context",
+      "renter_requirement_sets",
+      "renter_requirement_documents",
+      "renter_requirement_reviews"
+    ]
+  },
+  {
+    "file": "03-payments-and-retained-quotations",
+    "title": "Payments and retained quotations",
+    "tables": [
+      "payment_methods",
+      "payments",
+      "payment_proofs",
+      "booking_payment_quotes",
+      "rate_cards",
+      "booking_rate_quotes"
+    ]
+  },
+  {
+    "file": "04-rental-and-maintenance",
+    "title": "Rental and maintenance",
+    "tables": [
+      "rental_transactions",
+      "maintenance_records"
+    ]
+  },
+  {
+    "file": "05-demand-forecasting",
+    "title": "Demand forecasting",
+    "tables": [
+      "forecast_runs",
+      "forecasts",
+      "forecast_inputs",
+      "forecast_demand_coverage"
+    ]
+  },
+  {
+    "file": "06-supply-and-allocation",
+    "title": "Supply and allocation",
+    "tables": [
+      "supply_evaluations",
+      "supply_evaluation_vehicles",
+      "allocation_recommendation_batches",
+      "allocation_recommendations",
+      "allocation_recommendation_candidates"
+    ]
+  },
+  {
+    "file": "07-notifications-and-audit",
+    "title": "Notifications and audit",
+    "tables": [
+      "notifications",
+      "notification_preferences",
+      "operational_notification_conditions",
+      "email_deliveries",
+      "audit_events"
+    ]
+  },
+  {
+    "file": "08-recovery-and-public-contact",
+    "title": "Recovery and public contact",
+    "tables": [
+      "backup_runs",
+      "backup_artifacts",
+      "recovery_drills",
+      "public_contact_settings",
+      "public_contact_locations",
+      "contact_inquiries"
+    ]
+  },
+  {
+    "file": "09-full-physical",
+    "title": "Full physical ERD - all columns",
+    "tables": [
+      "allocation_recommendation_batches",
+      "allocation_recommendation_candidates",
+      "allocation_recommendations",
+      "audit_events",
+      "backup_artifacts",
+      "backup_runs",
+      "booking_creation_idempotency",
+      "booking_finder_context",
+      "booking_payment_quotes",
+      "booking_rate_quotes",
+      "booking_requests",
+      "branches",
+      "contact_inquiries",
+      "email_deliveries",
+      "forecast_demand_coverage",
+      "forecast_inputs",
+      "forecast_runs",
+      "forecasts",
+      "maintenance_records",
+      "notification_preferences",
+      "notifications",
+      "operational_notification_conditions",
+      "payment_methods",
+      "payment_proofs",
+      "payments",
+      "profiles",
+      "public_contact_locations",
+      "public_contact_settings",
+      "rate_cards",
+      "recovery_drills",
+      "rental_transactions",
+      "renter_requirement_documents",
+      "renter_requirement_reviews",
+      "renter_requirement_sets",
+      "supply_evaluation_vehicles",
+      "supply_evaluations",
+      "vehicle_categories",
+      "vehicle_images",
+      "vehicle_operational_state_events",
+      "vehicles"
+    ]
+  }
+]

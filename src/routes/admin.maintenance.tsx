@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
   CalendarDays,
   CarFront,
@@ -29,6 +29,7 @@ import type { MaintenanceReadinessReason } from "@/lib/maintenance-readiness";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -248,19 +249,19 @@ function MaintenancePage() {
     [records],
   );
   const attention = useMemo(
-    () => readiness.filter((item) => !item.maintenanceReady),
-    [readiness],
+    () => readiness.filter((item) => !item.maintenanceReady && (!preselectedVehicleId || item.vehicleId === preselectedVehicleId)),
+    [readiness, preselectedVehicleId],
   );
   const closedRecords = useMemo(
-    () => records.filter((record) => record.status === "Completed" || record.status === "Cancelled"),
-    [records],
+    () => records.filter((record) => (record.status === "Completed" || record.status === "Cancelled") && (!preselectedVehicleId || record.vehicle_id === preselectedVehicleId)),
+    [records, preselectedVehicleId],
   );
   const filteredRecords = useMemo(() => {
     return records.filter((record) => {
       const matchesFilter = !record.archived_at && record.status === queueFilter;
-      return matchesFilter && matchesMaintenanceSearch(record, query);
+      return matchesFilter && (!preselectedVehicleId || record.vehicle_id === preselectedVehicleId) && matchesMaintenanceSearch(record, query);
     });
-  }, [query, queueFilter, records]);
+  }, [query, queueFilter, records, preselectedVehicleId]);
   const selectedRecord = useMemo(
     () =>
       records.find((record) => record.id === selectedRecordId) ??
@@ -448,6 +449,7 @@ function MaintenancePage() {
     <header className="admin-maintenance-heading">
       <div>
         <h1>Maintenance Management</h1>
+        {preselectedVehicleId ? <p className="admin-maintenance-scope">Service records for {vehicleRows.find(vehicle => vehicle.id === preselectedVehicleId)?.name ?? "the selected vehicle"}. Status totals below cover all vehicles. <Link to="/admin/maintenance" search={{ vehicleId: undefined }}>View all vehicles</Link></p> : null}
       </div>
       <div className="admin-maintenance-heading__actions">
         <label className="admin-maintenance-header-search">
@@ -692,6 +694,10 @@ function MaintenancePage() {
 
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="admin-maintenance-details-dialog max-h-[88vh] overflow-y-auto p-0 sm:max-w-5xl">
+          <DialogTitle className="sr-only">
+            Maintenance details for {selectedRecord ? (vehicleById.get(selectedRecord.vehicle_id)?.name ?? "vehicle") : "vehicle"}
+          </DialogTitle>
+          <DialogDescription className="sr-only">Review the service record, rental impact, and prior maintenance history.</DialogDescription>
           <MaintenanceWorkspaceDetail
             record={selectedRecord}
             vehicle={selectedRecord ? (vehicleById.get(selectedRecord.vehicle_id) ?? null) : null}
@@ -939,7 +945,7 @@ function MaintenanceWorkspaceDetail({
             </div>
             {history.map((item) => (
               <div key={item.id}>
-                <span className={`is-${item.status.toLowerCase()}`} />
+                <span aria-hidden="true" className={`admin-maintenance-history-dot is-${item.status.toLowerCase()}`} />
                 <time>
                   {formatDate(item.completed_at ?? item.service_started_at)}
                 </time>

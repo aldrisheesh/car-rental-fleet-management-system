@@ -22,7 +22,7 @@ import {
 } from "../../src/lib/maintenance-readiness.ts";
 import { calculateRentalQuote } from "../../src/lib/rental-quote.ts";
 
-export const VERSION = "synthetic-defense-v1";
+export const VERSION = "synthetic-defense-v2";
 export const PROJECT = "vkfacfjkwomhfvrieaza";
 // Parent-first: foreign keys remain enabled throughout restoration.
 export const TABLES = [
@@ -36,6 +36,7 @@ export const TABLES = [
   "payments",
   "payment_proofs",
   "rental_transactions",
+  "rental_financial_records",
   "maintenance_records",
   "vehicle_operational_state_events",
   "forecast_runs",
@@ -59,6 +60,10 @@ export function id(label: string) {
   const h = createHash("sha256").update(`${VERSION}:${label}`).digest("hex");
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}`;
 }
+// Stable variation: a reset recreates the same schedule, never a new random sample.
+export function sample(label: string, limit: number) {
+  return createHash("sha256").update(label).digest().readUInt32BE(0) % limit;
+}
 export function at(day: string, offset = 0, hour = 9) {
   return new Date(
     Date.parse(`${day}T00:00:00+08:00`) + offset * 86400000 + hour * 3600000,
@@ -71,6 +76,34 @@ export function validDate(day: string) {
   )
     throw new Error("Use a valid YYYY-MM-DD reference date.");
   return day;
+}
+// Public landmarks are illustrative demo arrangements, never client-approved premises.
+export function syntheticPickupArrangements(
+  bookingId: string,
+  branchName: string,
+) {
+  const landmarks =
+    branchName === "Taft, Manila"
+      ? [
+          "De La Salle University main gate, Taft Avenue, Malate, Manila",
+          "Robinsons Place Manila main entrance, Pedro Gil Street, Ermita, Manila",
+        ]
+      : branchName === "Antipolo, Rizal"
+        ? [
+            "Antipolo Cathedral main entrance, P. Oliveros Street, Antipolo, Rizal",
+            "Robinsons Place Antipolo main entrance, Sumulong Highway, Antipolo, Rizal",
+          ]
+        : null;
+  if (!landmarks) throw new Error("Unknown demo pickup operating area");
+  const address = landmarks[sample(bookingId + ":meeting", landmarks.length)];
+  return {
+    pickup_meeting_address: address,
+    pickup_meeting_instructions:
+      "Synthetic demo arrangement: meet the team at the main entrance at your scheduled pickup time. Bring your driver’s license and valid ID.",
+    return_meeting_address: address,
+    return_meeting_instructions:
+      "Synthetic demo arrangement: return to the main entrance at your scheduled return time. Contact the team before arriving and allow time for inspection.",
+  };
 }
 export function buildBaseline(source: Dataset, asOf: string) {
   validDate(asOf);
@@ -155,11 +188,51 @@ export function buildBaseline(source: Dataset, asOf: string) {
     stage = "Verified",
   ) => {
     const n = bookingNumber++,
-      customer = customers[n % customers.length];
+      customer = customers[sample(label + ":customer", customers.length)];
     const created = new Date(
-      Math.min(Date.parse(pickup) - 7 * 86400000, Date.parse(now) - 86400000),
+      Math.min(
+        Date.parse(pickup) -
+          (status === "Submitted" || status === "Draft"
+            ? 1
+            : 1 + sample(label + ":lead", 21)) *
+            86400000,
+        Date.parse(now) -
+          (status === "Submitted" || status === "Draft"
+            ? 1 + sample(label + ":request-age", 2)
+            : 3 + sample(label + ":advance-planning", 25)) *
+            86400000 -
+          sample(label + ":created-minute", 600) * 60000,
+      ),
     ).toISOString();
     const confirmed = status === "Confirmed";
+    // Researcher-designed service mix and fees, not observed client statistics.
+    const delivery =
+      !label.startsWith("TODAY-") && sample(label + ":service", 100) < 45;
+    const areas =
+      branch === taft
+        ? [
+            "Malate, Manila",
+            "Paco, Manila",
+            "Ermita, Manila",
+            "San Andres Bukid, Manila",
+          ]
+        : [
+            "Dalig, Antipolo, Rizal",
+            "San Roque, Antipolo, Rizal",
+            "Cupang, Antipolo, Rizal",
+            "Mayamot, Antipolo, Rizal",
+          ];
+    const address = (suffix: string) =>
+      `SYNTHETIC: Demo Building ${10 + sample(label + suffix, 80)}, ${areas[sample(label + suffix + ":area", areas.length)]}`;
+    const pickupLocation = delivery ? address(":handover") : null;
+    const dropoffLocation = delivery
+      ? sample(label + ":same-return", 100) < 80
+        ? pickupLocation
+        : address(":collection")
+      : null;
+    const deliveryFee = delivery
+      ? [500, 700, 900, 1200][sample(label + ":fee", 4)]
+      : 0;
     const b = put("booking_requests", {
       id: id(`booking:${label}`),
       customer_id: customer.id,
@@ -174,10 +247,19 @@ export function buildBaseline(source: Dataset, asOf: string) {
         "Quezon City, Metro Manila",
         "Antipolo, Rizal",
         "Calamba, Laguna",
-      ][n % 4],
-      purpose_of_use: `SYNTHETIC / ${label} / ${["Family visit", "Business appointment", "Weekend trip", "Airport transfer"][n % 4]}`,
-      pickup_delivery_option: "pickup",
-      preferred_seat_count: Math.min(4, v.seat_capacity ?? 4),
+      ][sample(label + ":destination", 4)],
+      purpose_of_use: `SYNTHETIC / ${["Family visit", "Business appointment", "Weekend trip", "Airport transfer", "Family celebration", "Out-of-town errands"][sample(label + ":purpose", 6)]}`,
+      pickup_delivery_option: delivery ? "delivery" : "pickup",
+      pickup_location: pickupLocation,
+      dropoff_location: dropoffLocation,
+      ...(!delivery
+        ? syntheticPickupArrangements(
+            id(`booking:${label}`),
+            branch === taft ? "Taft, Manila" : "Antipolo, Rizal",
+          )
+        : {}),
+      preferred_seat_count:
+        1 + sample(label + ":passengers", Math.min(v.seat_capacity ?? 4, 6)),
       booking_status: status,
       created_at: created,
       updated_at: created,
@@ -261,6 +343,7 @@ export function buildBaseline(source: Dataset, asOf: string) {
       Number(v.daily_rate),
       new Date(pickup),
       new Date(end),
+      deliveryFee,
     );
     const q = put("booking_payment_quotes", {
       id: id(`quote:${label}`),
@@ -272,7 +355,7 @@ export function buildBaseline(source: Dataset, asOf: string) {
       grace_minutes: 60,
       billable_days: quote.billableDays,
       rental_subtotal: quote.rentalSubtotal,
-      delivery_fee: 0,
+      delivery_fee: quote.deliveryFee,
       total_amount: quote.totalAmount,
       down_payment_amount: quote.downPaymentAmount,
       remaining_balance_amount: quote.balanceAmount,
@@ -282,7 +365,8 @@ export function buildBaseline(source: Dataset, asOf: string) {
       issued_at: created,
       updated_at: created,
     });
-    const paymentStatus = confirmed
+    const paymentVerified = confirmed || stage === "Ready";
+    const paymentStatus = paymentVerified
       ? "Verified"
       : stage === "Payment"
         ? "Pending Verification"
@@ -301,11 +385,11 @@ export function buildBaseline(source: Dataset, asOf: string) {
       payment_method_label: submitted ? method.label : null,
       transaction_reference: submitted ? ref : null,
       status: paymentStatus,
-      reviewed_by: confirmed ? admin.id : null,
-      reviewed_at: confirmed ? created : null,
-      reviewed_proof_version: confirmed ? 1 : null,
-      reviewed_submitted_amount: confirmed ? q.down_payment_amount : null,
-      reviewed_transaction_reference: confirmed ? ref : null,
+      reviewed_by: paymentVerified ? admin.id : null,
+      reviewed_at: paymentVerified ? created : null,
+      reviewed_proof_version: paymentVerified ? 1 : null,
+      reviewed_submitted_amount: paymentVerified ? q.down_payment_amount : null,
+      reviewed_transaction_reference: paymentVerified ? ref : null,
       submitted_at: submitted ? created : null,
       created_at: created,
       updated_at: created,
@@ -364,37 +448,60 @@ export function buildBaseline(source: Dataset, asOf: string) {
     }
     return b;
   };
-  // 24 complete weeks, sequential commitments; recent zero-demand Antipolo sedans
-  // give the source branch a transferable surplus. Counts are designed, not learned.
+  // Six months of modest synthetic utilization. Each vehicle gets independent
+  // weekdays, handover times and rental durations; this is scenario data, not
+  // an estimate of the client's demand. Reserve two sedans for the DSS example.
   for (let w = 0; w < 24; w++) {
     const day = isoDay(addWeeks(new Date(start), w));
-    for (const [vi, v] of vehicles.entries()) {
+    for (const v of vehicles) {
       if (v.license_plate === "DEV-VIOS-001" && w >= 20) continue;
       if (v.license_plate === "DEV-CITY-001") continue;
-      if ((w + vi) % 4 === 0) continue;
+      if (
+        sample(day + v.license_plate + ":quiet", 100) <
+        25 + sample(day + ":season", 30)
+      )
+        continue;
       const count = v.license_plate === "DEV-MIRA-001" ? 2 : 1;
-      for (let j = 0; j < count; j++)
+      for (let j = 0; j < count; j++) {
+        const label = `HISTORY-${day}-${v.license_plate}-${j}`;
+        const offset =
+          count === 2
+            ? j * 4 + sample(label + ":day", 2)
+            : sample(label + ":day", 7);
+        const duration =
+          count === 2
+            ? 1 + sample(label + ":duration", Math.min(2, 6 - offset))
+            : 1 +
+              sample(label + ":duration", Math.max(1, Math.min(4, 6 - offset)));
+        const hour = [7, 8, 9, 10, 13, 15, 17][sample(label + ":hour", 7)];
         addBooking(
-          `HISTORY-${day}-${v.license_plate}-${j}`,
+          label,
           v,
-          at(day, 1 + j * 3),
-          at(day, 2 + j * 3),
+          at(day, offset, hour),
+          offset === 6
+            ? at(day, offset, hour + 5)
+            : at(day, offset + duration, hour),
           v.license_plate === "DEV-VIOS-001" ? taft : v.branch_id,
         );
+      }
     }
   }
   // Last four weeks of demand at Taft, served by cross-branch City; consistent physical schedule.
   const city = vehicles.find((v) => v.license_plate === "DEV-CITY-001")!;
   for (let w = 20; w < 24; w++) {
     const day = isoDay(addWeeks(new Date(start), w));
-    for (let j = 0; j < (w === 22 ? 2 : 1); j++)
+    for (let j = 0; j < (w === 22 ? 2 : 1); j++) {
+      const label = `SEDAN-${day}-${j}`;
+      const offset = j * 4 + sample(label + ":day", 3);
+      const hour = [8, 10, 14][sample(label + ":hour", 3)];
       addBooking(
-        `SEDAN-${day}-${j}`,
+        label,
         city,
-        at(day, 1 + j * 3),
-        at(day, 2 + j * 3),
+        at(day, offset, hour),
+        at(day, offset + 1, hour),
         taft,
       );
+    }
   }
   const byPlate = (plate: string) =>
     vehicles.find((v) => v.license_plate === plate)!;
@@ -407,11 +514,17 @@ export function buildBaseline(source: Dataset, asOf: string) {
     stage = "Verified",
   ) => {
     const v = byPlate(plate);
+    const hour =
+      label === "TODAY-VAN-PICKUP"
+        ? 11
+        : label === "TODAY-HIACE-PICKUP"
+          ? 15
+          : [7, 9, 11, 14, 16][sample(label + ":hour", 5)];
     const b = addBooking(
       label,
       v,
-      at(asOf, offset),
-      at(asOf, offset + duration),
+      at(asOf, offset, hour),
+      at(asOf, offset + duration, hour),
       v.branch_id,
       status,
       stage,
@@ -425,10 +538,48 @@ export function buildBaseline(source: Dataset, asOf: string) {
       status,
     });
   };
+  // Fill the elapsed part of the current week without creating future
+  // completed rentals or interfering with the active/idle defense scenarios.
+  const elapsedDays = Math.floor(
+    (Date.parse(at(asOf, 0, 0)) - Date.parse(at(monday, 0, 0))) / 86400000,
+  );
+  if (elapsedDays >= 2) {
+    for (const v of vehicles) {
+      if (
+        [
+          "DEV-INNO-001",
+          "DEV-CITY-001",
+          "DEV-VIOS-001",
+          "DEV-MIRA-001",
+        ].includes(v.license_plate)
+      )
+        continue;
+      if (sample(v.license_plate + ":recent", 100) < 35) continue;
+      const offset = sample(v.license_plate + ":recent-day", elapsedDays - 1);
+      const duration =
+        1 +
+        sample(
+          v.license_plate + ":recent-length",
+          Math.min(3, elapsedDays - offset - 1),
+        );
+      const hour = [8, 11, 15][sample(v.license_plate + ":recent-hour", 3)];
+      addBooking(
+        `RECENT-${v.license_plate}`,
+        v,
+        at(monday, offset, hour),
+        at(monday, offset + duration, hour),
+        v.branch_id,
+      );
+    }
+  }
+  scenario("TODAY-VAN-PICKUP", "DEV-URVN-001", 0, 2);
+  scenario("TODAY-HIACE-PICKUP", "DEV-HIAC-001", 0, 1);
   scenario("ACTIVE-RENTAL", "DEV-INNO-001", -1, 3);
   scenario("READY-FOR-PICKUP", "DEV-WIGO-001", 2, 2);
   scenario("REQUIREMENTS-REVIEW", "DEV-AVAN-001", 3, 2, "Submitted", "Review");
   scenario("PAYMENT-REVIEW", "DEV-RUSH-001", 4, 2, "Submitted", "Payment");
+  scenario("READY-TO-CONFIRM", "DEV-RANG-001", 5, 3, "Submitted", "Ready");
+  scenario("AWAITING-PAYMENT", "DEV-EVST-001", 9, 2, "Submitted", "Verified");
   scenario("DRAFT-REQUEST", "DEV-HILX-001", 6, 2, "Draft", "No documents");
   scenario(
     "CANCELLED-REQUEST",
@@ -446,20 +597,60 @@ export function buildBaseline(source: Dataset, asOf: string) {
     "Rejected",
     "No documents",
   );
-  for (let w = 1; w <= 6; w++)
-    scenario(
-      `FUTURE-${w}`,
-      [
-        "DEV-AVAN-001",
-        "DEV-RUSH-001",
-        "DEV-HILX-001",
-        "DEV-URVN-001",
-        "DEV-HIAC-001",
-        "DEV-WIGO-001",
-      ][w - 1],
-      w * 7 + 2,
-      2,
-    );
+  // Planned full-day service slots are commitments for fixture generation,
+  // even though Scheduled maintenance does not yet block live readiness.
+  const plannedServices = [
+    { plate: "DEV-EVST-001", offset: 3 },
+    { plate: "DEV-WIGO-001", offset: 22 },
+    { plate: "DEV-RUSH-001", offset: 39 },
+    { plate: "DEV-HIAC-001", offset: 58 },
+    { plate: "DEV-RANG-001", offset: 75 },
+    { plate: "DEV-AVAN-001", offset: 85 },
+  ];
+  const horizonEnd = `${asOf.slice(0, 4)}-12-31`;
+  const horizonDays = Math.floor(
+    (Date.parse(at(horizonEnd, 0, 23)) - Date.parse(at(asOf, 0, 0))) / 86400000,
+  );
+  // Irregular reservations through the end of December. Skip conflicting commitments,
+  // retain turnaround time and avoid filling every vehicle every week.
+  for (const v of vehicles) {
+    if (v.license_plate === "DEV-MIRA-001") continue; // active corrective service
+    let offset = 5 + sample(v.id + ":first", 8);
+    if (["DEV-CITY-001", "DEV-VIOS-001"].includes(v.license_plate))
+      offset = 15 + sample(v.id + ":first", 6);
+    for (let j = 0; offset <= horizonDays; j++) {
+      const label = `UPCOMING-${v.license_plate}-${j}`;
+      const duration = 1 + sample(label + ":duration", 5);
+      const hour = [7, 8, 10, 12, 14, 16, 18][sample(label + ":hour", 7)];
+      const pickup = at(asOf, offset, hour),
+        end = at(asOf, offset + duration, hour);
+      const conflict = data.booking_requests.some(
+        (b) =>
+          ["Confirmed", "Submitted"].includes(b.booking_status) &&
+          (b.assigned_vehicle_id ?? b.requested_vehicle_id) === v.id &&
+          Date.parse(pickup) < Date.parse(b.return_at) + 12 * 3600000 &&
+          Date.parse(end) + 12 * 3600000 > Date.parse(b.pickup_at),
+      );
+      const serviceConflict = plannedServices.some(
+        (service) =>
+          service.plate === v.license_plate &&
+          pickup < at(asOf, service.offset + 1, 0) &&
+          end > at(asOf, service.offset, 0),
+      );
+      if (!conflict && !serviceConflict && end <= at(horizonEnd, 0, 23)) {
+        const b = addBooking(label, v, pickup, end, v.branch_id);
+        scenarios.push({
+          label,
+          bookingId: b.id,
+          vehicle: v.license_plate,
+          pickup,
+          return: end,
+          status: "Confirmed",
+        });
+      }
+      offset += duration + 3 + sample(label + ":gap", 9);
+    }
+  }
   for (const [i, v] of vehicles.entries())
     put("maintenance_records", {
       id: id(`maintenance-history:${v.id}`),
@@ -496,23 +687,26 @@ export function buildBaseline(source: Dataset, asOf: string) {
     created_at: at(asOf, -1, 16),
     updated_at: now,
   });
-  put("maintenance_records", {
-    id: id("maintenance-future"),
-    vehicle_id: byPlate("DEV-EVST-001").id,
-    maintenance_type: "Preventive",
-    description: "SYNTHETIC: scheduled preventive service.",
-    status: "Scheduled",
-    blocks_rental_use: false,
-    scheduled_for: at(asOf, 3),
-    service_started_at: null,
-    next_service_date: new Date(at(asOf, 3, 12)).toISOString().slice(0, 10),
-    next_service_odometer: null,
-    remarks: VERSION,
-    created_by: admin.id,
-    updated_by: admin.id,
-    created_at: at(asOf, -1),
-    updated_at: now,
-  });
+  for (const service of plannedServices)
+    put("maintenance_records", {
+      id: id(`maintenance-future:${service.plate}:${service.offset}`),
+      vehicle_id: byPlate(service.plate).id,
+      maintenance_type: "Preventive",
+      description: "SYNTHETIC: scheduled preventive service.",
+      status: "Scheduled",
+      blocks_rental_use: false,
+      scheduled_for: at(asOf, service.offset),
+      service_started_at: null,
+      next_service_date: new Date(at(asOf, service.offset, 12))
+        .toISOString()
+        .slice(0, 10),
+      next_service_odometer: null,
+      remarks: VERSION,
+      created_by: admin.id,
+      updated_by: admin.id,
+      created_at: at(asOf, -1),
+      updated_at: now,
+    });
   const pairs = source.branches.flatMap((b) =>
     source.vehicle_categories.map((c) => ({
       branchId: b.id,
@@ -764,6 +958,24 @@ export function validateDataset(data: Dataset, asOf: string) {
       if (bs[i].pickup_at < bs[i - 1].return_at)
         throw new Error(`Overlapping confirmed bookings: ${v.license_plate}`);
   }
+  for (const m of data.maintenance_records) {
+    if (["Completed", "Cancelled"].includes(m.status)) continue;
+    const start =
+      m.status === "Scheduled"
+        ? at(isoDay(new Date(Date.parse(m.scheduled_for) + 8 * 3600000)), 0, 0)
+        : m.service_started_at;
+    const end =
+      m.status === "Scheduled"
+        ? at(isoDay(new Date(Date.parse(m.scheduled_for) + 8 * 3600000)), 1, 0)
+        : m.completed_at;
+    for (const b of data.booking_requests) {
+      if (!["Confirmed", "Submitted"].includes(b.booking_status)) continue;
+      if ((b.assigned_vehicle_id ?? b.requested_vehicle_id) !== m.vehicle_id)
+        continue;
+      if (b.return_at > start && (!end || b.pickup_at < end))
+        throw new Error(`Booking overlaps maintenance: ${m.vehicle_id}`);
+    }
+  }
   for (const r of data.rental_transactions) {
     const b = bookings.get(r.booking_id);
     if (
@@ -780,6 +992,40 @@ export function validateDataset(data: Dataset, asOf: string) {
       (r.return_odometer < r.release_odometer || r.ended_at > at(asOf, 0, 8))
     )
       throw new Error("Invalid completed rental");
+  }
+  for (const b of data.booking_requests) {
+    const q = data.booking_payment_quotes.find((q) => q.booking_id === b.id);
+    if (
+      b.pickup_delivery_option === "pickup" &&
+      (q ||
+        b.booking_status === "Confirmed" ||
+        data.rental_transactions.some((r) => r.booking_id === b.id)) &&
+      [
+        b.pickup_meeting_address,
+        b.pickup_meeting_instructions,
+        b.return_meeting_address,
+        b.return_meeting_instructions,
+      ].some((v) => !v?.trim())
+    )
+      throw new Error(
+        "Quoted or reserved pickup is missing handover arrangements",
+      );
+    if (
+      b.pickup_delivery_option === "delivery" &&
+      (!b.pickup_location || !b.dropoff_location)
+    )
+      throw new Error("Delivery handover addresses missing");
+    if (
+      b.pickup_delivery_option === "pickup" &&
+      (b.pickup_location || b.dropoff_location || q?.delivery_fee !== 0)
+    )
+      throw new Error("Pickup contains delivery details");
+    if (
+      !q ||
+      q.total_amount !== q.rental_subtotal + q.delivery_fee ||
+      q.down_payment_amount + q.remaining_balance_amount !== q.total_amount
+    )
+      throw new Error("Inconsistent booking quote totals");
   }
   for (const p of data.payments) {
     const q = data.booking_payment_quotes.find(

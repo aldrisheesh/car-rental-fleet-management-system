@@ -1,3 +1,7 @@
+import { getAdminSession } from "@/lib/admin-auth";
+import { Skeleton } from "@/components/ui/skeleton";
+import { bookingStage } from "@/lib/booking-stage";
+import { bookingReference } from "@/lib/booking-reference";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   createFileRoute,
@@ -7,10 +11,7 @@ import {
 } from "@tanstack/react-router";
 import {
   ArrowRight,
-  Car,
   ChevronDown,
-  CreditCard,
-  FileText,
   Search,
   SlidersHorizontal,
 } from "lucide-react";
@@ -178,6 +179,7 @@ function BookingsPage() {
       if (!normalizedQuery) return true;
       return [
         booking.id,
+        bookingReference(booking.id),
         booking.customer?.full_name,
         booking.customer?.email,
         booking.requested_vehicle?.name,
@@ -211,45 +213,30 @@ function BookingsPage() {
     setBranch("");
     setPage(1);
   };
-  const attentionCount = rows.filter((booking) =>
-    [
-      booking.requirement_status,
-      booking.payment_status,
-      booking.booking_status,
-    ].some((value) =>
-      ["Pending Review", "Needs Resubmission", "Pending Verification"].includes(
-        value ?? "",
-      ),
-    ),
+  const documentReviewCount = visibleRows.filter(
+    (b) => bookingStage(b).label === "Document review",
   ).length;
-  const documentReviewCount = rows.filter((booking) =>
-    ["Pending Review", "Needs Resubmission"].includes(
-      booking.requirement_status ?? "",
-    ),
+  const readyForReviewCount = visibleRows.filter(
+    (b) => bookingStage(b).label === "Ready to confirm",
   ).length;
-  const readyForReviewCount = rows.filter(
-    (booking) =>
-      booking.booking_status === "Submitted" &&
-      booking.requirement_status === "Verified" &&
-      booking.payment_status === "Verified",
-  ).length;
-  const paymentReviewCount = rows.filter(
-    (booking) => booking.payment_status === "Pending Verification",
+  const paymentReviewCount = visibleRows.filter(
+    (b) => bookingStage(b).label === "Payment review",
   ).length;
   const hasFilters = Boolean(query || status || branch);
   const isLoading = state.status === "loading";
 
   return (
     <div
-      className="admin-bookings-workspace"
+      className="admin-bookings-workspace admin-bookings-stage-workspace"
       aria-busy={isLoading || undefined}
     >
       <header className="admin-bookings-heading">
         <div>
-          <h1>Rental requests</h1>
+          <h1>Bookings</h1>
           <p>
-            Review requirements, record and verify payment, then confirm the
-            rental.
+            {getAdminSession()?.role === "Owner/Admin"
+              ? "Review requests and coordinate rentals."
+              : "Track request status and coordinate handovers. Owner/Admin reviews requirements, verifies payment and confirms the rental."}
           </p>
         </div>
         <div
@@ -257,18 +244,41 @@ function BookingsPage() {
           aria-label="Queue overview"
         >
           <QueueMetric
-            label="Total requests"
+            label={hasFilters ? "Matching requests" : "Total requests"}
             value={total}
             loading={isLoading}
           />
-          <QueueMetric
-            label="Needs attention on this page"
-            value={attentionCount}
-            loading={isLoading}
-            attention={attentionCount > 0}
-          />
         </div>
       </header>
+
+      {isLoading ? (
+        <div className="booking-page-tasks" aria-hidden="true">
+          {[100, 160, 150, 140].map((width) => (
+            <Skeleton key={width} style={{ width }} className="h-4" />
+          ))}
+        </div>
+      ) : null}
+
+      {!isLoading && state.status === "ready" && visibleRows.length > 0 ? (
+        <div
+          className="booking-page-tasks"
+          role="note"
+          aria-label="Tasks on this page"
+        >
+          <strong>On this page:</strong>
+          <span>
+            <b>{documentReviewCount}</b> document review
+            {documentReviewCount === 1 ? "" : "s"}
+          </span>
+          <span>
+            <b>{paymentReviewCount}</b> payment review
+            {paymentReviewCount === 1 ? "" : "s"}
+          </span>
+          <span>
+            <b>{readyForReviewCount}</b> ready to confirm
+          </span>
+        </div>
+      ) : null}
 
       <div
         className="admin-bookings-toolbar"
@@ -305,7 +315,7 @@ function BookingsPage() {
               setPage(1);
             }}
           >
-            <option value="">All Status</option>
+            <option value="">All booking statuses</option>
             {statusOptions.map((value) => (
               <option key={value} value={value}>
                 {value}
@@ -358,17 +368,15 @@ function BookingsPage() {
         <Card>
           <EmptyState
             title={
-              bookings.length === 0
-                ? "No rental requests"
-                : "No requests match these filters"
+              hasFilters ? "No bookings match these filters" : "No bookings yet"
             }
             description={
-              bookings.length === 0
-                ? "No canonical booking records are available for this workspace."
-                : "Clear the filters to review the current request collection."
+              hasFilters
+                ? "Try a different search or clear the filters to view bookings."
+                : "Customer requests will appear here once they are saved."
             }
             action={
-              bookings.length > 0 && (query || status || branch) ? (
+              hasFilters ? (
                 <button
                   type="button"
                   onClick={clearFilters}
@@ -386,21 +394,7 @@ function BookingsPage() {
             className="admin-bookings-triage"
             aria-label="Rental request triage"
           >
-            <AttentionRail
-              documentReviewCount={documentReviewCount}
-              readyForReviewCount={readyForReviewCount}
-              paymentReviewCount={paymentReviewCount}
-            />
             <div className="admin-bookings-queue">
-              <div className="admin-bookings-queue__heading">
-                <div>
-                  <h2>Review queue</h2>
-                  <p>
-                    Open a request to review its requirements and next action.
-                  </p>
-                </div>
-                <span>{visibleRows.length} on this page</span>
-              </div>
               <BookingsTable rows={visibleRows} />
             </div>
           </section>
@@ -446,129 +440,63 @@ function QueueMetric({
   );
 }
 
-function AttentionRail({
-  documentReviewCount,
-  readyForReviewCount,
-  paymentReviewCount,
-}: {
-  documentReviewCount: number;
-  readyForReviewCount: number;
-  paymentReviewCount: number;
-}) {
-  const items = [
-    {
-      icon: FileText,
-      label: "Requirements to review",
-      detail: "Submitted documents awaiting a decision",
-      value: documentReviewCount,
-      to: "/admin/requirements" as never,
-      attention: documentReviewCount > 0,
-    },
-    {
-      icon: Car,
-      label: "Ready to confirm",
-      detail: "Requirements and payment verified; confirm rental",
-      value: readyForReviewCount,
-      to: "/admin/bookings" as never,
-    },
-    {
-      icon: CreditCard,
-      label: "Payments to verify",
-      detail: "Payment proof awaiting verification",
-      value: paymentReviewCount,
-      to: "/admin/payments" as never,
-      attention: paymentReviewCount > 0,
-    },
-  ];
-
-  return (
-    <aside
-      className="admin-bookings-attention"
-      aria-labelledby="attention-heading"
-    >
-      <div className="admin-bookings-attention__heading">
-        <h2 id="attention-heading">Current page tasks</h2>
-        <p>Counts reflect the requests currently shown in this page.</p>
-      </div>
-      <div className="admin-bookings-attention__list">
-        {items.map(({ icon: Icon, label, detail, value, to, attention }) => (
-          <Link key={label} to={to} className="admin-bookings-attention__item">
-            <span className={attention ? "is-attention" : undefined}>
-              <Icon className="h-4 w-4" aria-hidden="true" />
-            </span>
-            <span>
-              <strong>{label}</strong>
-              <small>{detail}</small>
-            </span>
-            <b className={attention ? "is-attention" : undefined}>{value}</b>
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        ))}
-      </div>
-    </aside>
-  );
-}
-
 function BookingsWorkspaceSkeleton() {
   return (
-    <section
-      className="admin-bookings-triage admin-bookings-triage--loading"
-      aria-label="Loading rental request queue"
+    <div
+      className="booking-loading-workspace"
+      role="status"
+      aria-label="Loading rental requests"
     >
-      <aside className="admin-bookings-attention">
-        <div className="admin-bookings-attention__heading">
-          <i className="admin-bookings-skeleton admin-bookings-skeleton--title" />
-          <i className="admin-bookings-skeleton admin-bookings-skeleton--copy" />
-        </div>
-        <div className="admin-bookings-attention__list">
-          {[1, 2, 3].map((item) => (
-            <div className="admin-bookings-skeleton-attention" key={item}>
-              <i className="admin-bookings-skeleton admin-bookings-skeleton--icon" />
-              <span>
-                <i className="admin-bookings-skeleton admin-bookings-skeleton--line" />
-                <i className="admin-bookings-skeleton admin-bookings-skeleton--copy" />
-              </span>
-              <i className="admin-bookings-skeleton admin-bookings-skeleton--count" />
-            </div>
-          ))}
-        </div>
-      </aside>
-      <div className="admin-bookings-queue">
-        <div className="admin-bookings-queue__heading">
-          <div>
-            <i className="admin-bookings-skeleton admin-bookings-skeleton--title" />
-            <i className="admin-bookings-skeleton admin-bookings-skeleton--copy" />
-          </div>
-        </div>
-        <div className="admin-bookings-skeleton-table" aria-hidden="true">
-          <div className="admin-bookings-skeleton-table__head">
-            {[1, 2, 3, 4, 5].map((item) => (
-              <i
-                className="admin-bookings-skeleton admin-bookings-skeleton--line"
-                key={item}
-              />
+      <span className="sr-only">Loading rental requests…</span>
+      <section className="admin-bookings-triage" aria-hidden="true">
+        <div className="booking-loading-table hidden xl:block">
+          <div className="booking-loading-table-head">
+            {[
+              "Customer",
+              "Vehicle & dates",
+              "Location & service",
+              "Current stage",
+              "Next action",
+            ].map((label) => (
+              <span key={label}>{label}</span>
             ))}
           </div>
-          {[1, 2, 3, 4, 5].map((item) => (
-            <div className="admin-bookings-skeleton-table__row" key={item}>
-              {[1, 2, 3, 4, 5].map((column) => (
-                <i
-                  className="admin-bookings-skeleton admin-bookings-skeleton--line"
-                  key={column}
-                />
+          {Array.from({ length: 6 }, (_, row) => (
+            <div className="booking-loading-table-row" key={row}>
+              {[0, 1, 2, 3].map((column) => (
+                <div className="booking-loading-cell" key={column}>
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-full" />
+                  {column !== 2 ? <Skeleton className="h-3 w-1/2" /> : null}
+                </div>
               ))}
+              <Skeleton className="booking-loading-action" />
             </div>
           ))}
         </div>
+        <div className="booking-loading-cards xl:hidden">
+          {Array.from({ length: 5 }, (_, row) => (
+            <div className="booking-loading-card" key={row}>
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-3 w-3/4" />
+              <Skeleton className="h-3 w-2/3" />
+              <Skeleton className="h-3 w-1/3" />
+            </div>
+          ))}
+        </div>
+      </section>
+      <div className="booking-loading-pagination" aria-hidden="true">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-11 w-64 max-w-full" />
       </div>
-    </section>
+    </div>
   );
 }
 
 function BookingsTable({ rows }: { rows: AdminBooking[] }) {
   return (
     <>
-      <div className="hidden 2xl:block">
+      <div className="hidden xl:block">
         <Card className="admin-bookings-table-card">
           <div
             className="overflow-x-auto"
@@ -586,19 +514,16 @@ function BookingsTable({ rows }: { rows: AdminBooking[] }) {
                     Customer
                   </th>
                   <th scope="col" className="px-4 py-4">
-                    Vehicle / schedule
+                    Vehicle & dates
                   </th>
                   <th scope="col" className="px-4 py-4">
-                    Allocation / service
+                    Location & service
                   </th>
                   <th scope="col" className="px-4 py-4">
-                    Request gate
+                    Current stage
                   </th>
                   <th scope="col" className="px-4 py-4">
-                    Payment / rental
-                  </th>
-                  <th scope="col" className="px-4 py-4">
-                    Action
+                    Next action
                   </th>
                 </tr>
               </thead>
@@ -611,7 +536,7 @@ function BookingsTable({ rows }: { rows: AdminBooking[] }) {
           </div>
         </Card>
       </div>
-      <div className="admin-bookings-responsive-list 2xl:hidden">
+      <div className="admin-bookings-responsive-list xl:hidden">
         {rows.map((booking) => (
           <BookingDisclosure key={booking.id} booking={booking} />
         ))}
@@ -621,75 +546,62 @@ function BookingsTable({ rows }: { rows: AdminBooking[] }) {
 }
 
 function BookingTableRow({ booking }: { booking: AdminBooking }) {
+  const [expanded, setExpanded] = useState(false);
   return (
-    <tr className="admin-bookings-row align-top">
-      <td className="px-4 py-4">
-        <div className="font-semibold">
-          {booking.customer?.full_name ?? "Customer unavailable"}
-        </div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          {booking.customer?.email ?? "Email unavailable"}
-        </div>
-        <div className="admin-bookings-reference" title={booking.id}>
-          Ref. {shortBookingReference(booking.id)}
-        </div>
-      </td>
-      <td className="px-4 py-4">
-        <div className="font-medium">
-          {booking.requested_vehicle?.name ?? "Vehicle not recorded"}
-        </div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          {booking.assigned_vehicle
-            ? `Assigned: ${booking.assigned_vehicle.name}`
-            : (booking.requested_vehicle?.license_plate ??
-              "Plate not recorded")}
-        </div>
-        <div className="mt-2 text-xs font-medium tabular-nums text-foreground">
-          {formatAdminDateRange(booking.pickup_at, booking.return_at)}
-        </div>
-      </td>
-      <td className="px-4 py-4">
-        <div className="font-medium">
-          {booking.pickup_branch?.name ?? "Location unavailable"}
-        </div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          {serviceLabel(booking)}
-        </div>
-      </td>
-      <td className="px-4 py-4">
-        <DomainStatus
-          label={booking.booking_status || "Unknown"}
-          tone={statusTone(booking.booking_status)}
-        />
-        <div className="mt-2">
-          <DomainStatus
-            label={booking.requirement_status ?? "Unavailable"}
-            tone={statusTone(booking.requirement_status)}
+    <>
+      <tr className="admin-bookings-row align-top">
+        <td className="px-4 py-4">
+          <div className="font-semibold">
+            {booking.customer?.full_name ?? "Customer unavailable"}
+          </div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {booking.customer?.email ?? "Email unavailable"}
+          </div>
+          <div className="admin-bookings-reference" title={booking.id}>
+            Ref. {bookingReference(booking.id)}
+          </div>
+        </td>
+        <td className="px-4 py-4">
+          <div className="font-medium">
+            {booking.requested_vehicle?.name ?? "Vehicle not recorded"}
+          </div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {booking.assigned_vehicle
+              ? `Assigned: ${booking.assigned_vehicle.name}`
+              : (booking.requested_vehicle?.license_plate ??
+                "Plate not recorded")}
+          </div>
+          <div className="mt-2 text-xs font-medium tabular-nums text-foreground">
+            {formatAdminDateRange(booking.pickup_at, booking.return_at)}
+          </div>
+        </td>
+        <td className="px-4 py-4">
+          <div className="font-medium">
+            {booking.pickup_branch?.name ?? "Location unavailable"}
+          </div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {serviceLabel(booking)}
+          </div>
+        </td>
+        <td className="px-4 py-4">
+          <BookingStageDetails
+            booking={booking}
+            expanded={expanded}
+            onToggle={() => setExpanded(!expanded)}
           />
-        </div>
-      </td>
-      <td className="px-4 py-4">
-        <DomainStatus
-          label={booking.payment_status ?? "Unavailable"}
-          tone={statusTone(booking.payment_status)}
-        />
-        <div className="mt-2">
-          <DomainStatus
-            label={rentalState(booking)}
-            tone={statusTone(rentalState(booking))}
-          />
-        </div>
-      </td>
-      <td className="px-4 py-4">
-        <Link
-          to={`/admin/bookings/${encodeURIComponent(booking.id)}` as never}
-          className="admin-bookings-detail-link touch-target"
-        >
-          Review request
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
-      </td>
-    </tr>
+        </td>
+        <td className="px-4 py-4">
+          <BookingAction booking={booking} />
+        </td>
+      </tr>
+      {expanded ? (
+        <tr className="booking-expanded-row">
+          <td colSpan={5}>
+            <BookingRawStates booking={booking} />
+          </td>
+        </tr>
+      ) : null}
+    </>
   );
 }
 
@@ -702,12 +614,21 @@ function BookingDisclosure({ booking }: { booking: AdminBooking }) {
             <p className="truncate font-semibold">
               {booking.customer?.full_name ?? "Customer unavailable"}
             </p>
-            <p className="mt-1 truncate text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               {booking.requested_vehicle?.name ?? "Vehicle not recorded"} ·{" "}
               {formatAdminDateRange(booking.pickup_at, booking.return_at)}
             </p>
+            <div className="mt-3">
+              <DomainStatus
+                label={bookingStage(booking).label}
+                tone={bookingStage(booking).tone}
+              />
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {bookingStage(booking).detail}
+            </p>
             <p className="admin-bookings-reference">
-              Ref. {shortBookingReference(booking.id)}
+              Ref. {bookingReference(booking.id)}
             </p>
           </div>
           <span className="admin-bookings-disclosure-toggle">
@@ -718,16 +639,16 @@ function BookingDisclosure({ booking }: { booking: AdminBooking }) {
       <div className="border-t border-border px-4 pb-4 pt-3">
         <dl className="grid gap-3 sm:grid-cols-2">
           <DisclosureField
-            label="Allocation / service"
+            label="Location & service"
             value={`${booking.pickup_branch?.name ?? "Location unavailable"} · ${serviceLabel(booking)}`}
           />
           <DisclosureField
             label="Schedule"
             value={`${formatAdminDateTime(booking.pickup_at)} – ${formatAdminDateTime(booking.return_at)}`}
           />
-          <DisclosureStatus label="Request" value={booking.booking_status} />
+          <DisclosureStatus label="Booking" value={booking.booking_status} />
           <DisclosureStatus
-            label="Requirements"
+            label="Documents"
             value={booking.requirement_status ?? "Unavailable"}
           />
           <DisclosureStatus
@@ -736,20 +657,83 @@ function BookingDisclosure({ booking }: { booking: AdminBooking }) {
           />
           <DisclosureStatus label="Rental" value={rentalState(booking)} />
         </dl>
-        <Link
-          to={`/admin/bookings/${encodeURIComponent(booking.id)}` as never}
-          className="admin-bookings-detail-link touch-target mt-4"
-        >
-          Review request
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
+        <div className="mt-4">
+          <BookingAction booking={booking} />
+        </div>
       </div>
     </details>
   );
 }
 
-function shortBookingReference(id: string) {
-  return id.slice(-8).toUpperCase();
+function BookingAction({ booking }: { booking: AdminBooking }) {
+  const stage = bookingStage(booking);
+  return (
+    <Link
+      to={`/admin/bookings/${encodeURIComponent(booking.id)}` as never}
+      className="admin-bookings-detail-link touch-target"
+      aria-label={`${getAdminSession()?.role === "Owner/Admin" ? stage.action : "View booking"} for ${booking.customer?.full_name ?? "customer"}, ${bookingReference(booking.id)}`}
+    >
+      {getAdminSession()?.role === "Owner/Admin"
+        ? stage.action
+        : "View booking"}
+      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+    </Link>
+  );
+}
+function BookingStageDetails({
+  booking,
+  expanded,
+  onToggle,
+}: {
+  booking: AdminBooking;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const stage = bookingStage(booking);
+  return (
+    <div className="booking-stage-cell">
+      <DomainStatus label={stage.label} tone={stage.tone} />
+      <p>{stage.detail}</p>
+      <button
+        type="button"
+        className="booking-status-toggle"
+        aria-expanded={expanded}
+        aria-controls={`booking-status-${booking.id}`}
+        onClick={onToggle}
+      >
+        Status details
+        <span className="sr-only"> for {bookingReference(booking.id)}</span>
+        <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+function BookingRawStates({ booking }: { booking: AdminBooking }) {
+  return (
+    <div id={`booking-status-${booking.id}`} className="booking-raw-states">
+      <dl>
+        <DisclosureStatus
+          label="Booking"
+          value={booking.booking_status || "Unavailable"}
+        />
+        <DisclosureStatus
+          label="Documents"
+          value={booking.requirement_status ?? "Unavailable"}
+        />
+        <DisclosureStatus
+          label="Payment"
+          value={booking.payment_status ?? "Unavailable"}
+        />
+        <DisclosureStatus label="Rental" value={rentalState(booking)} />
+      </dl>
+      <Link
+        to={`/admin/bookings/${encodeURIComponent(booking.id)}` as never}
+        className="booking-open-link"
+      >
+        Open booking
+      </Link>
+    </div>
+  );
 }
 
 function DisclosureField({ label, value }: { label: string; value: string }) {
@@ -773,7 +757,5 @@ function DisclosureStatus({ label, value }: { label: string; value: string }) {
 }
 
 function serviceLabel(booking: AdminBooking) {
-  return booking.pickup_delivery_option === "delivery"
-    ? "Delivery"
-    : "Delivery / collection service";
+  return booking.pickup_delivery_option === "delivery" ? "Delivery" : "Pickup";
 }

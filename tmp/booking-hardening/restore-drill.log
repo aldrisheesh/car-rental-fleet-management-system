@@ -1,0 +1,5 @@
+
+> defense:baseline
+> node --env-file=.env.local --experimental-strip-types scripts/defense/baseline.ts drill --rehearse
+
+PASS: transactional baseline rehearsal completed; all database changes rolled back.

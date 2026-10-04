@@ -1,3 +1,4 @@
+import { formatWeekRange, weekEndFromStart } from "@/lib/planning-week";
 import {
   createFileRoute,
   Link,
@@ -277,7 +278,12 @@ function ReportSections({ report }: { report: AdminReportsResponse }) {
         </div>
       </section>
       {report.decisionSupport ? (
-        <DecisionSupportSection report={report} />
+        <details className="admin-reports-evidence-disclosure">
+          <summary>
+            Decision-support evidence — forecast, supply and accuracy
+          </summary>
+          <DecisionSupportSection report={report} />
+        </details>
       ) : null}
       <SupportingRecordsSection report={report} />
       <section
@@ -402,9 +408,13 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
             supply snapshot and exact matching allocation batch.
           </p>
         </div>
-        <Link to="/admin/decisions">
-          Open decision support <span aria-hidden="true">→</span>
-        </Link>
+        {getAdminSession()?.role === "Owner/Admin" ? (
+          <Link to="/admin/decisions">
+            Open decision support <span aria-hidden="true">→</span>
+          </Link>
+        ) : (
+          <span>Owner/Admin reviews allocation recommendations.</span>
+        )}
       </div>
       {decision.latestRun ? (
         <>
@@ -423,7 +433,7 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
             <ReportMetric
               label="Forecast positions"
               value={decision.forecastPositions}
-              detail={`${decision.horizonOnePositions} next-week positions`}
+              detail={`${decision.horizonOnePositions} first forecast week positions`}
             />
             <ReportMetric
               label="MAPE"
@@ -462,10 +472,16 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
               .
             </span>
           </div>
-          <div className="admin-reports-decision__table-wrap">
+          <div
+            className="admin-reports-decision__table-wrap"
+            tabIndex={0}
+            role="region"
+            aria-label="Forecast demand and supply table"
+          >
             <table>
               <caption>
-                Next-week demand and supply by branch and vehicle category
+                First forecast week demand and supply by branch and vehicle
+                category
               </caption>
               <thead>
                 <tr>
@@ -481,7 +497,12 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
               <tbody>
                 {decision.horizonOne.map((row) => (
                   <tr key={row.forecastId}>
-                    <td>{formatDate(row.targetWeekStart)}</td>
+                    <td>
+                      {formatWeekRange(
+                        row.targetWeekStart,
+                        weekEndFromStart(row.targetWeekStart),
+                      )}
+                    </td>
                     <td>{row.branchName}</td>
                     <td>{row.categoryName}</td>
                     <td>{formatNumber(row.forecastedDemand)}</td>
@@ -502,9 +523,11 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
             </table>
           </div>
           <p className="admin-reports-decision__note">
-            MAPE excludes zero actual demand from percentage division but keeps
-            the excluded count visible. Allocation remains advisory and does not
-            move vehicles automatically.
+            This report filters accuracy by the selected target-week period; the
+            DSS overview covers all eligible finalized weeks. MAPE excludes zero
+            actual demand from percentage division but keeps the excluded count
+            visible. Allocation remains advisory and does not move vehicles
+            automatically.
           </p>
         </>
       ) : (
@@ -513,9 +536,9 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
             No forecast run was generated in this selected period.
           </strong>
           <p>
-            Choose a period containing a forecast run or generate one from
-            Decision Support. Accuracy may still contain finalized target-week
-            samples: {decision.accuracy.eligibleForecasts} eligible,{" "}
+            Choose a period containing a forecast run. Owner/Admin can generate
+            a new run in Decision Support. Accuracy may still contain finalized
+            target-week samples: {decision.accuracy.eligibleForecasts} eligible,{" "}
             {decision.accuracy.excludedZeroActuals} zero-actual exclusions.
           </p>
         </div>

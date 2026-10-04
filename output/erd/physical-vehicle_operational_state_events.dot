@@ -1,0 +1,10 @@
+digraph ERD {
+graph [rankdir=LR, bgcolor="white", nodesep=0.5, ranksep=1.5, pad=0.4, splines=ortho, overlap=false, fontname="Arial", fontsize=20, labelloc=t, label="vehicle_operational_state_events\nPK = primary key; FK = foreign key. Labels show database-enforced multiplicity."];
+node [shape=plain,fontname="Arial",fontsize=11];
+edge [fontname="Arial",fontsize=9,color="#64748b",fontcolor="#334155",arrowsize=0.6];
+"vehicle_operational_state_events" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#163e5b"><FONT COLOR="white"><B>vehicle_operational_state_events</B></FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK vehicle_id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">is_active</TD><TD ALIGN="LEFT">bool</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">effective_at</TD><TD ALIGN="LEFT">timestamptz</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">FK recorded_by</TD><TD ALIGN="LEFT">uuid</TD><TD>NULL</TD></TR><TR><TD ALIGN="LEFT">source</TD><TD ALIGN="LEFT">text</TD><TD>NOT NULL</TD></TR><TR><TD ALIGN="LEFT">created_at</TD><TD ALIGN="LEFT">timestamptz</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"auth.users" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#e2e8f0"><FONT COLOR="#263746"><B>auth.users</B> (reference)</FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"vehicles" [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"><TR><TD COLSPAN="3" BGCOLOR="#e2e8f0"><FONT COLOR="#263746"><B>vehicles</B> (reference)</FONT></TD></TR><TR><TD ALIGN="LEFT">PK id</TD><TD ALIGN="LEFT">uuid</TD><TD>NOT NULL</TD></TR></TABLE>>];
+"vehicle_operational_state_events" -> "auth.users" [dir=none,taillabel="0..N",headlabel="0..1",labeldistance=2];
+"vehicle_operational_state_events" -> "vehicles" [dir=none,taillabel="0..N",headlabel="1",labeldistance=2];
+}

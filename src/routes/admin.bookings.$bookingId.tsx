@@ -1,3 +1,6 @@
+import { depositRefund, releaseDayReached } from "@/lib/rental-finance";
+import { currentLedgerStage } from "@/lib/booking-ledger";
+import { bookingReferenceLabel } from "@/lib/booking-reference";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -62,6 +65,10 @@ import {
   type AdminVehicle,
 } from "@/lib/admin-presentations";
 import { parseAdminBookingResponse } from "@/lib/booking-retrieval";
+import {
+  pickupArrangementReady,
+  meetingMapUrl,
+} from "@/lib/pickup-arrangement";
 import { calculateRentalQuote } from "@/lib/rental-quote";
 
 export const Route = createFileRoute("/admin/bookings/$bookingId")({
@@ -117,11 +124,12 @@ const FUEL_OPTIONS = ["Full", "3/4", "1/2", "1/4", "Empty", "Other/Unknown"];
 
 function BookingDetailSkeleton() {
   const stages = [
-    ["Booking request", "Trip details and the requested vehicle are recorded."],
-    ["Requirements review", "Verify customer documents and eligibility."],
-    ["Payment", "Review the customer’s submitted payment proof."],
-    ["Release", "Prepare the requested vehicle and start the rental."],
-    ["Return", "Record the vehicle return and close the rental."],
+    "Booking request",
+    "Requirements review",
+    "Quote & handover",
+    "Payment & confirmation",
+    "Release",
+    "Return",
   ];
 
   return (
@@ -132,7 +140,7 @@ function BookingDetailSkeleton() {
       role="status"
     >
       <span className="sr-only">Loading booking detail</span>
-      <header className="admin-booking-detail-page__header">
+      <header className="admin-booking-detail-page__header" aria-hidden="true">
         <div className="admin-booking-detail-skeleton__header-copy">
           <i className="admin-booking-detail-skeleton__back" />
           <i className="admin-booking-detail-skeleton__title" />
@@ -144,7 +152,7 @@ function BookingDetailSkeleton() {
         </div>
       </header>
 
-      <div className="admin-booking-ledger">
+      <div className="admin-booking-ledger" aria-hidden="true">
         <div className="admin-booking-ledger__left">
           <section className="admin-booking-ledger__main">
             <header className="admin-booking-ledger__heading">
@@ -154,45 +162,26 @@ function BookingDetailSkeleton() {
               </div>
               <i className="admin-booking-detail-skeleton__status-line" />
             </header>
-            {stages.map(([title, detail], index) => (
-              <section
-                className={`admin-booking-ledger__stage${index === 2 ? " is-active" : ""}`}
-                key={title}
-              >
+            {stages.map((title, index) => (
+              <section className="admin-booking-ledger__stage" key={title}>
                 <span className="admin-booking-ledger__number">
                   {index + 1}
                 </span>
                 <div className="admin-booking-detail-skeleton__stage-copy">
                   <i />
                   <i />
-                  {index === 2 ? (
-                    <div className="admin-booking-detail-skeleton__stage-body">
-                      <i />
-                      <i />
-                    </div>
-                  ) : null}
                 </div>
+                <i className="admin-booking-detail-skeleton__stage-status" />
               </section>
             ))}
           </section>
 
-          <section className="admin-booking-activity-card admin-booking-detail-skeleton__activity">
-            <header>
+          <section className="admin-booking-activity-card admin-booking-detail-skeleton__history">
+            <i className="admin-booking-detail-skeleton__history-toggle" />
+            <div>
               <i />
               <i />
-            </header>
-            <ol className="admin-booking-timeline">
-              {[0, 1, 2, 3].map((item) => (
-                <li key={item}>
-                  <span className="admin-booking-timeline__dot" />
-                  <i className="admin-booking-detail-skeleton__time" />
-                  <div>
-                    <i />
-                    <i />
-                  </div>
-                </li>
-              ))}
-            </ol>
+            </div>
           </section>
         </div>
 
@@ -212,7 +201,7 @@ function BookingDetailSkeleton() {
               </div>
             </div>
             <div className="admin-booking-detail-skeleton__facts">
-              {[0, 1, 2, 3, 4].map((item) => (
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((item) => (
                 <div key={item}>
                   <i />
                   <i />
@@ -231,6 +220,10 @@ function BookingDetailSkeleton() {
                 <i />
                 <i />
               </span>
+            </div>
+            <div className="admin-booking-detail-skeleton__phone">
+              <i />
+              <i />
             </div>
           </section>
         </aside>
@@ -369,6 +362,7 @@ function BookingDetailPage() {
   }, [bookingId, ownerView]);
 
   useEffect(() => {
+    setExpandedStage(null);
     void load();
   }, [load]);
 
@@ -417,21 +411,33 @@ function BookingDetailPage() {
   const payment = payments?.length === 1 ? payments[0] : null;
   const ambiguousPayments = (payments?.length ?? 0) > 1;
   const requirementStatus = booking.requirement_status ?? "Unavailable";
+  const displayStatus = booking.rental
+    ? rentalState(booking)
+    : booking.booking_status;
   const paymentStatus = booking.payment_status ?? "Unavailable";
   const confirmationException = booking.confirmation_exception_message?.trim();
-  const paymentStageDetail = confirmationException
-    ? `Payment approved. ${confirmationException}`
-    : payment?.status === "Not Submitted"
-      ? "Waiting for the customer to submit the payment proof."
-      : paymentStatus === "Not Submitted"
-        ? "Set the delivery fee and issue the customer’s payment request."
-        : paymentStatus === "Needs Resubmission"
-          ? "Review the customer’s resubmitted payment proof."
-          : "Review the customer’s submitted payment proof.";
+  const paymentStageDetail = !ownerView
+    ? "Owner/Admin issues payment requests and verifies proof. Check the payment status before preparing the rental."
+    : requirementStatus !== "Verified"
+      ? "Verify requirements, then prepare the handover arrangements and quote."
+      : confirmationException
+        ? `Payment approved. ${confirmationException}`
+        : booking.booking_status === "Confirmed"
+          ? "Payment verified and booking confirmed."
+          : paymentStatus === "Verified"
+            ? "Payment verified. Complete the readiness checks to confirm the booking."
+            : payment?.status === "Not Submitted"
+              ? "Waiting for the customer to submit the payment proof."
+              : paymentStatus === "Not Submitted"
+                ? "Send the quote in Quote & handover before the customer can pay."
+                : paymentStatus === "Needs Resubmission"
+                  ? "Waiting for the customer to resubmit their payment proof."
+                  : "Review the customer’s submitted payment proof.";
   const currentStage = currentLedgerStage({
     booking,
     requirementStatus,
     paymentStatus,
+    quoteIssued: Boolean(payment),
   });
   const actions = bookingActionAvailability({
     role: ownerView ? "Owner/Admin" : "Operations Staff",
@@ -450,12 +456,20 @@ function BookingDetailPage() {
     selectedVehicle: Boolean(booking.requested_vehicle_id),
     selectedVehicleConflict: false,
   });
+  const meetingReady =
+    booking.pickup_delivery_option !== "pickup" ||
+    pickupArrangementReady(booking);
   const canConfirm =
-    actions.confirm ||
-    (booking.booking_status === "Submitted" &&
-      requirementStatus === "Verified" &&
-      paymentStatus === "Verified");
-  const canRelease = actions.release;
+    meetingReady &&
+    (actions.confirm ||
+      (booking.booking_status === "Submitted" &&
+        requirementStatus === "Verified" &&
+        paymentStatus === "Verified"));
+  const canRelease =
+    actions.release &&
+    meetingReady &&
+    releaseDayReached(booking.pickup_at) &&
+    new Date(booking.return_at).getTime() > Date.now();
   const canReturn = actions.return;
   const canCancel = actions.cancel;
 
@@ -500,6 +514,49 @@ function BookingDetailPage() {
     }
   }
 
+  const renderOwnerActions = (stage: "release" | "return") => (
+    <OwnerActionArea
+      stage={stage}
+      booking={booking}
+      verifiedPaymentAmount={
+        payment?.status === "Verified" ? Number(payment.submitted_amount) : null
+      }
+      canCancel={canCancel}
+      canRelease={canRelease}
+      canReturn={canReturn}
+      releaseOdometer={releaseOdometer}
+      setReleaseOdometer={setReleaseOdometer}
+      releaseFuelLevel={releaseFuelLevel}
+      setReleaseFuelLevel={setReleaseFuelLevel}
+      releaseConditionSummary={releaseConditionSummary}
+      setReleaseConditionSummary={setReleaseConditionSummary}
+      existingDamageNotes={existingDamageNotes}
+      setExistingDamageNotes={setExistingDamageNotes}
+      agreementAcknowledged={agreementAcknowledged}
+      setAgreementAcknowledged={setAgreementAcknowledged}
+      conditionAcknowledged={conditionAcknowledged}
+      setConditionAcknowledged={setConditionAcknowledged}
+      returnScheduleAcknowledged={returnScheduleAcknowledged}
+      setReturnScheduleAcknowledged={setReturnScheduleAcknowledged}
+      returnOdometer={returnOdometer}
+      setReturnOdometer={setReturnOdometer}
+      returnFuelLevel={returnFuelLevel}
+      setReturnFuelLevel={setReturnFuelLevel}
+      returnConditionSummary={returnConditionSummary}
+      setReturnConditionSummary={setReturnConditionSummary}
+      observedDamageNotes={observedDamageNotes}
+      setObservedDamageNotes={setObservedDamageNotes}
+      returnRemarks={returnRemarks}
+      setReturnRemarks={setReturnRemarks}
+      cancellationReason={cancellationReason}
+      setCancellationReason={setCancellationReason}
+      cancelDialogOpen={cancelDialogOpen}
+      setCancelDialogOpen={setCancelDialogOpen}
+      busyAction={busyAction}
+      onAction={postBookingAction}
+    />
+  );
+
   return (
     <div className="admin-booking-detail-page">
       <header className="admin-booking-detail-page__header">
@@ -516,8 +573,8 @@ function BookingDetailPage() {
         </div>
         <div className="admin-booking-detail-page__status">
           <DomainStatus
-            label={booking.booking_status}
-            tone={statusTone(booking.booking_status)}
+            label={displayStatus}
+            tone={statusTone(displayStatus)}
           />
           <time>Submitted {formatAdminDateTime(booking.created_at)}</time>
         </div>
@@ -575,20 +632,26 @@ function BookingDetailPage() {
             <header className="admin-booking-ledger__heading">
               <div>
                 <h2 id="approval-ledger-title">Approval ledger</h2>
-                <p>Track and complete each step to fulfill this booking.</p>
+                <p>
+                  {ownerView
+                    ? "Track and complete each step to fulfill this booking."
+                    : "Track the booking stages. Owner/Admin completes reviews and records release and return."}
+                </p>
               </div>
               <DomainStatus
-                label={booking.booking_status}
-                tone={statusTone(booking.booking_status)}
+                label={displayStatus}
+                tone={statusTone(displayStatus)}
               />
             </header>
             <LedgerStage
               number={1}
               title="Booking request"
               status={
-                booking.booking_status === "Draft"
-                  ? "Awaiting documents"
-                  : "Submitted"
+                ["Rejected", "Cancelled"].includes(booking.booking_status)
+                  ? booking.booking_status
+                  : booking.booking_status === "Draft"
+                    ? "Awaiting documents"
+                    : "Submitted"
               }
               detail="Trip details and the requested vehicle are recorded."
               active={currentStage === 1}
@@ -597,36 +660,47 @@ function BookingDetailPage() {
                   ? currentStage === 1
                   : expandedStage === 1
               }
-              onToggle={() => setExpandedStage(expandedStage === 1 ? null : 1)}
+              onToggle={() =>
+                setExpandedStage((previous) =>
+                  (previous ?? currentStage) === 1 ? 0 : 1,
+                )
+              }
             >
+              <BookingRequestReview booking={booking} />
               {ownerView &&
               (booking.booking_status === "Draft" ||
                 booking.booking_status === "Submitted") &&
               !booking.rental ? (
-                <RejectUnconfirmedBooking
-                  bookingId={bookingId}
-                  busy={busyAction !== null}
-                  onResolved={load}
-                />
-              ) : (
-                <p className="admin-booking-ledger__empty">
-                  The customer selected this vehicle. The request appears here
-                  immediately while documents are still being prepared.
-                </p>
-              )}
+                <details className="booking-ledger-secondary">
+                  <summary>Unable to accommodate this request?</summary>
+                  <RejectUnconfirmedBooking
+                    bookingId={bookingId}
+                    busy={busyAction !== null}
+                    onResolved={load}
+                  />
+                </details>
+              ) : null}
             </LedgerStage>
             <LedgerStage
               number={2}
               title="Requirements review"
               status={requirementStatus}
-              detail="Verify customer documents and eligibility."
+              detail={
+                ownerView
+                  ? "Verify customer documents and eligibility."
+                  : "Owner/Admin reviews customer documents and eligibility."
+              }
               active={currentStage === 2}
               expanded={
                 expandedStage === null
                   ? currentStage === 2
                   : expandedStage === 2
               }
-              onToggle={() => setExpandedStage(expandedStage === 2 ? null : 2)}
+              onToggle={() =>
+                setExpandedStage((previous) =>
+                  (previous ?? currentStage) === 2 ? 0 : 2,
+                )
+              }
             >
               {ownerView && requirements ? (
                 <BookingRequirementsReview
@@ -637,48 +711,169 @@ function BookingDetailPage() {
                 />
               ) : (
                 <p className="admin-booking-ledger__empty">
-                  Requirement review is unavailable for this exact booking.
+                  {ownerView
+                    ? "Requirement review is unavailable for this exact booking."
+                    : "Owner/Admin handles document review. Check the status above before preparing the rental."}
                 </p>
               )}
             </LedgerStage>
             <LedgerStage
               number={3}
-              title="Payment"
-              status={paymentStatus}
-              detail={paymentStageDetail}
+              title="Quote & handover"
+              status={
+                requirementStatus !== "Verified"
+                  ? "Awaiting requirements"
+                  : !meetingReady
+                    ? "Needs details"
+                    : payment
+                      ? "Quote sent"
+                      : "Quote needed"
+              }
+              detail={
+                payment
+                  ? "Arrangements and rental quote shared before payment."
+                  : "Agree handover arrangements, then send the rental quote."
+              }
               active={currentStage === 3}
               expanded={
                 expandedStage === null
                   ? currentStage === 3
                   : expandedStage === 3
               }
-              onToggle={() => setExpandedStage(expandedStage === 3 ? null : 3)}
+              onToggle={() =>
+                setExpandedStage((previous) =>
+                  (previous ?? currentStage) === 3 ? 0 : 3,
+                )
+              }
+            >
+              {requirementStatus === "Verified" || booking.rental ? (
+                <div className="admin-booking-ledger__action">
+                  {booking.pickup_delivery_option === "pickup" ? (
+                    <PickupArrangementCard
+                      key={booking.updated_at}
+                      booking={booking}
+                      ownerView={
+                        ownerView &&
+                        (!payment ||
+                          payment.status === "Not Submitted" ||
+                          !meetingReady)
+                      }
+                      onSaved={load}
+                    />
+                  ) : (
+                    <section className="booking-pickup-editor">
+                      <header>
+                        <div>
+                          <h4>Delivery & return arrangements</h4>
+                          <p>
+                            Review the customer’s addresses before sending the
+                            quote.
+                          </p>
+                        </div>
+                      </header>
+                      <div className="booking-handover-summary">
+                        <div>
+                          <h5>Delivery</h5>
+                          <p className="booking-handover-summary__address">
+                            {booking.pickup_location || "Not provided"}
+                          </p>
+                          <p>{formatAdminDateTime(booking.pickup_at)}</p>
+                        </div>
+                        <div>
+                          <h5>Return</h5>
+                          <p className="booking-handover-summary__address">
+                            {booking.dropoff_location ||
+                              booking.pickup_location ||
+                              "Not provided"}
+                          </p>
+                          <p>{formatAdminDateTime(booking.return_at)}</p>
+                        </div>
+                      </div>
+                    </section>
+                  )}
+                  {ownerView ? (
+                    <PaymentQuotePanel
+                      booking={booking}
+                      requirementsVerified={requirementStatus === "Verified"}
+                      payment={payment}
+                      onRefresh={load}
+                    />
+                  ) : (
+                    <p className="admin-booking-ledger__empty">
+                      Payment is available after the customer requirements are
+                      verified.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="admin-booking-ledger__empty">
+                  Verify the customer’s requirements before preparing handover
+                  arrangements and sending the quote.
+                </p>
+              )}
+            </LedgerStage>
+            <LedgerStage
+              number={4}
+              title="Payment & confirmation"
+              status={
+                booking.booking_status === "Confirmed"
+                  ? "Confirmed"
+                  : paymentStatus === "Verified"
+                    ? "Ready to confirm"
+                    : paymentStatus === "Not Submitted"
+                      ? "Awaiting payment"
+                      : paymentStatus
+              }
+              detail={paymentStageDetail}
+              active={currentStage === 4}
+              expanded={
+                expandedStage === null
+                  ? currentStage === 4
+                  : expandedStage === 4
+              }
+              onToggle={() =>
+                setExpandedStage((previous) =>
+                  (previous ?? currentStage) === 4 ? 0 : 4,
+                )
+              }
             >
               <div className="admin-booking-ledger__action">
-                {ownerView ? (
-                  <PaymentQuotePanel
-                    booking={booking}
-                    requirementsVerified={requirementStatus === "Verified"}
-                    payment={payment}
-                    onRefresh={load}
-                  />
+                {payment &&
+                [
+                  "Pending Verification",
+                  "Verified",
+                  "Needs Resubmission",
+                ].includes(payment.status) ? (
+                  <section className="booking-payment-review-action">
+                    <div>
+                      <h4>Payment review</h4>
+                      <p>
+                        {payment.status === "Verified"
+                          ? "The payment has been verified. Open its record to view the proof and review details."
+                          : "Open the payment record to review the customer’s submitted proof."}
+                      </p>
+                    </div>
+                    <Link
+                      to="/admin/payments"
+                      search={{ payment: payment.id } as never}
+                      className="touch-target admin-booking-ledger__payment-link"
+                    >
+                      {payment.status === "Verified"
+                        ? "View verified payment"
+                        : "Review payment proof"}
+                      <ExternalLink
+                        className="h-3.5 w-3.5"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  </section>
                 ) : (
                   <p className="admin-booking-ledger__empty">
-                    Payment is available after the customer requirements are
-                    verified.
+                    {payment
+                      ? "The quote has been sent. Waiting for the customer’s payment proof."
+                      : "Send the quote in Quote & handover before payment review."}
                   </p>
                 )}
-                {payment ? (
-                  <Link
-                    to="/admin/payments"
-                    search={{ payment: payment.id } as never}
-                    className="touch-target admin-booking-ledger__payment-link"
-                  >
-                    Review {payment.booking?.customer?.full_name ?? "customer"}
-                    's payment
-                    <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                  </Link>
-                ) : null}
                 {confirmationException ? (
                   <div
                     className="admin-booking-ledger__confirmation-exception"
@@ -710,77 +905,113 @@ function BookingDetailPage() {
               </div>
             </LedgerStage>
             <LedgerStage
-              number={4}
+              number={5}
               title="Release"
               status={booking.rental?.started_at ? "Released" : "Not started"}
-              detail="Prepare the requested vehicle and start the rental."
-              active={currentStage === 4}
-              expanded={
-                expandedStage === null
-                  ? currentStage === 4
-                  : expandedStage === 4
+              detail={
+                ownerView
+                  ? "Prepare the requested vehicle and start the rental."
+                  : "Owner/Admin records release; coordinate the vehicle handover."
               }
-              onToggle={() => setExpandedStage(expandedStage === 4 ? null : 4)}
-            />
-            <LedgerStage
-              number={5}
-              title="Return"
-              status={rentalState(booking)}
-              detail="Record the vehicle return and close the rental."
               active={currentStage === 5}
               expanded={
                 expandedStage === null
                   ? currentStage === 5
                   : expandedStage === 5
               }
-              onToggle={() => setExpandedStage(expandedStage === 5 ? null : 5)}
-            />
-            {ownerView &&
-            (canRelease ||
-              canCancel ||
-              canReturn ||
-              (booking.booking_status === "Confirmed" && !booking.rental) ||
-              Boolean(booking.rental && !booking.rental.ended_at)) ? (
-              <div className="admin-booking-ledger__operational">
-                <OwnerActionArea
-                  booking={booking}
-                  canConfirm={canConfirm}
-                  canCancel={canCancel}
-                  canRelease={canRelease}
-                  canReturn={canReturn}
-                  releaseOdometer={releaseOdometer}
-                  setReleaseOdometer={setReleaseOdometer}
-                  releaseFuelLevel={releaseFuelLevel}
-                  setReleaseFuelLevel={setReleaseFuelLevel}
-                  releaseConditionSummary={releaseConditionSummary}
-                  setReleaseConditionSummary={setReleaseConditionSummary}
-                  existingDamageNotes={existingDamageNotes}
-                  setExistingDamageNotes={setExistingDamageNotes}
-                  agreementAcknowledged={agreementAcknowledged}
-                  setAgreementAcknowledged={setAgreementAcknowledged}
-                  conditionAcknowledged={conditionAcknowledged}
-                  setConditionAcknowledged={setConditionAcknowledged}
-                  returnScheduleAcknowledged={returnScheduleAcknowledged}
-                  setReturnScheduleAcknowledged={setReturnScheduleAcknowledged}
-                  returnOdometer={returnOdometer}
-                  setReturnOdometer={setReturnOdometer}
-                  returnFuelLevel={returnFuelLevel}
-                  setReturnFuelLevel={setReturnFuelLevel}
-                  returnConditionSummary={returnConditionSummary}
-                  setReturnConditionSummary={setReturnConditionSummary}
-                  observedDamageNotes={observedDamageNotes}
-                  setObservedDamageNotes={setObservedDamageNotes}
-                  returnRemarks={returnRemarks}
-                  setReturnRemarks={setReturnRemarks}
-                  cancellationReason={cancellationReason}
-                  setCancellationReason={setCancellationReason}
-                  cancelDialogOpen={cancelDialogOpen}
-                  setCancelDialogOpen={setCancelDialogOpen}
-                  busyAction={busyAction}
-                  onAction={postBookingAction}
-                />
-              </div>
-            ) : null}
+              onToggle={() =>
+                setExpandedStage((previous) =>
+                  (previous ?? currentStage) === 5 ? 0 : 5,
+                )
+              }
+            >
+              {booking.rental ? (
+                <>
+                  <p className="admin-booking-ledger__empty">
+                    Vehicle released{" "}
+                    {formatAdminDateTime(booking.rental.started_at)}. The
+                    handover is complete.
+                  </p>
+                  {ownerView ? (
+                    <FinancialRecordSummary booking={booking} />
+                  ) : null}
+                </>
+              ) : booking.booking_status === "Confirmed" ? (
+                <>
+                  {!meetingReady ? (
+                    <p className="booking-ledger-notice">
+                      Complete the meeting details in Quote & handover before
+                      releasing this vehicle.
+                      <Btn variant="ghost" onClick={() => setExpandedStage(3)}>
+                        Complete meeting details
+                      </Btn>
+                    </p>
+                  ) : null}
+                  {ownerView ? (
+                    renderOwnerActions("release")
+                  ) : (
+                    <p className="admin-booking-ledger__empty">
+                      Owner/Admin records the vehicle handover.
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="admin-booking-ledger__empty">
+                  Release becomes available after the booking is confirmed.
+                </p>
+              )}
+            </LedgerStage>
+            <LedgerStage
+              number={6}
+              title="Return"
+              status={
+                booking.rental?.ended_at
+                  ? "Returned"
+                  : booking.rental
+                    ? "Rental in progress"
+                    : "Not started"
+              }
+              detail={
+                ownerView
+                  ? "Record the vehicle return and close the rental."
+                  : "Owner/Admin records return; coordinate the vehicle collection."
+              }
+              active={currentStage === 6}
+              expanded={
+                expandedStage === null
+                  ? currentStage === 6
+                  : expandedStage === 6
+              }
+              onToggle={() =>
+                setExpandedStage((previous) =>
+                  (previous ?? currentStage) === 6 ? 0 : 6,
+                )
+              }
+            >
+              {booking.rental ? (
+                <>
+                  <p className="booking-ledger-notice">
+                    {booking.rental.ended_at
+                      ? `Vehicle returned ${formatAdminDateTime(booking.rental.ended_at)}.`
+                      : `Scheduled return: ${formatAdminDateTime(booking.return_at)}. ${new Date(booking.return_at).getTime() < Date.now() ? "The scheduled return time has passed. Follow up with the customer." : "Record the inspection when the vehicle comes back; early returns are allowed."}`}
+                  </p>
+                  {ownerView && booking.rental.ended_at ? (
+                    <FinancialRecordSummary booking={booking} />
+                  ) : null}
+                  {ownerView && !booking.rental.ended_at ? (
+                    <details className="booking-ledger-secondary">
+                      <summary>Record vehicle return</summary>
+                      {renderOwnerActions("return")}
+                    </details>
+                  ) : null}
+                </>
+              ) : (
+                <p className="admin-booking-ledger__empty">
+                  The return inspection becomes available once the vehicle is
+                  released.
+                </p>
+              )}
+            </LedgerStage>
             {!ownerView ? <StaffReadOnlyCard /> : null}
           </section>
           <div className="admin-booking-detail-page__activity">
@@ -1209,6 +1440,9 @@ function PaymentQuotePanel({
     customerName === "the customer" ? "customer" : customerName.split(/\s+/)[0];
   const quoteIssued = Boolean(issuedQuote);
   const canEditQuote = !locked && requirementsVerified;
+  const arrangementsReady =
+    booking.pickup_delivery_option !== "pickup" ||
+    pickupArrangementReady(booking);
   const vehicleName = booking.requested_vehicle?.name || "Requested vehicle";
   const bookingWindow = formatAdminDateRange(
     booking.pickup_at,
@@ -1226,11 +1460,13 @@ function PaymentQuotePanel({
       {quote ? (
         <>
           <header className="admin-booking-payment-quote-panel__header">
-            <h4>Review customer quote</h4>
+            <h4>Rental quote</h4>
             <p>
-              {quoteIssued
-                ? `Quote sent to ${customerFirstName}. You can revise it until payment proof is submitted.`
-                : `${vehicleName} · ${bookingWindow}`}
+              {locked
+                ? `${vehicleName} · ${bookingWindow}. Saved quote; editing is closed.`
+                : quoteIssued
+                  ? `Quote sent to ${customerFirstName}. Editable until payment proof is submitted.`
+                  : `${vehicleName} · ${bookingWindow}`}
             </p>
           </header>
 
@@ -1299,58 +1535,61 @@ function PaymentQuotePanel({
               </p>
             </div>
             <strong>
-              {formatAdminMoney(quote.downPaymentAmount)} due today
+              {formatAdminMoney(quote.downPaymentAmount)}
+              {payment?.status === "Not Submitted" || !payment
+                ? " due today"
+                : " down payment"}
             </strong>
           </section>
 
-          <div className="admin-booking-payment-quote-panel__footer">
-            {quoteIssued && locked ? (
-              <p
-                className="admin-booking-payment-quote-panel__waiting"
-                role="status"
-              >
-                Payment proof has been submitted. This quote is now locked for
-                review.
-              </p>
-            ) : canEditQuote ? (
-              <label className="admin-booking-payment-quote-panel__confirmation">
-                <input
-                  type="checkbox"
-                  checked={confirmed}
-                  onChange={(event) => setConfirmed(event.target.checked)}
-                  disabled={saving}
-                />
-                <span>
-                  I confirm this quote matches the booking details
-                </span>
-              </label>
-            ) : null}
-            {canEditQuote ? (
-              <Btn
-                variant="primary"
-                disabled={saving || !confirmed}
-                onClick={() => void issue()}
-              >
-                {saving
-                  ? "Saving…"
-                  : quoteIssued
-                    ? `Update quote for ${customerFirstName}`
-                    : `Send quote to ${customerFirstName}`}
-              </Btn>
-            ) : null}
-          </div>
+          {payment?.status !== "Verified" ? (
+            <div className="admin-booking-payment-quote-panel__footer">
+              {quoteIssued && locked ? (
+                <p
+                  className="admin-booking-payment-quote-panel__waiting"
+                  role="status"
+                >
+                  Payment proof submitted. The saved quote is locked during
+                  review.
+                </p>
+              ) : canEditQuote ? (
+                <label className="admin-booking-payment-quote-panel__confirmation">
+                  <input
+                    type="checkbox"
+                    checked={confirmed}
+                    onChange={(event) => setConfirmed(event.target.checked)}
+                    disabled={saving}
+                  />
+                  <span>I confirm this quote matches the booking details</span>
+                </label>
+              ) : null}
+              {canEditQuote ? (
+                <Btn
+                  variant="primary"
+                  disabled={saving || !confirmed || !arrangementsReady}
+                  onClick={() => void issue()}
+                >
+                  {saving
+                    ? "Saving…"
+                    : quoteIssued
+                      ? `Update quote for ${customerFirstName}`
+                      : `Send quote to ${customerFirstName}`}
+                </Btn>
+              ) : null}
+            </div>
+          ) : null}
         </>
       ) : null}
 
+      {canEditQuote && !arrangementsReady ? (
+        <p className="admin-booking-payment-terms__notice">
+          Save the pickup and return details above before sending the quote. The
+          customer will review them before paying.
+        </p>
+      ) : null}
       {!requirementsVerified ? (
         <p className="admin-booking-payment-terms__notice">
           Verify the customer’s requirements before sending a payment request.
-        </p>
-      ) : null}
-      {locked ? (
-        <p className="admin-booking-payment-terms__notice">
-          This payment request is locked because payment proof is already under
-          review or verified.
         </p>
       ) : null}
 
@@ -1548,10 +1787,11 @@ function RejectUnconfirmedBooking({
   return (
     <section className="admin-booking-resolution">
       <div>
-        <h4>Resolve unfinished request</h4>
+        <h4>Reject this request</h4>
         <p>
-          Reject only when this request cannot proceed. The customer receives
-          the recorded reason.
+          Use this when the trip cannot be accommodated or does not meet the
+          rental terms. Missing documents alone do not require rejection. The
+          customer receives your reason.
         </p>
       </div>
       <label>
@@ -2138,7 +2378,7 @@ function AdminPdfThumbnail({ source }: { source: string }) {
     let cancelled = false;
     let loadingTask: {
       destroy?: () => void | Promise<void>;
-      promise: Promise<any>;
+      promise: Promise<import("pdfjs-dist").PDFDocumentProxy>;
     } | null = null;
 
     async function renderThumbnail() {
@@ -2165,7 +2405,7 @@ function AdminPdfThumbnail({ source }: { source: string }) {
         canvas.height = Math.ceil(viewport.height);
         const context = canvas.getContext("2d");
         if (!context) return;
-        await page.render({ canvasContext: context, viewport }).promise;
+        await page.render({ canvas, canvasContext: context, viewport }).promise;
         if (!cancelled) setThumbnail(canvas.toDataURL("image/png"));
         pdf.cleanup?.();
       } catch {
@@ -2299,7 +2539,7 @@ function AdminPdfDocumentPreview({
     let cancelled = false;
     let loadingTask: {
       destroy?: () => void | Promise<void>;
-      promise: Promise<any>;
+      promise: Promise<import("pdfjs-dist").PDFDocumentProxy>;
     } | null = null;
 
     async function renderPdf() {
@@ -2335,6 +2575,7 @@ function AdminPdfDocumentPreview({
           if (!context)
             throw new Error("The PDF preview canvas is unavailable.");
           await page.render({
+            canvas,
             canvasContext: context,
             transform: [pixelRatio, 0, 0, pixelRatio, 0, 0],
             viewport,
@@ -2428,7 +2669,15 @@ function LedgerStage({
           <p>{detail}</p>
         </div>
         <span className="admin-booking-ledger__stage-status">
-          <DomainStatus label={status} tone={statusTone(status)} compact />
+          <DomainStatus
+            label={status}
+            tone={
+              status === "Released" || status === "Rental in progress"
+                ? "success"
+                : statusTone(status)
+            }
+            compact
+          />
           {canExpand ? (
             <span aria-hidden="true">{expanded ? "−" : "+"}</span>
           ) : null}
@@ -2439,32 +2688,6 @@ function LedgerStage({
       ) : null}
     </section>
   );
-}
-
-function currentLedgerStage({
-  booking,
-  requirementStatus,
-  paymentStatus,
-}: {
-  booking: AdminBooking;
-  requirementStatus: string;
-  paymentStatus: string;
-}) {
-  if (booking.rental?.ended_at) return 5;
-  if (booking.rental?.started_at || booking.booking_status === "Confirmed")
-    return 4;
-  if (
-    paymentStatus === "Pending Verification" ||
-    paymentStatus === "Needs Resubmission" ||
-    requirementStatus === "Verified"
-  )
-    return 3;
-  if (
-    requirementStatus === "Pending Review" ||
-    requirementStatus === "Needs Resubmission"
-  )
-    return 2;
-  return 1;
 }
 
 function BookingLedgerDetails({ booking }: { booking: AdminBooking }) {
@@ -2542,7 +2765,7 @@ function BookingLedgerDetails({ booking }: { booking: AdminBooking }) {
         />
         <DetailField
           label="Service"
-          value={isDelivery ? "Delivery" : "Collection service"}
+          value={isDelivery ? "Delivery" : "Pickup"}
         />
         {isDelivery ? (
           <>
@@ -2774,7 +2997,7 @@ function BookingRequestCard({ booking }: { booking: AdminBooking }) {
           value={
             booking.pickup_delivery_option === "delivery"
               ? `Delivery${booking.pickup_location ? ` · ${booking.pickup_location}` : ""}${booking.dropoff_location && booking.dropoff_location !== booking.pickup_location ? ` · Return: ${booking.dropoff_location}` : ""}`
-              : "Delivery / collection service"
+              : "Pickup at an agreed meeting point"
           }
         />
         <DetailField
@@ -2927,11 +3150,25 @@ function ActivityCard({ booking }: { booking: AdminBooking }) {
       detail: "Customer request was recorded.",
       value: booking.created_at,
     },
-    {
-      label: "Booking record updated",
-      detail: "Booking details were updated.",
-      value: booking.updated_at,
-    },
+    ...(booking.confirmed_at
+      ? [
+          {
+            label: "Booking confirmed",
+            detail: "The reservation was confirmed.",
+            value: booking.confirmed_at,
+          },
+        ]
+      : []),
+    ...(booking.resolved_at &&
+    ["Cancelled", "Rejected"].includes(booking.booking_status)
+      ? [
+          {
+            label: `Booking ${booking.booking_status.toLowerCase()}`,
+            detail: booking.resolution_reason ?? "The request was resolved.",
+            value: booking.resolved_at,
+          },
+        ]
+      : []),
     ...(booking.rental?.started_at
       ? [
           {
@@ -2953,31 +3190,45 @@ function ActivityCard({ booking }: { booking: AdminBooking }) {
   ];
   return (
     <Card className="admin-booking-activity-card">
-      <CardHeader
-        title="Activity and timing"
-        hint="A chronological record of this booking's milestones."
-      />
-      <ol className="admin-booking-timeline">
-        {entries.map((entry) => (
-          <li key={entry.label}>
-            <span className="admin-booking-timeline__dot" aria-hidden="true" />
-            <time dateTime={entry.value}>
-              {formatAdminDateTime(entry.value)}
-            </time>
-            <div>
-              <strong>{entry.label}</strong>
-              <p>{entry.detail}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
+      <details className="admin-booking-history">
+        <summary>
+          <span>
+            <strong>Booking history</strong>
+            <small>Request, confirmation and rental milestones.</small>
+          </span>
+        </summary>
+        <ol className="admin-booking-timeline">
+          {entries
+            .sort(
+              (a, b) =>
+                (Date.parse(a.value ?? "") || 0) -
+                (Date.parse(b.value ?? "") || 0),
+            )
+            .map((entry) => (
+              <li key={entry.label}>
+                <span
+                  className="admin-booking-timeline__dot"
+                  aria-hidden="true"
+                />
+                <time dateTime={entry.value}>
+                  {formatAdminDateTime(entry.value)}
+                </time>
+                <div>
+                  <strong>{entry.label}</strong>
+                  <p>{entry.detail}</p>
+                </div>
+              </li>
+            ))}
+        </ol>
+      </details>
     </Card>
   );
 }
 
 function OwnerActionArea({
+  stage,
   booking,
-  canConfirm,
+  verifiedPaymentAmount,
   canCancel,
   canRelease,
   canReturn,
@@ -3012,8 +3263,9 @@ function OwnerActionArea({
   busyAction,
   onAction,
 }: {
+  stage: "release" | "return";
   booking: AdminBooking;
-  canConfirm: boolean;
+  verifiedPaymentAmount: number | null;
   canCancel: boolean;
   canRelease: boolean;
   canReturn: boolean;
@@ -3052,92 +3304,112 @@ function OwnerActionArea({
     message: string,
   ) => Promise<boolean>;
 }) {
+  const [collectionMethod, setCollectionMethod] = useState("Cash");
+  const [collectionReference, setCollectionReference] = useState("");
+  const [collectionAcknowledged, setCollectionAcknowledged] = useState(false);
+  const [depositDeduction, setDepositDeduction] = useState("0");
+  const [deductionReason, setDeductionReason] = useState("");
+  const [refundMethod, setRefundMethod] = useState("Cash");
+  const [refundReference, setRefundReference] = useState("");
+  const [refundAcknowledged, setRefundAcknowledged] = useState(false);
+  const quote = booking.payment_quote;
+  const finance = booking.financial_record;
+  const balanceDue =
+    quote &&
+    verifiedPaymentAmount !== null &&
+    Number.isFinite(verifiedPaymentAmount)
+      ? Math.max(Number(quote.total_amount) - verifiedPaymentAmount, 0)
+      : null;
+  const refund = finance
+    ? depositRefund(Number(finance.deposit_collected), depositDeduction)
+    : null;
+  const collectionReady = Boolean(
+    quote &&
+    balanceDue !== null &&
+    collectionAcknowledged &&
+    (collectionMethod === "Cash" || collectionReference.trim()),
+  );
+  const settlementReady =
+    !finance ||
+    Boolean(
+      refund !== null &&
+      refundAcknowledged &&
+      (Number(depositDeduction) === 0 || deductionReason.trim()) &&
+      (refundMethod === "Cash" || refundReference.trim()),
+    );
   return (
-    <div className="space-y-5">
-      {canCancel ? (
-        <Card>
-          <CardHeader
-            title="Cancel reservation"
-            hint="Cancellation is available only before the rental is released. The payment and requirement history will be retained."
-          />
-          <div className="space-y-4 px-5 py-5">
-            <label
-              className="block text-sm font-medium"
-              htmlFor="cancellation-reason"
-            >
-              <span>Cancellation reason</span>
-              <TInput
-                id="cancellation-reason"
-                name="cancellation-reason"
-                value={cancellationReason}
-                onChange={(event) => setCancellationReason(event.target.value)}
-                placeholder="Required for the audit trail"
-                className="mt-2"
-              />
-            </label>
-            <Btn
-              variant="danger"
-              disabled={busyAction !== null || !cancellationReason.trim()}
-              onClick={() => setCancelDialogOpen(true)}
-            >
-              Cancel confirmed reservation
-            </Btn>
-          </div>
-          <AlertDialog
-            open={cancelDialogOpen}
-            onOpenChange={(open) => {
-              if (!busyAction) setCancelDialogOpen(open);
-            }}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Cancel this confirmed reservation?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will cancel {bookingReferenceLabel(booking.id)} and
-                  release its vehicle allocation. Requirement and payment
-                  records will stay in the audit history.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={busyAction !== null}>
-                  Keep reservation
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  disabled={busyAction !== null}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    void onAction(
-                      "cancel",
-                      {
-                        expectedConfirmedAt: booking.confirmed_at,
-                        cancellationReason,
-                      },
-                      "Confirmed reservation cancelled and vehicle allocation released.",
-                    ).then((cancelled) => {
-                      if (cancelled) setCancelDialogOpen(false);
-                    });
-                  }}
-                  className="border border-[#b43b3b] bg-white px-4 text-sm font-semibold text-[#b43b3b] shadow-none hover:bg-[#fff2f1]"
-                >
-                  {busyAction === "cancel"
-                    ? "Cancelling…"
-                    : "Cancel reservation"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </Card>
-      ) : null}
-      {canRelease ||
-      (booking.booking_status === "Confirmed" && !booking.rental) ? (
+    <div className="booking-ledger-controls space-y-5">
+      {stage === "release" &&
+      (canRelease ||
+        (booking.booking_status === "Confirmed" && !booking.rental)) ? (
         <Card>
           <CardHeader
             title="Rental release"
-            hint="Release starts the canonical rental transaction."
+            hint="Record the vehicle handover and start the rental."
           />
           <div className="space-y-4 px-5 py-5">
+            {!releaseDayReached(booking.pickup_at) ? (
+              <p className="admin-booking-payment-terms__notice" role="status">
+                Release is available on {formatAdminDateTime(booking.pickup_at)}
+                . Arrange any date change with the customer before handover.
+              </p>
+            ) : new Date(booking.return_at).getTime() <= Date.now() ? (
+              <p role="status">
+                The scheduled rental period has ended. Review the dates before
+                release.
+              </p>
+            ) : null}
+            <section
+              className="booking-finance"
+              aria-label="Handover collection"
+            >
+              <h4>Balance &amp; security deposit</h4>
+              <p>
+                Record the money received at handover. The verified down payment
+                is already included in the quote.
+              </p>
+              {quote ? (
+                <>
+                  <dl>
+                    <div>
+                      <dt>Remaining rental balance</dt>
+                      <dd>{formatAdminMoney(balanceDue)}</dd>
+                    </div>
+                    <div>
+                      <dt>Refundable security deposit</dt>
+                      <dd>{formatAdminMoney(quote.security_deposit_amount)}</dd>
+                    </div>
+                    <div>
+                      <dt>Collect at handover</dt>
+                      <dd>
+                        {formatAdminMoney(
+                          Number(balanceDue) +
+                            Number(quote.security_deposit_amount),
+                        )}
+                      </dd>
+                    </div>
+                  </dl>
+                  <FinancialMethodFields
+                    prefix="collection"
+                    label="Collection"
+                    method={collectionMethod}
+                    setMethod={setCollectionMethod}
+                    reference={collectionReference}
+                    setReference={setCollectionReference}
+                  />
+                  <Acknowledgement
+                    id="collection-ack"
+                    checked={collectionAcknowledged}
+                    onChange={setCollectionAcknowledged}
+                    label="The remaining balance and security deposit have been received."
+                  />
+                </>
+              ) : (
+                <p role="alert">
+                  A saved rental quote is required before release.
+                </p>
+              )}
+            </section>
             <label
               className="block text-sm font-medium"
               htmlFor="release-odometer"
@@ -3181,7 +3453,7 @@ function OwnerActionArea({
                 onChange={(event) =>
                   setReleaseConditionSummary(event.target.value)
                 }
-                placeholder="Required by the release contract"
+                placeholder="Describe the vehicle’s condition at handover"
                 className="mt-2"
               />
             </label>
@@ -3222,6 +3494,10 @@ function OwnerActionArea({
               disabled={
                 !canRelease ||
                 busyAction !== null ||
+                !collectionReady ||
+                !releaseOdometer.trim() ||
+                !Number.isFinite(Number(releaseOdometer)) ||
+                Number(releaseOdometer) < 0 ||
                 !releaseConditionSummary.trim() ||
                 !agreementAcknowledged ||
                 !conditionAcknowledged ||
@@ -3231,6 +3507,11 @@ function OwnerActionArea({
                 void onAction(
                   "release",
                   {
+                    collectionMethod,
+                    collectionReference,
+                    collectionAcknowledged,
+                    balanceReceived: balanceDue,
+                    depositReceived: Number(quote?.security_deposit_amount),
                     expectedAssignedVehicleId: booking.assigned_vehicle_id,
                     expectedConfirmedAt: booking.confirmed_at,
                     releaseOdometer: releaseOdometer || null,
@@ -3252,11 +3533,99 @@ function OwnerActionArea({
           </div>
         </Card>
       ) : null}
-      {canReturn || (booking.rental && !booking.rental.ended_at) ? (
+      {stage === "release" && booking.financial_record ? (
+        <FinancialRecordSummary booking={booking} />
+      ) : null}
+      {stage === "return" && booking.financial_record?.settled_at ? (
+        <FinancialRecordSummary booking={booking} />
+      ) : null}
+      {stage === "release" && canCancel ? (
+        <details className="booking-ledger-secondary">
+          <summary>Cancel this reservation</summary>
+          <Card>
+            <CardHeader
+              title="Cancel reservation"
+              hint="Cancellation is available only before the rental is released. The payment and requirement history will be retained."
+            />
+            <div className="space-y-4 px-5 py-5">
+              <label
+                className="block text-sm font-medium"
+                htmlFor="cancellation-reason"
+              >
+                <span>Cancellation reason</span>
+                <TInput
+                  id="cancellation-reason"
+                  name="cancellation-reason"
+                  value={cancellationReason}
+                  onChange={(event) =>
+                    setCancellationReason(event.target.value)
+                  }
+                  placeholder="Required for the audit trail"
+                  className="mt-2"
+                />
+              </label>
+              <Btn
+                variant="danger"
+                disabled={busyAction !== null || !cancellationReason.trim()}
+                onClick={() => setCancelDialogOpen(true)}
+              >
+                Cancel confirmed reservation
+              </Btn>
+            </div>
+            <AlertDialog
+              open={cancelDialogOpen}
+              onOpenChange={(open) => {
+                if (!busyAction) setCancelDialogOpen(open);
+              }}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Cancel this confirmed reservation?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will cancel {bookingReferenceLabel(booking.id)} and
+                    release its vehicle allocation. Requirement and payment
+                    records will stay in the audit history.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={busyAction !== null}>
+                    Keep reservation
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={busyAction !== null}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      void onAction(
+                        "cancel",
+                        {
+                          expectedConfirmedAt: booking.confirmed_at,
+                          cancellationReason,
+                        },
+                        "Confirmed reservation cancelled and vehicle allocation released.",
+                      ).then((cancelled) => {
+                        if (cancelled) setCancelDialogOpen(false);
+                      });
+                    }}
+                    className="border border-[#b43b3b] bg-white px-4 text-sm font-semibold text-[#b43b3b] shadow-none hover:bg-[#fff2f1]"
+                  >
+                    {busyAction === "cancel"
+                      ? "Cancelling…"
+                      : "Cancel reservation"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </Card>
+        </details>
+      ) : null}
+      {stage === "return" &&
+      (canReturn || (booking.rental && !booking.rental.ended_at)) ? (
         <Card>
           <CardHeader
             title="Return"
-            hint="Record return against the exact active rental transaction."
+            hint="Complete the vehicle inspection and record the return."
           />
           <div className="space-y-4 px-5 py-5">
             <label
@@ -3302,7 +3671,7 @@ function OwnerActionArea({
                 onChange={(event) =>
                   setReturnConditionSummary(event.target.value)
                 }
-                placeholder="Required by the return contract"
+                placeholder="Describe the vehicle’s condition on return"
                 className="mt-2"
               />
             </label>
@@ -3334,17 +3703,106 @@ function OwnerActionArea({
                 className="mt-2"
               />
             </label>
+            <section
+              className="booking-finance"
+              aria-label="Security deposit settlement"
+            >
+              <h4>Security deposit settlement</h4>
+              {finance ? (
+                <>
+                  <p>
+                    Record any agreed deduction and return the remaining deposit
+                    before closing the rental. Early return does not
+                    automatically change the agreed rental price.
+                  </p>
+                  <dl>
+                    <div>
+                      <dt>Deposit received</dt>
+                      <dd>{formatAdminMoney(finance.deposit_collected)}</dd>
+                    </div>
+                  </dl>
+                  <label>
+                    <span>Deposit deduction (PHP)</span>
+                    <TInput
+                      type="number"
+                      min="0"
+                      max={Number(finance.deposit_collected)}
+                      step="0.01"
+                      value={depositDeduction}
+                      onChange={(e) => {
+                        setDepositDeduction(e.target.value);
+                        setRefundAcknowledged(false);
+                      }}
+                    />
+                  </label>
+                  {Number(depositDeduction) > 0 ? (
+                    <label>
+                      <span>Reason for deduction</span>
+                      <TInput
+                        maxLength={500}
+                        value={deductionReason}
+                        onChange={(e) => setDeductionReason(e.target.value)}
+                        placeholder="Describe the agreed charge or damage deduction"
+                      />
+                    </label>
+                  ) : null}
+                  {refund === null ? (
+                    <p role="alert">
+                      Enter a deduction between zero and the deposit received,
+                      with at most two decimal places.
+                    </p>
+                  ) : (
+                    <dl>
+                      <div>
+                        <dt>Deposit to refund</dt>
+                        <dd>{formatAdminMoney(refund)}</dd>
+                      </div>
+                    </dl>
+                  )}
+                  <FinancialMethodFields
+                    prefix="refund"
+                    label="Refund"
+                    method={refundMethod}
+                    setMethod={setRefundMethod}
+                    reference={refundReference}
+                    setReference={setRefundReference}
+                  />
+                  <Acknowledgement
+                    id="refund-ack"
+                    checked={refundAcknowledged}
+                    onChange={setRefundAcknowledged}
+                    label="The deposit refund and any deduction have been settled with the customer."
+                  />
+                </>
+              ) : (
+                <p>
+                  This rental has no saved collection record. Reconcile its
+                  original receipts with the customer before settling the
+                  deposit.
+                </p>
+              )}
+            </section>
             <Btn
               variant="primary"
               disabled={
                 !canReturn ||
                 busyAction !== null ||
+                !settlementReady ||
+                !returnOdometer.trim() ||
+                !Number.isFinite(Number(returnOdometer)) ||
+                Number(returnOdometer) < 0 ||
                 !returnConditionSummary.trim()
               }
               onClick={() =>
                 void onAction(
                   "return",
                   {
+                    depositDeduction: Number(depositDeduction),
+                    deductionReason,
+                    depositRefunded: refund,
+                    refundMethod,
+                    refundReference,
+                    refundAcknowledged,
                     rentalId: booking.rental?.id,
                     expectedBookingId: booking.id,
                     expectedVehicleId: booking.rental?.vehicle_id,
@@ -3364,14 +3822,6 @@ function OwnerActionArea({
           </div>
         </Card>
       ) : null}
-      {!canConfirm && !canRelease && !canReturn ? (
-        <Card>
-          <EmptyState
-            title="No action available"
-            description="The current canonical booking state does not expose an Owner/Admin mutation from this workspace."
-          />
-        </Card>
-      ) : null}
     </div>
   );
 }
@@ -3381,7 +3831,7 @@ function StaffReadOnlyCard() {
     <Card>
       <CardHeader
         title="Operations Staff access"
-        hint="This workspace follows the Staff read boundary."
+        hint="You can view this booking for operational coordination."
       />
       <div className="space-y-3 px-5 py-5 text-sm leading-6 text-muted-foreground">
         <p>
@@ -3505,7 +3955,7 @@ function Acknowledgement({
   label: string;
 }) {
   return (
-    <label className="flex items-start gap-3 text-sm">
+    <label className="booking-acknowledgement flex items-start gap-3 text-sm">
       <input
         id={id}
         name={id}
@@ -3569,8 +4019,377 @@ function actionDescription(
   return "Use the role-safe action area below when the canonical state permits an operation.";
 }
 
-function bookingReferenceLabel(id: string) {
-  return id
-    ? `Booking ${id.slice(0, 8).toUpperCase()}`
-    : "Booking reference unavailable";
+function PickupArrangementCard({
+  booking,
+  ownerView,
+  onSaved,
+}: {
+  booking: AdminBooking;
+  ownerView: boolean;
+  onSaved: () => Promise<void>;
+}) {
+  const [pickupAddress, setPickupAddress] = useState(
+    booking.pickup_meeting_address ?? "",
+  );
+  const [pickupInstructions, setPickupInstructions] = useState(
+    booking.pickup_meeting_instructions ?? "",
+  );
+  const [returnAddress, setReturnAddress] = useState(
+    booking.return_meeting_address ?? "",
+  );
+  const [returnInstructions, setReturnInstructions] = useState(
+    booking.return_meeting_instructions ?? "",
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const editable =
+    ownerView &&
+    !booking.rental &&
+    ["Draft", "Submitted", "Confirmed"].includes(booking.booking_status);
+  async function save(event: import("react").FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "pickup-arrangement",
+          bookingId: booking.id,
+          expectedUpdatedAt: booking.updated_at,
+          pickupAddress,
+          pickupInstructions,
+          returnAddress,
+          returnInstructions,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result.message ?? "Unable to save meeting details.");
+      await onSaved();
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Unable to save meeting details.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+  if (!editable)
+    return (
+      <section
+        className="booking-pickup-editor"
+        aria-labelledby="pickup-arrangement-title"
+      >
+        <header>
+          <div>
+            <h4 id="pickup-arrangement-title">Handover arrangements</h4>
+            <p>Agreed pickup and return locations for this booking.</p>
+          </div>
+          <DomainStatus
+            label={
+              pickupArrangementReady(booking)
+                ? "Recorded"
+                : booking.rental
+                  ? "Not recorded"
+                  : "Needs details"
+            }
+            tone={
+              pickupArrangementReady(booking)
+                ? "success"
+                : booking.rental
+                  ? "neutral"
+                  : "warning"
+            }
+          />
+        </header>
+        {pickupArrangementReady(booking) ? (
+          <div className="booking-handover-summary">
+            {[
+              [
+                "Pickup",
+                booking.pickup_meeting_address,
+                booking.pickup_meeting_instructions,
+              ],
+              [
+                "Return",
+                booking.return_meeting_address,
+                booking.return_meeting_instructions,
+              ],
+            ].map(([label, address, instructions]) => (
+              <div key={label}>
+                <h5>{label}</h5>
+                <p className="booking-handover-summary__address">{address}</p>
+                <p>{instructions}</p>
+                <a
+                  className="booking-meeting-map"
+                  href={meetingMapUrl(address)!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open in Maps <ExternalLink size={14} aria-hidden="true" />
+                </a>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="booking-handover-summary__empty">
+            {booking.rental
+              ? "No meeting details were recorded before this vehicle was released."
+              : "The owner needs to record the agreed pickup and return locations before confirmation."}
+          </p>
+        )}
+      </section>
+    );
+  return (
+    <section
+      className="booking-pickup-editor"
+      aria-labelledby="pickup-arrangement-title"
+    >
+      <header>
+        <div>
+          <h4 id="pickup-arrangement-title">Handover arrangements</h4>
+          <p>
+            {editable
+              ? "Confirm where the customer will collect and return the car."
+              : "Meeting details for this booking."}
+          </p>
+        </div>
+        <DomainStatus
+          label={
+            pickupArrangementReady(booking) ? "Details saved" : "Needs details"
+          }
+          tone={pickupArrangementReady(booking) ? "success" : "warning"}
+        />
+      </header>
+      <form onSubmit={save}>
+        <fieldset
+          disabled={!editable || saving}
+          className="booking-pickup-fields"
+        >
+          <div>
+            <label htmlFor="meeting-pickup-address">
+              Pickup address or landmark
+            </label>
+            <TInput
+              id="meeting-pickup-address"
+              required
+              maxLength={500}
+              value={pickupAddress}
+              onChange={(e) => setPickupAddress(e.target.value)}
+              placeholder="Agreed meeting point, street and city"
+            />
+            <label htmlFor="meeting-pickup-instructions">
+              Pickup instructions
+            </label>
+            <textarea
+              id="meeting-pickup-instructions"
+              required
+              maxLength={1500}
+              value={pickupInstructions}
+              onChange={(e) => setPickupInstructions(e.target.value)}
+              placeholder="Where to meet the team and what to bring"
+            />
+          </div>
+          <div>
+            <label htmlFor="meeting-return-address">
+              Return address or landmark
+            </label>
+            <TInput
+              id="meeting-return-address"
+              required
+              maxLength={500}
+              value={returnAddress}
+              onChange={(e) => setReturnAddress(e.target.value)}
+              placeholder="Agreed return point, street and city"
+            />
+            <label htmlFor="meeting-return-instructions">
+              Return instructions
+            </label>
+            <textarea
+              id="meeting-return-instructions"
+              required
+              maxLength={1500}
+              value={returnInstructions}
+              onChange={(e) => setReturnInstructions(e.target.value)}
+              placeholder="Where and how to hand the car back"
+            />
+          </div>
+        </fieldset>
+        {error ? (
+          <p role="alert" className="text-destructive">
+            {error}
+          </p>
+        ) : null}
+        <footer>
+          <span>
+            These details appear with the customer’s quote before payment and
+            remain in the confirmed booking.
+          </span>
+          {editable ? (
+            <Btn variant="primary" type="submit" disabled={saving}>
+              {saving ? "Saving…" : "Save meeting details"}
+            </Btn>
+          ) : null}
+        </footer>
+      </form>
+      {booking.pickup_meeting_address ? (
+        <a
+          className="booking-meeting-map"
+          href={meetingMapUrl(booking.pickup_meeting_address)!}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <MapPin size={15} aria-hidden="true" /> Open pickup in Maps{" "}
+          <ExternalLink size={14} aria-hidden="true" />
+        </a>
+      ) : null}
+    </section>
+  );
+}
+
+function BookingRequestReview({ booking }: { booking: AdminBooking }) {
+  const facts = [
+    ["Requested vehicle", booking.requested_vehicle?.name ?? "Not specified"],
+    ["Pickup", formatAdminDateTime(booking.pickup_at)],
+    ["Return", formatAdminDateTime(booking.return_at)],
+    [
+      "Service",
+      booking.pickup_delivery_option === "pickup"
+        ? "Customer pickup"
+        : "Delivery & collection",
+    ],
+    ["Operating area", booking.pickup_branch?.name ?? "Not specified"],
+    ["Purpose", booking.purpose_of_use ?? "Not provided"],
+    ["Destination", booking.destination ?? "Not provided"],
+  ];
+  return (
+    <div className="booking-request-review">
+      <h4>Customer’s trip request</h4>
+      <dl>
+        {facts.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+      {booking.pickup_delivery_option === "delivery" ? (
+        <p>
+          Delivery: {booking.pickup_location || "Not provided"}
+          <br />
+          Collection: {booking.dropoff_location || "Not provided"}
+        </p>
+      ) : null}
+      {booking.booking_status === "Draft" ? (
+        <p>
+          The customer is still preparing their documents. Review the trip here
+          while waiting for submission.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function FinancialMethodFields({
+  prefix,
+  label,
+  method,
+  setMethod,
+  reference,
+  setReference,
+}: {
+  prefix: string;
+  label: string;
+  method: string;
+  setMethod: (value: string) => void;
+  reference: string;
+  setReference: (value: string) => void;
+}) {
+  return (
+    <div className="booking-finance__fields">
+      <label htmlFor={`${prefix}-method`}>
+        <span>{label} method</span>
+        <TSelect
+          id={`${prefix}-method`}
+          value={method}
+          onChange={(e) => setMethod(e.target.value)}
+        >
+          {["Cash", "GCash", "Bank transfer"].map((value) => (
+            <option key={value}>{value}</option>
+          ))}
+        </TSelect>
+      </label>
+      <label htmlFor={`${prefix}-reference`}>
+        <span>
+          {label} reference {method === "Cash" ? "(optional)" : "(required)"}
+        </span>
+        <TInput
+          id={`${prefix}-reference`}
+          maxLength={180}
+          value={reference}
+          onChange={(e) => setReference(e.target.value)}
+          placeholder={
+            method === "Cash"
+              ? "Receipt number, if available"
+              : "Transaction reference"
+          }
+        />
+      </label>
+    </div>
+  );
+}
+
+function FinancialRecordSummary({ booking }: { booking: AdminBooking }) {
+  const f = booking.financial_record;
+  if (!f) return null;
+  return (
+    <section
+      className="booking-finance"
+      aria-label="Recorded rental collections"
+    >
+      <h4>
+        {f.settled_at ? "Deposit settled" : "Handover collection recorded"}
+      </h4>
+      <dl>
+        <div>
+          <dt>Rental balance received</dt>
+          <dd>{formatAdminMoney(f.balance_collected)}</dd>
+        </div>
+        <div>
+          <dt>Security deposit received</dt>
+          <dd>{formatAdminMoney(f.deposit_collected)}</dd>
+        </div>
+        <div>
+          <dt>Collection</dt>
+          <dd>
+            {f.collection_method} · {formatAdminDateTime(f.collected_at)}
+            {f.collection_reference ? ` · ${f.collection_reference}` : ""}
+          </dd>
+        </div>
+        {f.settled_at ? (
+          <>
+            <div>
+              <dt>Deposit deduction</dt>
+              <dd>{formatAdminMoney(f.deposit_deduction)}</dd>
+            </div>
+            <div>
+              <dt>Deposit refunded</dt>
+              <dd>{formatAdminMoney(f.deposit_refunded)}</dd>
+            </div>
+            <div>
+              <dt>Refund</dt>
+              <dd>
+                {f.refund_method} · {formatAdminDateTime(f.settled_at)}
+                {f.refund_reference ? ` · ${f.refund_reference}` : ""}
+              </dd>
+            </div>
+          </>
+        ) : null}
+      </dl>
+      {f.deduction_reason ? <p>{f.deduction_reason}</p> : null}
+    </section>
+  );
 }

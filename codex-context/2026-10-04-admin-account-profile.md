@@ -1,0 +1,7 @@
+# Admin account profile
+
+Replaced the admin account page's browser-local profile read/write path with the existing authenticated `/api/auth/profile` API. The API scopes reads and updates to the server principal's ID, uses the user's access token and existing profiles RLS, returns a confirmed saved row, and keeps email/role out of the writable fields. Operations Staff cannot change their name through this endpoint. Admin updates affect name/contact number; existing addresses remain untouched. Customer address updates retain their existing behavior.
+
+The page shares customer profile layout styles: identity rail, profile/email-preference navigation, name/email fields, contact number, save/cancel actions. Includes responsive loading placeholders, inline load/save errors, dirty tracking and server-confirmed success. Removed the admin address form from this screen. Existing local-storage helper exports remain for compatibility, but this page no longer calls them.
+
+Validation: TypeScript, focused ESLint, production build and six auth tests passed. Browser verified a reversible synthetic admin name change saved, survived full reload and was restored to Avery Santos. Invalid phone showed an error without saving; cancel restored original values. At 390px there was no horizontal overflow. Staff restriction inspected in both UI and server code; no separate staff login test performed. No schema changes or deployment.

@@ -5,6 +5,13 @@
  *
  * The checked-in shape covers the canonical tables established through VS030.
  */
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
 export type Database = {
   public: {
     Tables: {
@@ -109,6 +116,25 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["branches"]["Insert"]>;
+        Relationships: [];
+      };
+      branch_route_points: {
+        Row: {
+          branch_id: string;
+          latitude: number;
+          longitude: number;
+          query: string;
+          label: string;
+          provider: string;
+          result_type: string;
+          kind: "area_reference" | "movement_point";
+          confirmed_at: string;
+          confirmed_by: string;
+        };
+        Insert: Database["public"]["Tables"]["branch_route_points"]["Row"];
+        Update: Partial<
+          Database["public"]["Tables"]["branch_route_points"]["Row"]
+        >;
         Relationships: [];
       };
       vehicle_categories: {
@@ -794,6 +820,18 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      save_operational_location: {
+        Args: {
+          p_id: string;
+          p_create: boolean;
+          p_name: string;
+          p_address: string;
+          p_active: boolean;
+          p_point: Json | null;
+          p_actor: string;
+        };
+        Returns: Json;
+      };
       submit_renter_requirements: {
         Args: { p_requirement_set_id: string; p_customer_id: string };
         Returns: boolean;

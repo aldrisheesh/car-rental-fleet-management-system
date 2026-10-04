@@ -3,7 +3,15 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 test("admin queues keep their record review destinations coherent", async () => {
-  const [bookings, requirements, payments, bookingDetail, dashboard, calendar, signIn] = await Promise.all([
+  const [
+    bookings,
+    requirements,
+    payments,
+    bookingDetail,
+    dashboard,
+    calendar,
+    signIn,
+  ] = await Promise.all([
     readFile(new URL("../routes/admin.bookings.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../routes/admin.requirements.tsx", import.meta.url),
@@ -31,7 +39,10 @@ test("admin queues keep their record review destinations coherent", async () => 
     assert.match(source, /<Outlet \/>/);
   }
   assert.match(payments, /admin-payments-layout/);
-  assert.match(payments, /new URLSearchParams\(window\.location\.search\)\.get\("payment"\)/);
+  assert.match(
+    payments,
+    /new URLSearchParams\(window\.location\.search\)\.get\("payment"\)/,
+  );
   assert.match(payments, /Verification checklist/);
   assert.match(
     payments,
@@ -46,15 +57,30 @@ test("admin queues keep their record review destinations coherent", async () => 
   assert.match(payments, /Payment received\./);
   assert.match(payments, /Suggested from the unchecked review items/);
   assert.match(payments, /onReview\(payment, "resubmit", remark\)/);
-  assert.match(payments, /const generatedResubmissionRemark = resubmissionRemark\(checklist\)/);
+  assert.match(
+    payments,
+    /const generatedResubmissionRemark = resubmissionRemark\(checklist\)/,
+  );
   assert.doesNotMatch(payments, /const \[resubmissionRemark,/);
   assert.match(bookingDetail, /to="\/admin\/payments"/);
   assert.match(bookingDetail, /search=\{\{ payment: payment\.id \} as never\}/);
-  assert.match(bookingDetail, /<Link to="\/admin\/bookings" replace className="touch-target">/);
+  assert.match(
+    bookingDetail,
+    /<Link\s+to="\/admin\/bookings"[\s\S]*?Back to bookings/,
+  );
   assert.match(bookingDetail, /admin-booking-ledger__review-actions/);
-  assert.match(dashboard, /const href = `\/admin\/bookings\/\$\{encodeURIComponent\(bookingId\)\}`/);
-  assert.match(calendar, /<Link to="\/admin\/bookings" className="admin-calendar-queue-link">/);
-  assert.match(signIn, /<Link\s+className="harbor-booking-back"\s+to="\/vehicles/);
+  assert.match(
+    dashboard,
+    /const href = `\/admin\/bookings\/\$\{encodeURIComponent\(bookingId\)\}`/,
+  );
+  assert.match(
+    calendar,
+    /<Link to="\/admin\/bookings" className="admin-calendar-queue-link">/,
+  );
+  assert.match(
+    signIn,
+    /<Link\s+className="harbor-booking-back"\s+to="\/vehicles/,
+  );
 });
 
 test("the booking workflow shows the customer journey before rental operations", async () => {

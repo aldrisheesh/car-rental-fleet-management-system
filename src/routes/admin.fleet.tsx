@@ -20,6 +20,7 @@ import {
   type FleetVehicleRow,
 } from "@/lib/admin-fleet";
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
+import { parseDssSearch } from "@/lib/dss-navigation";
 import { createMaintenancePayload } from "@/lib/maintenance-admin";
 import {
   fetchMasterData,
@@ -29,12 +30,17 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin/fleet")({
+  validateSearch: (raw): ReturnType<typeof parseDssSearch> & { q?: string } => ({
+    ...parseDssSearch(raw),
+    q: typeof raw.q === "string" && raw.q.length <= 150 ? raw.q : undefined,
+  }),
   beforeLoad: () => {
     if (typeof window === "undefined") return;
     const session = getAdminSession();
@@ -144,10 +150,15 @@ function matchesFleetSearch(vehicle: FleetVehicleRow, normalizedQuery: string) {
 }
 
 function FleetPage() {
+  const reviewSearch = Route.useSearch();
+  const allocationTriggerRef = useRef<HTMLElement | null>(null);
   const [snapshot, setSnapshot] = useState<AdminFleetResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(reviewSearch.q ?? "");
+  useEffect(() => {
+    setQuery(reviewSearch.q ?? "");
+  }, [reviewSearch.q]);
   const [status, setStatus] = useState<FleetStatus | "All">("All");
   const [page, setPage] = useState(1);
   const [branch, setBranch] = useState("All");
@@ -344,8 +355,9 @@ function FleetPage() {
     }
   }
 
-  async function changeBranch(vehicle: FleetVehicleRow, branchId: string) {
+  async function changeBranch(vehicle: FleetVehicleRow, branchId: string, trigger: HTMLSelectElement) {
     if (!branchId || branchId === vehicle.branchId) return;
+    allocationTriggerRef.current = trigger;
     setBranchSavingId(vehicle.id);
     setMutationError("");
     setMutationFeedback("");
@@ -688,6 +700,23 @@ function FleetPage() {
 
   return (
     <div className="admin-fleet-workspace">
+      {reviewSearch.vehicle ? (
+        <Link
+          to="/admin/decisions/utilization"
+          search={parseDssSearch(reviewSearch)}
+          className="admin-decision-text-link"
+        >
+          Return to utilization review
+        </Link>
+      ) : reviewSearch.recommendation ? (
+        <Link
+          to="/admin/decisions/allocation"
+          search={parseDssSearch(reviewSearch)}
+          className="admin-decision-text-link"
+        >
+          Return to allocation review
+        </Link>
+      ) : null}
       <header className="admin-fleet-heading">
         <div>
           <h1>Fleet Management</h1>
@@ -847,8 +876,8 @@ function FleetPage() {
                         branches={branches}
                         branchSaving={branchSavingId === vehicle.id}
                         onSelect={() => setSelectedId(vehicle.id)}
-                        onBranchChange={(value) =>
-                          void changeBranch(vehicle, value)
+                        onBranchChange={(value, trigger) =>
+                          void changeBranch(vehicle, value, trigger)
                         }
                         onService={() => openService(vehicle)}
                       />
@@ -875,6 +904,9 @@ function FleetPage() {
 
             <FleetDetail
               vehicle={rows.length ? selectedVehicle : null}
+              branches={branches}
+              branchSaving={Boolean(branchSavingId)}
+              onBranchChange={(vehicle, branchId, trigger) => void changeBranch(vehicle, branchId, trigger)}
               inspectionRemarks={inspectionRemarks}
               inspectionSaving={inspectionSaving}
               onInspectionRemarksChange={setInspectionRemarks}
@@ -945,9 +977,9 @@ function FleetPage() {
         onUpdated={() => void loadFleet()}
       />
       <Dialog open={Boolean(locationChange)} onOpenChange={(open) => { if (!open && !branchSavingId) setLocationChange(null); }}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg" onCloseAutoFocus={(event) => { event.preventDefault(); allocationTriggerRef.current?.focus(); }}>
           <DialogHeader><DialogTitle>Review affected requests</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">Moving {locationChange?.vehicle.name} changes the allocation context for the requests below. Their customer trip details stay unchanged. Continue only after reviewing them.</p>
+          <DialogDescription>Moving {locationChange?.vehicle.name} changes the allocation context for the requests below. Their customer trip details stay unchanged. Continue only after reviewing them.</DialogDescription>
           <ul className="max-h-52 space-y-2 overflow-y-auto rounded-md border border-border p-3 text-sm">
             {locationChange?.impacts.map((impact) => <li key={impact.id} className="flex items-center justify-between gap-3"><span>{impact.customer?.full_name ?? "Customer"}</span><span className="text-muted-foreground">{impact.booking_status}</span></li>)}
           </ul>
@@ -1023,7 +1055,7 @@ function FleetDisclosure({
   branches: AdminFleetResponse["branches"];
   branchSaving: boolean;
   onSelect: () => void;
-  onBranchChange: (branchId: string) => void;
+  onBranchChange: (branchId: string, trigger: HTMLSelectElement) => void;
   onService: () => void;
 }) {
   return (
@@ -1057,7 +1089,7 @@ function FleetDisclosure({
           <TSelect
             value={vehicle.branchId ?? ""}
             disabled={branchSaving || !vehicle.categoryId}
-            onChange={(event) => onBranchChange(event.target.value)}
+            onChange={(event) => onBranchChange(event.target.value, event.currentTarget)}
             aria-label={`Allocation location for ${vehicle.name}`}
           >
             <option value="">Unassigned location</option>
@@ -1259,6 +1291,9 @@ function FleetLoading() {
 
 function FleetDetail({
   vehicle,
+  branches,
+  branchSaving,
+  onBranchChange,
   inspectionRemarks,
   inspectionSaving,
   onInspectionRemarksChange,
@@ -1269,6 +1304,9 @@ function FleetDetail({
   onEditVehicle,
 }: {
   vehicle: FleetVehicleRow | null;
+  branches: Array<{ id: string; name: string }>;
+  branchSaving: boolean;
+  onBranchChange: (vehicle: FleetVehicleRow, branchId: string, trigger: HTMLSelectElement) => void;
   inspectionRemarks: string;
   inspectionSaving: boolean;
   onInspectionRemarksChange: (value: string) => void;
@@ -1379,6 +1417,31 @@ function FleetDetail({
                   <p>Keep fleet information and customer catalog details current.</p>
                 </div>
               </header>
+              <label className="mt-4 hidden gap-2 text-sm lg:grid">
+                <span>Allocation location</span>
+                <TSelect
+                  value={vehicle.branchId ?? ""}
+                  disabled={branchSaving || !vehicle.categoryId}
+                  onChange={(event) =>
+                    onBranchChange(vehicle, event.target.value, event.currentTarget)
+                  }
+                  aria-label={`Allocation location for ${vehicle.name}`}
+                >
+                  <option value="" disabled>
+                    Unassigned location
+                  </option>
+                  {branches.map((branch) => (
+                    <option key={branch.id} value={branch.id}>
+                      {branch.name}
+                    </option>
+                  ))}
+                </TSelect>
+                <span className="text-xs text-muted-foreground">
+                  {branchSaving
+                    ? "Reviewing location change…"
+                    : "Changing location checks affected requests before moving this vehicle."}
+                </span>
+              </label>
               <div className="admin-fleet-detail__management-actions">
                 {["Reserved", "Rented"].includes(vehicle.status) ? (
                   <a href="/admin/calendar" className="admin-fleet-detail__management-action admin-fleet-detail__management-action--primary">

@@ -1,3 +1,4 @@
+import { bookingReference } from "@/lib/booking-reference";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -364,6 +365,9 @@ function BookingDossier({ record }: { record: BookingRecord }) {
           </div>
         </div>
         <h3>{vehicleName}</h3>
+        <p className="booking-display-reference" title={booking.id}>
+          Booking {bookingReference(booking.id)}
+        </p>
         <div className="booking-dossier-facts">
           <p>
             <CalendarDays size={18} aria-hidden="true" />
@@ -416,6 +420,9 @@ function CurrentBookingRow({ record }: { record: BookingRecord }) {
       </div>
       <div>
         <h3>{vehicleName}</h3>
+        <p className="booking-display-reference" title={booking.id}>
+          Booking {bookingReference(booking.id)}
+        </p>
         <p>{formatDateRange(booking.pickup_at, booking.return_at)}</p>
       </div>
       <div className={`booking-current-row-status is-${lifecycle.statusTone}`}>
@@ -449,6 +456,9 @@ function ArchiveBookingRow({ record }: { record: BookingRecord }) {
         <VehicleImage src={vehicle?.image_url} alt={vehicleName} sizes="7rem" />
         <div>
           <h3>{vehicleName}</h3>
+          <p className="booking-display-reference" title={booking.id}>
+            Booking {bookingReference(booking.id)}
+          </p>
           <p>{bookingLocation(booking)}</p>
         </div>
       </div>
@@ -466,7 +476,9 @@ function ArchiveBookingRow({ record }: { record: BookingRecord }) {
 
 function bookingLocation(booking: CustomerBooking) {
   const pickup = booking.pickup_branch?.name ?? booking.pickup_location;
-  return pickup ? `Pickup: ${pickup}` : "Pickup details will appear here";
+  const label =
+    booking.pickup_delivery_option === "delivery" ? "Delivery" : "Pickup";
+  return pickup ? `${label}: ${pickup}` : `${label} details will appear here`;
 }
 
 function defaultActionLabel(lifecycle: LifecyclePresentation) {
@@ -511,7 +523,7 @@ function BookingListLoading() {
   );
 }
 
-function BookingEmpty({}: {}) {
+function BookingEmpty() {
   return (
     <div className="booking-empty">
       <FileCheck2 size={28} aria-hidden="true" />

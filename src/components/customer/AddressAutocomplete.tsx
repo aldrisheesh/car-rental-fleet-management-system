@@ -22,12 +22,28 @@ export function AddressAutocomplete({
   value,
   onChange,
   error,
+  className,
+  inputClassName = "customer-input",
+  helperClassName = "customer-helper",
+  placeholder = "Building, street, barangay, city",
+  maxLength,
+  idleHelp = "Start typing an address, or enter the full address manually.",
+  noSuggestionsHelp = "No address suggestions found. You can keep typing your address.",
+  unavailableHelp = FALLBACK_MESSAGE,
 }: {
   id: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  className?: string;
+  inputClassName?: string;
+  helperClassName?: string;
+  placeholder?: string;
+  maxLength?: number;
+  idleHelp?: string;
+  noSuggestionsHelp?: string;
+  unavailableHelp?: string;
 }) {
   const listId = useId();
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
@@ -59,7 +75,7 @@ export function AddressAutocomplete({
     if (!apiKey) {
       setSuggestions([]);
       setActiveIndex(-1);
-      setStatus(FALLBACK_MESSAGE);
+      setStatus(unavailableHelp);
       return;
     }
 
@@ -81,13 +97,13 @@ export function AddressAutocomplete({
         setStatus(
           next.length
             ? `${next.length} address suggestions available.`
-            : "No address suggestions found. You can keep typing your address.",
+            : noSuggestionsHelp,
         );
       } catch {
         if (controller.signal.aborted || current !== requestId.current) return;
         setSuggestions([]);
         setActiveIndex(-1);
-        setStatus(FALLBACK_MESSAGE);
+        setStatus(unavailableHelp);
       }
     }, 250);
 
@@ -95,7 +111,7 @@ export function AddressAutocomplete({
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [focused, value]);
+  }, [focused, noSuggestionsHelp, unavailableHelp, value]);
 
   function selectSuggestion(suggestion: AddressSuggestion) {
     selectedAddress.current = suggestion.formatted;
@@ -123,21 +139,24 @@ export function AddressAutocomplete({
     }
   }
 
+  const helperText = status || idleHelp;
+
   return (
-    <div className="address-autocomplete">
+    <div className={`address-autocomplete ${className ?? ""}`}>
       <input
         id={id}
         name={id}
-        className="customer-input"
+        className={inputClassName}
         type="text"
         value={value}
+        maxLength={maxLength}
         onChange={(event) => {
           selectedAddress.current = null;
           onChange(event.target.value);
         }}
         onFocus={() => {
           setFocused(true);
-          if (!configuredKey()) setStatus(FALLBACK_MESSAGE);
+          if (!configuredKey()) setStatus(unavailableHelp);
         }}
         onBlur={() => {
           setFocused(false);
@@ -147,7 +166,7 @@ export function AddressAutocomplete({
         }}
         onKeyDown={onKeyDown}
         autoComplete="street-address"
-        placeholder="Building, street, barangay, city"
+        placeholder={placeholder}
         aria-label={label}
         aria-autocomplete="list"
         aria-controls={suggestions.length ? listId : undefined}
@@ -155,7 +174,9 @@ export function AddressAutocomplete({
           activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined
         }
         aria-invalid={Boolean(error)}
-        aria-describedby={`${id}-help${error ? ` ${id}-error` : ""}`}
+        aria-describedby={
+          helperText ? `${id}-help${error ? ` ${id}-error` : ""}` : undefined
+        }
       />
       {suggestions.length ? (
         <ul id={listId} className="address-autocomplete-list" role="listbox">
@@ -177,10 +198,11 @@ export function AddressAutocomplete({
           ))}
         </ul>
       ) : null}
-      <p id={`${id}-help`} className="customer-helper" role="status">
-        {status ||
-          "Start typing an address, or enter the full address manually."}
-      </p>
+      {helperText ? (
+        <p id={`${id}-help`} className={helperClassName} role="status">
+          {helperText}
+        </p>
+      ) : null}
     </div>
   );
 }

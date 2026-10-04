@@ -1,16 +1,15 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { MapPin, Plus, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Badge,
-  Btn,
-  Card,
-  CardHeader,
-  PageHeader,
-  TInput,
-  TSelect,
-  Toolbar,
-} from "@/components/admin/ui";
+  AlertCircle,
+  CheckCircle2,
+  ChevronRight,
+  MapPin,
+  Plus,
+  Search,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Btn, TInput, TSelect } from "@/components/admin/ui";
+import { AddressAutocomplete } from "@/components/customer/AddressAutocomplete";
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
 import {
   buildAdminBranchRows,
@@ -18,16 +17,13 @@ import {
 } from "@/lib/admin-branches";
 import {
   fetchMasterData,
-  saveMasterData,
   type ApiMasterVehicle,
 } from "@/lib/master-data-client";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  dssMapUrl,
+  type DssLocationMatch,
+  type DssRoutePoint,
+} from "@/lib/dss-location";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,8 +35,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type BranchRecord = CanonicalBranchRecord;
-
 export const Route = createFileRoute("/admin/branches")({
   beforeLoad: () => {
     if (typeof window === "undefined") return;
@@ -50,426 +44,277 @@ export const Route = createFileRoute("/admin/branches")({
   },
   component: BranchesPage,
 });
-
+type Branch = CanonicalBranchRecord;
+type SaveResult = { branch: Branch; point: DssRoutePoint | null };
+async function locationRequest<T>(input: object): Promise<T> {
+  const response = await fetch("/api/dss-locations", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.message ?? "Unable to save location.");
+  return body;
+}
 function BranchesPage() {
-  const [branches, setBranches] = useState<BranchRecord[]>([]);
-  const [vehicles, setVehicles] = useState<ApiMasterVehicle[]>([]);
-  const [branchLoading, setBranchLoading] = useState(true);
-  const [vehicleLoading, setVehicleLoading] = useState(true);
-  const [branchLoadError, setBranchLoadError] = useState("");
-  const [vehicleLoadError, setVehicleLoadError] = useState("");
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("All");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingBranch, setEditingBranch] = useState<BranchRecord | null>(null);
-  const [branchName, setBranchName] = useState("");
-  const [branchAddress, setBranchAddress] = useState("");
-  const [branchError, setBranchError] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [savingId, setSavingId] = useState<string | null>(null);
-  const [deactivationBranch, setDeactivationBranch] =
-    useState<BranchRecord | null>(null);
-  const [deactivationSaving, setDeactivationSaving] = useState(false);
-  const deactivationTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const deactivationSubmissionRef = useRef(false);
-  const [feedback, setFeedback] = useState("");
-
-  const loadBranches = useCallback(async () => {
-    setBranchLoading(true);
-    setBranchLoadError("");
-    try {
-      const nextBranches = await fetchMasterData<BranchRecord>("branches");
-      setBranches(nextBranches);
-    } catch (error) {
-      setBranchLoadError(
-        error instanceof Error
-          ? error.message
-          : "Unable to load canonical branch data.",
-      );
-    } finally {
-      setBranchLoading(false);
-    }
+  const [branches, setBranches] = useState<Branch[]>([]),
+    [vehicles, setVehicles] = useState<ApiMasterVehicle[]>([]),
+    [points, setPoints] = useState<Record<string, DssRoutePoint>>({});
+  const [loading, setLoading] = useState(true),
+    [error, setError] = useState(""),
+    [vehicleError, setVehicleError] = useState(""),
+    [query, setQuery] = useState(""),
+    [status, setStatus] = useState("All");
+  const [selected, setSelected] = useState<string | null>(null),
+    [draft, setDraft] = useState<Branch | null>(null),
+    [revision, setRevision] = useState(0),
+    [dirty, setDirty] = useState(false),
+    [busy, setBusy] = useState(false),
+    [pending, setPending] = useState<(() => void) | null>(null);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    setVehicleError("");
+    const results = await Promise.allSettled([
+      fetchMasterData<Branch>("branches"),
+      fetchMasterData<ApiMasterVehicle>("vehicles"),
+      fetch("/api/dss-locations").then(async (r) => {
+        const b = await r.json();
+        if (!r.ok) throw new Error(b.message);
+        return b.points as Record<string, DssRoutePoint>;
+      }),
+    ]);
+    const b = results[0],
+      v = results[1],
+      p = results[2];
+    if (b.status === "fulfilled") {
+      setBranches(b.value);
+      setSelected((current) => current ?? b.value[0]?.id ?? null);
+    } else setError(b.reason?.message ?? "Unable to load locations.");
+    if (v.status === "fulfilled") setVehicles(v.value);
+    else setVehicleError("Vehicle assignments unavailable.");
+    if (p.status === "fulfilled") setPoints(p.value);
+    else setError(p.reason?.message ?? "Unable to load map confirmations.");
+    setLoading(false);
   }, []);
-
-  const loadVehicles = useCallback(async () => {
-    setVehicleLoading(true);
-    setVehicleLoadError("");
-    try {
-      const nextVehicles = await fetchMasterData<ApiMasterVehicle>("vehicles");
-      setVehicles(nextVehicles);
-    } catch (error) {
-      setVehicleLoadError(
-        error instanceof Error
-          ? error.message
-          : "Unable to load canonical vehicle assignments.",
-      );
-    } finally {
-      setVehicleLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    void loadBranches();
-    void loadVehicles();
-  }, [loadBranches, loadVehicles]);
-
-  const displayedBranches = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    return buildAdminBranchRows(branches, vehicles).filter((row) => {
-      if (
-        status !== "All" &&
-        (row.record.is_active ? "Active" : "Inactive") !== status
-      )
-        return false;
-      if (!normalized) return true;
-      return `${row.record.name} ${row.record.address ?? ""}`
-        .toLowerCase()
-        .includes(normalized);
+    void load();
+  }, [load]);
+  const rows = useMemo(
+    () =>
+      buildAdminBranchRows(branches, vehicles).filter(
+        ({ record: b }) =>
+          (status === "All" ||
+            (b.is_active ? "Active" : "Inactive") === status) &&
+          `${b.name} ${b.address ?? ""}`
+            .toLowerCase()
+            .includes(query.trim().toLowerCase()),
+      ),
+    [branches, vehicles, status, query],
+  );
+  const branch = draft ?? branches.find((b) => b.id === selected);
+  function change(action: () => void) {
+    if (busy) return;
+    if (dirty) setPending(() => action);
+    else action();
+  }
+  function choose(id: string) {
+    if (!draft && id === selected) return;
+    change(() => {
+      setDraft(null);
+      setSelected(id);
+      setDirty(false);
+      setRevision((r) => r + 1);
     });
-  }, [branches, query, status, vehicles]);
-
-  function openBranchDialog(branch?: BranchRecord) {
-    setEditingBranch(branch ?? null);
-    setBranchName(branch?.name ?? "");
-    setBranchAddress(branch?.address ?? "");
-    setBranchError("");
-    setDialogOpen(true);
   }
-
-  async function saveBranch() {
-    if (!branchName.trim()) {
-      setBranchError("Branch name is required.");
-      return;
-    }
-    setSaving(true);
-    setBranchError("");
-    setFeedback("");
-    try {
-      const saved = await saveMasterData<BranchRecord>({
-        resource: "branches",
-        ...(editingBranch ? { id: editingBranch.id } : {}),
-        input: {
-          name: branchName.trim(),
-          address: branchAddress.trim() || null,
-          isActive: editingBranch?.is_active ?? true,
-        },
+  function newLocation() {
+    change(() => {
+      setDraft({
+        id: crypto.randomUUID(),
+        name: "",
+        address: null,
+        is_active: true,
       });
-      setBranches((current) =>
-        editingBranch
-          ? current.map((row) => (row.id === saved.id ? saved : row))
-          : [...current, saved],
-      );
-      setDialogOpen(false);
-      setFeedback(
-        editingBranch ? "Branch details updated." : "Branch created.",
-      );
-    } catch (error) {
-      setBranchError(
-        error instanceof Error ? error.message : "Unable to save branch.",
-      );
-    } finally {
-      setSaving(false);
-    }
+      setDirty(false);
+      setRevision((r) => r + 1);
+    });
   }
-
-  async function toggleBranch(branch: BranchRecord): Promise<boolean> {
-    setSavingId(branch.id);
-    setBranchError("");
-    setFeedback("");
-    try {
-      const saved = await saveMasterData<BranchRecord>({
-        resource: "branches",
-        id: branch.id,
-        input: {
-          name: branch.name,
-          address: branch.address,
-          isActive: !branch.is_active,
-        },
-      });
-      setBranches((current) =>
-        current.map((row) => (row.id === saved.id ? saved : row)),
-      );
-      setFeedback(
-        `${saved.name} is now ${saved.is_active ? "active" : "inactive"}.`,
-      );
-      return true;
-    } catch (error) {
-      setBranchError(
-        error instanceof Error ? error.message : "Unable to update branch.",
-      );
-      return false;
-    } finally {
-      setSavingId(null);
-    }
+  function saved(result: SaveResult) {
+    setBranches((current) =>
+      current.some((b) => b.id === result.branch.id)
+        ? current.map((b) => (b.id === result.branch.id ? result.branch : b))
+        : [...current, result.branch],
+    );
+    setPoints((current) => {
+      const next = { ...current };
+      if (result.point) next[result.branch.id] = result.point;
+      else delete next[result.branch.id];
+      return next;
+    });
+    setDraft(null);
+    setSelected(result.branch.id);
+    setDirty(false);
+    setRevision((r) => r + 1);
   }
-
-  function requestBranchToggle(
-    branch: BranchRecord,
-    trigger: HTMLButtonElement,
-  ) {
-    if (branch.is_active) {
-      deactivationTriggerRef.current = trigger;
-      setDeactivationBranch(branch);
-      setBranchError("");
-      setFeedback("");
-      return;
-    }
-    void toggleBranch(branch);
-  }
-
-  async function confirmBranchDeactivation() {
-    const branch = deactivationBranch;
-    if (!branch || deactivationSubmissionRef.current) return;
-
-    deactivationSubmissionRef.current = true;
-    setDeactivationSaving(true);
-    try {
-      const succeeded = await toggleBranch(branch);
-      if (succeeded) setDeactivationBranch(null);
-    } finally {
-      deactivationSubmissionRef.current = false;
-      setDeactivationSaving(false);
-    }
-  }
-
   return (
-    <div>
-      <PageHeader
-        title="Operational locations"
-        subtitle="Manage internal allocation locations and their active state. These locations support operations; they are not customer delivery addresses."
-        actions={
-          <Btn variant="primary" onClick={() => openBranchDialog()}>
-            <Plus className="h-4 w-4" /> New location
-          </Btn>
-        }
-      />
-      {feedback ? (
-        <p
-          className="mb-4 rounded-md border border-[#267a55]/30 bg-[#267a55]/5 px-4 py-3 text-sm text-[#267a55]"
-          role="status"
-          aria-live="polite"
-        >
-          {feedback}
-        </p>
-      ) : null}
-      {branchError && !dialogOpen && !deactivationBranch ? (
-        <p
-          className="mb-4 rounded-md border border-[#b43b3b]/30 bg-[#b43b3b]/5 px-4 py-3 text-sm text-[#b43b3b]"
-          role="alert"
-        >
-          {branchError}
-        </p>
-      ) : null}
-
-      <Toolbar>
-        <label className="min-w-60 flex-1">
-          <span className="sr-only">Search operational locations</span>
-          <TInput
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search location or address…"
-            aria-label="Search operational locations"
-          />
-        </label>
-        <label>
-          <span className="sr-only">Filter location status</span>
-          <TSelect
-            value={status}
-            onChange={(event) => setStatus(event.target.value)}
-            aria-label="Filter location status"
-          >
-            <option>All</option>
-            <option>Active</option>
-            <option>Inactive</option>
-          </TSelect>
-        </label>
-        <span className="text-xs text-muted-foreground sm:ml-auto">
-          {branchLoading
-            ? "Loading operational locations…"
-            : `${displayedBranches.length} canonical locations`}
-        </span>
-      </Toolbar>
-
-      {branchLoading ? (
-        <div role="status">
-          <Card className="p-8 text-center text-sm text-muted-foreground">
-            Loading canonical operational locations…
-          </Card>
-        </div>
-      ) : branchLoadError ? (
-        <Card className="p-8 text-center">
-          <p role="alert" className="text-sm text-[#b43b3b]">
-            {branchLoadError}
+    <div className="admin-locations-workspace">
+      <header className="admin-locations-heading">
+        <div>
+          <h1>Locations</h1>
+          <p>
+            Manage operational locations. Confirm a map pin for each location
+            before using Decision Support.
           </p>
-          <Btn className="mt-4" onClick={() => void loadBranches()}>
-            <RefreshCw className="h-4 w-4" /> Retry locations
-          </Btn>
-        </Card>
-      ) : !displayedBranches.length ? (
-        <Card className="p-8 text-center text-sm text-muted-foreground">
-          {branches.length
-            ? "No locations match these filters."
-            : "No canonical operational locations are available."}
-        </Card>
-      ) : (
-        <Card className="overflow-hidden">
-          <CardHeader
-            title="Operational location register"
-            hint="Vehicle totals reflect each vehicle's current operational allocation location."
+        </div>
+        <Btn
+          variant="primary"
+          disabled={busy || loading || Boolean(error)}
+          onClick={newLocation}
+        >
+          <Plus size={17} /> New location
+        </Btn>
+      </header>
+      {error ? (
+        <div className="location-feedback" role="alert">
+          <p>{error}</p>
+          <Btn onClick={() => void load()}>Retry locations</Btn>
+        </div>
+      ) : null}
+      <div className="admin-locations-layout">
+        <section className="location-list" aria-label="Operational locations">
+          <div className="location-list-search">
+            <label className="location-search">
+              <Search size={18} />
+              <TInput
+                aria-label="Search locations"
+                placeholder="Search locations…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </label>
+            <TSelect
+              aria-label="Filter location status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option>All</option>
+              <option>Active</option>
+              <option>Inactive</option>
+            </TSelect>
+          </div>
+          {loading ? (
+            <p className="location-list-message" role="status">
+              Loading locations…
+            </p>
+          ) : rows.length ? (
+            rows.map(({ record: b, assignedVehicleCount }) => (
+              <button
+                className={`location-list-row ${!draft && selected === b.id ? "is-selected" : ""}`}
+                key={b.id}
+                type="button"
+                aria-pressed={!draft && selected === b.id}
+                disabled={busy}
+                onClick={() => choose(b.id)}
+              >
+                <div className="location-list-name">
+                  <strong>{b.name}</strong>
+                  <span
+                    className={`location-state ${b.is_active ? "" : "is-inactive"}`}
+                  >
+                    <i />
+                    {b.is_active ? "Active" : "Inactive"}
+                  </span>
+                </div>
+                <div className="location-list-detail">
+                  <span>
+                    {vehicleError
+                      ? "Assignments unavailable"
+                      : `${assignedVehicleCount} assigned vehicles`}
+                  </span>
+                  <ChevronRight size={17} />
+                </div>
+                <span
+                  className={`location-point-state ${points[b.id] ? "is-confirmed" : ""}`}
+                >
+                  {points[b.id] ? (
+                    <CheckCircle2 size={16} />
+                  ) : (
+                    <AlertCircle size={16} />
+                  )}{" "}
+                  {points[b.id] ? "Map point confirmed" : "Needs confirmation"}
+                </span>
+              </button>
+            ))
+          ) : (
+            <p className="location-list-message">
+              {branches.length
+                ? "No locations match your search."
+                : "No locations yet. Add a location to begin."}
+            </p>
+          )}
+          {vehicleError && (
+            <p className="location-list-message" role="status">
+              {vehicleError}{" "}
+              <button type="button" onClick={() => void load()}>
+                Retry
+              </button>
+            </p>
+          )}
+        </section>
+        {!loading && !error && branch ? (
+          <LocationEditor
+            key={`${branch.id}-${revision}`}
+            branch={branch}
+            savedPoint={points[branch.id] ?? null}
+            create={Boolean(draft)}
+            onDirty={setDirty}
+            onBusy={setBusy}
+            onSaved={saved}
+            onCancel={() => {
+              setDirty(false);
+              setDraft(null);
+              setRevision((r) => r + 1);
+            }}
           />
-          {vehicleLoadError ? (
-            <p
-              className="border-b border-border px-5 py-3 text-sm text-[#a45b13]"
-              role="status"
-            >
-              Vehicle assignments unavailable: {vehicleLoadError}
+        ) : (
+          <section
+            className="location-editor location-editor-empty"
+            role="status"
+          >
+            <MapPin size={32} />
+            <h2>{loading ? "Loading your locations…" : "Select a location"}</h2>
+            <p>
+              {loading
+                ? "The editor will appear when location details and map confirmations finish loading."
+                : "Choose a location from the list, or add a new one."}
             </p>
-          ) : null}
-          <div className="hidden overflow-x-auto lg:block">
-            <table className="w-full text-sm">
-              <caption className="sr-only">
-                Canonical branch management list
-              </caption>
-              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                <tr className="border-b border-border">
-                  <th className="px-5 py-3 text-left font-semibold">Location</th>
-                  <th className="px-5 py-3 text-left font-semibold">Address</th>
-                  <th className="px-5 py-3 text-left font-semibold">
-                    Assigned vehicles
-                  </th>
-                  <th className="px-5 py-3 text-left font-semibold">Status</th>
-                  <th className="px-5 py-3 text-right font-semibold">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {displayedBranches.map((row) => (
-                  <BranchRow
-                    key={row.record.id}
-                    row={row}
-                    saving={savingId === row.record.id}
-                    assignmentsUnavailable={
-                      vehicleLoading || Boolean(vehicleLoadError)
-                    }
-                    onEdit={() => openBranchDialog(row.record)}
-                    onToggle={(trigger) =>
-                      requestBranchToggle(row.record, trigger)
-                    }
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="divide-y divide-border lg:hidden">
-            {displayedBranches.map((row) => (
-              <BranchDisclosure
-                key={row.record.id}
-                row={row}
-                saving={savingId === row.record.id}
-                assignmentsUnavailable={
-                  vehicleLoading || Boolean(vehicleLoadError)
-                }
-                onEdit={() => openBranchDialog(row.record)}
-                onToggle={(trigger) => requestBranchToggle(row.record, trigger)}
-              />
-            ))}
-          </div>
-        </Card>
-      )}
-
-      <Dialog
-        open={dialogOpen}
-        onOpenChange={(open) => !saving && setDialogOpen(open)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingBranch ? "Edit operational location" : "New operational location"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-2">
-            <Field label="Name *">
-              <TInput
-                value={branchName}
-                onChange={(event) => setBranchName(event.target.value)}
-              />
-            </Field>
-            <Field label="Operations address (optional)">
-              <TInput
-                value={branchAddress}
-                onChange={(event) => setBranchAddress(event.target.value)}
-              />
-            </Field>
-          </div>
-          {branchError ? (
-            <p className="text-sm text-[#b43b3b]" role="alert">
-              {branchError}
-            </p>
-          ) : null}
-          <DialogFooter>
-            <Btn disabled={saving} onClick={() => setDialogOpen(false)}>
-              Cancel
-            </Btn>
-            <Btn
-              variant="primary"
-              disabled={saving}
-              onClick={() => void saveBranch()}
-            >
-              {saving ? "Saving…" : "Save location"}
-            </Btn>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
+          </section>
+        )}
+      </div>
       <AlertDialog
-        open={Boolean(deactivationBranch)}
+        open={Boolean(pending)}
         onOpenChange={(open) => {
-          if (!open && !deactivationSaving) setDeactivationBranch(null);
+          if (!open) setPending(null);
         }}
       >
-        <AlertDialogContent
-          onCloseAutoFocus={(event) => {
-            event.preventDefault();
-            const trigger = deactivationTriggerRef.current;
-            deactivationTriggerRef.current = null;
-            if (trigger?.isConnected) {
-              trigger.focus();
-            } else {
-              document
-                .querySelector<HTMLElement>('[aria-label="Search branches"]')
-                ?.focus();
-            }
-          }}
-        >
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="break-words">
-              Deactivate {deactivationBranch?.name}?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
             <AlertDialogDescription>
-              This branch will become inactive. Existing historical records
-              remain unchanged.
+              Your location edits and map preview have not been saved.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {branchError && deactivationBranch ? (
-            <p className="text-sm text-[#b43b3b]" role="alert">
-              {branchError}
-            </p>
-          ) : null}
           <AlertDialogFooter>
-            <AlertDialogCancel
-              disabled={deactivationSaving}
-              className="min-h-11"
-            >
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
             <AlertDialogAction
-              disabled={deactivationSaving}
-              onClick={(event) => {
-                event.preventDefault();
-                void confirmBranchDeactivation();
+              onClick={() => {
+                const action = pending;
+                setPending(null);
+                setDirty(false);
+                action?.();
               }}
-              className="min-h-11 border border-[#b43b3b] bg-white px-4 text-sm font-semibold text-[#b43b3b] shadow-none hover:bg-[#fff2f1] focus-visible:ring-2 focus-visible:ring-[#0b6158] focus-visible:ring-offset-2"
             >
-              {deactivationSaving ? "Deactivating…" : "Deactivate branch"}
+              Discard changes
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -477,163 +322,329 @@ function BranchesPage() {
     </div>
   );
 }
-
-function BranchRow({
-  row,
-  saving,
-  assignmentsUnavailable,
-  onEdit,
-  onToggle,
+function LocationEditor({
+  branch,
+  savedPoint,
+  create,
+  onDirty,
+  onBusy,
+  onSaved,
+  onCancel,
 }: {
-  row: ReturnType<typeof buildAdminBranchRows>[number];
-  saving: boolean;
-  assignmentsUnavailable: boolean;
-  onEdit: () => void;
-  onToggle: (trigger: HTMLButtonElement) => void;
+  branch: Branch;
+  savedPoint: DssRoutePoint | null;
+  create: boolean;
+  onDirty: (v: boolean) => void;
+  onBusy: (v: boolean) => void;
+  onSaved: (r: SaveResult) => void;
+  onCancel: () => void;
 }) {
+  const [name, setName] = useState(branch.name),
+    [address, setAddress] = useState(branch.address ?? ""),
+    [active, setActive] = useState(branch.is_active),
+    [kind, setKind] = useState<DssRoutePoint["kind"]>(
+      savedPoint?.kind ?? "area_reference",
+    );
+  const [match, setMatch] = useState<DssLocationMatch | null>(null),
+    [token, setToken] = useState(""),
+    [ack, setAck] = useState(false),
+    [busy, setBusy] = useState<"lookup" | "save" | null>(null),
+    [error, setError] = useState(""),
+    [deactivate, setDeactivate] = useState(false);
+  const submission = useRef(false);
+  const savedUsable =
+    savedPoint?.query === address.trim() && savedPoint.kind === kind;
+  const displayed = match ?? (savedUsable ? savedPoint : null);
+  const dirty =
+    name !== branch.name ||
+    address !== (branch.address ?? "") ||
+    active !== branch.is_active ||
+    kind !== (savedPoint?.kind ?? "area_reference") ||
+    Boolean(match);
+  useEffect(() => onDirty(dirty), [dirty, onDirty]);
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
+  function working(v: "lookup" | "save" | null) {
+    setBusy(v);
+    onBusy(Boolean(v));
+  }
+  async function lookup() {
+    working("lookup");
+    setError("");
+    setMatch(null);
+    setToken("");
+    setAck(false);
+    try {
+      const result = await locationRequest<{
+        match: DssLocationMatch;
+        token: string;
+      }>({
+        action: "lookup",
+        branchId: branch.id,
+        create,
+        query: address,
+      });
+      setMatch(result.match);
+      setToken(result.token);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to find this address.");
+    } finally {
+      working(null);
+    }
+  }
+  async function save(forceInactive = false) {
+    if (submission.current) return;
+    submission.current = true;
+    working("save");
+    setError("");
+    try {
+      const result = await locationRequest<SaveResult>({
+        action: "save",
+        branchId: branch.id,
+        create,
+        name,
+        query: address,
+        isActive: forceInactive ? false : active,
+        kind,
+        token: ack ? token : "",
+        acknowledged: ack,
+      });
+      onSaved(result);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to save location.");
+    } finally {
+      submission.current = false;
+      working(null);
+      setDeactivate(false);
+    }
+  }
+  const canSave =
+    Boolean(name.trim()) &&
+    (!active || Boolean(match ? ack && token : savedUsable)) &&
+    !busy;
   return (
-    <tr className="border-b border-border/60 align-top hover:bg-secondary/30">
-      <td className="px-5 py-4">
-        <div className="flex items-start gap-2">
-          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-          <div>
-            <div className="font-medium">{row.record.name}</div>
-            <div className="font-mono text-xs text-muted-foreground">
-              {row.record.id}
+    <form
+      className="location-editor"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!canSave) return;
+        if (branch.is_active && !active && !create) setDeactivate(true);
+        else void save();
+      }}
+      aria-label="Location editor"
+    >
+      <h2>{create ? "New location" : `Edit ${branch.name}`}</h2>
+      <fieldset disabled={Boolean(busy)} className="location-fields">
+        <div className="location-meta">
+          <label>
+            Name
+            <TInput
+              autoComplete="off"
+              required
+              maxLength={120}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
+          <label>
+            Active
+            <TSelect
+              value={active ? "Active" : "Inactive"}
+              onChange={(e) => setActive(e.target.value === "Active")}
+            >
+              <option>Active</option>
+              <option>Inactive</option>
+            </TSelect>
+          </label>
+        </div>
+        <div className="location-map-layout">
+          <div className="location-address-fields">
+            <div>
+              <label htmlFor="location-address">Address or landmark</label>
+              <div className="location-address-search">
+                <AddressAutocomplete
+                  id="location-address"
+                  label="Address or landmark"
+                  value={address}
+                  maxLength={500}
+                  placeholder="Street, barangay, city or landmark"
+                  className="location-address-autocomplete"
+                  inputClassName="input-control min-h-11"
+                  helperClassName="location-autocomplete-helper"
+                  idleHelp=""
+                  noSuggestionsHelp="No suggestion was found. You can still use Find address to look up the address you entered."
+                  unavailableHelp="Address suggestions are unavailable. You can still use Find address to look up the address you entered."
+                  onChange={(value) => {
+                    setAddress(value);
+                    setMatch(null);
+                    setToken("");
+                    setAck(false);
+                    setError("");
+                  }}
+                />
+                <Btn
+                  disabled={Boolean(busy) || address.trim().length < 5}
+                  type="button"
+                  onClick={() => void lookup()}
+                >
+                  <Search size={17} />
+                  {busy === "lookup" ? "Finding…" : "Find address"}
+                </Btn>
+              </div>
             </div>
+            {error ? (
+              <p className="location-error" role="alert">
+                {error}
+              </p>
+            ) : null}
+            <label>
+              Reference purpose
+              <TSelect
+                value={kind}
+                onChange={(e) => {
+                  setKind(e.target.value as DssRoutePoint["kind"]);
+                  setAck(false);
+                }}
+              >
+                <option value="area_reference">Area reference</option>
+                <option value="movement_point">
+                  Actual parking or handover point
+                </option>
+              </TSelect>
+            </label>
+            <label className="location-confirm">
+              <input
+                type="checkbox"
+                checked={match ? ack : Boolean(savedUsable)}
+                disabled={!match || Boolean(busy)}
+                onChange={(e) => setAck(e.target.checked)}
+              />
+              <span>
+                Confirm the matched address and map point for route and weather
+                checks.
+              </span>
+            </label>
+            {!savedUsable && !match ? (
+              <p className="location-help">
+                Find and confirm the address before saving an active location.
+                Refine the address if the pin is incorrect.
+              </p>
+            ) : null}
+            {savedUsable && !match && (
+              <p className="location-help">
+                Confirmed {new Date(savedPoint!.confirmedAt).toLocaleString()}.
+                Find the address again to change the reference purpose.
+              </p>
+            )}
+          </div>
+          <div className="location-map-preview">
+            {displayed ? (
+              <>
+                <iframe
+                  title={`Map point for ${name || "new location"}`}
+                  src={dssMapUrl(displayed)}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                />
+                <span className="location-map-status">
+                  <MapPin size={15} />
+                  {match ? "Preview · not saved" : "Saved map point"}
+                </span>
+                <a
+                  className="location-map-open"
+                  href={`https://www.openstreetmap.org/?mlat=${displayed.latitude}&mlon=${displayed.longitude}#map=18/${displayed.latitude}/${displayed.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open larger map
+                </a>
+              </>
+            ) : (
+              <div className="location-map-empty">
+                <MapPin size={32} />
+                <strong>No confirmed map point</strong>
+                <p>Find an address to review the matched location here.</p>
+              </div>
+            )}
+            <p className="location-map-note">
+              {kind === "area_reference"
+                ? "Area reference: route estimates are approximate."
+                : "Verify the intended entrance or handover spot before confirming."}
+            </p>
           </div>
         </div>
-      </td>
-      <td className="px-5 py-4 text-muted-foreground">
-        {row.record.address || "Address unavailable"}
-      </td>
-      <td className="px-5 py-4">
-        <AssignmentCount
-          label="Assigned vehicles"
-          value={
-            assignmentsUnavailable
-              ? "Unavailable"
-              : String(row.assignedVehicleCount)
-          }
-        />
-      </td>
-      <td className="px-5 py-4">
-        <Badge>{row.record.is_active ? "Active" : "Inactive"}</Badge>
-      </td>
-      <td className="px-5 py-4 text-right">
-        <div className="flex justify-end gap-2">
-          <Btn variant="ghost" onClick={onEdit}>
-            Edit
+      </fieldset>
+      <footer className="location-editor-footer">
+        {!create && branch.is_active ? (
+          <Btn
+            type="button"
+            variant="ghost"
+            disabled={Boolean(busy)}
+            onClick={() => setDeactivate(true)}
+          >
+            Deactivate location
+          </Btn>
+        ) : (
+          <p className="location-help">
+            {create
+              ? "One reference point per operating area."
+              : "Inactive locations remain in historical records."}
+          </p>
+        )}
+        <div>
+          <Btn
+            type="button"
+            disabled={Boolean(busy) || (!dirty && !create)}
+            onClick={onCancel}
+          >
+            Cancel
           </Btn>
           <Btn
-            variant="ghost"
-            disabled={saving}
-            onClick={(event) => onToggle(event.currentTarget)}
+            variant="primary"
+            type="submit"
+            disabled={!canSave || (!dirty && !create)}
           >
-            {saving
-              ? "Saving…"
-              : row.record.is_active
-                ? "Deactivate"
-                : "Activate"}
+            {busy === "save" ? "Saving…" : "Save location"}
           </Btn>
         </div>
-      </td>
-    </tr>
-  );
-}
-
-function BranchDisclosure({
-  row,
-  saving,
-  assignmentsUnavailable,
-  onEdit,
-  onToggle,
-}: {
-  row: ReturnType<typeof buildAdminBranchRows>[number];
-  saving: boolean;
-  assignmentsUnavailable: boolean;
-  onEdit: () => void;
-  onToggle: (trigger: HTMLButtonElement) => void;
-}) {
-  return (
-    <details className="group px-5 py-4">
-      <summary className="flex cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 shrink-0 text-primary" />
-            <span className="font-medium">{row.record.name}</span>
-          </div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            {row.record.address || "Address unavailable"}
-          </div>
-        </div>
-        <Badge>{row.record.is_active ? "Active" : "Inactive"}</Badge>
-      </summary>
-      <dl className="mt-4 grid gap-3 border-t border-border pt-4 text-sm">
-        <div>
-          <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-            Assigned vehicles
-          </dt>
-          <dd className="mt-1">
-            <AssignmentCount
-              label="Assigned vehicles"
-              value={
-                assignmentsUnavailable
-                  ? "Unavailable"
-                  : String(row.assignedVehicleCount)
-              }
-            />
-          </dd>
-        </div>
-        <div>
-          <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-            Canonical id
-          </dt>
-          <dd className="mt-1 font-mono text-xs">{row.record.id}</dd>
-        </div>
-      </dl>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Btn variant="ghost" onClick={onEdit}>
-          Edit
-        </Btn>
-        <Btn
-          variant="ghost"
-          disabled={saving}
-          onClick={(event) => onToggle(event.currentTarget)}
-        >
-          {saving
-            ? "Saving…"
-            : row.record.is_active
-              ? "Deactivate"
-              : "Activate"}
-        </Btn>
-      </div>
-    </details>
-  );
-}
-
-function AssignmentCount({ label, value }: { label: string; value: string }) {
-  return (
-    <>
-      <span className="sr-only">{label}</span>
-      <span className="tabular-nums">{value}</span>
-    </>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </span>
-      {children}
-    </label>
+      </footer>
+      <AlertDialog
+        open={deactivate}
+        onOpenChange={(v) => {
+          if (!busy) setDeactivate(v);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deactivate {branch.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This location will become inactive. Historical records remain
+              unchanged. Any other edits in this editor will also be saved.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {error && <p role="alert">{error}</p>}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={Boolean(busy)}>
+              Keep editing
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={Boolean(busy) || !name.trim()}
+              onClick={(e) => {
+                e.preventDefault();
+                void save(true);
+              }}
+            >
+              {busy === "save" ? "Saving…" : "Deactivate location"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </form>
   );
 }
