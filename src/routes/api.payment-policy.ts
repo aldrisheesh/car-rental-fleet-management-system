@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { requirePrincipal } from "@/lib/auth.server";
+import { AuthBoundaryError, requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { PAYMENT_POLICY_VERSION } from "@/lib/payment-policy";
 
@@ -81,7 +81,15 @@ async function handle({ request }: { request: Request }) {
       accepted: true,
       policyVersion: PAYMENT_POLICY_VERSION,
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof AuthBoundaryError)
+      return Response.json(
+        {
+          message:
+            error.reason === "unauthenticated" ? "Unauthorized." : "Forbidden.",
+        },
+        { status: error.reason === "unauthenticated" ? 401 : 403 },
+      );
     return Response.json(
       {
         message:
