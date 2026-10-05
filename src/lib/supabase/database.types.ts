@@ -15,6 +15,132 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      booking_payment_policy_acceptances: {
+        Row: {
+          booking_id: string;
+          customer_id: string;
+          policy_version: string;
+          acknowledged_at: string;
+          policy_snapshot: Json;
+        };
+        Insert: {
+          booking_id: string;
+          customer_id: string;
+          policy_version: string;
+          acknowledged_at?: string;
+          policy_snapshot: Json;
+        };
+        Update: {
+          booking_id?: string;
+          customer_id?: string;
+          policy_version?: string;
+          acknowledged_at?: string;
+          policy_snapshot?: Json;
+        };
+        Relationships: [];
+      };
+      booking_categories: {
+        Row: {
+          code: string;
+          domain: string;
+          label: string;
+        };
+        Insert: {
+          code: string;
+          domain: string;
+          label: string;
+        };
+        Update: {
+          code?: string;
+          domain?: string;
+          label?: string;
+        };
+        Relationships: [];
+      };
+      booking_date_change_requests: {
+        Row: {
+          booking_id: string;
+          created_at: string;
+          customer_id: string;
+          id: string;
+          original_pickup_at: string;
+          original_return_at: string;
+          quote_before: Json | null;
+          reason: string;
+          reason_code: string;
+          requested_pickup_at: string;
+          requested_return_at: string;
+          review_reason: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          status: string;
+        };
+        Insert: {
+          booking_id: string;
+          created_at?: string;
+          customer_id: string;
+          id?: string;
+          original_pickup_at: string;
+          original_return_at: string;
+          quote_before?: Json | null;
+          reason: string;
+          reason_code: string;
+          requested_pickup_at: string;
+          requested_return_at: string;
+          review_reason?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: string;
+        };
+        Update: {
+          booking_id?: string;
+          created_at?: string;
+          customer_id?: string;
+          id?: string;
+          original_pickup_at?: string;
+          original_return_at?: string;
+          quote_before?: Json | null;
+          reason?: string;
+          reason_code?: string;
+          requested_pickup_at?: string;
+          requested_return_at?: string;
+          review_reason?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "booking_date_change_requests_booking_id_fkey";
+            columns: ["booking_id"];
+            isOneToOne: false;
+            referencedRelation: "booking_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "booking_date_change_requests_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "booking_date_change_requests_reason_code_fkey";
+            columns: ["reason_code"];
+            isOneToOne: false;
+            referencedRelation: "booking_categories";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "booking_date_change_requests_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+
       profiles: {
         Row: {
           id: string;
@@ -56,11 +182,7 @@ export type Database = {
           actor_user_id: string | null;
           action: string;
           entity_type:
-            | "booking"
-            | "requirements"
-            | "payment"
-            | "rental"
-            | "maintenance";
+            "booking" | "requirements" | "payment" | "rental" | "maintenance";
           entity_id: string;
           booking_id: string | null;
           metadata: Record<string, unknown>;
@@ -72,11 +194,7 @@ export type Database = {
           actor_user_id?: string | null;
           action: string;
           entity_type:
-            | "booking"
-            | "requirements"
-            | "payment"
-            | "rental"
-            | "maintenance";
+            "booking" | "requirements" | "payment" | "rental" | "maintenance";
           entity_id: string;
           booking_id?: string | null;
           metadata?: Record<string, unknown>;
@@ -766,10 +884,7 @@ export type Database = {
           condition_acknowledged: boolean;
           return_schedule_acknowledged: boolean;
           inspection_status:
-            | "Not required"
-            | "Pending"
-            | "Cleared"
-            | "Maintenance scheduled";
+            "Not required" | "Pending" | "Cleared" | "Maintenance scheduled";
           inspection_remarks: string | null;
           inspected_at: string | null;
           inspected_by: string | null;
@@ -794,10 +909,7 @@ export type Database = {
           condition_acknowledged?: boolean;
           return_schedule_acknowledged?: boolean;
           inspection_status?:
-            | "Not required"
-            | "Pending"
-            | "Cleared"
-            | "Maintenance scheduled";
+            "Not required" | "Pending" | "Cleared" | "Maintenance scheduled";
           inspection_remarks?: string | null;
           inspected_at?: string | null;
           inspected_by?: string | null;
@@ -820,6 +932,134 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      acknowledge_booking_payment_policy: {
+        Args: {
+          p_booking_id: string;
+          p_customer_id: string;
+          p_policy_version: string;
+        };
+        Returns: string;
+      };
+      claim_booking_email_deliveries: {
+        Args: { p_booking_id: string; p_limit: number; p_now: string };
+        Returns: {
+          attempt_count: number;
+          email_notifications_enabled: boolean;
+          email_type: string;
+          id: string;
+          notification_id: string;
+          recipient_email: string;
+          recipient_name: string;
+          recipient_user_id: string;
+          related_entity_id: string;
+          related_entity_type: string;
+          scheduled_at: string;
+        }[];
+      };
+      request_booking_date_change: {
+        Args: {
+          p_actor_id: string;
+          p_booking_id: string;
+          p_pickup_at: string;
+          p_reason: string;
+        };
+        Returns: {
+          booking_id: string;
+          created_at: string;
+          customer_id: string;
+          id: string;
+          original_pickup_at: string;
+          original_return_at: string;
+          quote_before: Json | null;
+          reason: string;
+          reason_code: string;
+          requested_pickup_at: string;
+          requested_return_at: string;
+          review_reason: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          status: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "booking_date_change_requests";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      review_booking_date_change: {
+        Args: {
+          p_action: string;
+          p_actor_id: string;
+          p_reason: string;
+          p_request_id: string;
+        };
+        Returns: {
+          booking_id: string;
+          created_at: string;
+          customer_id: string;
+          id: string;
+          original_pickup_at: string;
+          original_return_at: string;
+          quote_before: Json | null;
+          reason: string;
+          reason_code: string;
+          requested_pickup_at: string;
+          requested_return_at: string;
+          review_reason: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          status: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "booking_date_change_requests";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      decide_allocation_recommendation_with_reason: {
+        Args: {
+          p_actor_id: string;
+          p_approved_transfer_units: number;
+          p_decision_state: string;
+          p_reason: string;
+          p_recommendation_id: string;
+        };
+        Returns: {
+          approved_transfer_units: number | null;
+          batch_id: string;
+          created_at: string;
+          decided_at: string | null;
+          decided_by: string | null;
+          decision_reason: string | null;
+          decision_reason_code: string | null;
+          decision_state: string;
+          destination_branch_id: string;
+          destination_projected_supply_snapshot: number;
+          destination_required_units_snapshot: number;
+          destination_shortage_snapshot: number;
+          destination_supply_evaluation_id: string;
+          forecast_horizon: number;
+          id: string;
+          recommended_transfer_units: number;
+          source_branch_id: string;
+          source_projected_supply_snapshot: number;
+          source_required_units_snapshot: number;
+          source_supply_evaluation_id: string;
+          source_surplus_snapshot: number;
+          target_week_end: string;
+          target_week_start: string;
+          vehicle_category_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "allocation_recommendations";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+
       save_operational_location: {
         Args: {
           p_id: string;
@@ -869,6 +1109,22 @@ export type Database = {
           p_original_filename: string;
           p_mime_type: string;
           p_size_bytes: number;
+        };
+        Returns: Record<string, unknown>;
+      };
+      submit_payment_proof_with_policy_atomic: {
+        Args: {
+          p_booking_id: string;
+          p_customer_id: string;
+          p_payment_method_id: string;
+          p_submitted_amount: number;
+          p_transaction_reference: string;
+          p_storage_path: string;
+          p_original_filename: string;
+          p_mime_type: string;
+          p_size_bytes: number;
+          p_policy_version: string;
+          p_policy_acknowledged: boolean;
         };
         Returns: Record<string, unknown>;
       };

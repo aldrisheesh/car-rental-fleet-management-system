@@ -1,3 +1,5 @@
+import { CategorizedField } from "@/components/booking/CategorizedField";
+import { validCategory } from "@/lib/booking-categories";
 import { ExternalAdvisorySkeleton } from "./dss-loading";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
@@ -61,8 +63,11 @@ export function AllocationReview({
     id: string,
     state: "Approved" | "Rejected",
     quantity?: number,
+    reason?: string,
   ) => Promise<void>;
 }) {
+  const [decisionReason, setDecisionReason] = useState("");
+  const reasonValid = validCategory("allocation_review", decisionReason);
   const [approvedUnits, setApprovedUnits] = useState(
     row.recommended_transfer_units,
   );
@@ -123,8 +128,7 @@ export function AllocationReview({
             <p>
               Recommend {row.recommended_transfer_units}{" "}
               {row.vehicle_category_name} vehicle
-              {row.recommended_transfer_units === 1 ? "" : "s"} · Horizon{" "}
-              {row.forecast_horizon}
+              {row.recommended_transfer_units === 1 ? "" : "s"} for transfer
             </p>
             <p>
               Target week{" "}
@@ -135,17 +139,16 @@ export function AllocationReview({
         <Badge>{row.decision_state}</Badge>
       </header>
       <p className="admin-transfer-rationale">
-        The destination had a shortage of {row.destination_shortage_snapshot};
-        the source had {row.source_surplus_snapshot} surplus in the saved supply
-        evaluations. {row.candidates.length} candidate vehicle
-        {row.candidates.length === 1 ? " was" : "s were"} eligible when this
-        match was prepared.
+        {row.destination_branch_name} needed {row.destination_shortage_snapshot}{" "}
+        more vehicles; {row.source_branch_name} had{" "}
+        {row.source_surplus_snapshot} spare. This option uses vehicles that
+        passed the saved booking and readiness checks.
       </p>
       <section
         className="dss-allocation-candidate-summary"
         aria-label="Candidate vehicle summary"
       >
-        <h4>Candidate vehicles</h4>
+        <h4>Vehicles available for this transfer</h4>
         <p>
           Eligible when this analysis was saved; check current readiness before
           movement.
@@ -170,11 +173,16 @@ export function AllocationReview({
                 >
                   Review in Fleet
                 </Link>
-                <a
-                  href={`/admin/bookings?q=${encodeURIComponent(candidate.license_plate_snapshot ?? candidate.vehicle_name_snapshot)}`}
+                <Link
+                  to="/admin/bookings"
+                  search={{
+                    q:
+                      candidate.license_plate_snapshot ??
+                      candidate.vehicle_name_snapshot,
+                  }}
                 >
                   Review bookings
-                </a>
+                </Link>
               </div>
             </li>
           ))}
@@ -189,7 +197,7 @@ export function AllocationReview({
         aria-busy={contextLoading}
       >
         <div className="admin-transfer-advisory-heading">
-          <h4>External advisory</h4>
+          <h4>Weather and route checks</h4>
           <Btn
             aria-disabled={contextLoading || busy}
             className={contextLoading || busy ? "opacity-60" : undefined}
@@ -197,7 +205,7 @@ export function AllocationReview({
               if (!contextLoading && !busy) onRefreshContext();
             }}
           >
-            {contextLoading ? "Checking context…" : "Recheck external context"}
+            {contextLoading ? "Checking conditions…" : "Recheck conditions"}
           </Btn>
         </div>
         {contextLoading ? (
@@ -365,7 +373,10 @@ export function AllocationReview({
           className="admin-transfer-decision"
           onSubmit={(event) => {
             event.preventDefault();
-            if (canRecordTransferDecision(decisionInput, "Approved"))
+            if (
+              reasonValid &&
+              canRecordTransferDecision(decisionInput, "Approved")
+            )
               setConfirmation("Approved");
           }}
         >
@@ -392,6 +403,14 @@ export function AllocationReview({
               evidence. I understand that this decision does not move vehicles.
             </span>
           </label>
+          <CategorizedField
+            id={`allocation-decision-reason-${row.id}`}
+            label="Decision category"
+            domain="allocation_review"
+            value={decisionReason}
+            onChange={setDecisionReason}
+            disabled={busy}
+          />
           <div className="admin-decision-review-actions">
             <label>
               <span>
@@ -422,14 +441,20 @@ export function AllocationReview({
             <Btn
               type="submit"
               variant="primary"
-              disabled={!canRecordTransferDecision(decisionInput, "Approved")}
+              disabled={
+                !reasonValid ||
+                !canRecordTransferDecision(decisionInput, "Approved")
+              }
             >
               Approve recommendation
             </Btn>
             <Btn
               type="button"
               variant="danger"
-              disabled={!canRecordTransferDecision(decisionInput, "Rejected")}
+              disabled={
+                !reasonValid ||
+                !canRecordTransferDecision(decisionInput, "Rejected")
+              }
               onClick={() => setConfirmation("Rejected")}
             >
               Reject recommendation
@@ -473,6 +498,7 @@ export function AllocationReview({
                   type="button"
                   variant={confirmation === "Approved" ? "primary" : "danger"}
                   disabled={
+                    !reasonValid ||
                     !canRecordTransferDecision(decisionInput, confirmation)
                   }
                   onClick={() =>
@@ -480,6 +506,7 @@ export function AllocationReview({
                       row.id,
                       confirmation,
                       confirmation === "Approved" ? approvedUnits : undefined,
+                      decisionReason,
                     ).then(() => setConfirmation(null))
                   }
                 >
@@ -517,6 +544,11 @@ export function AllocationReview({
                 : "This view cannot record decisions."}{" "}
             {row.decided_at ? `Recorded ${timestamp(row.decided_at)}.` : ""}
           </p>
+          {row.decision_reason ? (
+            <p>
+              <strong>Recorded reason:</strong> {row.decision_reason}
+            </p>
+          ) : null}
           {row.decision_state === "Approved" ? (
             <Link
               to="/admin/fleet"

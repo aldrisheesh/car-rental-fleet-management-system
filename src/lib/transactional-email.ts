@@ -7,6 +7,11 @@ import { buildTransactionalEmail } from "./email-templates.ts";
 import type { NotificationType } from "./notifications.ts";
 
 export const EMAIL_ELIGIBLE_NOTIFICATION_TYPES = [
+  "booking_cancelled",
+  "booking_rejected",
+  "quote_issued",
+  "date_change_approved",
+  "date_change_rejected",
   "requirements_needs_resubmission",
   "requirements_verified",
   "payment_needs_resubmission",
@@ -36,6 +41,7 @@ export type ClaimedEmailDelivery = {
   recipientName: string | null;
   emailNotificationsEnabled: boolean;
   scheduledAt: string | null;
+  bookingId?: string | null;
 };
 
 export type EmailDeliveryStore = {
@@ -121,6 +127,7 @@ export async function processEmailDeliveries(options: {
         recipientName: delivery.recipientName,
         scheduledAt: delivery.scheduledAt,
         appBaseUrl: options.appBaseUrl,
+        bookingId: delivery.bookingId,
       });
       const result = await options.provider.send({
         to: recipient,

@@ -1,6 +1,11 @@
 import type { VehicleAnalyticsRow } from "./vehicle-analytics.server";
 export type { VehicleAnalyticsRow } from "./vehicle-analytics.server";
 
+/** DSS reviews the current fleet; historical reports retain archived vehicles. */
+export function currentUtilizationFleet(rows: VehicleAnalyticsRow[]) {
+  return rows.filter((row) => row.isActive);
+}
+
 export function reportingRangeError(start: string, end: string, today: string) {
   const valid = (day: string) =>
     /^\d{4}-\d{2}-\d{2}$/.test(day) &&
@@ -55,7 +60,7 @@ export function filterUtilizationRows(
 }
 export function utilizationUnavailableReason(row: VehicleAnalyticsRow) {
   if (row.coverage !== "Complete")
-    return "Historical active-state coverage is incomplete. The full-period utilization rate is unavailable; known rental days are still shown.";
+    return "Some past vehicle-status records are missing, so the history is incomplete. Rental days are shown, but there is not enough history to calculate a reliable percentage.";
   if (row.eligibleOperationalDays === 0)
     return "No eligible operational days were recorded in this period. A utilization percentage cannot be calculated.";
   if (row.eligibleOperationalDays == null || row.utilizationPercent == null)
@@ -70,12 +75,12 @@ export function idleExplanation(row: VehicleAnalyticsRow) {
   if (!row.maintenanceReady)
     return "Maintenance or a recorded condition prevents rental readiness. This vehicle is not eligible for an idle flag.";
   if (!row.idleReference || row.idleDays == null)
-    return "A trustworthy last-return or current activation baseline is missing. Idle duration cannot be determined.";
+    return "The last return or activation date is missing or cannot be verified. We cannot tell how long this vehicle has been idle.";
   if (!row.idleEligible)
     return "This vehicle is not currently eligible for an idle flag. Review its readiness in Fleet.";
   return row.idleClassification === "Idle"
-    ? "At least 14 consecutive days have elapsed since the applicable baseline, and current idle eligibility checks passed."
-    : "The 14-day idle threshold has not been reached.";
+    ? "At least 14 consecutive days have passed since the last return or activation used for this count, and the vehicle passes the current readiness checks."
+    : "Fewer than 14 days have passed since the last return or activation used for this count. No rentals in the selected period alone does not make a vehicle idle.";
 }
 
 export function idleDaysForDisplay(

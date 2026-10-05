@@ -25,12 +25,15 @@ Continue only when the dry-run output contains `"differences": []`.
 
 ## Five-minute main walkthrough
 
-1. Open **Admin → Decision Support**. Begin with the **Auditable decision trace**. Explain that it shows the complete path from recorded demand to an Owner/Admin decision.
-2. In **Demand outlook**, select one branch and category. Show the three complete input weeks, the fixed `0.20 / 0.30 / 0.50` WMA contributions, the decimal forecast demand and the rounded-up vehicle requirement.
-3. In **Supply analysis** and **Branch balance**, show how the requirement is compared with vehicles that remain available after booking, rental, active-state and maintenance checks.
-4. In **Transfer recommendations**, show the destination shortage, source surplus, recommended quantity and ranked eligible vehicles. Point out the separate unresolved-shortage explanations where no defensible transfer can be produced.
-5. Open one recommendation and show **Current route context**. Explain that current weather, road, route accessibility, distance, travel time and estimated fuel support the Owner/Admin's approval or rejection. They do not alter the WMA forecast, predict the target week's conditions or move a vehicle automatically.
+1. Open **Admin → Decision Support → Demand Forecast**. Explain the path from recorded booking demand to supply comparison and an Owner/Admin decision.
+2. Select one branch and category. Show **How this forecast was calculated**: three complete input weeks, the fixed `0.20 / 0.30 / 0.50` WMA contributions, decimal forecast demand and rounded-up vehicle requirement.
+3. Choose **View allocation** on the target week. In **Fleet Allocation → Branch balance**, compare the requirement with saved projected supply after booking, rental and maintenance exclusions. Any confirmed booking overlapping the week excludes that vehicle for the weekly planning calculation; this is not a simultaneous-rental capacity optimizer.
+4. In **Recommendations**, show destination shortage, source surplus, recommended quantity and candidate vehicles. In **Unresolved shortages**, distinguish generation matches from pending, approved and rejected quantities. Approval does not resolve the saved supply shortage or establish a completed movement.
+5. Show **Recommendation review → External advisory** and expand source/route evidence. Current weather, road, route accessibility, distance, travel time and estimated fuel support human review. Unavailable evidence stays unavailable. A destination-area closure means the planned route requires verification, not proof that the route is blocked. These advisories do not alter WMA demand or predict target-week conditions.
 6. Approve a quantity smaller than or equal to the recommendation, or reject it. Show that the decision is saved while the vehicle's branch remains unchanged.
+7. Open **Vehicle Utilization** to explain recent rental activity and idle signals; distinguish candidate eligibility from the formal idle classification.
+
+October 4 frontend hardening evidence is recorded in [the local rehearsal report](../codex-context/2026-10-04-dss-defense-hardening.md). The live rehearsal dataset contains booking extras; exact candidate/count reproduction from a clean reset has not been certified by that rehearsal.
 
 ## Negative scenarios to explain
 
@@ -55,3 +58,7 @@ npm run defense:baseline -- reset
 ```
 
 The second command must again report `"differences": []`.
+
+## October 4 successful manual transfer rehearsal
+
+The successful positive path was completed through the frontend using a supplemental reservation-free Toyota Vios (`DEV-VIOS-002`). Fleet now contains 13 synthetic vehicles. For October 12–18 Sedan planning, the Owner/Admin approved one Antipolo → Taft unit, separately moved the donor in Fleet, then refreshed supply: Taft projected supply rose from 0 to 1 and shortage fell from 2 to 1. Existing customer trips were preserved, and the approval remains in history after refresh. This live supplemental scenario has not been incorporated into the saved reset baseline. See [the evidence and remaining presentation observations](../codex-context/2026-10-04-dss-successful-transfer.md).

@@ -276,3 +276,10 @@ test("pickup baseline quotes and rentals require complete handover arrangements"
   }
   validateDataset(data, "2026-10-04");
 });
+
+test("capture archives current records without requiring a destructive prepare", () => {
+  assert.equal(parseArgs(["capture"]).command, "capture");
+  assert.equal(parseArgs(["capture"]).apply, false);
+  assert.equal(parseArgs(["capture", "--apply"]).apply, true);
+  assert.ok(TABLES.includes("booking_payment_policy_acceptances"));
+});

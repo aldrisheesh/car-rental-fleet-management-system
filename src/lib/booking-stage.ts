@@ -47,6 +47,18 @@ export function bookingStage(booking: AdminBooking): Stage {
       "View rental",
       "success",
     );
+  if (
+    booking.pending_date_change &&
+    (status === "Confirmed" || status === "Submitted")
+  )
+    return result(
+      "Reschedule requested",
+      status === "Confirmed"
+        ? "Awaiting date-change review. Original booking remains confirmed."
+        : "Awaiting date-change review. Original dates remain in place.",
+      "Review date change",
+      "warning",
+    );
   if (status === "Confirmed")
     return result(
       "Confirmed",

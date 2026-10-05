@@ -1,3 +1,9 @@
+import {
+  hasCurrentPaymentPolicyAcknowledgement,
+  PAYMENT_POLICY_VERSION,
+} from "@/lib/payment-policy";
+import { validCategory } from "@/lib/booking-categories";
+import { dispatchBookingEmail } from "@/lib/transactional-email.server";
 import { createFileRoute } from "@tanstack/react-router";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -154,7 +160,10 @@ async function mutate({ request }: { request: Request }) {
           Number(payment.data.submitted_amount);
       if (stale)
         return error("Submission changed; reload before reviewing.", 409);
-      if (action === "resubmit" && !String(body?.reason || "").trim())
+      if (
+        action === "resubmit" &&
+        !validCategory("payment_review", body?.reason)
+      )
         return error("A customer-facing reason is required.");
       const updated = await client.rpc("review_payment_atomic", {
         p_payment_id: paymentId,
@@ -180,8 +189,7 @@ async function mutate({ request }: { request: Request }) {
         );
       }
       let confirmation:
-        | { status: "confirmed" | "review-needed"; message: string }
-        | undefined;
+        { status: "confirmed" | "review-needed"; message: string } | undefined;
       if (action === "verify" && updated.data?.booking_id) {
         const booking = await client
           .from("booking_requests")
@@ -202,11 +210,16 @@ async function mutate({ request }: { request: Request }) {
           };
         }
       }
+      await dispatchBookingEmail(payment.data.booking_id);
       return Response.json({ payment: updated.data, confirmation });
     }
     if (principal.role !== "Customer/Renter")
       return error("Customer access is required.", 403);
     const form = await request.formData();
+    if (!hasCurrentPaymentPolicyAcknowledgement(form))
+      return error(
+        "Please read and acknowledge the current cancellation and date-change policies before submitting payment proof.",
+      );
     const bookingId = String(form.get("bookingId") || "");
     const action = String(form.get("action") || "submit");
     const booking = await client
@@ -216,6 +229,20 @@ async function mutate({ request }: { request: Request }) {
       .eq("customer_id", principal.userId)
       .maybeSingle();
     if (!booking.data) return error("Booking not found.", 404);
+    const acceptance = await client
+      .from("booking_payment_policy_acceptances")
+      .select("acknowledged_at")
+      .eq("booking_id", bookingId)
+      .eq("customer_id", principal.userId)
+      .eq("policy_version", PAYMENT_POLICY_VERSION)
+      .maybeSingle();
+    if (acceptance.error)
+      return error("Unable to check payment policy acknowledgement.", 503);
+    if (!acceptance.data)
+      return error(
+        "Please review the payment policies before paying or submitting proof.",
+        409,
+      );
     const req = await client
       .from("renter_requirement_sets")
       .select("status")
@@ -253,21 +280,28 @@ async function mutate({ request }: { request: Request }) {
       .from("payment-proofs")
       .upload(path, file, { contentType: file.type, upsert: false });
     if (up.error) return error("Unable to store proof.", 503);
-    const submitted = await client.rpc("submit_payment_proof_atomic", {
-      p_booking_id: bookingId,
-      p_customer_id: principal.userId,
-      p_payment_method_id: methodId,
-      p_submitted_amount: amount,
-      p_transaction_reference: reference,
-      p_storage_path: path,
-      p_original_filename: safeName(file.name),
-      p_mime_type: file.type,
-      p_size_bytes: file.size,
-    });
+    const submitted = await client.rpc(
+      "submit_payment_proof_with_policy_atomic",
+      {
+        p_policy_version: PAYMENT_POLICY_VERSION,
+        p_policy_acknowledged: true,
+        p_booking_id: bookingId,
+        p_customer_id: principal.userId,
+        p_payment_method_id: methodId,
+        p_submitted_amount: amount,
+        p_transaction_reference: reference,
+        p_storage_path: path,
+        p_original_filename: safeName(file.name),
+        p_mime_type: file.type,
+        p_size_bytes: file.size,
+      },
+    );
     if (submitted.error) {
       await client.storage.from("payment-proofs").remove([path]);
       uploadedPath = null;
       const paymentMessages: Record<string, string> = {
+        payment_policy_acknowledgement_required:
+          "The payment policy has changed. Reload the page and review it before submitting again.",
         payment_quote_required:
           "Please wait for the team to send your rental quote before payment.",
         pickup_arrangement_required:
@@ -285,6 +319,7 @@ async function mutate({ request }: { request: Request }) {
       return error(
         message,
         [
+          "payment_policy_acknowledgement_required",
           "payment_quote_required",
           "pickup_arrangement_required",
           "not_submittable",

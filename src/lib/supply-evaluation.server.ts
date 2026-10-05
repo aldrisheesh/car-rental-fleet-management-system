@@ -61,6 +61,24 @@ export function hasFutureMaintenanceConflict(
   );
 }
 
+export function hasOutstandingBookingConflict(
+  bookings: Array<{ id: string; pickup_at: string; return_at: string }>,
+  rentals: Array<{ booking_id: string; ended_at: string | null }>,
+  weekStart: string,
+  weekEnd: string,
+) {
+  const returned = new Set(
+    rentals
+      .filter((rental) => rental.ended_at)
+      .map((rental) => rental.booking_id),
+  );
+  return bookings.some(
+    (booking) =>
+      !returned.has(booking.id) &&
+      overlaps(booking.pickup_at, booking.return_at, weekStart, weekEnd),
+  );
+}
+
 export function evaluateSupplyVehicles(vehicles: SupplyVehicle[]) {
   const items: SupplyVehicleResult[] = vehicles.map((v) => {
     const reasons: string[] = [];

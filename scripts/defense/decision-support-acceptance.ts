@@ -70,12 +70,10 @@ async function main() {
     process.env.DEFENSE_DATABASE_URL ??
       readFileSync("supabase/.temp/pooler-url", "utf8").trim(),
   );
-  if (
-    !(
-      databaseUrl.hostname === `db.${PROJECT}.supabase.co` ||
-      decodeURIComponent(databaseUrl.username) === `postgres.${PROJECT}`
-    )
-  )
+  if (!(
+    databaseUrl.hostname === `db.${PROJECT}.supabase.co` ||
+    decodeURIComponent(databaseUrl.username) === `postgres.${PROJECT}`
+  ))
     throw new Error("API/database project mismatch.");
   if (!databaseUrl.password)
     databaseUrl.password = process.env.SUPABASE_DB_PASSWORD ?? "";
@@ -152,6 +150,7 @@ async function main() {
         recommendationId,
         state,
         approvedTransferUnits,
+        reason: "Vehicle readiness reviewed — Controlled acceptance test",
       }),
     });
 

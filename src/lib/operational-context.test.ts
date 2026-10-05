@@ -27,11 +27,23 @@ const unavailable = <T>(): ProviderResult<T> => ({
 function context(overrides: Partial<TripContext> = {}): TripContext {
   return {
     destinationGeocode: available(
-      { originalQuery: "Destination", providerMetadata: {}, latitude: 14.6, longitude: 120.9, label: "Destination" },
+      {
+        originalQuery: "Destination",
+        providerMetadata: {},
+        latitude: 14.6,
+        longitude: 120.9,
+        label: "Destination",
+      },
       "tomtom",
     ),
     originGeocode: available(
-      { originalQuery: "Origin", providerMetadata: {}, latitude: 14.5, longitude: 121, label: "Origin" },
+      {
+        originalQuery: "Origin",
+        providerMetadata: {},
+        latitude: 14.5,
+        longitude: 121,
+        label: "Origin",
+      },
       "tomtom",
     ),
     route: available(
@@ -222,7 +234,7 @@ test("classifies unavailable, empty, cautionary, and closed incident context wit
     interpreted({
       trafficIncidents: available([{ isRoadClosed: true }], "tomtom"),
     }).roadCondition.classification,
-    "Closed/Impassable",
+    "Closure reported nearby",
   );
   assert.equal(
     interpreted({
@@ -231,7 +243,7 @@ test("classifies unavailable, empty, cautionary, and closed incident context wit
         "tomtom",
       ),
     }).roadCondition.classification,
-    "Closed/Impassable",
+    "Closure reported nearby",
   );
 });
 
@@ -256,7 +268,7 @@ test("classifies route accessibility conservatively", () => {
     interpreted({
       trafficIncidents: available([{ isRoadClosed: true }], "tomtom"),
     }).routeAccessibility.classification,
-    "Closed/Restricted",
+    "Requires verification",
   );
 });
 
@@ -281,7 +293,7 @@ test("derives feasibility from route and interpreted context", () => {
     interpreted({
       trafficIncidents: available([{ isRoadClosed: true }], "tomtom"),
     }).routeFeasibility.classification,
-    "Not Feasible",
+    "Requires verification",
   );
   assert.equal(
     interpreted({ route: unavailable() }).routeFeasibility.classification,

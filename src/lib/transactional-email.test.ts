@@ -52,6 +52,11 @@ const scheduledProcessor = readFileSync(
 );
 
 const ELIGIBLE = [
+  "booking_cancelled",
+  "booking_rejected",
+  "quote_issued",
+  "date_change_approved",
+  "date_change_rejected",
   "requirements_needs_resubmission",
   "requirements_verified",
   "payment_needs_resubmission",
@@ -416,3 +421,19 @@ class MemoryStore implements EmailDeliveryStore {
     };
   }
 }
+
+test("email booking links return to the exact authenticated booking", () => {
+  const bookingId = "377c527e-4426-49cb-9e7b-e6e71c21d29b";
+  const email = buildTransactionalEmail({
+    emailType: "quote_issued",
+    bookingId,
+    appBaseUrl: "https://briahcarrental.site",
+  });
+  assert.ok(email.text.includes(`/bookings/${bookingId}`));
+  const bad = buildTransactionalEmail({
+    emailType: "quote_issued",
+    bookingId: "../../external",
+    appBaseUrl: "https://briahcarrental.site",
+  });
+  assert.ok(!bad.text.includes("../../external"));
+});

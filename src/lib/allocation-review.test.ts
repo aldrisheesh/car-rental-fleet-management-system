@@ -75,3 +75,16 @@ test("closure remains prominent when the route assessment is unavailable", () =>
     /no reported advisory flags/,
   );
 });
+
+test("a nearby closure requires route verification without claiming the route is blocked", () => {
+  const advisory = externalAdvisory(
+    [
+      { name: "Road", value: "Closure reported nearby" },
+      { name: "Route", value: "Requires verification" },
+    ],
+    false,
+  );
+  assert.equal(advisory.critical, true);
+  assert.match(advisory.headline, /Nearby road closure/);
+  assert.doesNotMatch(advisory.headline, /blocked route/);
+});

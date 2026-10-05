@@ -337,7 +337,11 @@ export function AdminShell() {
 
   useEffect(() => {
     function syncSession() {
-      setSession(getAdminSession());
+      const activeSession = getAdminSession();
+      setSession(activeSession);
+      if (!activeSession) {
+        void navigate({ to: "/sign-in", replace: true });
+      }
     }
     window.addEventListener(ADMIN_SESSION_CHANGED_EVENT, syncSession);
     window.addEventListener("storage", syncSession);
@@ -345,7 +349,7 @@ export function AdminShell() {
       window.removeEventListener(ADMIN_SESSION_CHANGED_EVENT, syncSession);
       window.removeEventListener("storage", syncSession);
     };
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     if (!session) return;

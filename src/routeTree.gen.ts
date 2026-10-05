@@ -9,115 +9,87 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VehiclesRouteImport } from './routes/vehicles'
-import { Route as SignInRouteImport } from './routes/sign-in'
-import { Route as PaymentDetailsRouteImport } from './routes/payment-details'
-import { Route as CustomerLandingRouteImport } from './routes/customer-landing'
-import { Route as CustomerRouteImport } from './routes/customer'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as BookingRouteImport } from './routes/booking'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as BookingRouteImport } from './routes/booking'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CustomerRouteImport } from './routes/customer'
+import { Route as CustomerLandingRouteImport } from './routes/customer-landing'
+import { Route as PaymentDetailsRouteImport } from './routes/payment-details'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as VehiclesRouteImport } from './routes/vehicles'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
-import { Route as VehiclesVehicleIdRouteImport } from './routes/vehicles.$vehicleId'
-import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
-import { Route as CustomerNotificationsRouteImport } from './routes/customer_.notifications'
-import { Route as BookingsBookingIdRouteImport } from './routes/bookings.$bookingId'
-import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
-import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
-import { Route as ApiVehicleLocationRouteImport } from './routes/api.vehicle-location'
-import { Route as ApiVehicleImagesRouteImport } from './routes/api.vehicle-images'
-import { Route as ApiVehicleFinderRouteImport } from './routes/api.vehicle-finder'
-import { Route as ApiVehicleAnalyticsRouteImport } from './routes/api.vehicle-analytics'
-import { Route as ApiSupplyEvaluationsRouteImport } from './routes/api.supply-evaluations'
-import { Route as ApiRequirementsRouteImport } from './routes/api.requirements'
-import { Route as ApiPublicContactRouteImport } from './routes/api.public-contact'
-import { Route as ApiPaymentsRouteImport } from './routes/api.payments'
-import { Route as ApiPaymentTermsRouteImport } from './routes/api.payment-terms'
-import { Route as ApiPaymentQuoteRouteImport } from './routes/api.payment-quote'
-import { Route as ApiPaymentMethodsRouteImport } from './routes/api.payment-methods'
-import { Route as ApiOperationalContextRouteImport } from './routes/api.operational-context'
-import { Route as ApiNotificationsRouteImport } from './routes/api.notifications'
-import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
-import { Route as ApiMaintenanceRouteImport } from './routes/api.maintenance'
-import { Route as ApiHealthRouteImport } from './routes/api.health'
-import { Route as ApiForecastsRouteImport } from './routes/api.forecasts'
-import { Route as ApiDssLocationsRouteImport } from './routes/api.dss-locations'
-import { Route as ApiContactInquiriesRouteImport } from './routes/api.contact-inquiries'
-import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
-import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-master-data'
-import { Route as ApiBackupStatusRouteImport } from './routes/api.backup-status'
-import { Route as ApiAuditEventsRouteImport } from './routes/api.audit-events'
-import { Route as ApiAllocationRecommendationsRouteImport } from './routes/api.allocation-recommendations'
-import { Route as ApiAdminUsersRouteImport } from './routes/api.admin-users'
-import { Route as ApiAdminReportsRouteImport } from './routes/api.admin-reports'
-import { Route as ApiAdminPublicContactRouteImport } from './routes/api.admin-public-contact'
-import { Route as ApiAdminFleetRouteImport } from './routes/api.admin-fleet'
-import { Route as ApiAdminDashboardRouteImport } from './routes/api.admin-dashboard'
-import { Route as ApiAdminCalendarRouteImport } from './routes/api.admin-calendar'
-import { Route as AdminUsersRouteImport } from './routes/admin.users'
-import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
-import { Route as AdminRequirementsRouteImport } from './routes/admin.requirements'
-import { Route as AdminReportsRouteImport } from './routes/admin.reports'
-import { Route as AdminProfileRouteImport } from './routes/admin.profile'
-import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
-import { Route as AdminNotificationsRouteImport } from './routes/admin.notifications'
-import { Route as AdminMaintenanceRouteImport } from './routes/admin.maintenance'
-import { Route as AdminFleetRouteImport } from './routes/admin.fleet'
-import { Route as AdminDecisionsRouteImport } from './routes/admin.decisions'
-import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
-import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
-import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
-import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
 import { Route as AdminActivityRouteImport } from './routes/admin.activity'
-import { Route as ApiInternalRemindersRouteImport } from './routes/api.internal.reminders'
-import { Route as ApiAuthSignUpRouteImport } from './routes/api.auth.sign-up'
-import { Route as ApiAuthSignOutRouteImport } from './routes/api.auth.sign-out'
-import { Route as ApiAuthSignInRouteImport } from './routes/api.auth.sign-in'
-import { Route as ApiAuthSessionRouteImport } from './routes/api.auth.session'
-import { Route as ApiAuthProfileRouteImport } from './routes/api.auth.profile'
-import { Route as ApiAuthAccountStatusRouteImport } from './routes/api.auth.account-status'
-import { Route as AdminRequirementsBookingIdRouteImport } from './routes/admin.requirements.$bookingId'
-import { Route as AdminPaymentsPaymentIdRouteImport } from './routes/admin.payments.$paymentId'
-import { Route as AdminDecisionsUtilizationRouteImport } from './routes/admin.decisions.utilization'
-import { Route as AdminDecisionsForecastRouteImport } from './routes/admin.decisions.forecast'
-import { Route as AdminDecisionsAllocationRouteImport } from './routes/admin.decisions.allocation'
+import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
+import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
+import { Route as AdminCalendarRouteImport } from './routes/admin.calendar'
+import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminDecisionsRouteImport } from './routes/admin.decisions'
+import { Route as AdminFleetRouteImport } from './routes/admin.fleet'
+import { Route as AdminMaintenanceRouteImport } from './routes/admin.maintenance'
+import { Route as AdminNotificationsRouteImport } from './routes/admin.notifications'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminProfileRouteImport } from './routes/admin.profile'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
+import { Route as AdminRequirementsRouteImport } from './routes/admin.requirements'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as ApiAdminCalendarRouteImport } from './routes/api.admin-calendar'
+import { Route as ApiAdminDashboardRouteImport } from './routes/api.admin-dashboard'
+import { Route as ApiAdminFleetRouteImport } from './routes/api.admin-fleet'
+import { Route as ApiAdminPublicContactRouteImport } from './routes/api.admin-public-contact'
+import { Route as ApiAdminReportsRouteImport } from './routes/api.admin-reports'
+import { Route as ApiAdminUsersRouteImport } from './routes/api.admin-users'
+import { Route as ApiAllocationRecommendationsRouteImport } from './routes/api.allocation-recommendations'
+import { Route as ApiAuditEventsRouteImport } from './routes/api.audit-events'
+import { Route as ApiBackupStatusRouteImport } from './routes/api.backup-status'
+import { Route as ApiBookingDateChangesRouteImport } from './routes/api.booking-date-changes'
+import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-master-data'
+import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
+import { Route as ApiContactInquiriesRouteImport } from './routes/api.contact-inquiries'
+import { Route as ApiDssLocationsRouteImport } from './routes/api.dss-locations'
+import { Route as ApiForecastsRouteImport } from './routes/api.forecasts'
+import { Route as ApiHealthRouteImport } from './routes/api.health'
+import { Route as ApiMaintenanceRouteImport } from './routes/api.maintenance'
+import { Route as ApiMasterDataRouteImport } from './routes/api.master-data'
+import { Route as ApiNotificationsRouteImport } from './routes/api.notifications'
+import { Route as ApiOperationalContextRouteImport } from './routes/api.operational-context'
+import { Route as ApiPaymentMethodsRouteImport } from './routes/api.payment-methods'
+import { Route as ApiPaymentPolicyRouteImport } from './routes/api.payment-policy'
+import { Route as ApiPaymentQuoteRouteImport } from './routes/api.payment-quote'
+import { Route as ApiPaymentTermsRouteImport } from './routes/api.payment-terms'
+import { Route as ApiPaymentsRouteImport } from './routes/api.payments'
+import { Route as ApiPublicContactRouteImport } from './routes/api.public-contact'
+import { Route as ApiRequirementsRouteImport } from './routes/api.requirements'
+import { Route as ApiSupplyEvaluationsRouteImport } from './routes/api.supply-evaluations'
+import { Route as ApiVehicleAnalyticsRouteImport } from './routes/api.vehicle-analytics'
+import { Route as ApiVehicleFinderRouteImport } from './routes/api.vehicle-finder'
+import { Route as ApiVehicleImagesRouteImport } from './routes/api.vehicle-images'
+import { Route as ApiVehicleLocationRouteImport } from './routes/api.vehicle-location'
+import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as BookingsBookingIdRouteImport } from './routes/bookings.$bookingId'
+import { Route as CustomerNotificationsRouteImport } from './routes/customer_.notifications'
+import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
+import { Route as VehiclesVehicleIdRouteImport } from './routes/vehicles.$vehicleId'
 import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings.$bookingId'
+import { Route as AdminDecisionsAllocationRouteImport } from './routes/admin.decisions.allocation'
+import { Route as AdminDecisionsForecastRouteImport } from './routes/admin.decisions.forecast'
+import { Route as AdminDecisionsUtilizationRouteImport } from './routes/admin.decisions.utilization'
+import { Route as AdminPaymentsPaymentIdRouteImport } from './routes/admin.payments.$paymentId'
+import { Route as AdminRequirementsBookingIdRouteImport } from './routes/admin.requirements.$bookingId'
+import { Route as ApiAuthAccountStatusRouteImport } from './routes/api.auth.account-status'
+import { Route as ApiAuthProfileRouteImport } from './routes/api.auth.profile'
+import { Route as ApiAuthSessionRouteImport } from './routes/api.auth.session'
+import { Route as ApiAuthSignInRouteImport } from './routes/api.auth.sign-in'
+import { Route as ApiAuthSignOutRouteImport } from './routes/api.auth.sign-out'
+import { Route as ApiAuthSignUpRouteImport } from './routes/api.auth.sign-up'
+import { Route as ApiInternalRemindersRouteImport } from './routes/api.internal.reminders'
 import { Route as ApiAuthOauthSessionRouteImport } from './routes/api.auth.oauth.session'
 
-const VehiclesRoute = VehiclesRouteImport.update({
-  id: '/vehicles',
-  path: '/vehicles',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignInRoute = SignInRouteImport.update({
-  id: '/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PaymentDetailsRoute = PaymentDetailsRouteImport.update({
-  id: '/payment-details',
-  path: '/payment-details',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CustomerLandingRoute = CustomerLandingRouteImport.update({
-  id: '/customer-landing',
-  path: '/customer-landing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CustomerRoute = CustomerRouteImport.update({
-  id: '/customer',
-  path: '/customer',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BookingRoute = BookingRouteImport.update({
-  id: '/booking',
-  path: '/booking',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -125,9 +97,39 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const BookingRoute = BookingRouteImport.update({
+  id: '/booking',
+  path: '/booking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomerRoute = CustomerRouteImport.update({
+  id: '/customer',
+  path: '/customer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomerLandingRoute = CustomerLandingRouteImport.update({
+  id: '/customer-landing',
+  path: '/customer-landing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentDetailsRoute = PaymentDetailsRouteImport.update({
+  id: '/payment-details',
+  path: '/payment-details',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VehiclesRoute = VehiclesRouteImport.update({
+  id: '/vehicles',
+  path: '/vehicles',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -135,149 +137,109 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
-const VehiclesVehicleIdRoute = VehiclesVehicleIdRouteImport.update({
-  id: '/$vehicleId',
-  path: '/$vehicleId',
-  getParentRoute: () => VehiclesRoute,
+const AdminActivityRoute = AdminActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AdminRoute,
 } as any)
-const CustomerProfileRoute = CustomerProfileRouteImport.update({
-  id: '/customer_/profile',
-  path: '/customer/profile',
+const AdminBookingsRoute = AdminBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBranchesRoute = AdminBranchesRouteImport.update({
+  id: '/branches',
+  path: '/branches',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCalendarRoute = AdminCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDecisionsRoute = AdminDecisionsRouteImport.update({
+  id: '/decisions',
+  path: '/decisions',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFleetRoute = AdminFleetRouteImport.update({
+  id: '/fleet',
+  path: '/fleet',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMaintenanceRoute = AdminMaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProfileRoute = AdminProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRequirementsRoute = AdminRequirementsRouteImport.update({
+  id: '/requirements',
+  path: '/requirements',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const ApiAdminCalendarRoute = ApiAdminCalendarRouteImport.update({
+  id: '/api/admin-calendar',
+  path: '/api/admin-calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CustomerNotificationsRoute = CustomerNotificationsRouteImport.update({
-  id: '/customer_/notifications',
-  path: '/customer/notifications',
+const ApiAdminDashboardRoute = ApiAdminDashboardRouteImport.update({
+  id: '/api/admin-dashboard',
+  path: '/api/admin-dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BookingsBookingIdRoute = BookingsBookingIdRouteImport.update({
-  id: '/bookings/$bookingId',
-  path: '/bookings/$bookingId',
+const ApiAdminFleetRoute = ApiAdminFleetRouteImport.update({
+  id: '/api/admin-fleet',
+  path: '/api/admin-fleet',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/auth/callback',
-  path: '/auth/callback',
+const ApiAdminPublicContactRoute = ApiAdminPublicContactRouteImport.update({
+  id: '/api/admin-public-contact',
+  path: '/api/admin-public-contact',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
-  id: '/api/vehicles',
-  path: '/api/vehicles',
+const ApiAdminReportsRoute = ApiAdminReportsRouteImport.update({
+  id: '/api/admin-reports',
+  path: '/api/admin-reports',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiVehicleLocationRoute = ApiVehicleLocationRouteImport.update({
-  id: '/api/vehicle-location',
-  path: '/api/vehicle-location',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiVehicleImagesRoute = ApiVehicleImagesRouteImport.update({
-  id: '/api/vehicle-images',
-  path: '/api/vehicle-images',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiVehicleFinderRoute = ApiVehicleFinderRouteImport.update({
-  id: '/api/vehicle-finder',
-  path: '/api/vehicle-finder',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiVehicleAnalyticsRoute = ApiVehicleAnalyticsRouteImport.update({
-  id: '/api/vehicle-analytics',
-  path: '/api/vehicle-analytics',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSupplyEvaluationsRoute = ApiSupplyEvaluationsRouteImport.update({
-  id: '/api/supply-evaluations',
-  path: '/api/supply-evaluations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiRequirementsRoute = ApiRequirementsRouteImport.update({
-  id: '/api/requirements',
-  path: '/api/requirements',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
-  id: '/api/public-contact',
-  path: '/api/public-contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPaymentsRoute = ApiPaymentsRouteImport.update({
-  id: '/api/payments',
-  path: '/api/payments',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPaymentTermsRoute = ApiPaymentTermsRouteImport.update({
-  id: '/api/payment-terms',
-  path: '/api/payment-terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPaymentQuoteRoute = ApiPaymentQuoteRouteImport.update({
-  id: '/api/payment-quote',
-  path: '/api/payment-quote',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPaymentMethodsRoute = ApiPaymentMethodsRouteImport.update({
-  id: '/api/payment-methods',
-  path: '/api/payment-methods',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiOperationalContextRoute = ApiOperationalContextRouteImport.update({
-  id: '/api/operational-context',
-  path: '/api/operational-context',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
-  id: '/api/notifications',
-  path: '/api/notifications',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiMasterDataRoute = ApiMasterDataRouteImport.update({
-  id: '/api/master-data',
-  path: '/api/master-data',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiMaintenanceRoute = ApiMaintenanceRouteImport.update({
-  id: '/api/maintenance',
-  path: '/api/maintenance',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiHealthRoute = ApiHealthRouteImport.update({
-  id: '/api/health',
-  path: '/api/health',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiForecastsRoute = ApiForecastsRouteImport.update({
-  id: '/api/forecasts',
-  path: '/api/forecasts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiDssLocationsRoute = ApiDssLocationsRouteImport.update({
-  id: '/api/dss-locations',
-  path: '/api/dss-locations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiContactInquiriesRoute = ApiContactInquiriesRouteImport.update({
-  id: '/api/contact-inquiries',
-  path: '/api/contact-inquiries',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiBookingsRoute = ApiBookingsRouteImport.update({
-  id: '/api/bookings',
-  path: '/api/bookings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiBookingMasterDataRoute = ApiBookingMasterDataRouteImport.update({
-  id: '/api/booking-master-data',
-  path: '/api/booking-master-data',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiBackupStatusRoute = ApiBackupStatusRouteImport.update({
-  id: '/api/backup-status',
-  path: '/api/backup-status',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAuditEventsRoute = ApiAuditEventsRouteImport.update({
-  id: '/api/audit-events',
-  path: '/api/audit-events',
+const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
+  id: '/api/admin-users',
+  path: '/api/admin-users',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAllocationRecommendationsRoute =
@@ -286,167 +248,165 @@ const ApiAllocationRecommendationsRoute =
     path: '/api/allocation-recommendations',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
-  id: '/api/admin-users',
-  path: '/api/admin-users',
+const ApiAuditEventsRoute = ApiAuditEventsRouteImport.update({
+  id: '/api/audit-events',
+  path: '/api/audit-events',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAdminReportsRoute = ApiAdminReportsRouteImport.update({
-  id: '/api/admin-reports',
-  path: '/api/admin-reports',
+const ApiBackupStatusRoute = ApiBackupStatusRouteImport.update({
+  id: '/api/backup-status',
+  path: '/api/backup-status',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAdminPublicContactRoute = ApiAdminPublicContactRouteImport.update({
-  id: '/api/admin-public-contact',
-  path: '/api/admin-public-contact',
+const ApiBookingDateChangesRoute = ApiBookingDateChangesRouteImport.update({
+  id: '/api/booking-date-changes',
+  path: '/api/booking-date-changes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAdminFleetRoute = ApiAdminFleetRouteImport.update({
-  id: '/api/admin-fleet',
-  path: '/api/admin-fleet',
+const ApiBookingMasterDataRoute = ApiBookingMasterDataRouteImport.update({
+  id: '/api/booking-master-data',
+  path: '/api/booking-master-data',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAdminDashboardRoute = ApiAdminDashboardRouteImport.update({
-  id: '/api/admin-dashboard',
-  path: '/api/admin-dashboard',
+const ApiBookingsRoute = ApiBookingsRouteImport.update({
+  id: '/api/bookings',
+  path: '/api/bookings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAdminCalendarRoute = ApiAdminCalendarRouteImport.update({
-  id: '/api/admin-calendar',
-  path: '/api/admin-calendar',
+const ApiContactInquiriesRoute = ApiContactInquiriesRouteImport.update({
+  id: '/api/contact-inquiries',
+  path: '/api/contact-inquiries',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminRequirementsRoute = AdminRequirementsRouteImport.update({
-  id: '/requirements',
-  path: '/requirements',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminReportsRoute = AdminReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminProfileRoute = AdminProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
-  id: '/payments',
-  path: '/payments',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminMaintenanceRoute = AdminMaintenanceRouteImport.update({
-  id: '/maintenance',
-  path: '/maintenance',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminFleetRoute = AdminFleetRouteImport.update({
-  id: '/fleet',
-  path: '/fleet',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminDecisionsRoute = AdminDecisionsRouteImport.update({
-  id: '/decisions',
-  path: '/decisions',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminCustomersRoute = AdminCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminCalendarRoute = AdminCalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminBranchesRoute = AdminBranchesRouteImport.update({
-  id: '/branches',
-  path: '/branches',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminBookingsRoute = AdminBookingsRouteImport.update({
-  id: '/bookings',
-  path: '/bookings',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminActivityRoute = AdminActivityRouteImport.update({
-  id: '/activity',
-  path: '/activity',
-  getParentRoute: () => AdminRoute,
-} as any)
-const ApiInternalRemindersRoute = ApiInternalRemindersRouteImport.update({
-  id: '/api/internal/reminders',
-  path: '/api/internal/reminders',
+const ApiDssLocationsRoute = ApiDssLocationsRouteImport.update({
+  id: '/api/dss-locations',
+  path: '/api/dss-locations',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthSignUpRoute = ApiAuthSignUpRouteImport.update({
-  id: '/api/auth/sign-up',
-  path: '/api/auth/sign-up',
+const ApiForecastsRoute = ApiForecastsRouteImport.update({
+  id: '/api/forecasts',
+  path: '/api/forecasts',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthSignOutRoute = ApiAuthSignOutRouteImport.update({
-  id: '/api/auth/sign-out',
-  path: '/api/auth/sign-out',
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthSignInRoute = ApiAuthSignInRouteImport.update({
-  id: '/api/auth/sign-in',
-  path: '/api/auth/sign-in',
+const ApiMaintenanceRoute = ApiMaintenanceRouteImport.update({
+  id: '/api/maintenance',
+  path: '/api/maintenance',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthSessionRoute = ApiAuthSessionRouteImport.update({
-  id: '/api/auth/session',
-  path: '/api/auth/session',
+const ApiMasterDataRoute = ApiMasterDataRouteImport.update({
+  id: '/api/master-data',
+  path: '/api/master-data',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthProfileRoute = ApiAuthProfileRouteImport.update({
-  id: '/api/auth/profile',
-  path: '/api/auth/profile',
+const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
+  id: '/api/notifications',
+  path: '/api/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthAccountStatusRoute = ApiAuthAccountStatusRouteImport.update({
-  id: '/api/auth/account-status',
-  path: '/api/auth/account-status',
+const ApiOperationalContextRoute = ApiOperationalContextRouteImport.update({
+  id: '/api/operational-context',
+  path: '/api/operational-context',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRequirementsBookingIdRoute =
-  AdminRequirementsBookingIdRouteImport.update({
-    id: '/$bookingId',
-    path: '/$bookingId',
-    getParentRoute: () => AdminRequirementsRoute,
-  } as any)
-const AdminPaymentsPaymentIdRoute = AdminPaymentsPaymentIdRouteImport.update({
-  id: '/$paymentId',
-  path: '/$paymentId',
-  getParentRoute: () => AdminPaymentsRoute,
+const ApiPaymentMethodsRoute = ApiPaymentMethodsRouteImport.update({
+  id: '/api/payment-methods',
+  path: '/api/payment-methods',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AdminDecisionsUtilizationRoute =
-  AdminDecisionsUtilizationRouteImport.update({
-    id: '/utilization',
-    path: '/utilization',
-    getParentRoute: () => AdminDecisionsRoute,
-  } as any)
-const AdminDecisionsForecastRoute = AdminDecisionsForecastRouteImport.update({
-  id: '/forecast',
-  path: '/forecast',
-  getParentRoute: () => AdminDecisionsRoute,
+const ApiPaymentPolicyRoute = ApiPaymentPolicyRouteImport.update({
+  id: '/api/payment-policy',
+  path: '/api/payment-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentQuoteRoute = ApiPaymentQuoteRouteImport.update({
+  id: '/api/payment-quote',
+  path: '/api/payment-quote',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentTermsRoute = ApiPaymentTermsRouteImport.update({
+  id: '/api/payment-terms',
+  path: '/api/payment-terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentsRoute = ApiPaymentsRouteImport.update({
+  id: '/api/payments',
+  path: '/api/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
+  id: '/api/public-contact',
+  path: '/api/public-contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRequirementsRoute = ApiRequirementsRouteImport.update({
+  id: '/api/requirements',
+  path: '/api/requirements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSupplyEvaluationsRoute = ApiSupplyEvaluationsRouteImport.update({
+  id: '/api/supply-evaluations',
+  path: '/api/supply-evaluations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVehicleAnalyticsRoute = ApiVehicleAnalyticsRouteImport.update({
+  id: '/api/vehicle-analytics',
+  path: '/api/vehicle-analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVehicleFinderRoute = ApiVehicleFinderRouteImport.update({
+  id: '/api/vehicle-finder',
+  path: '/api/vehicle-finder',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVehicleImagesRoute = ApiVehicleImagesRouteImport.update({
+  id: '/api/vehicle-images',
+  path: '/api/vehicle-images',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVehicleLocationRoute = ApiVehicleLocationRouteImport.update({
+  id: '/api/vehicle-location',
+  path: '/api/vehicle-location',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
+  id: '/api/vehicles',
+  path: '/api/vehicles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingsBookingIdRoute = BookingsBookingIdRouteImport.update({
+  id: '/bookings/$bookingId',
+  path: '/bookings/$bookingId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomerNotificationsRoute = CustomerNotificationsRouteImport.update({
+  id: '/customer_/notifications',
+  path: '/customer/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomerProfileRoute = CustomerProfileRouteImport.update({
+  id: '/customer_/profile',
+  path: '/customer/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VehiclesVehicleIdRoute = VehiclesVehicleIdRouteImport.update({
+  id: '/$vehicleId',
+  path: '/$vehicleId',
+  getParentRoute: () => VehiclesRoute,
+} as any)
+const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
+  id: '/$bookingId',
+  path: '/$bookingId',
+  getParentRoute: () => AdminBookingsRoute,
 } as any)
 const AdminDecisionsAllocationRoute =
   AdminDecisionsAllocationRouteImport.update({
@@ -454,10 +414,62 @@ const AdminDecisionsAllocationRoute =
     path: '/allocation',
     getParentRoute: () => AdminDecisionsRoute,
   } as any)
-const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
-  id: '/$bookingId',
-  path: '/$bookingId',
-  getParentRoute: () => AdminBookingsRoute,
+const AdminDecisionsForecastRoute = AdminDecisionsForecastRouteImport.update({
+  id: '/forecast',
+  path: '/forecast',
+  getParentRoute: () => AdminDecisionsRoute,
+} as any)
+const AdminDecisionsUtilizationRoute =
+  AdminDecisionsUtilizationRouteImport.update({
+    id: '/utilization',
+    path: '/utilization',
+    getParentRoute: () => AdminDecisionsRoute,
+  } as any)
+const AdminPaymentsPaymentIdRoute = AdminPaymentsPaymentIdRouteImport.update({
+  id: '/$paymentId',
+  path: '/$paymentId',
+  getParentRoute: () => AdminPaymentsRoute,
+} as any)
+const AdminRequirementsBookingIdRoute =
+  AdminRequirementsBookingIdRouteImport.update({
+    id: '/$bookingId',
+    path: '/$bookingId',
+    getParentRoute: () => AdminRequirementsRoute,
+  } as any)
+const ApiAuthAccountStatusRoute = ApiAuthAccountStatusRouteImport.update({
+  id: '/api/auth/account-status',
+  path: '/api/auth/account-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthProfileRoute = ApiAuthProfileRouteImport.update({
+  id: '/api/auth/profile',
+  path: '/api/auth/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSessionRoute = ApiAuthSessionRouteImport.update({
+  id: '/api/auth/session',
+  path: '/api/auth/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignInRoute = ApiAuthSignInRouteImport.update({
+  id: '/api/auth/sign-in',
+  path: '/api/auth/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignOutRoute = ApiAuthSignOutRouteImport.update({
+  id: '/api/auth/sign-out',
+  path: '/api/auth/sign-out',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignUpRoute = ApiAuthSignUpRouteImport.update({
+  id: '/api/auth/sign-up',
+  path: '/api/auth/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInternalRemindersRoute = ApiInternalRemindersRouteImport.update({
+  id: '/api/internal/reminders',
+  path: '/api/internal/reminders',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthOauthSessionRoute = ApiAuthOauthSessionRouteImport.update({
   id: '/api/auth/oauth/session',
@@ -499,6 +511,7 @@ export interface FileRoutesByFullPath {
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
+  '/api/booking-date-changes': typeof ApiBookingDateChangesRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/contact-inquiries': typeof ApiContactInquiriesRoute
@@ -510,6 +523,7 @@ export interface FileRoutesByFullPath {
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/operational-context': typeof ApiOperationalContextRoute
   '/api/payment-methods': typeof ApiPaymentMethodsRoute
+  '/api/payment-policy': typeof ApiPaymentPolicyRoute
   '/api/payment-quote': typeof ApiPaymentQuoteRoute
   '/api/payment-terms': typeof ApiPaymentTermsRoute
   '/api/payments': typeof ApiPaymentsRoute
@@ -575,6 +589,7 @@ export interface FileRoutesByTo {
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
+  '/api/booking-date-changes': typeof ApiBookingDateChangesRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/contact-inquiries': typeof ApiContactInquiriesRoute
@@ -586,6 +601,7 @@ export interface FileRoutesByTo {
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/operational-context': typeof ApiOperationalContextRoute
   '/api/payment-methods': typeof ApiPaymentMethodsRoute
+  '/api/payment-policy': typeof ApiPaymentPolicyRoute
   '/api/payment-quote': typeof ApiPaymentQuoteRoute
   '/api/payment-terms': typeof ApiPaymentTermsRoute
   '/api/payments': typeof ApiPaymentsRoute
@@ -653,6 +669,7 @@ export interface FileRoutesById {
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
+  '/api/booking-date-changes': typeof ApiBookingDateChangesRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/contact-inquiries': typeof ApiContactInquiriesRoute
@@ -664,6 +681,7 @@ export interface FileRoutesById {
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/operational-context': typeof ApiOperationalContextRoute
   '/api/payment-methods': typeof ApiPaymentMethodsRoute
+  '/api/payment-policy': typeof ApiPaymentPolicyRoute
   '/api/payment-quote': typeof ApiPaymentQuoteRoute
   '/api/payment-terms': typeof ApiPaymentTermsRoute
   '/api/payments': typeof ApiPaymentsRoute
@@ -732,6 +750,7 @@ export interface FileRouteTypes {
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
+    | '/api/booking-date-changes'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/contact-inquiries'
@@ -743,6 +762,7 @@ export interface FileRouteTypes {
     | '/api/notifications'
     | '/api/operational-context'
     | '/api/payment-methods'
+    | '/api/payment-policy'
     | '/api/payment-quote'
     | '/api/payment-terms'
     | '/api/payments'
@@ -808,6 +828,7 @@ export interface FileRouteTypes {
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
+    | '/api/booking-date-changes'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/contact-inquiries'
@@ -819,6 +840,7 @@ export interface FileRouteTypes {
     | '/api/notifications'
     | '/api/operational-context'
     | '/api/payment-methods'
+    | '/api/payment-policy'
     | '/api/payment-quote'
     | '/api/payment-terms'
     | '/api/payments'
@@ -885,6 +907,7 @@ export interface FileRouteTypes {
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
+    | '/api/booking-date-changes'
     | '/api/booking-master-data'
     | '/api/bookings'
     | '/api/contact-inquiries'
@@ -896,6 +919,7 @@ export interface FileRouteTypes {
     | '/api/notifications'
     | '/api/operational-context'
     | '/api/payment-methods'
+    | '/api/payment-policy'
     | '/api/payment-quote'
     | '/api/payment-terms'
     | '/api/payments'
@@ -948,6 +972,7 @@ export interface RootRouteChildren {
   ApiAllocationRecommendationsRoute: typeof ApiAllocationRecommendationsRoute
   ApiAuditEventsRoute: typeof ApiAuditEventsRoute
   ApiBackupStatusRoute: typeof ApiBackupStatusRoute
+  ApiBookingDateChangesRoute: typeof ApiBookingDateChangesRoute
   ApiBookingMasterDataRoute: typeof ApiBookingMasterDataRoute
   ApiBookingsRoute: typeof ApiBookingsRoute
   ApiContactInquiriesRoute: typeof ApiContactInquiriesRoute
@@ -959,6 +984,7 @@ export interface RootRouteChildren {
   ApiNotificationsRoute: typeof ApiNotificationsRoute
   ApiOperationalContextRoute: typeof ApiOperationalContextRoute
   ApiPaymentMethodsRoute: typeof ApiPaymentMethodsRoute
+  ApiPaymentPolicyRoute: typeof ApiPaymentPolicyRoute
   ApiPaymentQuoteRoute: typeof ApiPaymentQuoteRoute
   ApiPaymentTermsRoute: typeof ApiPaymentTermsRoute
   ApiPaymentsRoute: typeof ApiPaymentsRoute
@@ -986,53 +1012,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/vehicles': {
-      id: '/vehicles'
-      path: '/vehicles'
-      fullPath: '/vehicles'
-      preLoaderRoute: typeof VehiclesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sign-in': {
-      id: '/sign-in'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof SignInRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/payment-details': {
-      id: '/payment-details'
-      path: '/payment-details'
-      fullPath: '/payment-details'
-      preLoaderRoute: typeof PaymentDetailsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/customer-landing': {
-      id: '/customer-landing'
-      path: '/customer-landing'
-      fullPath: '/customer-landing'
-      preLoaderRoute: typeof CustomerLandingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/customer': {
-      id: '/customer'
-      path: '/customer'
-      fullPath: '/customer'
-      preLoaderRoute: typeof CustomerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/booking': {
-      id: '/booking'
-      path: '/booking'
-      fullPath: '/booking'
-      preLoaderRoute: typeof BookingRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -1042,11 +1026,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/booking': {
+      id: '/booking'
+      path: '/booking'
+      fullPath: '/booking'
+      preLoaderRoute: typeof BookingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customer': {
+      id: '/customer'
+      path: '/customer'
+      fullPath: '/customer'
+      preLoaderRoute: typeof CustomerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customer-landing': {
+      id: '/customer-landing'
+      path: '/customer-landing'
+      fullPath: '/customer-landing'
+      preLoaderRoute: typeof CustomerLandingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment-details': {
+      id: '/payment-details'
+      path: '/payment-details'
+      fullPath: '/payment-details'
+      preLoaderRoute: typeof PaymentDetailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vehicles': {
+      id: '/vehicles'
+      path: '/vehicles'
+      fullPath: '/vehicles'
+      preLoaderRoute: typeof VehiclesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -1056,347 +1082,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/vehicles/$vehicleId': {
-      id: '/vehicles/$vehicleId'
-      path: '/$vehicleId'
-      fullPath: '/vehicles/$vehicleId'
-      preLoaderRoute: typeof VehiclesVehicleIdRouteImport
-      parentRoute: typeof VehiclesRoute
-    }
-    '/customer_/profile': {
-      id: '/customer_/profile'
-      path: '/customer/profile'
-      fullPath: '/customer/profile'
-      preLoaderRoute: typeof CustomerProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/customer_/notifications': {
-      id: '/customer_/notifications'
-      path: '/customer/notifications'
-      fullPath: '/customer/notifications'
-      preLoaderRoute: typeof CustomerNotificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bookings/$bookingId': {
-      id: '/bookings/$bookingId'
-      path: '/bookings/$bookingId'
-      fullPath: '/bookings/$bookingId'
-      preLoaderRoute: typeof BookingsBookingIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/callback': {
-      id: '/auth/callback'
-      path: '/auth/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/vehicles': {
-      id: '/api/vehicles'
-      path: '/api/vehicles'
-      fullPath: '/api/vehicles'
-      preLoaderRoute: typeof ApiVehiclesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/vehicle-location': {
-      id: '/api/vehicle-location'
-      path: '/api/vehicle-location'
-      fullPath: '/api/vehicle-location'
-      preLoaderRoute: typeof ApiVehicleLocationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/vehicle-images': {
-      id: '/api/vehicle-images'
-      path: '/api/vehicle-images'
-      fullPath: '/api/vehicle-images'
-      preLoaderRoute: typeof ApiVehicleImagesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/vehicle-finder': {
-      id: '/api/vehicle-finder'
-      path: '/api/vehicle-finder'
-      fullPath: '/api/vehicle-finder'
-      preLoaderRoute: typeof ApiVehicleFinderRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/vehicle-analytics': {
-      id: '/api/vehicle-analytics'
-      path: '/api/vehicle-analytics'
-      fullPath: '/api/vehicle-analytics'
-      preLoaderRoute: typeof ApiVehicleAnalyticsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/supply-evaluations': {
-      id: '/api/supply-evaluations'
-      path: '/api/supply-evaluations'
-      fullPath: '/api/supply-evaluations'
-      preLoaderRoute: typeof ApiSupplyEvaluationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/requirements': {
-      id: '/api/requirements'
-      path: '/api/requirements'
-      fullPath: '/api/requirements'
-      preLoaderRoute: typeof ApiRequirementsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public-contact': {
-      id: '/api/public-contact'
-      path: '/api/public-contact'
-      fullPath: '/api/public-contact'
-      preLoaderRoute: typeof ApiPublicContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/payments': {
-      id: '/api/payments'
-      path: '/api/payments'
-      fullPath: '/api/payments'
-      preLoaderRoute: typeof ApiPaymentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/payment-terms': {
-      id: '/api/payment-terms'
-      path: '/api/payment-terms'
-      fullPath: '/api/payment-terms'
-      preLoaderRoute: typeof ApiPaymentTermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/payment-quote': {
-      id: '/api/payment-quote'
-      path: '/api/payment-quote'
-      fullPath: '/api/payment-quote'
-      preLoaderRoute: typeof ApiPaymentQuoteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/payment-methods': {
-      id: '/api/payment-methods'
-      path: '/api/payment-methods'
-      fullPath: '/api/payment-methods'
-      preLoaderRoute: typeof ApiPaymentMethodsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/operational-context': {
-      id: '/api/operational-context'
-      path: '/api/operational-context'
-      fullPath: '/api/operational-context'
-      preLoaderRoute: typeof ApiOperationalContextRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/notifications': {
-      id: '/api/notifications'
-      path: '/api/notifications'
-      fullPath: '/api/notifications'
-      preLoaderRoute: typeof ApiNotificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/master-data': {
-      id: '/api/master-data'
-      path: '/api/master-data'
-      fullPath: '/api/master-data'
-      preLoaderRoute: typeof ApiMasterDataRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/maintenance': {
-      id: '/api/maintenance'
-      path: '/api/maintenance'
-      fullPath: '/api/maintenance'
-      preLoaderRoute: typeof ApiMaintenanceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/health': {
-      id: '/api/health'
-      path: '/api/health'
-      fullPath: '/api/health'
-      preLoaderRoute: typeof ApiHealthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/forecasts': {
-      id: '/api/forecasts'
-      path: '/api/forecasts'
-      fullPath: '/api/forecasts'
-      preLoaderRoute: typeof ApiForecastsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/dss-locations': {
-      id: '/api/dss-locations'
-      path: '/api/dss-locations'
-      fullPath: '/api/dss-locations'
-      preLoaderRoute: typeof ApiDssLocationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/contact-inquiries': {
-      id: '/api/contact-inquiries'
-      path: '/api/contact-inquiries'
-      fullPath: '/api/contact-inquiries'
-      preLoaderRoute: typeof ApiContactInquiriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/bookings': {
-      id: '/api/bookings'
-      path: '/api/bookings'
-      fullPath: '/api/bookings'
-      preLoaderRoute: typeof ApiBookingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/booking-master-data': {
-      id: '/api/booking-master-data'
-      path: '/api/booking-master-data'
-      fullPath: '/api/booking-master-data'
-      preLoaderRoute: typeof ApiBookingMasterDataRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/backup-status': {
-      id: '/api/backup-status'
-      path: '/api/backup-status'
-      fullPath: '/api/backup-status'
-      preLoaderRoute: typeof ApiBackupStatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/audit-events': {
-      id: '/api/audit-events'
-      path: '/api/audit-events'
-      fullPath: '/api/audit-events'
-      preLoaderRoute: typeof ApiAuditEventsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/allocation-recommendations': {
-      id: '/api/allocation-recommendations'
-      path: '/api/allocation-recommendations'
-      fullPath: '/api/allocation-recommendations'
-      preLoaderRoute: typeof ApiAllocationRecommendationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin-users': {
-      id: '/api/admin-users'
-      path: '/api/admin-users'
-      fullPath: '/api/admin-users'
-      preLoaderRoute: typeof ApiAdminUsersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin-reports': {
-      id: '/api/admin-reports'
-      path: '/api/admin-reports'
-      fullPath: '/api/admin-reports'
-      preLoaderRoute: typeof ApiAdminReportsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin-public-contact': {
-      id: '/api/admin-public-contact'
-      path: '/api/admin-public-contact'
-      fullPath: '/api/admin-public-contact'
-      preLoaderRoute: typeof ApiAdminPublicContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin-fleet': {
-      id: '/api/admin-fleet'
-      path: '/api/admin-fleet'
-      fullPath: '/api/admin-fleet'
-      preLoaderRoute: typeof ApiAdminFleetRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin-dashboard': {
-      id: '/api/admin-dashboard'
-      path: '/api/admin-dashboard'
-      fullPath: '/api/admin-dashboard'
-      preLoaderRoute: typeof ApiAdminDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin-calendar': {
-      id: '/api/admin-calendar'
-      path: '/api/admin-calendar'
-      fullPath: '/api/admin-calendar'
-      preLoaderRoute: typeof ApiAdminCalendarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/settings': {
-      id: '/admin/settings'
-      path: '/settings'
-      fullPath: '/admin/settings'
-      preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/requirements': {
-      id: '/admin/requirements'
-      path: '/requirements'
-      fullPath: '/admin/requirements'
-      preLoaderRoute: typeof AdminRequirementsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/reports': {
-      id: '/admin/reports'
-      path: '/reports'
-      fullPath: '/admin/reports'
-      preLoaderRoute: typeof AdminReportsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/profile': {
-      id: '/admin/profile'
-      path: '/profile'
-      fullPath: '/admin/profile'
-      preLoaderRoute: typeof AdminProfileRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/payments': {
-      id: '/admin/payments'
-      path: '/payments'
-      fullPath: '/admin/payments'
-      preLoaderRoute: typeof AdminPaymentsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/notifications': {
-      id: '/admin/notifications'
-      path: '/notifications'
-      fullPath: '/admin/notifications'
-      preLoaderRoute: typeof AdminNotificationsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/maintenance': {
-      id: '/admin/maintenance'
-      path: '/maintenance'
-      fullPath: '/admin/maintenance'
-      preLoaderRoute: typeof AdminMaintenanceRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/fleet': {
-      id: '/admin/fleet'
-      path: '/fleet'
-      fullPath: '/admin/fleet'
-      preLoaderRoute: typeof AdminFleetRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/decisions': {
-      id: '/admin/decisions'
-      path: '/decisions'
-      fullPath: '/admin/decisions'
-      preLoaderRoute: typeof AdminDecisionsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/customers': {
-      id: '/admin/customers'
-      path: '/customers'
-      fullPath: '/admin/customers'
-      preLoaderRoute: typeof AdminCustomersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/calendar': {
-      id: '/admin/calendar'
-      path: '/calendar'
-      fullPath: '/admin/calendar'
-      preLoaderRoute: typeof AdminCalendarRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/branches': {
-      id: '/admin/branches'
-      path: '/branches'
-      fullPath: '/admin/branches'
-      preLoaderRoute: typeof AdminBranchesRouteImport
+    '/admin/activity': {
+      id: '/admin/activity'
+      path: '/activity'
+      fullPath: '/admin/activity'
+      preLoaderRoute: typeof AdminActivityRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/bookings': {
@@ -1406,81 +1096,375 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/activity': {
-      id: '/admin/activity'
-      path: '/activity'
-      fullPath: '/admin/activity'
-      preLoaderRoute: typeof AdminActivityRouteImport
+    '/admin/branches': {
+      id: '/admin/branches'
+      path: '/branches'
+      fullPath: '/admin/branches'
+      preLoaderRoute: typeof AdminBranchesRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/api/internal/reminders': {
-      id: '/api/internal/reminders'
-      path: '/api/internal/reminders'
-      fullPath: '/api/internal/reminders'
-      preLoaderRoute: typeof ApiInternalRemindersRouteImport
+    '/admin/calendar': {
+      id: '/admin/calendar'
+      path: '/calendar'
+      fullPath: '/admin/calendar'
+      preLoaderRoute: typeof AdminCalendarRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/decisions': {
+      id: '/admin/decisions'
+      path: '/decisions'
+      fullPath: '/admin/decisions'
+      preLoaderRoute: typeof AdminDecisionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/fleet': {
+      id: '/admin/fleet'
+      path: '/fleet'
+      fullPath: '/admin/fleet'
+      preLoaderRoute: typeof AdminFleetRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/maintenance': {
+      id: '/admin/maintenance'
+      path: '/maintenance'
+      fullPath: '/admin/maintenance'
+      preLoaderRoute: typeof AdminMaintenanceRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/notifications': {
+      id: '/admin/notifications'
+      path: '/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/profile': {
+      id: '/admin/profile'
+      path: '/profile'
+      fullPath: '/admin/profile'
+      preLoaderRoute: typeof AdminProfileRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/requirements': {
+      id: '/admin/requirements'
+      path: '/requirements'
+      fullPath: '/admin/requirements'
+      preLoaderRoute: typeof AdminRequirementsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/api/admin-calendar': {
+      id: '/api/admin-calendar'
+      path: '/api/admin-calendar'
+      fullPath: '/api/admin-calendar'
+      preLoaderRoute: typeof ApiAdminCalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/sign-up': {
-      id: '/api/auth/sign-up'
-      path: '/api/auth/sign-up'
-      fullPath: '/api/auth/sign-up'
-      preLoaderRoute: typeof ApiAuthSignUpRouteImport
+    '/api/admin-dashboard': {
+      id: '/api/admin-dashboard'
+      path: '/api/admin-dashboard'
+      fullPath: '/api/admin-dashboard'
+      preLoaderRoute: typeof ApiAdminDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/sign-out': {
-      id: '/api/auth/sign-out'
-      path: '/api/auth/sign-out'
-      fullPath: '/api/auth/sign-out'
-      preLoaderRoute: typeof ApiAuthSignOutRouteImport
+    '/api/admin-fleet': {
+      id: '/api/admin-fleet'
+      path: '/api/admin-fleet'
+      fullPath: '/api/admin-fleet'
+      preLoaderRoute: typeof ApiAdminFleetRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/sign-in': {
-      id: '/api/auth/sign-in'
-      path: '/api/auth/sign-in'
-      fullPath: '/api/auth/sign-in'
-      preLoaderRoute: typeof ApiAuthSignInRouteImport
+    '/api/admin-public-contact': {
+      id: '/api/admin-public-contact'
+      path: '/api/admin-public-contact'
+      fullPath: '/api/admin-public-contact'
+      preLoaderRoute: typeof ApiAdminPublicContactRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/session': {
-      id: '/api/auth/session'
-      path: '/api/auth/session'
-      fullPath: '/api/auth/session'
-      preLoaderRoute: typeof ApiAuthSessionRouteImport
+    '/api/admin-reports': {
+      id: '/api/admin-reports'
+      path: '/api/admin-reports'
+      fullPath: '/api/admin-reports'
+      preLoaderRoute: typeof ApiAdminReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/profile': {
-      id: '/api/auth/profile'
-      path: '/api/auth/profile'
-      fullPath: '/api/auth/profile'
-      preLoaderRoute: typeof ApiAuthProfileRouteImport
+    '/api/admin-users': {
+      id: '/api/admin-users'
+      path: '/api/admin-users'
+      fullPath: '/api/admin-users'
+      preLoaderRoute: typeof ApiAdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/account-status': {
-      id: '/api/auth/account-status'
-      path: '/api/auth/account-status'
-      fullPath: '/api/auth/account-status'
-      preLoaderRoute: typeof ApiAuthAccountStatusRouteImport
+    '/api/allocation-recommendations': {
+      id: '/api/allocation-recommendations'
+      path: '/api/allocation-recommendations'
+      fullPath: '/api/allocation-recommendations'
+      preLoaderRoute: typeof ApiAllocationRecommendationsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/requirements/$bookingId': {
-      id: '/admin/requirements/$bookingId'
+    '/api/audit-events': {
+      id: '/api/audit-events'
+      path: '/api/audit-events'
+      fullPath: '/api/audit-events'
+      preLoaderRoute: typeof ApiAuditEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/backup-status': {
+      id: '/api/backup-status'
+      path: '/api/backup-status'
+      fullPath: '/api/backup-status'
+      preLoaderRoute: typeof ApiBackupStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/booking-date-changes': {
+      id: '/api/booking-date-changes'
+      path: '/api/booking-date-changes'
+      fullPath: '/api/booking-date-changes'
+      preLoaderRoute: typeof ApiBookingDateChangesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/booking-master-data': {
+      id: '/api/booking-master-data'
+      path: '/api/booking-master-data'
+      fullPath: '/api/booking-master-data'
+      preLoaderRoute: typeof ApiBookingMasterDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/bookings': {
+      id: '/api/bookings'
+      path: '/api/bookings'
+      fullPath: '/api/bookings'
+      preLoaderRoute: typeof ApiBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/contact-inquiries': {
+      id: '/api/contact-inquiries'
+      path: '/api/contact-inquiries'
+      fullPath: '/api/contact-inquiries'
+      preLoaderRoute: typeof ApiContactInquiriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/dss-locations': {
+      id: '/api/dss-locations'
+      path: '/api/dss-locations'
+      fullPath: '/api/dss-locations'
+      preLoaderRoute: typeof ApiDssLocationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/forecasts': {
+      id: '/api/forecasts'
+      path: '/api/forecasts'
+      fullPath: '/api/forecasts'
+      preLoaderRoute: typeof ApiForecastsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/maintenance': {
+      id: '/api/maintenance'
+      path: '/api/maintenance'
+      fullPath: '/api/maintenance'
+      preLoaderRoute: typeof ApiMaintenanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/master-data': {
+      id: '/api/master-data'
+      path: '/api/master-data'
+      fullPath: '/api/master-data'
+      preLoaderRoute: typeof ApiMasterDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/notifications': {
+      id: '/api/notifications'
+      path: '/api/notifications'
+      fullPath: '/api/notifications'
+      preLoaderRoute: typeof ApiNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/operational-context': {
+      id: '/api/operational-context'
+      path: '/api/operational-context'
+      fullPath: '/api/operational-context'
+      preLoaderRoute: typeof ApiOperationalContextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payment-methods': {
+      id: '/api/payment-methods'
+      path: '/api/payment-methods'
+      fullPath: '/api/payment-methods'
+      preLoaderRoute: typeof ApiPaymentMethodsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payment-policy': {
+      id: '/api/payment-policy'
+      path: '/api/payment-policy'
+      fullPath: '/api/payment-policy'
+      preLoaderRoute: typeof ApiPaymentPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payment-quote': {
+      id: '/api/payment-quote'
+      path: '/api/payment-quote'
+      fullPath: '/api/payment-quote'
+      preLoaderRoute: typeof ApiPaymentQuoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payment-terms': {
+      id: '/api/payment-terms'
+      path: '/api/payment-terms'
+      fullPath: '/api/payment-terms'
+      preLoaderRoute: typeof ApiPaymentTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments': {
+      id: '/api/payments'
+      path: '/api/payments'
+      fullPath: '/api/payments'
+      preLoaderRoute: typeof ApiPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public-contact': {
+      id: '/api/public-contact'
+      path: '/api/public-contact'
+      fullPath: '/api/public-contact'
+      preLoaderRoute: typeof ApiPublicContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/requirements': {
+      id: '/api/requirements'
+      path: '/api/requirements'
+      fullPath: '/api/requirements'
+      preLoaderRoute: typeof ApiRequirementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/supply-evaluations': {
+      id: '/api/supply-evaluations'
+      path: '/api/supply-evaluations'
+      fullPath: '/api/supply-evaluations'
+      preLoaderRoute: typeof ApiSupplyEvaluationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vehicle-analytics': {
+      id: '/api/vehicle-analytics'
+      path: '/api/vehicle-analytics'
+      fullPath: '/api/vehicle-analytics'
+      preLoaderRoute: typeof ApiVehicleAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vehicle-finder': {
+      id: '/api/vehicle-finder'
+      path: '/api/vehicle-finder'
+      fullPath: '/api/vehicle-finder'
+      preLoaderRoute: typeof ApiVehicleFinderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vehicle-images': {
+      id: '/api/vehicle-images'
+      path: '/api/vehicle-images'
+      fullPath: '/api/vehicle-images'
+      preLoaderRoute: typeof ApiVehicleImagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vehicle-location': {
+      id: '/api/vehicle-location'
+      path: '/api/vehicle-location'
+      fullPath: '/api/vehicle-location'
+      preLoaderRoute: typeof ApiVehicleLocationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/vehicles': {
+      id: '/api/vehicles'
+      path: '/api/vehicles'
+      fullPath: '/api/vehicles'
+      preLoaderRoute: typeof ApiVehiclesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bookings/$bookingId': {
+      id: '/bookings/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/bookings/$bookingId'
+      preLoaderRoute: typeof BookingsBookingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customer_/notifications': {
+      id: '/customer_/notifications'
+      path: '/customer/notifications'
+      fullPath: '/customer/notifications'
+      preLoaderRoute: typeof CustomerNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customer_/profile': {
+      id: '/customer_/profile'
+      path: '/customer/profile'
+      fullPath: '/customer/profile'
+      preLoaderRoute: typeof CustomerProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vehicles/$vehicleId': {
+      id: '/vehicles/$vehicleId'
+      path: '/$vehicleId'
+      fullPath: '/vehicles/$vehicleId'
+      preLoaderRoute: typeof VehiclesVehicleIdRouteImport
+      parentRoute: typeof VehiclesRoute
+    }
+    '/admin/bookings/$bookingId': {
+      id: '/admin/bookings/$bookingId'
       path: '/$bookingId'
-      fullPath: '/admin/requirements/$bookingId'
-      preLoaderRoute: typeof AdminRequirementsBookingIdRouteImport
-      parentRoute: typeof AdminRequirementsRoute
+      fullPath: '/admin/bookings/$bookingId'
+      preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
+      parentRoute: typeof AdminBookingsRoute
     }
-    '/admin/payments/$paymentId': {
-      id: '/admin/payments/$paymentId'
-      path: '/$paymentId'
-      fullPath: '/admin/payments/$paymentId'
-      preLoaderRoute: typeof AdminPaymentsPaymentIdRouteImport
-      parentRoute: typeof AdminPaymentsRoute
-    }
-    '/admin/decisions/utilization': {
-      id: '/admin/decisions/utilization'
-      path: '/utilization'
-      fullPath: '/admin/decisions/utilization'
-      preLoaderRoute: typeof AdminDecisionsUtilizationRouteImport
+    '/admin/decisions/allocation': {
+      id: '/admin/decisions/allocation'
+      path: '/allocation'
+      fullPath: '/admin/decisions/allocation'
+      preLoaderRoute: typeof AdminDecisionsAllocationRouteImport
       parentRoute: typeof AdminDecisionsRoute
     }
     '/admin/decisions/forecast': {
@@ -1490,19 +1474,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDecisionsForecastRouteImport
       parentRoute: typeof AdminDecisionsRoute
     }
-    '/admin/decisions/allocation': {
-      id: '/admin/decisions/allocation'
-      path: '/allocation'
-      fullPath: '/admin/decisions/allocation'
-      preLoaderRoute: typeof AdminDecisionsAllocationRouteImport
+    '/admin/decisions/utilization': {
+      id: '/admin/decisions/utilization'
+      path: '/utilization'
+      fullPath: '/admin/decisions/utilization'
+      preLoaderRoute: typeof AdminDecisionsUtilizationRouteImport
       parentRoute: typeof AdminDecisionsRoute
     }
-    '/admin/bookings/$bookingId': {
-      id: '/admin/bookings/$bookingId'
+    '/admin/payments/$paymentId': {
+      id: '/admin/payments/$paymentId'
+      path: '/$paymentId'
+      fullPath: '/admin/payments/$paymentId'
+      preLoaderRoute: typeof AdminPaymentsPaymentIdRouteImport
+      parentRoute: typeof AdminPaymentsRoute
+    }
+    '/admin/requirements/$bookingId': {
+      id: '/admin/requirements/$bookingId'
       path: '/$bookingId'
-      fullPath: '/admin/bookings/$bookingId'
-      preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
-      parentRoute: typeof AdminBookingsRoute
+      fullPath: '/admin/requirements/$bookingId'
+      preLoaderRoute: typeof AdminRequirementsBookingIdRouteImport
+      parentRoute: typeof AdminRequirementsRoute
+    }
+    '/api/auth/account-status': {
+      id: '/api/auth/account-status'
+      path: '/api/auth/account-status'
+      fullPath: '/api/auth/account-status'
+      preLoaderRoute: typeof ApiAuthAccountStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/profile': {
+      id: '/api/auth/profile'
+      path: '/api/auth/profile'
+      fullPath: '/api/auth/profile'
+      preLoaderRoute: typeof ApiAuthProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/session': {
+      id: '/api/auth/session'
+      path: '/api/auth/session'
+      fullPath: '/api/auth/session'
+      preLoaderRoute: typeof ApiAuthSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-in': {
+      id: '/api/auth/sign-in'
+      path: '/api/auth/sign-in'
+      fullPath: '/api/auth/sign-in'
+      preLoaderRoute: typeof ApiAuthSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-out': {
+      id: '/api/auth/sign-out'
+      path: '/api/auth/sign-out'
+      fullPath: '/api/auth/sign-out'
+      preLoaderRoute: typeof ApiAuthSignOutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-up': {
+      id: '/api/auth/sign-up'
+      path: '/api/auth/sign-up'
+      fullPath: '/api/auth/sign-up'
+      preLoaderRoute: typeof ApiAuthSignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/internal/reminders': {
+      id: '/api/internal/reminders'
+      path: '/api/internal/reminders'
+      fullPath: '/api/internal/reminders'
+      preLoaderRoute: typeof ApiInternalRemindersRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/oauth/session': {
       id: '/api/auth/oauth/session'
@@ -1636,6 +1676,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAllocationRecommendationsRoute: ApiAllocationRecommendationsRoute,
   ApiAuditEventsRoute: ApiAuditEventsRoute,
   ApiBackupStatusRoute: ApiBackupStatusRoute,
+  ApiBookingDateChangesRoute: ApiBookingDateChangesRoute,
   ApiBookingMasterDataRoute: ApiBookingMasterDataRoute,
   ApiBookingsRoute: ApiBookingsRoute,
   ApiContactInquiriesRoute: ApiContactInquiriesRoute,
@@ -1647,6 +1688,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiNotificationsRoute: ApiNotificationsRoute,
   ApiOperationalContextRoute: ApiOperationalContextRoute,
   ApiPaymentMethodsRoute: ApiPaymentMethodsRoute,
+  ApiPaymentPolicyRoute: ApiPaymentPolicyRoute,
   ApiPaymentQuoteRoute: ApiPaymentQuoteRoute,
   ApiPaymentTermsRoute: ApiPaymentTermsRoute,
   ApiPaymentsRoute: ApiPaymentsRoute,

@@ -12,9 +12,7 @@ import {
 } from "./operational-context.ts";
 
 export type OperationalContextKind =
-  | "booking_assignment"
-  | "allocation_review"
-  | "allocation_candidate";
+  "booking_assignment" | "allocation_review" | "allocation_candidate";
 
 export type OperationalContextRequest = {
   kind: OperationalContextKind;
@@ -154,6 +152,12 @@ const REASON_COPY: Record<string, string> = {
   traffic_accident: "A traffic accident may affect the route.",
   road_flooding: "Flooding may affect the route.",
   road_closure: "A relevant road closure was reported.",
+  nearby_road_closure:
+    "A closure was reported near the destination. It has not been confirmed on the planned route.",
+  access_verification_required:
+    "Verify route access with the team; nearby incident reports do not establish a route restriction.",
+  route_verification_required:
+    "A route estimate is available, but its exposure to the nearby closure requires verification before movement.",
   context_unavailable: "Some operational context could not be verified.",
   access_accessible: "The route is currently reported as accessible.",
   access_limited: "Current incidents may limit route access.",
@@ -408,7 +412,14 @@ export async function resolveOperationalContext(
       "Allocation branch not found.",
     );
   }
-  let selectedCandidate: AllocationCandidateContextRecord | undefined;
+  let selectedCandidate: AllocationCandidateContextRecord | undefined =
+    candidates.reduce<AllocationCandidateContextRecord | undefined>(
+      (first, candidate) =>
+        !first || candidate.candidateRank < first.candidateRank
+          ? candidate
+          : first,
+      undefined,
+    );
   if (request.kind === "allocation_candidate") {
     const vehicleId = requireId(request.vehicleId, "vehicleId");
     selectedCandidate = candidates.find(

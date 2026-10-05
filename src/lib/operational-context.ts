@@ -8,24 +8,24 @@ import type {
 } from "./external-context.server.ts";
 
 export type WeatherClassification =
-  | "Normal"
-  | "Caution"
-  | "Severe"
-  | "Unavailable";
+  "Normal" | "Caution" | "Severe" | "Unavailable";
 export type RoadConditionClassification =
   | "Open"
   | "Caution"
   | "Closed/Impassable"
+  | "Closure reported nearby"
   | "Unknown";
 export type RouteFeasibilityClassification =
   | "Feasible"
   | "Feasible with Caution"
   | "Not Feasible"
+  | "Requires verification"
   | "Unavailable";
 export type RouteAccessibilityClassification =
   | "Accessible"
   | "Limited"
   | "Closed/Restricted"
+  | "Requires verification"
   | "Unknown";
 
 export type InterpretedSourceStatus = {
@@ -277,7 +277,11 @@ export function interpretRoadCondition(
   const incidents = interpretIncidents(trafficIncidents.data);
   if (incidents.closed) {
     return {
-      ...factor("Closed/Impassable", ["road_closure"], trafficIncidents),
+      ...factor(
+        "Closure reported nearby",
+        ["nearby_road_closure"],
+        trafficIncidents,
+      ),
       unrecognizedIncidents: incidents.unrecognized,
     };
   }
@@ -307,7 +311,11 @@ export function interpretRouteAccessibility(
   }
   const incidents = interpretIncidents(trafficIncidents.data);
   if (incidents.closed)
-    return factor("Closed/Restricted", ["access_closed"], trafficIncidents);
+    return factor(
+      "Requires verification",
+      ["access_verification_required"],
+      trafficIncidents,
+    );
   if (incidents.caution)
     return factor("Limited", ["access_limited"], trafficIncidents);
   return factor("Accessible", ["access_accessible"], trafficIncidents);
@@ -321,6 +329,18 @@ export function interpretRouteFeasibility(
 ): InterpretedFactor<RouteFeasibilityClassification> {
   if (route.status !== "available" || !route.data) {
     return factor("Unavailable", ["route_unavailable"], route);
+  }
+  // Incident providers report an area around the destination. We do not have
+  // route-intersection evidence, so a nearby closure cannot prove blockage.
+  if (
+    roadCondition.classification === "Closure reported nearby" ||
+    routeAccessibility.classification === "Requires verification"
+  ) {
+    return factor(
+      "Requires verification",
+      ["route_verification_required"],
+      route,
+    );
   }
   if (
     roadCondition.classification === "Closed/Impassable" ||

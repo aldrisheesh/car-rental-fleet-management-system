@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  allocationContextIdentity,
+  automaticAllocationKey,
   filterAllocationRows,
   filterAllocationGaps,
   allocationGenerationBlock,
   selectAllocationId,
+  allocationDecisionCoverage,
   type AllocationGap,
 } from "./allocation-workspace.ts";
 import type {
@@ -63,6 +66,35 @@ const row = (overrides: Partial<AllocationRow> = {}): AllocationRow => ({
   ...overrides,
 });
 const forecasts = [forecast("a"), forecast("b"), forecast("c", "suv")];
+test("pending and rejected proposals never cover an approval gap, and partial approval uses the saved quantity", () => {
+  assert.deepEqual(allocationDecisionCoverage("dest", 2, [row()]), {
+    pending: 1,
+    approved: 0,
+    rejected: 0,
+    awaitingApproval: 2,
+  });
+  assert.deepEqual(
+    allocationDecisionCoverage("dest", 2, [
+      row({ decision_state: "Rejected" }),
+    ]),
+    { pending: 0, approved: 0, rejected: 1, awaitingApproval: 2 },
+  );
+  assert.deepEqual(
+    allocationDecisionCoverage("dest", 3, [
+      row({
+        decision_state: "Approved",
+        recommended_transfer_units: 2,
+        approved_transfer_units: 1,
+      }),
+      row({
+        destination_supply_evaluation_id: "old",
+        decision_state: "Approved",
+        approved_transfer_units: 9,
+      }),
+    ]),
+    { pending: 0, approved: 1, rejected: 0, awaitingApproval: 2 },
+  );
+});
 const evaluations = [
   evaluation("source", "a"),
   evaluation("dest", "b"),
@@ -150,4 +182,18 @@ test("selection cannot carry a recommendation from another filter context", () =
   assert.equal(selectAllocationId(rows, "stale", "second"), "second");
   assert.equal(selectAllocationId(rows, "stale", "old"), "match");
   assert.equal(selectAllocationId([], "match", "match"), "");
+});
+
+test("automatic allocation keys distinguish refreshed supply in the same forecast run", async () => {
+  const original = allocationContextIdentity("run", ["a", "b"]);
+  assert.equal(original, allocationContextIdentity("run", ["b", "a"]));
+  const key = await automaticAllocationKey(original);
+  assert.ok(key.length <= 200);
+  assert.equal(key, await automaticAllocationKey(original));
+  assert.notEqual(
+    key,
+    await automaticAllocationKey(
+      allocationContextIdentity("run", ["a", "new-b"]),
+    ),
+  );
 });

@@ -41,8 +41,10 @@ test("admin queues keep their record review destinations coherent", async () => 
   assert.match(payments, /admin-payments-layout/);
   assert.match(
     payments,
-    /new URLSearchParams\(window\.location\.search\)\.get\("payment"\)/,
+    /useRouterState\(\{\s*select: \(state\) => state\.location\.searchStr/,
   );
+  assert.match(payments, /new URLSearchParams\(searchStr\)/);
+  assert.match(payments, /focusedPaymentId = search\.get\("payment"\)/);
   assert.match(payments, /Verification checklist/);
   assert.match(
     payments,
@@ -55,15 +57,12 @@ test("admin queues keep their record review destinations coherent", async () => 
   assert.match(payments, /localStorage\.setItem\(checklistKey/);
   assert.match(payments, /function resubmissionRemark/);
   assert.match(payments, /Payment received\./);
-  assert.match(payments, /Suggested from the unchecked review items/);
+  assert.match(payments, /domain="payment_review"/);
+  assert.match(payments, /validCategory\("payment_review", remark\)/);
   assert.match(payments, /onReview\(payment, "resubmit", remark\)/);
-  assert.match(
-    payments,
-    /const generatedResubmissionRemark = resubmissionRemark\(checklist\)/,
-  );
   assert.doesNotMatch(payments, /const \[resubmissionRemark,/);
   assert.match(bookingDetail, /to="\/admin\/payments"/);
-  assert.match(bookingDetail, /search=\{\{ payment: payment\.id \} as never\}/);
+  assert.match(bookingDetail, /payment: payment\.id, returnTo: "ledger"/);
   assert.match(
     bookingDetail,
     /<Link\s+to="\/admin\/bookings"[\s\S]*?Back to bookings/,

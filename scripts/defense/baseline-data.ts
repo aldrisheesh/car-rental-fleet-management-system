@@ -22,12 +22,15 @@ import {
 } from "../../src/lib/maintenance-readiness.ts";
 import { calculateRentalQuote } from "../../src/lib/rental-quote.ts";
 
-export const VERSION = "synthetic-defense-v2";
+export const VERSION = "synthetic-defense-v3";
 export const PROJECT = "vkfacfjkwomhfvrieaza";
 // Parent-first: foreign keys remain enabled throughout restoration.
 export const TABLES = [
+  "vehicle_images",
   "forecast_demand_coverage",
   "booking_requests",
+  "booking_date_change_requests",
+  "booking_payment_policy_acceptances",
   "renter_requirement_sets",
   "renter_requirement_documents",
   "renter_requirement_reviews",

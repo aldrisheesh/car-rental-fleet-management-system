@@ -314,7 +314,9 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
   assert.match(page, /blocked by a booking, rental, maintenance/);
   assert.match(page, /forecastError \|\| allocationError \|\| forecastNotice/);
   assert.match(page, /automatic-supply-/);
-  assert.match(page, /automatic-allocation-/);
+  assert.match(page, /automaticAllocationKey\(allocationSnapshotIdentity\)/);
+  assert.doesNotMatch(page, /generatedAllocationRuns\.current\.delete/);
+  assert.doesNotMatch(page, /synchronizedSupplyRuns\.current\.delete/);
   assert.match(page, /allocationLoading/);
   assert.match(page, /currentAllocationRows\.length/);
   assert.match(page, /hasForecastSnapshot/);

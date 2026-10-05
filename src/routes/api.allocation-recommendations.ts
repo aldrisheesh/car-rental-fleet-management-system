@@ -1,3 +1,4 @@
+import { validCategory } from "@/lib/booking-categories";
 /* eslint-disable @typescript-eslint/no-explicit-any -- Dynamic Supabase joins are normalized before entering allocation-domain functions. */
 import { createFileRoute } from "@tanstack/react-router";
 import {
@@ -356,7 +357,7 @@ async function generate({ request }: { request: Request }) {
     }
     return Response.json(
       {
-        ...(await loadRecommendationView(client, persisted.data.id)),
+        ...(await loadRecommendationView(client)),
         summary,
       },
       { status: 201 },
@@ -406,12 +407,18 @@ async function decide({ request }: { request: Request }) {
         "Approved quantity must be positive and no greater than the recommendation.",
       );
     }
-    const result = await client.rpc("decide_allocation_recommendation", {
-      p_recommendation_id: recommendationId,
-      p_actor_id: principal.userId,
-      p_decision_state: decision.state,
-      p_approved_transfer_units: decision.approvedUnits,
-    });
+    if (!validCategory("allocation_review", body.reason))
+      return fail("Choose a decision category and add details for Other.");
+    const result = await client.rpc(
+      "decide_allocation_recommendation_with_reason",
+      {
+        p_reason: body.reason,
+        p_recommendation_id: recommendationId,
+        p_actor_id: principal.userId,
+        p_decision_state: decision.state,
+        p_approved_transfer_units: decision.approvedUnits,
+      },
+    );
     if (result.error) {
       const terminal = String(result.error.message).includes(
         "recommendation_already_decided",

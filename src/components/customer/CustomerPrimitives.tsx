@@ -1,3 +1,4 @@
+import viosImage from "@/assets/vehicles/toyota_vios.png";
 import everestImage from "@/assets/vehicles/ford_everest.png";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -52,7 +53,13 @@ export function VehicleImage({
   priority?: boolean;
   sizes?: string;
 }) {
-  src = src || (alt === "Ford Everest" ? everestImage : null);
+  src =
+    src ||
+    (alt === "Ford Everest"
+      ? everestImage
+      : alt === "Toyota Vios"
+        ? viosImage
+        : null);
   const [failedSource, setFailedSource] = useState<string | null>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const shouldRenderImage = Boolean(src) && src !== failedSource;

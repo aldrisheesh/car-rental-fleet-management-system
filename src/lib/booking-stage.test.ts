@@ -32,6 +32,39 @@ test("confirmed and past dates do not imply active rental", () => {
     "Confirmed",
   );
 });
+test("pending reschedules take priority without hiding terminal rental states", () => {
+  const pending_date_change = {
+    id: "change",
+    requested_pickup_at: "2026-10-24T02:00:00Z",
+    requested_return_at: "2026-10-27T02:00:00Z",
+  };
+  const booking = { ...base, booking_status: "Confirmed", pending_date_change };
+  assert.equal(bookingStage(booking).label, "Reschedule requested");
+  assert.equal(bookingStage(booking).action, "Review date change");
+  assert.match(bookingStage(booking).detail, /remains confirmed/);
+  assert.equal(
+    bookingStage({ ...booking, pending_date_change: null }).label,
+    "Confirmed",
+  );
+  for (const booking_status of ["Cancelled", "Rejected"])
+    assert.equal(
+      bookingStage({ ...booking, booking_status }).label,
+      booking_status,
+    );
+  const rental = {
+    id: "r",
+    scheduled_pickup_at: base.pickup_at,
+    scheduled_return_at: base.return_at,
+    started_at: "2026-01-01",
+    ended_at: null,
+  };
+  assert.equal(bookingStage({ ...booking, rental }).label, "Active rental");
+  assert.equal(
+    bookingStage({ ...booking, rental: { ...rental, ended_at: "2026-01-02" } })
+      .label,
+    "Returned",
+  );
+});
 test("actual rental timestamps determine active and returned states", () => {
   const rental = {
     id: "r",

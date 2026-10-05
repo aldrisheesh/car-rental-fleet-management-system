@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import {
   Card,
+  Btn,
   DomainStatus,
   EmptyState,
   ErrorState,
@@ -79,6 +80,10 @@ function BookingsPage() {
   const [query, setQuery] = useState(() => initialSearchParam("q"));
   const [status, setStatus] = useState(() => initialSearchParam("status"));
   const [branch, setBranch] = useState(() => initialSearchParam("branch"));
+  const [reportFrom, setReportFrom] = useState(() =>
+    initialSearchParam("from"),
+  );
+  const [reportTo, setReportTo] = useState(() => initialSearchParam("to"));
   const [page, setPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
 
@@ -87,6 +92,8 @@ function BookingsPage() {
     try {
       const serverPaginated = !query.trim();
       const params = new URLSearchParams();
+      if (reportFrom) params.set("from", reportFrom);
+      if (reportTo) params.set("to", reportTo);
       if (serverPaginated) {
         params.set("view", "queue");
         params.set("page", String(page));
@@ -120,7 +127,7 @@ function BookingsPage() {
             : "Unable to load rental requests.",
       });
     }
-  }, [branch, page, pageSize, query, status]);
+  }, [branch, page, pageSize, query, status, reportFrom, reportTo]);
 
   useEffect(() => {
     void load();
@@ -132,6 +139,8 @@ function BookingsPage() {
     if (query) next.set("q", query);
     if (status) next.set("status", status);
     if (branch) next.set("branch", branch);
+    if (reportFrom) next.set("from", reportFrom);
+    if (reportTo) next.set("to", reportTo);
     if (page > 1) next.set("page", String(page));
     if (pageSize !== 25) next.set("limit", String(pageSize));
     const search = next.toString();
@@ -140,7 +149,7 @@ function BookingsPage() {
       "",
       `${window.location.pathname}${search ? `?${search}` : ""}`,
     );
-  }, [branch, page, pageSize, query, status]);
+  }, [branch, page, pageSize, query, status, reportFrom, reportTo]);
 
   const bookings = useMemo(
     () => (state.status === "ready" ? state.bookings : []),
@@ -211,6 +220,8 @@ function BookingsPage() {
     setQuery("");
     setStatus("");
     setBranch("");
+    setReportFrom("");
+    setReportTo("");
     setPage(1);
   };
   const documentReviewCount = visibleRows.filter(
@@ -222,7 +233,12 @@ function BookingsPage() {
   const paymentReviewCount = visibleRows.filter(
     (b) => bookingStage(b).label === "Payment review",
   ).length;
-  const hasFilters = Boolean(query || status || branch);
+  const dateChangeReviewCount = visibleRows.filter(
+    (b) => bookingStage(b).label === "Reschedule requested",
+  ).length;
+  const hasFilters = Boolean(
+    query || status || branch || reportFrom || reportTo,
+  );
   const isLoading = state.status === "loading";
 
   return (
@@ -250,6 +266,24 @@ function BookingsPage() {
           />
         </div>
       </header>
+      {reportFrom || reportTo ? (
+        <div className="reports-booking-scope" role="note">
+          <span>
+            Requests received {reportFrom} – {reportTo} · Asia/Manila. These are
+            request dates, not rental dates.
+          </span>
+          <Btn
+            variant="ghost"
+            onClick={() => {
+              setReportFrom("");
+              setReportTo("");
+              setPage(1);
+            }}
+          >
+            Clear date filter
+          </Btn>
+        </div>
+      ) : null}
 
       {isLoading ? (
         <div className="booking-page-tasks" aria-hidden="true">
@@ -277,6 +311,12 @@ function BookingsPage() {
           <span>
             <b>{readyForReviewCount}</b> ready to confirm
           </span>
+          {getAdminSession()?.role === "Owner/Admin" ? (
+            <span>
+              <b>{dateChangeReviewCount}</b> date-change review
+              {dateChangeReviewCount === 1 ? "" : "s"}
+            </span>
+          ) : null}
         </div>
       ) : null}
 

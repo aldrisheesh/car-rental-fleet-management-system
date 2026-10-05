@@ -6,12 +6,44 @@ export type TransactionalEmailTemplateInput = {
   recipientName?: string | null;
   scheduledAt?: string | null;
   appBaseUrl?: string | null;
+  bookingId?: string | null;
 };
 
 const COPY: Record<
   EmailEligibleNotificationType,
   { subject: string; message: string; action: string }
 > = {
+  booking_cancelled: {
+    subject: "Your rental booking has been cancelled",
+    message: "Your booking has been cancelled.",
+    action:
+      "Open your booking to review the recorded reason. If you cancelled, the 50% down payment is non-refundable; the security deposit is separate. Contact the team about any payment arrangements.",
+  },
+  booking_rejected: {
+    subject: "An update on your rental request",
+    message: "The team could not proceed with your rental request.",
+    action:
+      "Open your booking to review the recorded reason and contact the team about alternatives.",
+  },
+  date_change_approved: {
+    subject: "Your booking date change is approved",
+    message: "Your requested booking dates have been approved.",
+    action:
+      "Review the updated handover and return schedule in your booking. Your saved rental price and payment are unchanged.",
+  },
+  date_change_rejected: {
+    subject: "An update on your requested booking dates",
+    message:
+      "The team could not approve your requested date change. Your original booking remains in place.",
+    action:
+      "Open your booking to review the reason and contact the team about alternatives.",
+  },
+  quote_issued: {
+    subject: "Your rental quote is ready",
+    message: "Your rental quote and handover arrangements are ready to review.",
+    action:
+      "Review the quote, cancellation policy and meeting details before submitting your down payment.",
+  },
   requirements_needs_resubmission: {
     subject: "Action required: update your rental requirements",
     message:
@@ -36,7 +68,7 @@ const COPY: Record<
     subject: "Your payment was verified",
     message: "Your payment proof has been verified.",
     action:
-      "Booking confirmation is a separate step. Check the application for your current booking status.",
+      "Open your booking details to check its current confirmation status and next steps.",
   },
   booking_confirmed: {
     subject: "Your Briah's Car Rental booking is confirmed",
@@ -68,7 +100,11 @@ export function buildTransactionalEmail(
     ? `Hello ${input.recipientName.trim()},`
     : "Hello,";
   const schedule = formatManilaSchedule(input.scheduledAt);
-  const link = buildApplicationLink(input.appBaseUrl, input.emailType);
+  const link = buildApplicationLink(
+    input.appBaseUrl,
+    input.emailType,
+    input.bookingId,
+  );
   const textParts = [
     greeting,
     "",
@@ -127,9 +163,15 @@ export function escapeHtml(value: string) {
 function buildApplicationLink(
   appBaseUrl: string | null | undefined,
   emailType: EmailEligibleNotificationType,
+  bookingId?: string | null,
 ) {
   const baseUrl = normalizeAppBaseUrl(appBaseUrl);
   if (!baseUrl) return null;
+  if (bookingId && /^[0-9a-f-]{36}$/i.test(bookingId))
+    return new URL(
+      `/bookings/${encodeURIComponent(bookingId)}`,
+      `${baseUrl}/`,
+    ).toString();
   const path = emailType.startsWith("payment_")
     ? "/payment-details"
     : "/customer";

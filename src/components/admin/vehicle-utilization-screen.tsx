@@ -1,7 +1,13 @@
 import { DssScreenSkeleton } from "./dss-loading";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, CarFront } from "lucide-react";
+import {
+  ArrowRight,
+  CarFront,
+  AlertCircle,
+  CheckCircle2,
+  CalendarDays,
+} from "lucide-react";
 import { Btn } from "@/components/admin/ui";
 import { dayKey } from "@/lib/vehicle-analytics-intervals";
 import type { DssSearch } from "@/lib/dss-navigation";
@@ -18,13 +24,15 @@ type Props = {
   rows: VehicleAnalyticsRow[];
   loading: boolean;
   error: string;
+  refreshing: boolean;
+  refreshError: string;
   loadedAt: string | null;
   range: { start: string; end: string };
   search: DssSearch;
   formatDateTime: (value: string | null | undefined) => string;
   onRefresh: () => void;
   onContext: (value: Partial<DssSearch>) => void;
-  onAllocation: (row: VehicleAnalyticsRow) => void;
+  onAllocation: (row?: VehicleAnalyticsRow) => void;
 };
 const quantity = (value: number | string | null) =>
   value == null ? "Unavailable" : String(value);
@@ -59,7 +67,7 @@ export function VehicleUtilizationScreen(p: Props) {
     category,
     status,
     query,
-  });
+  }).sort((a, b) => Number(b.rentalDays === 0) - Number(a.rentalDays === 0));
   const pages = Math.max(1, Math.ceil(rows.length / 10));
   const selectedIndex = rows.findIndex(
     (row) => row.vehicleId === p.search.vehicle,
@@ -86,74 +94,51 @@ export function VehicleUtilizationScreen(p: Props) {
       p.onContext({ start, end });
     }
   }
-  const period = `${p.range.start} – ${p.range.end}`;
+  const dateLabel = (date: string) =>
+    new Intl.DateTimeFormat("en-PH", {
+      timeZone: "Asia/Manila",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(new Date(`${date}T00:00:00+08:00`));
+  const period = `${dateLabel(p.range.start)} – ${dateLabel(p.range.end)}`;
+  const noActivity = rows.filter((row) => row.rentalDays === 0).length;
+  const unknownIdle = rows.filter(
+    (row) => row.idleClassification === "Unable to Determine",
+  ).length;
+  const branchChoices = choices(p.rows, "branch"),
+    categoryChoices = choices(p.rows, "category");
+  const currentStatus = (row: VehicleAnalyticsRow) =>
+    !row.isActive
+      ? "Inactive"
+      : row.activeRental
+        ? "On rental"
+        : !row.maintenanceReady
+          ? "Needs maintenance"
+          : "Rental ready";
+
   if (p.loading) return <DssScreenSkeleton screen="utilization" />;
   return (
-    <div className="dss-utilization-screen">
+    <div className="dss-utilization-screen dss-utilization-screen--reference">
       <section
-        className="dss-forecast-toolbar dss-utilization-toolbar"
+        className="utilization-planning-controls"
         aria-label="Utilization controls"
       >
-        <form onSubmit={applyPeriod} className="dss-utilization-period">
-          <label>
-            From
-            <input
-              type="date"
-              value={start}
-              onInput={(event) => {
-                setStart(event.currentTarget.value);
-                setDateError("");
-              }}
-              max={dayKey(new Date())}
-              onChange={(e) => {
-                setStart(e.target.value);
-                setDateError("");
-              }}
-              aria-invalid={!!dateError}
-              aria-describedby={
-                dateError ? "utilization-date-error" : undefined
-              }
-            />
-          </label>
-          <label>
-            Through
-            <input
-              type="date"
-              value={end}
-              onInput={(event) => {
-                setEnd(event.currentTarget.value);
-                setDateError("");
-              }}
-              max={dayKey(new Date())}
-              onChange={(e) => {
-                setEnd(e.target.value);
-                setDateError("");
-              }}
-              aria-invalid={!!dateError}
-              aria-describedby={
-                dateError ? "utilization-date-error" : undefined
-              }
-            />
-          </label>
-          <Btn type="submit" disabled={p.loading}>
-            Apply period
-          </Btn>
-        </form>
         <label>
-          Location
+          Branch
           <select
             value={branch}
             onChange={(e) => filter({ utilBranch: e.target.value })}
           >
-            <option value="all">All locations</option>
-            {choices(p.rows, "branch").map((row) => (
+            <option value="all">All branches</option>
+            {branchChoices.map((row) => (
               <option key={row.id} value={row.id}>
                 {row.name}
               </option>
             ))}
             {branch !== "all" &&
-            !choices(p.rows, "branch").some((row) => row.id === branch) ? (
-              <option value={branch}>Location unavailable</option>
+            !branchChoices.some((row) => row.id === branch) ? (
+              <option value={branch}>Branch unavailable</option>
             ) : null}
           </select>
         </label>
@@ -164,38 +149,107 @@ export function VehicleUtilizationScreen(p: Props) {
             onChange={(e) => filter({ utilCategory: e.target.value })}
           >
             <option value="all">All categories</option>
-            {choices(p.rows, "category").map((row) => (
+            {categoryChoices.map((row) => (
               <option key={row.id} value={row.id}>
                 {row.name}
               </option>
             ))}
             {category !== "all" &&
-            !choices(p.rows, "category").some((row) => row.id === category) ? (
+            !categoryChoices.some((row) => row.id === category) ? (
               <option value={category}>Category unavailable</option>
             ) : null}
           </select>
         </label>
-        <Btn variant="primary" onClick={p.onRefresh} disabled={p.loading}>
-          {p.loading ? "Loading analysis…" : "Refresh analysis"}
-        </Btn>
-        <p className="dss-utilization-period-note">
-          Reporting period: {period}, inclusive, Asia/Manila. Idle
-          classification reflects current conditions, independently of this
-          reporting period.
-          {p.loadedAt && !p.loading
-            ? ` Loaded ${p.formatDateTime(p.loadedAt)}.`
-            : ""}
-        </p>
-        {dateError ? (
-          <p
-            id="utilization-date-error"
-            role="alert"
-            className="dss-utilization-error"
-          >
-            {dateError}
-          </p>
-        ) : null}
+        <div className="utilization-period-control">
+          <span>Reporting period</span>
+          <details className="utilization-period-picker">
+            <summary>
+              {period}
+              <CalendarDays size={18} aria-hidden="true" />
+            </summary>
+            <form onSubmit={applyPeriod} className="dss-utilization-period">
+              <label>
+                From
+                <input
+                  type="date"
+                  value={start}
+                  onInput={(e) => {
+                    setStart(e.currentTarget.value);
+                    setDateError("");
+                  }}
+                  max={dayKey(new Date())}
+                  onChange={(e) => {
+                    setStart(e.target.value);
+                    setDateError("");
+                  }}
+                  aria-invalid={!!dateError}
+                />
+              </label>
+              <label>
+                Through
+                <input
+                  type="date"
+                  value={end}
+                  onInput={(e) => {
+                    setEnd(e.currentTarget.value);
+                    setDateError("");
+                  }}
+                  max={dayKey(new Date())}
+                  onChange={(e) => {
+                    setEnd(e.target.value);
+                    setDateError("");
+                  }}
+                  aria-invalid={!!dateError}
+                />
+              </label>
+              <Btn type="submit">Apply period</Btn>
+              {dateError ? (
+                <p role="alert" className="dss-utilization-error">
+                  {dateError}
+                </p>
+              ) : null}
+            </form>
+          </details>
+        </div>
+        <div className="utilization-activity-through">
+          <span>Activity through {dateLabel(p.range.end)}.</span>
+          <Btn onClick={p.onRefresh} disabled={p.refreshing}>
+            {p.refreshing ? "Updating activity…" : "Refresh activity"}
+          </Btn>
+        </div>
       </section>
+      {p.refreshError ? (
+        <p className="dss-utilization-error" role="status">
+          {p.refreshError}
+        </p>
+      ) : null}
+      {!p.error && rows.length ? (
+        <section
+          className={`utilization-activity-summary ${noActivity ? "needs-attention" : "is-covered"}`}
+          aria-label="Rental activity summary"
+        >
+          {noActivity ? (
+            <AlertCircle aria-hidden="true" />
+          ) : (
+            <CheckCircle2 aria-hidden="true" />
+          )}
+          <div>
+            <h2>
+              {noActivity
+                ? `${noActivity} vehicle${noActivity === 1 ? " has" : "s have"} had no recorded rental in this period.`
+                : "All matching vehicles have recorded rental activity."}
+            </h2>
+            <p>
+              {noActivity
+                ? "Review condition and upcoming bookings before considering a transfer."
+                : "Review recent activity alongside current condition and upcoming bookings."}
+            </p>
+          </div>
+          <p className="utilization-summary-caution">
+            No recent rental activity does not mean the vehicle is available.
+          </p>
+        </section>
+      ) : null}
       <section
         className="admin-decision-panel"
         aria-labelledby="utilization-register-heading"
@@ -203,42 +257,47 @@ export function VehicleUtilizationScreen(p: Props) {
       >
         <header className="admin-decision-panel-heading">
           <div>
-            <h2 id="utilization-register-heading">Vehicle utilization</h2>
+            <h2 id="utilization-register-heading">
+              Rental activity by vehicle
+            </h2>
             <p>
               {rows.length} matching vehicle{rows.length === 1 ? "" : "s"} ·
-              rental activity and historical eligibility coverage.
+              recent rental activity and current condition.
             </p>
           </div>
-          <div className="dss-utilization-filters">
-            <label>
-              Search vehicles
-              <input
-                type="search"
-                placeholder="Name, plate or location"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setPage(1);
-                }}
-              />
-            </label>
-            <label>
-              Idle classification
-              <select
-                value={status}
-                onChange={(e) => {
-                  setStatus(e.target.value);
-                  setPage(1);
-                }}
-              >
-                {["All", "Idle", "Not Idle", "Unable to Determine"].map(
-                  (value) => (
-                    <option key={value}>{value}</option>
-                  ),
-                )}
-              </select>
-            </label>
-          </div>
+          <details className="utilization-table-filters">
+            <summary>Search and filter vehicles</summary>
+            <div className="dss-utilization-filters">
+              <label>
+                Search vehicles
+                <input
+                  type="search"
+                  placeholder="Name, plate or location"
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </label>
+              <label>
+                Idle classification
+                <select
+                  value={status}
+                  onChange={(e) => {
+                    setStatus(e.target.value);
+                    setPage(1);
+                  }}
+                >
+                  {["All", "Idle", "Not Idle", "Unable to Determine"].map(
+                    (value) => (
+                      <option key={value}>{value}</option>
+                    ),
+                  )}
+                </select>
+              </label>
+            </div>
+          </details>
         </header>
         {p.loading ? (
           <p className="admin-decision-empty" role="status">
@@ -287,15 +346,12 @@ export function VehicleUtilizationScreen(p: Props) {
               <table className="admin-decision-data-table dss-utilization-table">
                 <thead>
                   <tr>
-                    <th scope="col">Vehicle / plate</th>
-                    <th scope="col">Location / category</th>
-                    <th scope="col">Rental days</th>
-                    <th scope="col">Eligible days</th>
-                    <th scope="col">Utilization</th>
-                    <th scope="col">Coverage</th>
-                    <th scope="col">Idle days</th>
-                    <th scope="col">Idle classification</th>
-                    <th scope="col">Review</th>
+                    <th scope="col">Vehicle</th>
+                    <th scope="col">Branch</th>
+                    <th scope="col">Rental activity in period</th>
+                    <th scope="col">Last rental started</th>
+                    <th scope="col">Current status</th>
+                    <th scope="col">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -312,262 +368,345 @@ export function VehicleUtilizationScreen(p: Props) {
                         <strong>{row.name}</strong>
                         <small>{row.licensePlate ?? "No plate recorded"}</small>
                       </th>
+                      <td>{row.branch ?? "Unassigned"}</td>
                       <td>
-                        {row.branch ?? "Unassigned"}
-                        <small>{row.category ?? "Uncategorized"}</small>
+                        {row.rentalDays === 0
+                          ? "No recorded rentals"
+                          : `${row.rentalDays} rental day${row.rentalDays === 1 ? "" : "s"}`}
                       </td>
-                      <td>{row.rentalDays}</td>
-                      <td>{quantity(row.eligibleOperationalDays)}</td>
-                      <td>{percentage(row)}</td>
                       <td>
-                        {row.coverage === "Complete"
-                          ? "Complete"
-                          : "Insufficient history"}
+                        {row.lastRentalStartedAt
+                          ? dateLabel(dayKey(new Date(row.lastRentalStartedAt)))
+                          : "No rental recorded"}
                       </td>
-                      <td>{quantity(idleDaysForDisplay(row))}</td>
                       <td>
                         <span
-                          className={`admin-decision-state is-${row.idleClassification === "Idle" ? "shortage" : row.idleClassification === "Unable to Determine" ? "pending" : "balanced"}`}
+                          className={`utilization-current-status ${!row.isActive || !row.maintenanceReady ? "needs-attention" : row.activeRental ? "on-rental" : "is-ready"}`}
                         >
-                          <i />
-                          {row.idleClassification}
+                          {currentStatus(row)}
                         </span>
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          className="admin-decision-text-link"
-                          aria-pressed={selected?.vehicleId === row.vehicleId}
-                          aria-label={`Review ${row.name} ${row.licensePlate ?? ""}`}
-                          onClick={() => {
-                            p.onContext({ vehicle: row.vehicleId });
-                            requestAnimationFrame(() =>
-                              document
-                                .getElementById("utilization-selected-review")
-                                ?.focus(),
-                            );
+                        <Link
+                          to="/admin/fleet"
+                          search={{
+                            ...p.search,
+                            vehicle: row.vehicleId,
+                            q: row.licensePlate ?? row.name,
                           }}
+                          className="utilization-view-vehicle"
+                          aria-label={`View vehicle ${row.name} ${row.licensePlate ?? ""}`}
                         >
-                          Review vehicle{" "}
-                          <ArrowRight size={14} aria-hidden="true" />
-                        </button>
+                          View vehicle
+                        </Link>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <footer className="dss-utilization-pager">
-              <span>
-                {(currentPage - 1) * 10 + 1}–
-                {Math.min(currentPage * 10, rows.length)} of {rows.length}{" "}
-                vehicles
-              </span>
-              <div>
-                <Btn
-                  disabled={currentPage === 1}
-                  onClick={() => {
-                    setPage(currentPage - 1);
-                    p.onContext({ vehicle: undefined });
-                  }}
-                >
-                  Previous
-                </Btn>
+            <p className="utilization-table-note">
+              Current status is separate from rental activity. Check booking
+              dates for availability.
+            </p>
+            {pages > 1 ? (
+              <footer className="dss-utilization-pager">
                 <span>
-                  Page {currentPage} of {pages}
+                  {(currentPage - 1) * 10 + 1}–
+                  {Math.min(currentPage * 10, rows.length)} of {rows.length}{" "}
+                  vehicles
                 </span>
-                <Btn
-                  disabled={currentPage === pages}
-                  onClick={() => {
-                    setPage(currentPage + 1);
-                    p.onContext({ vehicle: undefined });
-                  }}
-                >
-                  Next
-                </Btn>
-              </div>
-            </footer>
+                <div>
+                  <Btn
+                    disabled={currentPage === 1}
+                    onClick={() => {
+                      setPage(currentPage - 1);
+                      p.onContext({ vehicle: undefined });
+                    }}
+                  >
+                    Previous
+                  </Btn>
+                  <span>
+                    Page {currentPage} of {pages}
+                  </span>
+                  <Btn
+                    disabled={currentPage === pages}
+                    onClick={() => {
+                      setPage(currentPage + 1);
+                      p.onContext({ vehicle: undefined });
+                    }}
+                  >
+                    Next
+                  </Btn>
+                </div>
+              </footer>
+            ) : null}
           </>
         )}
       </section>
-      {!p.loading && !p.error && selected ? (
-        <section
-          className="admin-decision-panel dss-utilization-inspector"
-          aria-label="Selected vehicle review"
-          id="utilization-selected-review"
-          tabIndex={-1}
+      <section className="utilization-next-step">
+        <div>
+          <h2>What to check next</h2>
+          <p>
+            Open the vehicle record to check maintenance and future
+            reservations.
+          </p>
+        </div>
+        <Btn
+          variant="primary"
+          onClick={() => p.onAllocation()}
+          disabled={!!p.error || !p.rows.length}
         >
-          <header className="admin-decision-panel-heading">
-            <div>
-              <h2>{selected.name}</h2>
+          Review fleet allocation <ArrowRight size={16} />
+        </Btn>
+      </section>
+      <div className="utilization-supporting-details">
+        <details className="utilization-method-disclosure">
+          <summary>How activity and idle status are determined</summary>
+          <div>
+            <p>
+              Rental activity counts distinct Manila calendar days touched by
+              actual rental transactions during the reporting period. Confirmed
+              bookings alone do not count. Last rental started shows the latest
+              recorded rental start, which may fall outside this period.
+            </p>
+            <p>
+              Utilization is rental days divided by eligible operational days,
+              multiplied by 100. Inactive days and blocking maintenance without
+              rental activity are excluded. Incomplete historical eligibility
+              data or no eligible days leaves the percentage unavailable.
+            </p>
+            <p>
+              A vehicle is flagged as idle only after at least 14 days since its
+              last return or activation used for the count, and it must pass
+              current readiness checks. The count starts from that date, not the
+              rental's start date. No activity in the reporting period alone
+              does not mean the vehicle is idle or suitable for transfer.
+            </p>
+            {unknownIdle ? (
               <p>
-                {selected.licensePlate ?? "No plate recorded"} ·{" "}
-                {selected.branch ?? "Unassigned location"} ·{" "}
-                {selected.category ?? "Uncategorized"}
-              </p>
-            </div>
-            <span
-              className={`admin-decision-state is-${selected.idleClassification === "Idle" ? "shortage" : selected.idleClassification === "Unable to Determine" ? "pending" : "balanced"}`}
-            >
-              <i />
-              {selected.idleClassification}
-            </span>
-          </header>
-          <div className="dss-utilization-review-body">
-            <nav
-              className="dss-utilization-actions"
-              aria-label="Selected vehicle actions"
-            >
-              <Link
-                to="/admin/fleet"
-                search={{
-                  ...p.search,
-                  vehicle: selected.vehicleId,
-                  q: selected.licensePlate ?? selected.name,
-                }}
-              >
-                Review vehicle in Fleet
-              </Link>
-              <a
-                href={`/admin/bookings?q=${encodeURIComponent(selected.licensePlate ?? selected.name)}`}
-              >
-                Review bookings
-              </a>
-              <Link
-                to="/admin/maintenance"
-                search={{ vehicleId: selected.vehicleId }}
-              >
-                Review maintenance
-              </Link>
-              <Btn
-                variant="primary"
-                disabled={!selected.categoryId || !selected.branchId}
-                onClick={() => p.onAllocation(selected)}
-              >
-                View allocation options
-              </Btn>
-            </nav>
-            {!selected.categoryId || !selected.branchId ? (
-              <p className="dss-utilization-muted">
-                Assign a location and category in Fleet before reviewing
-                matching allocation options.
+                {unknownIdle} matching vehicle
+                {unknownIdle === 1 ? " has" : "s have"} insufficient evidence to
+                determine current idle status.
               </p>
             ) : null}
-            <div className="dss-utilization-evidence">
-              <section aria-label="Utilization calculation">
-                <h3>Rental activity and coverage</h3>
-                <p>
-                  {selected.reportingStart} – {selected.reportingEnd} ·
-                  Asia/Manila
-                </p>
-                <dl>
-                  <div>
-                    <dt>Rental days</dt>
-                    <dd>{selected.rentalDays}</dd>
-                  </div>
-                  <div>
-                    <dt>Eligible operational days</dt>
-                    <dd>{quantity(selected.eligibleOperationalDays)}</dd>
-                  </div>
-                  <div>
-                    <dt>Utilization</dt>
-                    <dd>{percentage(selected)}</dd>
-                  </div>
-                  <div>
-                    <dt>Historical coverage</dt>
-                    <dd>{selected.coverage}</dd>
-                  </div>
-                </dl>
-                {utilizationUnavailableReason(selected) ? (
-                  <p className="dss-utilization-coverage-warning">
-                    {utilizationUnavailableReason(selected)}
-                  </p>
-                ) : (
-                  <p className="dss-utilization-formula">
-                    {selected.rentalDays} ÷ {selected.eligibleOperationalDays} ×
-                    100 = {percentage(selected)}
-                  </p>
-                )}
-              </section>
-              <section aria-label="Idle and readiness evidence">
-                <h3>Current idle and readiness evidence</h3>
-                <dl>
-                  <div>
-                    <dt>Idle days</dt>
-                    <dd>{quantity(idleDaysForDisplay(selected))}</dd>
-                  </div>
-                  <div>
-                    <dt>Idle baseline</dt>
-                    <dd>{p.formatDateTime(selected.idleReference)}</dd>
-                  </div>
-                  <div>
-                    <dt>Vehicle active</dt>
-                    <dd>{selected.isActive ? "Yes" : "No"}</dd>
-                  </div>
-                  <div>
-                    <dt>Active rental</dt>
-                    <dd>{selected.activeRental ? "Yes" : "No"}</dd>
-                  </div>
-                  <div>
-                    <dt>Maintenance ready</dt>
-                    <dd>{selected.maintenanceReady ? "Yes" : "No"}</dd>
-                  </div>
-                  <div>
-                    <dt>Idle eligible</dt>
-                    <dd>{selected.idleEligible ? "Yes" : "No"}</dd>
-                  </div>
-                </dl>
-                <p>{idleExplanation(selected)}</p>
-                {selected.maintenanceReasons.length ? (
-                  <ul>
-                    {selected.maintenanceReasons.map((reason) => (
-                      <li key={reason}>{reason.replaceAll("_", " ")}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </section>
+            <small>
+              {p.loadedAt ? `Loaded ${p.formatDateTime(p.loadedAt)}. ` : ""}
+              Reporting dates are inclusive, Asia/Manila. These analytics
+              describe recorded system activity.
+            </small>
+          </div>
+        </details>
+        {!p.loading && !p.error && selected ? (
+          <details className="utilization-record-disclosure">
+            <summary>View supporting rental records</summary>
+            <div className="utilization-record-selector">
+              <label>
+                Vehicle
+                <select
+                  value={selected.vehicleId}
+                  onChange={(e) => p.onContext({ vehicle: e.target.value })}
+                >
+                  {rows.map((row) => (
+                    <option key={row.vehicleId} value={row.vehicleId}>
+                      {row.name} · {row.licensePlate ?? row.vehicleId}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
-            <details className="dss-utilization-method">
-              <summary>Calculation rules and data coverage</summary>
-              <div>
-                <p>
-                  Utilization = rental days ÷ eligible operational days × 100.
-                  Rental days count distinct Manila calendar dates touched by
-                  actual rental transactions, including active rentals up to the
-                  server evaluation time. Confirmed bookings alone do not count.
-                </p>
-                <p>
-                  Eligibility uses recorded active-state history and blocking
-                  maintenance. Inactive days and maintenance-unavailable days
-                  without rental activity are excluded. If any reporting date
-                  lacks active-state coverage, the full-period percentage stays
-                  unavailable. Zero eligible days also produce an unavailable
-                  rate.
-                </p>
-                <p>
-                  Idle days measure elapsed time since the later applicable last
-                  physical rental return or current activation baseline. They
-                  are not reporting-period eligible days minus rental days. An
-                  idle flag requires current eligibility and at least 14
-                  consecutive days; a missing baseline is not guessed.
-                </p>
-                <p>
-                  These analytics use recorded system activity. Synthetic
-                  demonstration records establish functional behavior, not
-                  measured client performance or real-world forecasting
-                  accuracy.
+            <section
+              className="dss-utilization-inspector"
+              aria-label="Selected vehicle review"
+              id="utilization-selected-review"
+              tabIndex={-1}
+            >
+              <header className="admin-decision-panel-heading">
+                <div>
+                  <h2>{selected.name}</h2>
+                  <p>
+                    {selected.licensePlate ?? "No plate recorded"} ·{" "}
+                    {selected.branch ?? "Unassigned location"} ·{" "}
+                    {selected.category ?? "Uncategorized"}
+                  </p>
+                </div>
+                <span
+                  className={`admin-decision-state is-${selected.idleClassification === "Idle" ? "shortage" : selected.idleClassification === "Unable to Determine" ? "pending" : "balanced"}`}
+                >
+                  <i />
+                  {selected.idleClassification}
+                </span>
+              </header>
+              <div className="dss-utilization-review-body">
+                <nav
+                  className="dss-utilization-actions"
+                  aria-label="Selected vehicle actions"
+                >
+                  <Link
+                    to="/admin/fleet"
+                    search={{
+                      ...p.search,
+                      vehicle: selected.vehicleId,
+                      q: selected.licensePlate ?? selected.name,
+                    }}
+                  >
+                    Review vehicle in Fleet
+                  </Link>
+                  <Link
+                    to="/admin/bookings"
+                    search={{ q: selected.licensePlate ?? selected.name }}
+                  >
+                    Review bookings
+                  </Link>
+                  <Link
+                    to="/admin/maintenance"
+                    search={{ vehicleId: selected.vehicleId }}
+                  >
+                    Review maintenance
+                  </Link>
+                  <Btn
+                    variant="primary"
+                    disabled={!selected.categoryId || !selected.branchId}
+                    onClick={() => p.onAllocation(selected)}
+                  >
+                    View allocation options
+                  </Btn>
+                </nav>
+                {!selected.categoryId || !selected.branchId ? (
+                  <p className="dss-utilization-muted">
+                    Assign a location and category in Fleet before reviewing
+                    matching allocation options.
+                  </p>
+                ) : null}
+                <div className="dss-utilization-evidence">
+                  <section aria-label="Utilization calculation">
+                    <h3>Rental activity and coverage</h3>
+                    <p>
+                      {selected.reportingStart} – {selected.reportingEnd} ·
+                      Asia/Manila
+                    </p>
+                    <dl>
+                      <div>
+                        <dt>Rental days</dt>
+                        <dd>{selected.rentalDays}</dd>
+                      </div>
+                      <div>
+                        <dt>Eligible operational days</dt>
+                        <dd>{quantity(selected.eligibleOperationalDays)}</dd>
+                      </div>
+                      <div>
+                        <dt>Utilization</dt>
+                        <dd>{percentage(selected)}</dd>
+                      </div>
+                      <div>
+                        <dt>Past vehicle-status records</dt>
+                        <dd>
+                          {selected.coverage === "Complete"
+                            ? "Complete"
+                            : "Some records are missing"}
+                        </dd>
+                      </div>
+                    </dl>
+                    {utilizationUnavailableReason(selected) ? (
+                      <p className="dss-utilization-coverage-warning">
+                        {utilizationUnavailableReason(selected)}
+                      </p>
+                    ) : (
+                      <p className="dss-utilization-formula">
+                        {selected.rentalDays} ÷{" "}
+                        {selected.eligibleOperationalDays} × 100 ={" "}
+                        {percentage(selected)}
+                      </p>
+                    )}
+                  </section>
+                  <section aria-label="Idle and readiness evidence">
+                    <h3>Current idle and readiness evidence</h3>
+                    <dl>
+                      <div>
+                        <dt>Idle days</dt>
+                        <dd>{quantity(idleDaysForDisplay(selected))}</dd>
+                      </div>
+                      <div>
+                        <dt>Idle count starts from</dt>
+                        <dd>{p.formatDateTime(selected.idleReference)}</dd>
+                      </div>
+                      <div>
+                        <dt>Vehicle active</dt>
+                        <dd>{selected.isActive ? "Yes" : "No"}</dd>
+                      </div>
+                      <div>
+                        <dt>Active rental</dt>
+                        <dd>{selected.activeRental ? "Yes" : "No"}</dd>
+                      </div>
+                      <div>
+                        <dt>Maintenance ready</dt>
+                        <dd>{selected.maintenanceReady ? "Yes" : "No"}</dd>
+                      </div>
+                      <div>
+                        <dt>Idle eligible</dt>
+                        <dd>{selected.idleEligible ? "Yes" : "No"}</dd>
+                      </div>
+                    </dl>
+                    <p>{idleExplanation(selected)}</p>
+                    <p>
+                      The count starts from the last return or activation used
+                      by the system, not from when the rental started.
+                    </p>
+                    {selected.maintenanceReasons.length ? (
+                      <ul>
+                        {selected.maintenanceReasons.map((reason) => (
+                          <li key={reason}>{reason.replaceAll("_", " ")}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </section>
+                </div>
+                <details className="dss-utilization-method">
+                  <summary>Calculation rules and data coverage</summary>
+                  <div>
+                    <p>
+                      Utilization = rental days ÷ eligible operational days ×
+                      100. Rental days count distinct Manila calendar dates
+                      touched by actual rental transactions, including active
+                      rentals up to the server evaluation time. Confirmed
+                      bookings alone do not count.
+                    </p>
+                    <p>
+                      Eligibility uses recorded active-state history and
+                      blocking maintenance. Inactive days and
+                      maintenance-unavailable days without rental activity are
+                      excluded. If any reporting date lacks active-state
+                      coverage, the full-period percentage stays unavailable.
+                      Zero eligible days also produce an unavailable rate.
+                    </p>
+                    <p>
+                      Idle days measure elapsed time since the later applicable
+                      last physical rental return or current activation
+                      baseline. They are not reporting-period eligible days
+                      minus rental days. An idle flag requires current
+                      eligibility and at least 14 consecutive days; a missing
+                      baseline is not guessed.
+                    </p>
+                    <p>
+                      These analytics use recorded system activity. Synthetic
+                      demonstration records establish functional behavior, not
+                      measured client performance or real-world forecasting
+                      accuracy.
+                    </p>
+                  </div>
+                </details>
+                <p className="dss-utilization-advisory">
+                  An idle flag is a review signal. It does not authorize
+                  movement or establish donor eligibility. Allocation checks
+                  compatible demand and supply separately; verify current
+                  bookings, maintenance and readiness in Fleet before making a
+                  change.
                 </p>
               </div>
-            </details>
-            <p className="dss-utilization-advisory">
-              An idle flag is a review signal. It does not authorize movement or
-              establish donor eligibility. Allocation checks compatible demand
-              and supply separately; verify current bookings, maintenance and
-              readiness in Fleet before making a change.
-            </p>
-          </div>
-        </section>
-      ) : null}
+            </section>
+          </details>
+        ) : null}
+      </div>
     </div>
   );
 }

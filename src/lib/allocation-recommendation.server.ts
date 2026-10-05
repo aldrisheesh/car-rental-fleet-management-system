@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Dynamic Supabase query rows are normalized at this server boundary. */
+import { hasUnfinishedConfirmedReservation } from "./fleet-transfer-eligibility";
 import {
   calculateMaintenanceReadiness,
   selectAuthoritativePreventiveTargets,
@@ -50,12 +51,12 @@ export async function revalidateSourceCandidates(
       .in("id", snapshotVehicleIds),
     client
       .from("booking_requests")
-      .select("assigned_vehicle_id,pickup_at,return_at,booking_status")
+      .select("id,assigned_vehicle_id,pickup_at,return_at,booking_status")
       .in("assigned_vehicle_id", snapshotVehicleIds)
       .eq("booking_status", "Confirmed"),
     client
       .from("rental_transactions")
-      .select("vehicle_id,started_at,ended_at")
+      .select("booking_id,vehicle_id,started_at,ended_at")
       .in("vehicle_id", snapshotVehicleIds),
     client
       .from("vehicle_operational_state_events")
@@ -121,10 +122,10 @@ export async function revalidateSourceCandidates(
     )
       continue;
     if (
-      (bookings.data ?? []).some(
-        (b: any) =>
-          b.assigned_vehicle_id === vehicle.id &&
-          overlaps(b.pickup_at, b.return_at, weekStart, weekEnd),
+      hasUnfinishedConfirmedReservation(
+        vehicle.id,
+        bookings.data ?? [],
+        vehicleRentals,
       )
     )
       continue;

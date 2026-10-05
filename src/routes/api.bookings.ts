@@ -1,3 +1,6 @@
+import { validCategory } from "@/lib/booking-categories";
+import { validateReportRange } from "@/lib/admin-reports";
+import { dispatchBookingEmail } from "@/lib/transactional-email.server";
 import { createFileRoute } from "@tanstack/react-router";
 import type { RentalFinancialRecord } from "@/lib/rental-finance";
 import { createHash } from "node:crypto";
@@ -79,6 +82,25 @@ async function readBookings({ request }: { request: Request }) {
       query = query.eq("booking_status", url.searchParams.get("status"));
     if (queue && url.searchParams.get("branch"))
       query = query.eq("pickup_branch_id", url.searchParams.get("branch"));
+    if (
+      principal.role !== "Customer/Renter" &&
+      (url.searchParams.has("from") || url.searchParams.has("to"))
+    ) {
+      let range;
+      try {
+        range = validateReportRange(
+          url.searchParams.get("from") ?? "",
+          url.searchParams.get("to") ?? "",
+        );
+      } catch {
+        return errorResponse(
+          "Choose a valid request-received date range of at most 366 days.",
+        );
+      }
+      query = query
+        .gte("created_at", range.startInstant)
+        .lt("created_at", range.endExclusiveInstant);
+    }
     if (queue) query = query.range((page - 1) * limit, page * limit - 1);
     const result = await query;
     if (result.error)
@@ -350,13 +372,37 @@ async function readBookings({ request }: { request: Request }) {
       };
     };
     if (principal.role === "Owner/Admin") {
-      const vehicles = await (client as any)
-        .from("vehicles")
-        .select(
-          "id,name,license_plate,branch_id,is_active,image_url,seat_capacity,transmission,fuel_type,branch:branches(id,name),category:vehicle_categories(id,name)",
-        )
-        .eq("is_active", true)
-        .order("name");
+      const [vehicles, dateChanges] = await Promise.all([
+        (client as any)
+          .from("vehicles")
+          .select(
+            "id,name,license_plate,branch_id,is_active,image_url,seat_capacity,transmission,fuel_type,branch:branches(id,name),category:vehicle_categories(id,name)",
+          )
+          .eq("is_active", true)
+          .order("name"),
+        bookingIds.length
+          ? client
+              .from("booking_date_change_requests")
+              .select("id,booking_id,requested_pickup_at,requested_return_at")
+              .eq("status", "Pending")
+              .in("booking_id", bookingIds)
+          : { data: [], error: null },
+      ]);
+      if (dateChanges.error)
+        return errorResponse("Unable to load pending date changes.", 503);
+      const pendingChanges = new Map(
+        (dateChanges.data ?? []).map((change) => [
+          change.booking_id,
+          {
+            id: change.id,
+            requested_pickup_at: change.requested_pickup_at,
+            requested_return_at: change.requested_return_at,
+          },
+        ]),
+      );
+      for (const booking of rows) {
+        booking.pending_date_change = pendingChanges.get(booking.id) ?? null;
+      }
       const queueFields = queue ? await queueResponse() : {};
       return Response.json({
         bookings: rows,
@@ -431,10 +477,13 @@ async function mutateBooking({ request }: { request: Request }) {
           "Reload the confirmed booking before cancelling.",
           409,
         );
-      if (!text(body?.cancellationReason))
+      if (!validCategory("cancellation", body?.cancellationReason))
         return errorResponse("A cancellation reason is required.");
     }
-    if (action === "reject" && !text(body?.resolutionReason))
+    if (
+      action === "reject" &&
+      !validCategory("booking_rejection", body?.resolutionReason)
+    )
       return errorResponse("A rejection reason is required.");
     if (
       action === "return" &&
@@ -616,6 +665,7 @@ async function mutateBooking({ request }: { request: Request }) {
           : map[rpc.error.message] || "Unable to update booking.";
       return errorResponse(message, 409);
     }
+    await dispatchBookingEmail(bookingId);
     return Response.json({ booking: rpc.data });
   } catch (e) {
     return errorResponse(
@@ -638,8 +688,10 @@ async function withdrawBooking({ request }: { request: Request }) {
     > | null;
     const bookingId = text(body?.bookingId);
     const reason = text(body?.resolutionReason);
-    if (!bookingId || !reason)
-      return errorResponse("A withdrawal reason is required.");
+    if (!bookingId || !validCategory("cancellation", reason))
+      return errorResponse(
+        "Choose a withdrawal category and add details for Other.",
+      );
     const client = getSupabaseServerClient() as any;
     const result = await client.rpc("withdraw_customer_booking_atomic", {
       p_booking_id: bookingId,
@@ -661,6 +713,7 @@ async function withdrawBooking({ request }: { request: Request }) {
         409,
       );
     }
+    await dispatchBookingEmail(bookingId);
     return Response.json({ booking: result.data });
   } catch (error) {
     return errorResponse(
@@ -707,6 +760,10 @@ async function editDraftBooking({ request }: { request: Request }) {
       !option
     )
       return errorResponse("Required booking fields are missing.");
+    if (!validCategory("purpose", purpose))
+      return errorResponse("Choose a purpose category; add details for Other.");
+    if (!validCategory("destination", body?.destination))
+      return errorResponse("Choose a destination area; add details for Other.");
     const pickupDate = parseBookingInstant(pickupAt);
     const returnDate = parseBookingInstant(returnAt);
     if (!pickupDate || !returnDate || returnDate <= pickupDate)
@@ -824,6 +881,8 @@ async function createBooking({ request }: { request: Request }) {
     if (seats !== null && (!Number.isInteger(seats) || seats <= 0))
       return errorResponse("Preferred seat count must be positive.");
     const destination = optionalText(body?.destination);
+    if (!validCategory("destination", destination))
+      return errorResponse("Choose a destination area; add details for Other.");
     const finderContext =
       body?.finderContext &&
       typeof body.finderContext === "object" &&

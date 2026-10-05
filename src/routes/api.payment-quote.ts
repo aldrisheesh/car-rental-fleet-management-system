@@ -1,3 +1,4 @@
+import { dispatchBookingEmail } from "@/lib/transactional-email.server";
 import { createFileRoute } from "@tanstack/react-router";
 import { requirePrincipal, requireRole } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -91,6 +92,7 @@ async function issue({ request }: { request: Request }) {
         mapped?.[1] ?? 503,
       );
     }
+    await dispatchBookingEmail(bookingId);
     return Response.json({ quote: result.data });
   } catch (error) {
     return fail(

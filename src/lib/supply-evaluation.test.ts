@@ -111,3 +111,36 @@ test("maintenance due before the half-open target week ends blocks supply", () =
     false,
   );
 });
+
+test("a returned rental frees its scheduled booking while unfinished reservations still block", async () => {
+  const { hasOutstandingBookingConflict } =
+    await import("./supply-evaluation.server.ts");
+  const bookings = [
+    {
+      id: "early-return",
+      pickup_at: "2026-10-05T02:00:00Z",
+      return_at: "2026-10-10T02:00:00Z",
+    },
+  ];
+  const start = "2026-10-04T16:00:00Z",
+    end = "2026-10-11T16:00:00Z";
+  assert.equal(
+    hasOutstandingBookingConflict(
+      bookings,
+      [{ booking_id: "early-return", ended_at: "2026-10-04T12:00:00Z" }],
+      start,
+      end,
+    ),
+    false,
+  );
+  assert.equal(
+    hasOutstandingBookingConflict(
+      bookings,
+      [{ booking_id: "early-return", ended_at: null }],
+      start,
+      end,
+    ),
+    true,
+  );
+  assert.equal(hasOutstandingBookingConflict(bookings, [], start, end), true);
+});

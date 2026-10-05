@@ -1,31 +1,28 @@
 import { DssScreenSkeleton } from "./dss-loading";
 import type { ReactNode } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Info } from "lucide-react";
 import { Btn } from "@/components/admin/ui";
 import {
-  supplyBalanceState,
   type CanonicalForecast,
-  type CanonicalSupplyEvaluation,
   type CanonicalForecastRun,
 } from "@/lib/admin-decisions";
-import { formatWeekRange } from "@/lib/planning-week";
+import { formatWeekRange, weekEndFromStart } from "@/lib/planning-week";
 
 type Option = { id: string; name: string };
 type Props = {
+  week: string;
+  onWeek: (value: string) => void;
   branch: string;
   category: string;
   branches: Option[];
   categories: Option[];
   rows: CanonicalForecast[];
-  evaluations: Map<string, CanonicalSupplyEvaluation>;
   runs: CanonicalForecastRun[];
   latestRunId?: string;
   loading: boolean;
   busy: boolean;
   error: string;
   notice: string;
-  supplyLoading: boolean;
-  supplyError: string;
   mape: number | null;
   eligible: number | undefined;
   excluded: number | undefined;
@@ -41,14 +38,37 @@ type Props = {
   onFinalize: () => void;
   onReload: () => void;
   onAllocation: (row?: CanonicalForecast) => void;
-  onUtilization: () => void;
 };
 
 export function DemandForecastScreen(p: Props) {
   if (p.loading) return <DssScreenSkeleton screen="forecast" />;
   const latestRun = p.runs.find((run) => run.id === p.latestRunId);
+  const rows = [...p.rows].sort(
+    (a, b) =>
+      a.target_week_start.localeCompare(b.target_week_start) ||
+      (a.branch?.name ?? a.branch_id).localeCompare(
+        b.branch?.name ?? b.branch_id,
+      ),
+  );
+  const weeks = [...new Set(rows.map((row) => row.target_week_start))];
+  const week = weeks.includes(p.week) ? p.week : (weeks[0] ?? "");
+  const selected = rows.filter((row) => row.target_week_start === week);
+  const units = selected.reduce(
+    (total, row) => total + Number(row.required_vehicle_units),
+    0,
+  );
+  const demand = selected.reduce(
+    (total, row) => total + Number(row.forecasted_demand),
+    0,
+  );
+  const category =
+    p.categories.find((option) => option.id === p.category)?.name ?? "vehicle";
+  const vehicleLabel =
+    category === "Economy"
+      ? `economy vehicle${units === 1 ? "" : "s"}`
+      : `${category === category.toUpperCase() ? category : category.toLowerCase()}${units === 1 ? "" : "s"}`;
   return (
-    <div className="dss-forecast-screen">
+    <div className="dss-forecast-screen dss-forecast-screen--focused">
       <section className="dss-forecast-toolbar" aria-label="Forecast controls">
         <label>
           Branch
@@ -82,27 +102,37 @@ export function DemandForecastScreen(p: Props) {
             ))}
           </select>
         </label>
-        <div className="dss-forecast-run">
-          <span>Latest saved forecast</span>
-          <strong>
-            {latestRun
-              ? p.formatDateTime(latestRun.generated_at)
-              : "No saved forecast"}
-          </strong>
-          <small>
-            Generate covers all configured branch/category pairs. Filters change
-            the view.
-          </small>
+        <label>
+          Planning week
+          <select
+            value={week}
+            onChange={(e) => p.onWeek(e.target.value)}
+            disabled={!weeks.length}
+          >
+            {!weeks.length ? <option value="">No forecast weeks</option> : null}
+            {weeks.map((value) => (
+              <option key={value} value={value}>
+                {formatWeekRange(
+                  value,
+                  rows.find((row) => row.target_week_start === value)!
+                    .target_week_end,
+                )}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="dss-forecast-generate">
+          <Btn disabled={p.busy} onClick={p.onGenerate}>
+            {p.busy ? "Working…" : "Generate forecast"}
+          </Btn>
+          <small>Updates all branches and categories.</small>
         </div>
-        <Btn
-          variant="primary"
-          disabled={p.busy || p.loading}
-          onClick={p.onGenerate}
-        >
-          {p.busy ? "Working…" : "Generate forecast"}
-        </Btn>
       </section>
-
+      <p className="dss-forecast-saved">
+        {latestRun
+          ? `Saved ${p.formatDateTime(latestRun.generated_at)}`
+          : "No saved forecast"}
+      </p>
       {p.error || p.notice ? (
         <div
           className={`admin-decision-feedback ${p.error ? "is-error" : ""}`}
@@ -116,175 +146,203 @@ export function DemandForecastScreen(p: Props) {
           ) : null}
         </div>
       ) : null}
-
-      <div className="dss-forecast-layout">
-        <div className="dss-forecast-main">
-          <section
-            className="admin-decision-panel"
-            aria-labelledby="forecast-chart-heading"
-            aria-busy={p.loading}
-          >
-            <header className="admin-decision-panel-heading">
-              <div>
-                <h2 id="forecast-chart-heading">Weekly rental demand</h2>
-                <p>
-                  Actual weekly demand, saved historical forecasts, and the
-                  latest 3-week Weighted Moving Average outlook.
-                </p>
-              </div>
-            </header>
-            <div className="admin-decision-chart">{p.chart}</div>
-            <footer className="admin-decision-chart-footer">{p.legend}</footer>
-          </section>
-
-          <section
-            className="admin-decision-panel"
-            aria-labelledby="forecast-results-heading"
-          >
-            <header className="admin-decision-panel-heading">
-              <div>
-                <h2 id="forecast-results-heading">Forecast results</h2>
-                <p>
-                  Decimal demand is rounded up for the vehicle planning
-                  requirement.
-                </p>
-              </div>
-            </header>
-            {p.loading && !p.rows.length ? (
-              <p className="admin-decision-empty" role="status">
-                Loading forecast results…
+      {selected.length ? (
+        <section
+          className="dss-forecast-conclusion"
+          aria-labelledby="forecast-conclusion-heading"
+        >
+          <div className="dss-forecast-conclusion-copy">
+            <Info size={28} aria-hidden="true" />
+            <div>
+              <h2 id="forecast-conclusion-heading">
+                Plan for {p.formatQuantity(units)} {vehicleLabel}
+                {p.branch === "all" ? " across branches" : ""} for the selected
+                week.
+              </h2>
+              <p>
+                {formatWeekRange(week, weekEndFromStart(week))} · Estimated
+                rental demand: {p.formatQuantity(demand)}.{" "}
+                {p.branch === "all"
+                  ? "Each branch’s estimate is rounded up before adding its vehicle needs."
+                  : "Rounded up to a whole vehicle for weekly planning."}
               </p>
-            ) : !p.rows.length ? (
-              <div className="admin-decision-empty">
-                <strong>
-                  {p.error
-                    ? "Forecast results could not be loaded"
-                    : "No saved forecast for this selection"}
-                </strong>
-                <span>
-                  {p.error
-                    ? "Reload the forecast to try again."
-                    : "Three complete weekly observations are needed for each branch/category pair. Insufficient history cannot produce a forecast."}
-                </span>
-              </div>
-            ) : (
-              <div
-                className="admin-decision-table-wrap admin-scroll-region"
-                tabIndex={0}
-                aria-label="Forecast results table"
-              >
-                <table className="admin-decision-data-table dss-forecast-results">
-                  <thead>
-                    <tr>
-                      <th scope="col">Branch</th>
-                      <th scope="col">Target week</th>
-                      <th scope="col">Forecast demand</th>
-                      <th scope="col">Required units</th>
-                      <th scope="col">Supply balance</th>
-                      <th scope="col">Review</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...p.rows]
-                      .sort(
-                        (a, b) =>
-                          a.target_week_start.localeCompare(
-                            b.target_week_start,
-                          ) ||
-                          (a.branch?.name ?? a.branch_id).localeCompare(
-                            b.branch?.name ?? b.branch_id,
-                          ),
-                      )
-                      .map((row) => {
-                        const evaluation = p.evaluations.get(row.id);
-                        const state = evaluation
-                          ? supplyBalanceState(evaluation)
-                          : null;
-                        return (
-                          <tr key={row.id}>
-                            <td>
-                              <strong>
-                                {row.branch?.name ?? row.branch_id}
-                              </strong>
-                              <small>
-                                {row.category?.name ?? row.vehicle_category_id}
-                              </small>
-                            </td>
-                            <td>
-                              {formatWeekRange(
-                                row.target_week_start,
-                                row.target_week_end,
-                              )}
-                              <small>Horizon {row.horizon}</small>
-                            </td>
-                            <td className="is-numeric">
-                              {p.formatQuantity(row.forecasted_demand)}
-                            </td>
-                            <td className="is-numeric">
-                              {p.formatQuantity(row.required_vehicle_units)}
-                            </td>
-                            <td>
-                              <span
-                                className={`admin-decision-state is-${state ? state.toLowerCase() : "pending"}`}
-                              >
-                                <i />
-                                {p.supplyError
-                                  ? "Check unavailable"
-                                  : p.supplyLoading
-                                    ? "Checking…"
-                                    : (state ?? "Not evaluated")}
-                              </span>
-                              {evaluation &&
-                              !p.supplyError &&
-                              !p.supplyLoading ? (
-                                <small>
-                                  {p.formatQuantity(
-                                    evaluation.projected_supply,
-                                  )}{" "}
-                                  projected · checked{" "}
-                                  {p.formatDateTime(evaluation.evaluated_at)}
-                                </small>
-                              ) : null}
-                            </td>
-                            <td>
-                              <Btn onClick={() => p.onAllocation(row)}>
-                                View allocation{" "}
-                                <ArrowRight aria-hidden="true" size={14} />
-                              </Btn>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {p.supplyError ? (
-              <p className="admin-decision-feedback is-error" role="alert">
-                {p.supplyError} Open Fleet Allocation to retry the supply check.
+              <small>
+                This is a planning estimate, not confirmed bookings or
+                simultaneous rental capacity.
+              </small>
+            </div>
+          </div>
+          <Btn
+            variant="primary"
+            onClick={() =>
+              p.onAllocation(p.branch === "all" ? undefined : selected[0])
+            }
+          >
+            Review fleet allocation <ArrowRight aria-hidden="true" size={16} />
+          </Btn>
+        </section>
+      ) : (
+        <div className="admin-decision-empty">
+          <strong>
+            {p.error
+              ? "Forecast results could not be loaded"
+              : "No saved forecast for this selection"}
+          </strong>
+          <span>
+            Three complete weekly observations are needed to calculate a
+            forecast.
+          </span>
+        </div>
+      )}
+      <section
+        className="admin-decision-panel"
+        aria-labelledby="forecast-chart-heading"
+      >
+        <header className="admin-decision-panel-heading">
+          <div>
+            <h2 id="forecast-chart-heading">Weekly rental demand</h2>
+            <p>
+              Recorded demand and saved forecasts for the selected branch and
+              category.
+            </p>
+          </div>
+        </header>
+        <div className="admin-decision-chart">{p.chart}</div>
+        <footer className="admin-decision-chart-footer">{p.legend}</footer>
+      </section>
+      {rows.length ? (
+        <section
+          className="admin-decision-panel"
+          aria-labelledby="forecast-results-heading"
+        >
+          <header className="admin-decision-panel-heading">
+            <div>
+              <h2 id="forecast-results-heading">Weekly outlook</h2>
+              <p>Estimated demand is rounded up separately for each branch.</p>
+            </div>
+          </header>
+          <div
+            className="admin-decision-table-wrap admin-scroll-region"
+            tabIndex={0}
+            aria-label="Weekly forecast outlook"
+          >
+            <table className="admin-decision-data-table dss-forecast-results">
+              <thead>
+                <tr>
+                  {p.branch === "all" ? <th scope="col">Branch</th> : null}
+                  <th scope="col">Planning week</th>
+                  <th scope="col">Estimated rental demand</th>
+                  <th scope="col">Vehicles to plan for</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className={
+                      row.target_week_start === week
+                        ? "is-selected-week"
+                        : undefined
+                    }
+                  >
+                    {p.branch === "all" ? (
+                      <td>{row.branch?.name ?? row.branch_id}</td>
+                    ) : null}
+                    <td>
+                      {formatWeekRange(
+                        row.target_week_start,
+                        row.target_week_end,
+                      )}
+                      {row.target_week_start === week ? (
+                        <small>Selected week</small>
+                      ) : null}
+                    </td>
+                    <td className="is-numeric">
+                      {p.formatQuantity(row.forecasted_demand)}
+                    </td>
+                    <td className="is-numeric">
+                      {p.formatQuantity(row.required_vehicle_units)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
+      <div className="dss-forecast-details">
+        <details className="dss-forecast-disclosure dss-forecast-evidence">
+          <summary>How the selected week was calculated</summary>
+          <div className="dss-forecast-disclosure-body">
+            <p>
+              Three recent weekly inputs are weighted at 50%, 30% and 20%. Later
+              weeks also use earlier forecast values.
+            </p>
+            {p.branch === "all" ? (
+              <p>
+                The example below shows one branch. Each branch is calculated
+                separately.
               </p>
             ) : null}
-          </section>
-
-          <section
-            className="admin-decision-panel dss-forecast-evidence"
-            aria-label="Forecast calculation evidence"
-          >
-            <header className="admin-decision-panel-heading">
-              <div>
-                <h2>How this forecast was calculated</h2>
-                <p>
-                  The example identifies its branch, category and target week
-                  below.
-                </p>
-              </div>
-            </header>
             {p.calculation ?? (
-              <div className="admin-decision-empty">
-                Calculation evidence will appear when a saved forecast with its
-                input weeks is available.
-              </div>
+              <p>No calculation evidence is available for this selection.</p>
             )}
+          </div>
+        </details>
+        <details className="dss-forecast-disclosure">
+          <summary>Past forecast performance and history</summary>
+          <div className="dss-forecast-disclosure-body">
+            <h2>Past forecast performance</h2>
+            <p>
+              One-week-ahead forecasts compared with completed actual demand
+              across all eligible branches and categories.
+            </p>
+            <div className="dss-forecast-accuracy">
+              <span>Average forecast error</span>
+              <strong>
+                {p.mape == null ? "Not yet available" : `${p.mape.toFixed(1)}%`}
+              </strong>
+              <p>
+                {p.mape == null
+                  ? "Forecast error becomes available after earlier forecasts are compared with completed weeks that recorded demand."
+                  : "Lower is better. This compares earlier one-week forecasts with recorded demand; it is not an accuracy score or a guarantee of future results."}
+              </p>
+              <dl>
+                <div>
+                  <dt>Eligible observations</dt>
+                  <dd>{p.eligible ?? "Unavailable"}</dd>
+                </div>
+                <div>
+                  <dt>Zero-actual exclusions</dt>
+                  <dd>{p.excluded ?? "Unavailable"}</dd>
+                </div>
+              </dl>
+              <Btn
+                disabled={p.busy || p.loading || !p.finalizable}
+                onClick={p.onFinalize}
+              >
+                {p.busy
+                  ? "Working…"
+                  : p.finalizable
+                    ? `Finalize ${p.finalizable} completed`
+                    : "No forecasts awaiting finalization"}
+              </Btn>
+            </div>
+            <details className="admin-transfer-evidence admin-forecast-accuracy">
+              <summary>Accuracy scope and exclusions</summary>
+              <p>
+                Mean Absolute Percentage Error (MAPE) covers all eligible
+                branch/category series, not only the chart selection.
+                Zero-actual weeks remain in demand history but are excluded from
+                MAPE. Unfinished weeks and later recursive horizons are
+                excluded.
+              </p>
+              <p>
+                Synthetic records demonstrate the calculation and workflow. They
+                do not establish real-world predictive accuracy or measure
+                transfer quality.
+              </p>
+            </details>{" "}
             <details className="admin-transfer-evidence">
               <summary>Saved forecast runs</summary>
               {p.runs.length > 10 ? (
@@ -318,102 +376,12 @@ export function DemandForecastScreen(p: Props) {
                 </ul>
               )}
             </details>
-          </section>
-        </div>
-
-        <aside
-          className="dss-forecast-aside"
-          aria-label="Forecast accuracy and next actions"
-        >
-          <section className="admin-decision-panel">
-            <header className="admin-decision-panel-heading">
-              <div>
-                <h2>Forecast accuracy</h2>
-                <p>Finalized horizon-1 results across eligible series.</p>
-              </div>
-            </header>
-            <div className="dss-forecast-accuracy">
-              <span>Mean Absolute Percentage Error (MAPE)</span>
-              <strong>
-                {p.mape == null ? "Not yet available" : `${p.mape.toFixed(1)}%`}
-              </strong>
-              <p>
-                {p.mape == null
-                  ? "Accuracy becomes available after completed forecasts are finalized against nonzero actual weekly demand."
-                  : "This reflects finalized observations, not a guarantee for future demand."}
-              </p>
-              <dl>
-                <div>
-                  <dt>Eligible observations</dt>
-                  <dd>{p.eligible ?? "Unavailable"}</dd>
-                </div>
-                <div>
-                  <dt>Zero-actual exclusions</dt>
-                  <dd>{p.excluded ?? "Unavailable"}</dd>
-                </div>
-              </dl>
-              <Btn
-                disabled={p.busy || p.loading || !p.finalizable}
-                onClick={p.onFinalize}
-              >
-                {p.busy
-                  ? "Working…"
-                  : p.finalizable
-                    ? `Finalize ${p.finalizable} completed`
-                    : "No forecasts awaiting finalization"}
-              </Btn>
-            </div>
-            <details className="admin-transfer-evidence admin-forecast-accuracy">
-              <summary>Accuracy scope and exclusions</summary>
-              <p>
-                MAPE covers all eligible branch/category series, not only the
-                chart selection. Zero-actual weeks remain in demand history but
-                are excluded from MAPE. Unfinished weeks and later recursive
-                horizons are excluded.
-              </p>
-              <p>
-                Synthetic records demonstrate the calculation and workflow. They
-                do not establish real-world predictive accuracy or measure
-                transfer quality.
-              </p>
-            </details>
-          </section>
-          <section className="admin-decision-panel">
-            <header className="admin-decision-panel-heading">
-              <div>
-                <h2>Continue the review</h2>
-                <p>Use the forecast to review supply and vehicle activity.</p>
-              </div>
-            </header>
-            <div className="dss-forecast-next">
-              <button type="button" onClick={() => p.onAllocation()}>
-                <strong>
-                  Review fleet allocation{" "}
-                  <ArrowRight aria-hidden="true" size={16} />
-                </strong>
-                <span>
-                  Compare required units and projected supply, then review saved
-                  transfer recommendations.
-                </span>
-              </button>
-              <button type="button" onClick={p.onUtilization}>
-                <strong>
-                  Review vehicle utilization{" "}
-                  <ArrowRight aria-hidden="true" size={16} />
-                </strong>
-                <span>
-                  Inspect idle signals and recent rental activity before
-                  reviewing vehicles in Fleet.
-                </span>
-              </button>
-              <p>
-                Approval records a decision. Vehicles are moved separately in
-                Fleet after readiness and affected bookings are checked.
-              </p>
-            </div>
-          </section>
-        </aside>
+          </div>
+        </details>
       </div>
+      <p className="dss-forecast-footnote">
+        Forecasts support planning. Vehicle transfers require admin review.
+      </p>
     </div>
   );
 }

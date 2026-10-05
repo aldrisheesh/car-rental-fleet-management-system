@@ -57,6 +57,7 @@ export class BrevoEmailProvider implements EmailProvider {
         BREVO_TRANSACTIONAL_EMAIL_ENDPOINT,
         {
           method: "POST",
+          signal: AbortSignal.timeout(8_000),
           headers: {
             accept: "application/json",
             "api-key": this.config.apiKey,

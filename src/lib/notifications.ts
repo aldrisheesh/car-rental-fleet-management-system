@@ -2,9 +2,14 @@ import { bookingReference } from "./booking-reference.ts";
 import { bookingPath } from "./customer-data.ts";
 
 export type NotificationType =
+  | "date_change_requested"
+  | "date_change_approved"
+  | "date_change_rejected"
   | "requirements_needs_resubmission"
   | "requirements_verified"
   | "payment_needs_resubmission"
+  | "booking_cancelled"
+  | "booking_rejected"
   | "quote_issued"
   | "payment_verified"
   | "booking_confirmed"
@@ -82,7 +87,12 @@ export function projectNotification(
     id: String(row.id),
     notificationType: row.notification_type as NotificationType,
     title: String(row.title),
-    message: String(row.message),
+    message:
+      row.notification_type === "payment_verified" &&
+      row.message ===
+        "Your payment was verified. Booking confirmation is a separate step."
+        ? "Your payment was verified. Open your booking details to check its current confirmation status."
+        : String(row.message),
     relatedEntityType: row.related_entity_type as NotificationEntityType,
     relatedEntityId: String(row.related_entity_id),
     createdAt: String(row.created_at),

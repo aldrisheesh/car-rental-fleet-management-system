@@ -5,6 +5,7 @@ import {
   filterUtilizationRows,
   utilizationUnavailableReason,
   idleExplanation,
+  currentUtilizationFleet,
   type VehicleAnalyticsRow,
 } from "./utilization-workspace.ts";
 const vehicle = (
@@ -32,6 +33,19 @@ const vehicle = (
   idleDays: 33,
   idleClassification: "Idle",
   ...overrides,
+});
+test("current fleet utilization excludes retired fixtures without dropping active maintenance or rental cases", () => {
+  const rows = [
+    vehicle({ vehicleId: "archived", isActive: false, rentalDays: 3 }),
+    vehicle({ vehicleId: "maintenance", maintenanceReady: false }),
+    vehicle({ vehicleId: "on-rental", activeRental: true }),
+    vehicle({ vehicleId: "ready" }),
+  ];
+  assert.deepEqual(
+    currentUtilizationFleet(rows).map((row) => row.vehicleId),
+    ["maintenance", "on-rental", "ready"],
+  );
+  assert.equal(rows.length, 4);
 });
 test("reporting dates reject normalized invalid dates, future activity, reversals and overlong periods", () => {
   for (const [start, end] of [
@@ -138,11 +152,11 @@ test("idle explanations distinguish blockers and missing baselines from the actu
         idleClassification: "Unable to Determine",
       }),
     ),
-    /cannot be determined/,
+    /cannot tell/,
   );
   assert.match(
     idleExplanation(vehicle({ idleDays: 5, idleClassification: "Not Idle" })),
-    /not been reached/,
+    /Fewer than 14 days/,
   );
 });
 

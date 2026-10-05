@@ -55,8 +55,12 @@ export function verifyRows(expected: Dataset, actual: Dataset) {
 }
 export function parseArgs(args: string[]) {
   const command = args[0] ?? "audit";
-  if (!["audit", "prepare", "reset", "verify", "drill"].includes(command))
-    throw new Error("Commands: audit, prepare, reset, verify, drill");
+  if (
+    !["audit", "capture", "prepare", "reset", "verify", "drill"].includes(
+      command,
+    )
+  )
+    throw new Error("Commands: audit, capture, prepare, reset, verify, drill");
   const allowed = args
     .slice(1)
     .every(
@@ -67,8 +71,11 @@ export function parseArgs(args: string[]) {
         x.startsWith("--baseline="),
     );
   if (!allowed) throw new Error("Unknown argument.");
-  if (args.includes("--apply") && !["prepare", "reset"].includes(command))
-    throw new Error("--apply is only valid for prepare/reset");
+  if (
+    args.includes("--apply") &&
+    !["capture", "prepare", "reset"].includes(command)
+  )
+    throw new Error("--apply is only valid for capture/prepare/reset");
   return {
     command,
     rehearse: args.includes("--rehearse"),
@@ -105,6 +112,9 @@ function dependencies(data: Dataset) {
       }))
       .sort((a, b) => a.id.localeCompare(b.id)),
     branches: [...data.branches].sort((a, b) => a.id.localeCompare(b.id)),
+    branchRoutePoints: [...(data.branch_route_points ?? [])].sort((a, b) =>
+      a.branch_id.localeCompare(b.branch_id),
+    ),
     categories: [...data.vehicle_categories].sort((a, b) =>
       a.id.localeCompare(b.id),
     ),
@@ -196,7 +206,15 @@ async function checkAssets(client: any, assets: any[], bytes: Buffer) {
       while (next < assets.length) {
         const a = assets[next++];
         const r = await client.storage.from(a.bucket).download(a.path);
-        if (r.error || !Buffer.from(await r.data.arrayBuffer()).equals(bytes))
+        const content = r.error
+          ? null
+          : Buffer.from(await r.data.arrayBuffer());
+        if (
+          !content ||
+          (a.sha256
+            ? createHash("sha256").update(content).digest("hex") !== a.sha256
+            : !content.equals(bytes))
+        )
           throw new Error(
             `Missing or changed synthetic storage artifact in ${a.bucket}.`,
           );
@@ -217,12 +235,10 @@ export async function main() {
     process.env.DEFENSE_DATABASE_URL ??
       readFileSync("supabase/.temp/pooler-url", "utf8").trim(),
   );
-  if (
-    !(
-      u.hostname === `db.${PROJECT}.supabase.co` ||
-      decodeURIComponent(u.username) === `postgres.${PROJECT}`
-    )
-  )
+  if (!(
+    u.hostname === `db.${PROJECT}.supabase.co` ||
+    decodeURIComponent(u.username) === `postgres.${PROJECT}`
+  ))
     throw new Error("API/database project mismatch.");
   if (!u.password) u.password = process.env.SUPABASE_DB_PASSWORD ?? "";
   if (!u.password) throw new Error("Database credentials unavailable.");
@@ -269,6 +285,93 @@ export async function main() {
               "backup/recovery records",
               "existing Storage objects",
             ],
+          },
+          null,
+          2,
+        ),
+      );
+      return;
+    }
+    if (args.command === "capture") {
+      const archive = `${ROOT}/before-capture-${stamp()}.json`;
+      save(archive, {
+        project: PROJECT,
+        createdAt: new Date().toISOString(),
+        schema: signature,
+        data: current,
+      });
+      const references = new Map<
+        string,
+        { bucket: string; path: string; sha256?: string }
+      >();
+      for (const [table, bucket] of [
+        ["vehicle_images", "vehicle-images"],
+        ["renter_requirement_documents", "renter-requirements"],
+        ["payment_proofs", "payment-proofs"],
+      ]) {
+        for (const row of current[table] ?? []) {
+          if (row.storage_path)
+            references.set(`${bucket}:${row.storage_path}`, {
+              bucket,
+              path: row.storage_path,
+            });
+        }
+      }
+      const assets = [...references.values()];
+      let next = 0;
+      await Promise.all(
+        Array.from({ length: 10 }, async () => {
+          while (next < assets.length) {
+            const asset = assets[next++];
+            const result = await client.storage
+              .from(asset.bucket)
+              .download(asset.path);
+            if (result.error)
+              throw new Error(
+                `Cannot capture missing artifact in ${asset.bucket}; current data archived at ${archive}.`,
+              );
+            asset.sha256 = createHash("sha256")
+              .update(Buffer.from(await result.data.arrayBuffer()))
+              .digest("hex");
+          }
+        }),
+      );
+      const bytes = readFileSync("scripts/defense/synthetic-document.png");
+      const baseline = {
+        project: PROJECT,
+        version: VERSION,
+        asOf: args.asOf,
+        capturedAt: new Date().toISOString(),
+        synthetic: true,
+        schema: signature,
+        dependencies: dependencies(current),
+        assetSha256: createHash("sha256").update(bytes).digest("hex"),
+        assets,
+        data: Object.fromEntries(
+          [...TABLES, "vehicles"].map((table) => [table, current[table] ?? []]),
+        ),
+        expected: {
+          capturedExistingRecords: true,
+          counts: Object.fromEntries(
+            [...TABLES, "vehicles"].map((table) => [
+              table,
+              (current[table] ?? []).length,
+            ]),
+          ),
+        },
+      };
+      const file = `${ROOT}/baseline-${args.asOf}-${stamp()}.json`;
+      save(file, { sha256: digest(baseline), baseline });
+      if (args.apply)
+        writeFileSync(`${ROOT}/latest.txt`, file + "\n", { mode: 0o600 });
+      console.log(
+        JSON.stringify(
+          {
+            captured: file,
+            archive,
+            promoted: args.apply,
+            recordsChanged: false,
+            artifacts: assets.length,
           },
           null,
           2,

@@ -16,6 +16,7 @@ import { Btn, TInput, TSelect } from "@/components/admin/ui";
 import {
   ALL_BRANCHES,
   defaultReportRange,
+  validateReportRange,
   type AdminReportsResponse,
 } from "@/lib/admin-reports";
 import { getAdminSession } from "@/lib/admin-auth";
@@ -64,9 +65,7 @@ function ReportsPage() {
     })
       .then(async (response) => {
         const body = (await response.json().catch(() => null)) as
-          | AdminReportsResponse
-          | { message?: string }
-          | null;
+          AdminReportsResponse | { message?: string } | null;
         if (!response.ok)
           throw new Error(
             body && "message" in body && body.message
@@ -96,6 +95,15 @@ function ReportsPage() {
       return setFilterError("Choose both a start and end date.");
     if (draftStart > draftEnd)
       return setFilterError("Start date must be on or before end date.");
+    try {
+      validateReportRange(draftStart, draftEnd);
+    } catch (cause) {
+      return setFilterError(
+        cause instanceof Error
+          ? cause.message
+          : "Choose a valid reporting period.",
+      );
+    }
     void navigate({
       to: "/admin/reports",
       search: { from: draftStart, to: draftEnd, branch: draftBranch },
@@ -141,6 +149,7 @@ function ReportsPage() {
             type="date"
             value={draftStart}
             onChange={(event) => setDraftStart(event.target.value)}
+            onInput={(event) => setDraftStart(event.currentTarget.value)}
           />
         </Field>
         <Field label="To" id="report-to">
@@ -151,6 +160,7 @@ function ReportsPage() {
             type="date"
             value={draftEnd}
             onChange={(event) => setDraftEnd(event.target.value)}
+            onInput={(event) => setDraftEnd(event.currentTarget.value)}
           />
         </Field>
         <Field label="Branch" id="report-branch">
@@ -203,6 +213,7 @@ function ReportsPage() {
 
 function ReportSections({ report }: { report: AdminReportsResponse }) {
   const historical = report.historical ?? {
+    previousRange: { start: report.range.start, end: report.range.end },
     previous: {
       bookingRequests: 0,
       rentalsStarted: 0,
@@ -261,9 +272,13 @@ function ReportSections({ report }: { report: AdminReportsResponse }) {
         className="admin-reports-comparison"
         aria-labelledby="report-comparison-title"
       >
-        <h2 id="report-comparison-title">
-          This period compared with the previous period
-        </h2>
+        <h2 id="report-comparison-title">Rental activity at a glance</h2>
+        <p className="reports-comparison-dates">
+          {formatDate(report.range.start)} – {formatDate(report.range.end)}{" "}
+          compared with {formatDate(historical.previousRange.start)} –{" "}
+          {formatDate(historical.previousRange.end)}. Both periods have the same
+          number of days.
+        </p>
         <div className="admin-reports-comparison__metrics">
           {metrics.map(([label, value, previous, change, hint]) => (
             <ComparisonMetric
@@ -277,52 +292,68 @@ function ReportSections({ report }: { report: AdminReportsResponse }) {
           ))}
         </div>
       </section>
-      {report.decisionSupport ? (
-        <details className="admin-reports-evidence-disclosure">
-          <summary>
-            Decision-support evidence — forecast, supply and accuracy
-          </summary>
-          <DecisionSupportSection report={report} />
-        </details>
-      ) : null}
-      <SupportingRecordsSection report={report} />
       <section
         className="admin-reports-trend"
         aria-labelledby="report-trend-title"
       >
         <div className="admin-reports-section-heading">
           <div>
-            <h2 id="report-trend-title">Business performance over time</h2>
+            <h2 id="report-trend-title">Rental activity over time</h2>
             <p>Actual booking and rental events, grouped by week.</p>
           </div>
-          <Link to="/admin/bookings">
+          <Link
+            to="/admin/bookings"
+            search={{
+              from: report.range.start,
+              to: report.range.end,
+              branch:
+                report.branchFilter === ALL_BRANCHES
+                  ? undefined
+                  : report.branchFilter,
+            }}
+          >
             See booking activity <span aria-hidden="true">→</span>
           </Link>
         </div>
         <TrendChart trend={historical.trend} />
+        <details className="reports-record-disclosure">
+          <summary>View weekly counts</summary>
+          <div className="reports-table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Reporting dates</th>
+                  <th>Days covered</th>
+                  <th>Requests received</th>
+                  <th>Rentals started</th>
+                  <th>Rentals completed</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historical.trend.map((row) => (
+                  <tr key={row.start}>
+                    <td>
+                      {formatDate(row.start)} – {formatDate(row.end)}
+                    </td>
+                    <td>
+                      {Math.round(
+                        (Date.parse(row.end) - Date.parse(row.start)) /
+                          86400000,
+                      ) + 1}
+                    </td>
+                    <td>{row.bookingRequests}</td>
+                    <td>{row.rentalsStarted}</td>
+                    <td>{row.rentalsCompleted}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
       </section>
       <div className="admin-reports-insights">
-        <section aria-labelledby="report-change-title">
-          <h2 id="report-change-title">
-            What changed from the previous period?
-          </h2>
-          <div className="admin-reports-change-list">
-            {metrics
-              .slice(0, 3)
-              .map(([label, value, previous, change, hint]) => (
-                <ChangeRow
-                  key={label}
-                  label={label}
-                  value={value}
-                  previous={previous}
-                  change={change}
-                  hint={hint}
-                />
-              ))}
-          </div>
-        </section>
         <section aria-labelledby="report-branch-title">
-          <h2 id="report-branch-title">Where performance came from</h2>
+          <h2 id="report-branch-title">Rental starts by branch</h2>
           <p>Share of rental starts by branch.</p>
           <div className="admin-reports-branch-list">
             {report.branchesPerformance.length ? (
@@ -390,6 +421,13 @@ function ReportSections({ report }: { report: AdminReportsResponse }) {
           </p>
         )}
       </section>
+      {report.decisionSupport ? (
+        <details className="admin-reports-evidence-disclosure">
+          <summary>Forecast and transfer evidence</summary>
+          <DecisionSupportSection report={report} />
+        </details>
+      ) : null}
+      <SupportingRecordsSection report={report} />
     </div>
   );
 }
@@ -404,8 +442,8 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
         <div>
           <h2 id="report-decision-title">Decision-support evidence</h2>
           <p>
-            Latest WMA run generated in the selected period, with its current
-            supply snapshot and exact matching allocation batch.
+            The latest forecast created in this period, its saved vehicle
+            availability, and transfer decisions linked to that forecast.
           </p>
         </div>
         {getAdminSession()?.role === "Owner/Admin" ? (
@@ -424,30 +462,30 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
               {formatDateTime(decision.latestRun.generatedAt)}
             </span>
             <span>
-              Accuracy uses finalized horizon-1 target weeks from{" "}
+              Forecast error compares completed one-week-ahead forecasts from{" "}
               {formatDate(report.range.start)} to {formatDate(report.range.end)}
               .
             </span>
           </div>
           <div className="admin-reports-decision__metrics">
             <ReportMetric
-              label="Forecast positions"
+              label="Branch/category estimates"
               value={decision.forecastPositions}
-              detail={`${decision.horizonOnePositions} first forecast week positions`}
+              detail={`${decision.horizonOnePositions} estimates for the first planning week`}
             />
             <ReportMetric
-              label="MAPE"
+              label="Average forecast error"
               value={
                 decision.accuracy.overallMape == null
                   ? "Unavailable"
                   : `${formatNumber(decision.accuracy.overallMape)}%`
               }
-              detail={`${decision.accuracy.eligibleForecasts} eligible samples · ${decision.accuracy.excludedZeroActuals} zero-actual exclusions`}
+              detail={`${decision.accuracy.eligibleForecasts} forecasts compared · ${decision.accuracy.excludedZeroActuals} skipped because actual demand was zero`}
             />
             <ReportMetric
-              label="Supply gaps"
+              label="Estimates needing more vehicles"
               value={decision.supply.shortagePositions}
-              detail={`${decision.supply.shortageUnits} shortage units · ${decision.supply.surplusUnits} surplus units`}
+              detail={`${decision.supply.shortageUnits} extra vehicles needed across weekly estimates · ${decision.supply.surplusUnits} spare`}
             />
             <ReportMetric
               label="Allocation decisions"
@@ -457,18 +495,21 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
           </div>
           <div className="admin-reports-decision__definitions">
             <span>
-              <strong>Supply:</strong> {decision.supply.evaluatedPositions}{" "}
-              evaluated; {decision.supply.shortagePositions} shortage,{" "}
-              {decision.supply.surplusPositions} surplus and{" "}
-              {decision.supply.balancedPositions} balanced positions.
+              <strong>Availability:</strong>{" "}
+              {decision.supply.evaluatedPositions} branch/category/week
+              estimates checked; {decision.supply.shortagePositions} need more
+              vehicles, {decision.supply.surplusPositions} have spare vehicles
+              and {decision.supply.balancedPositions} have enough. The same
+              vehicle can appear in different weeks; these totals are not a
+              count of unique vehicles.
             </span>
             <span>
               <strong>Allocation:</strong>{" "}
               {decision.allocation.recommendedUnits} units recommended and{" "}
               {decision.allocation.approvedUnits} approved
               {decision.allocation.latestBatchGeneratedAt
-                ? ` in the batch generated ${formatDateTime(decision.allocation.latestBatchGeneratedAt)}`
-                : "; no exact matching batch in this period"}
+                ? ` in recommendations generated ${formatDateTime(decision.allocation.latestBatchGeneratedAt)}`
+                : "; no linked transfer recommendations were generated in this period"}
               .
             </span>
           </div>
@@ -489,8 +530,8 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
                   <th scope="col">Branch</th>
                   <th scope="col">Category</th>
                   <th scope="col">Forecast demand</th>
-                  <th scope="col">Required</th>
-                  <th scope="col">Projected supply</th>
+                  <th scope="col">Vehicles to plan for</th>
+                  <th scope="col">Available for planning</th>
                   <th scope="col">Gap</th>
                 </tr>
               </thead>
@@ -523,11 +564,12 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
             </table>
           </div>
           <p className="admin-reports-decision__note">
-            This report filters accuracy by the selected target-week period; the
-            DSS overview covers all eligible finalized weeks. MAPE excludes zero
-            actual demand from percentage division but keeps the excluded count
-            visible. Allocation remains advisory and does not move vehicles
-            automatically.
+            Lower forecast error is better; it is not an accuracy score. This
+            report filters error by the selected target-week period; the DSS
+            overview covers all eligible finalized weeks. Mean Absolute
+            Percentage Error (MAPE) excludes zero actual demand from percentage
+            division but keeps the excluded count visible. Allocation remains
+            advisory and does not move vehicles automatically.
           </p>
         </>
       ) : (
@@ -537,9 +579,11 @@ function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
           </strong>
           <p>
             Choose a period containing a forecast run. Owner/Admin can generate
-            a new run in Decision Support. Accuracy may still contain finalized
-            target-week samples: {decision.accuracy.eligibleForecasts} eligible,{" "}
-            {decision.accuracy.excludedZeroActuals} zero-actual exclusions.
+            a new forecast in Decision Support. Forecast error may still use
+            earlier forecasts whose target weeks ended in this period:{" "}
+            {decision.accuracy.eligibleForecasts} compared,{" "}
+            {decision.accuracy.excludedZeroActuals} skipped because actual
+            demand was zero.
           </p>
         </div>
       )}
@@ -784,42 +828,12 @@ function ComparisonMetric({
     </div>
   );
 }
-function ChangeRow({
-  label,
-  value,
-  previous,
-  change,
-  hint,
-}: {
-  label: string;
-  value: number;
-  previous: number;
-  change: number | null;
-  hint: string;
-}) {
-  const max = Math.max(value, previous, 1);
-  return (
-    <div className="admin-reports-change-row">
-      <div>
-        <strong>{label}</strong>
-        <span>{value}</span>
-      </div>
-      <div className="admin-reports-bar">
-        <i style={{ width: `${(value / max) * 100}%` }} />
-      </div>
-      <em className={change != null && change < 0 ? "down" : "up"}>
-        {formatChange(change)}
-      </em>
-      <p>
-        {hint}{" "}
-        {change == null
-          ? "has no comparable prior period."
-          : change === 0
-            ? "held steady."
-            : `${change > 0 ? "increased" : "decreased"} from the previous period.`}
-      </p>
-    </div>
-  );
+function labelForSeries(key: string) {
+  return key === "bookingRequests"
+    ? "Booking requests"
+    : key === "rentalsStarted"
+      ? "Rentals started"
+      : "Rentals completed";
 }
 function TrendChart({
   trend,
@@ -849,8 +863,21 @@ function TrendChart({
     ["rentalsStarted", "#76a978", "Rentals started"],
     ["rentalsCompleted", "#5f8fc9", "Rentals completed"],
   ] as const;
+  const labelStep = Math.max(1, Math.ceil((trend.length - 1) / 5));
   return (
     <div className="admin-reports-chart">
+      {trend.some(
+        (row) =>
+          Math.round((Date.parse(row.end) - Date.parse(row.start)) / 86400000) +
+            1 <
+          7,
+      ) ? (
+        <p className="reports-partial-week-note">
+          Some points cover fewer than seven days. A lower count in a partial
+          week does not by itself mean demand has fallen. See weekly counts for
+          dates and totals.
+        </p>
+      ) : null}
       <svg
         viewBox={`0 0 ${width} ${height}`}
         role="img"
@@ -886,20 +913,38 @@ function TrendChart({
               cy={y(row[key])}
               r="4"
               fill={color}
-            />
+            >
+              <title>
+                {labelForSeries(key)}: {row[key]} · {formatDate(row.start)} –{" "}
+                {formatDate(row.end)}
+              </title>
+            </circle>
           )),
         )}
-        {trend.map((row, index) => (
-          <text
-            key={row.start}
-            className="admin-reports-chart__label"
-            x={x(index)}
-            y={height - 15}
-            textAnchor="middle"
-          >
-            {formatRange(row.start, row.end)}
-          </text>
-        ))}
+        {trend.map((row, index) =>
+          index !== 0 &&
+          index !== trend.length - 1 &&
+          (index % labelStep !== 0 ||
+            trend.length - 1 - index < labelStep) ? null : (
+            <text
+              key={row.start}
+              className="admin-reports-chart__label"
+              x={x(index)}
+              y={height - 15}
+              textAnchor={
+                trend.length === 1
+                  ? "middle"
+                  : index === 0
+                    ? "start"
+                    : index === trend.length - 1
+                      ? "end"
+                      : "middle"
+              }
+            >
+              {formatRange(row.start, row.end)}
+            </text>
+          ),
+        )}
       </svg>
       <div className="admin-reports-chart__legend">
         {series.map(([, color, label]) => (

@@ -265,11 +265,14 @@ test("allocation uses canonical branches and current review time while preservin
     { kind: "allocation_review", recommendationId: "recommendation-1" },
     dependencies(async (value) => {
       request = value;
-      return trip();
+      return trip(value.vehicleId);
     }),
   );
   assert.equal(request.pickupBranchId, "branch-source");
   assert.equal(request.destination, "Antipolo, Rizal");
+  assert.equal(request.vehicleId, "vehicle-1");
+  assert.equal(result.referenceEfficiencyKmPerLiter, 12);
+  assert.equal(result.estimatedFuelLiters, 10);
   assert.equal(request.targetTime, checkedAt);
   assert.equal(result.timeSemantics, "current_review");
   assert.equal(result.recommendation?.recommendedTransferUnits, 2);
@@ -392,7 +395,18 @@ test("Admin UI exposes exact booking detail links and staff-safe detail context"
     bookingDetail,
     /role: ownerView \? "Owner\/Admin" : "Operations Staff"/,
   );
-  assert.match(bookingDetail, /\{ownerView &&[\s\S]*<OwnerActionArea/);
+  assert.match(
+    bookingDetail,
+    /const renderOwnerActions[\s\S]*<OwnerActionArea/,
+  );
+  assert.match(
+    bookingDetail,
+    /\{ownerView \? \([\s\S]*renderOwnerActions\("release"\)/,
+  );
+  assert.match(
+    bookingDetail,
+    /\{ownerView && !booking\.rental\.ended_at[\s\S]*renderOwnerActions\("return"\)/,
+  );
   assert.match(bookingDetail, /<StaffReadOnlyCard \/>/);
   assert.match(
     bookingDetail,

@@ -1,3 +1,4 @@
+import { rememberBookingLoadingState } from "@/lib/booking-loading-state";
 import { bookingReference } from "@/lib/booking-reference";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -124,6 +125,12 @@ function MyBookingsPage() {
     void loadBookings();
   }, [loadBookings]);
 
+  useEffect(() => {
+    records.forEach(({ booking, lifecycle }) =>
+      rememberBookingLoadingState(booking.id, lifecycle.state),
+    );
+  }, [records]);
+
   const {
     featuredRecord,
     remainingActiveRecords,
@@ -245,8 +252,7 @@ function composeBookingRecord(
   booking: CustomerBooking,
   vehicles: CustomerVehicle[],
   dashboardRequirements:
-    | CustomerDashboardResponse["requirements"][number]
-    | undefined,
+    CustomerDashboardResponse["requirements"][number] | undefined,
   payment: CustomerPayment | null,
 ): BookingRecord {
   const requirements: RequirementsResponse = {

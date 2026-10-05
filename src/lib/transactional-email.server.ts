@@ -20,6 +20,7 @@ export async function processTransactionalEmailQueue(options?: {
   provider?: EmailProvider | null;
   environment?: Record<string, unknown>;
   limit?: number;
+  bookingId?: string;
 }) {
   const now = options?.now ?? new Date();
   const client = options?.client ?? getSupabaseServerClient();
@@ -27,7 +28,7 @@ export async function processTransactionalEmailQueue(options?: {
   const provider = resolveProvider(options, environment);
 
   return processEmailDeliveries({
-    store: createSupabaseEmailDeliveryStore(client),
+    store: createSupabaseEmailDeliveryStore(client, options?.bookingId),
     provider,
     now,
     appBaseUrl: normalizeAppBaseUrl(environment.APP_BASE_URL),
@@ -47,15 +48,46 @@ function resolveProvider(
 
 function createSupabaseEmailDeliveryStore(
   client: SupabaseClient<Database>,
+  bookingId?: string,
 ): EmailDeliveryStore {
   return {
     async claim(limit, now) {
-      const result = await client.rpc("claim_email_deliveries", {
-        p_limit: limit,
-        p_now: now.toISOString(),
-      });
+      const result = bookingId
+        ? await client.rpc("claim_booking_email_deliveries", {
+            p_booking_id: bookingId,
+            p_limit: limit,
+            p_now: now.toISOString(),
+          })
+        : await client.rpc("claim_email_deliveries", {
+            p_limit: limit,
+            p_now: now.toISOString(),
+          });
       if (result.error) throw new Error("email_delivery_claim_failed");
-      return (result.data ?? []).map(projectClaimedDelivery);
+      const rows = result.data ?? [];
+      const notifications = rows.length
+        ? await client
+            .from("notifications")
+            .select("id,related_entity_type,related_entity_id")
+            .in(
+              "id",
+              rows.map(
+                (row: { notification_id: string }) => row.notification_id,
+              ),
+            )
+        : { data: [] };
+      return rows.map((row: Parameters<typeof projectClaimedDelivery>[0]) => {
+        const notification = notifications.data?.find(
+          (n) => n.id === row.notification_id,
+        );
+        return {
+          ...projectClaimedDelivery(row),
+          bookingId:
+            bookingId ??
+            (notification?.related_entity_type === "booking"
+              ? notification.related_entity_id
+              : null),
+        };
+      });
     },
     async markSent(id, providerMessageId, now) {
       await updateDelivery(client, id, {
@@ -110,4 +142,13 @@ function projectClaimedDelivery(
     emailNotificationsEnabled: row.email_notifications_enabled,
     scheduledAt: row.scheduled_at,
   };
+}
+
+/** Await a bounded dispatch after commit; durable outbox retries remain authoritative. */
+export async function dispatchBookingEmail(bookingId: string) {
+  try {
+    return await processTransactionalEmailQueue({ bookingId, limit: 5 });
+  } catch {
+    return { processingFailed: true };
+  }
 }

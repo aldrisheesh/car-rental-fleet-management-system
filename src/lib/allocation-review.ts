@@ -20,6 +20,8 @@ export type AllocationRow = {
   forecast_horizon: number;
   approved_transfer_units?: number | null;
   decided_at?: string | null;
+  decision_reason?: string | null;
+  decision_reason_code?: string | null;
   decision_state: "Pending" | "Approved" | "Rejected";
   destination_shortage_snapshot: number;
   source_surplus_snapshot: number;
@@ -77,20 +79,25 @@ export function externalAdvisory(
     ["Closed/Impassable", "Closed/Restricted", "Not Feasible"].includes(value),
   );
   const severe = factors.some(({ value }) => value === "Severe");
+  const nearbyClosure = factors.some(
+    ({ value }) => value === "Closure reported nearby",
+  );
   const flagged = factors.some(
     ({ value }) =>
       !["Normal", "Open", "Feasible", "Accessible"].includes(value),
   );
   return {
-    critical: blocked || severe,
+    critical: blocked || severe || nearbyClosure,
     headline: blocked
       ? "Reported closure or blocked route — verify before movement."
       : severe
         ? "Severe weather reported — verify conditions before movement."
-        : incomplete || !factors.length
-          ? "Evidence incomplete — verify missing factors before movement."
-          : flagged
-            ? "Advisory flags require review before movement."
-            : "Available factors have no reported advisory flags.",
+        : nearbyClosure
+          ? "Nearby road closure reported — verify the planned route before movement."
+          : incomplete || !factors.length
+            ? "Evidence incomplete — verify missing factors before movement."
+            : flagged
+              ? "Advisory flags require review before movement."
+              : "Available factors have no reported advisory flags.",
   };
 }

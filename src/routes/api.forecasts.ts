@@ -2,6 +2,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { readForecastHistoryPages } from "@/lib/forecast-history.server";
 import {
   addWeeks,
   calculateWma,
@@ -24,16 +25,28 @@ async function read() {
       return deny(403, "Forecast access is restricted.");
     const c = getSupabaseServerClient() as any;
     const [a, b] = await Promise.all([
-      c
-        .from("forecast_runs")
-        .select("*")
-        .order("generated_at", { ascending: false }),
-      c
-        .from("forecasts")
-        .select(
-          "*, inputs:forecast_inputs(*), branch:branches(id,name), category:vehicle_categories(id,name)",
-        )
-        .order("target_week_start"),
+      readForecastHistoryPages<any>((from, to) =>
+        c
+          .from("forecast_runs")
+          .select("*")
+          .order("generated_at", { ascending: false })
+          .order("id")
+          .range(from, to),
+      )
+        .then((data) => ({ data, error: null }))
+        .catch((error) => ({ data: null, error })),
+      readForecastHistoryPages<any>((from, to) =>
+        c
+          .from("forecasts")
+          .select(
+            "*, inputs:forecast_inputs(*), branch:branches(id,name), category:vehicle_categories(id,name)",
+          )
+          .order("target_week_start")
+          .order("id")
+          .range(from, to),
+      )
+        .then((data) => ({ data, error: null }))
+        .catch((error) => ({ data: null, error })),
     ]);
     if (a.error || b.error) return deny(503, "Unable to load forecasts.");
     const accuracy = forecastAccuracyFromDatabaseRows(b.data ?? []);

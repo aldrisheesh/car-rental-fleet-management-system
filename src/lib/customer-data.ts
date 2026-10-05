@@ -173,6 +173,14 @@ export type RequirementDocument = {
 };
 
 export type CustomerRequirementReview = {
+  governmentIdDocumentId?: string;
+  governmentIdVersion?: number;
+  driversLicenseDocumentId?: string;
+  driversLicenseVersion?: number;
+  proofOfBillingDocumentId?: string;
+  proofOfBillingVersion?: number;
+  selfieWithIdDocumentId?: string;
+  selfieWithIdVersion?: number;
   governmentIdOutcome: string;
   governmentIdReason: string;
   driversLicenseOutcome: string;
@@ -237,9 +245,7 @@ export async function fetchJson<T>(
   }
 
   const payload = (await response.json().catch(() => null)) as
-    | T
-    | { message?: string; errors?: Record<string, string> }
-    | null;
+    T | { message?: string; errors?: Record<string, string> } | null;
   if (!response.ok) {
     const errorPayload = payload as {
       message?: string;

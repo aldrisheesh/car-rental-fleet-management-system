@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Canonical forecast tables predate the generated Supabase types. */
 import { createFileRoute } from "@tanstack/react-router";
 import { AuthBoundaryError, requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -5,6 +6,7 @@ import {
   evaluateSupplyVehicles,
   calculateBalance,
   hasFutureMaintenanceConflict,
+  hasOutstandingBookingConflict,
   overlaps,
   manilaDateBoundaryToInstant,
 } from "@/lib/supply-evaluation.server";
@@ -58,14 +60,14 @@ async function evaluateForecastSupply({
     ids.length
       ? client
           .from("booking_requests")
-          .select("assigned_vehicle_id,pickup_at,return_at,booking_status")
+          .select("id,assigned_vehicle_id,pickup_at,return_at,booking_status")
           .in("assigned_vehicle_id", ids)
           .eq("booking_status", "Confirmed")
       : { data: [], error: null },
     ids.length
       ? client
           .from("rental_transactions")
-          .select("vehicle_id,started_at,ended_at")
+          .select("booking_id,vehicle_id,started_at,ended_at")
           .in("vehicle_id", ids)
       : { data: [], error: null },
     ids.length
@@ -90,8 +92,7 @@ async function evaluateForecastSupply({
   const evaluatedVehicles = await Promise.all(
     (vehicles ?? []).map(async (vehicle: any) => {
       let readiness:
-        | { maintenanceReady: boolean; reasons: string[] }
-        | undefined;
+        { maintenanceReady: boolean; reasons: string[] } | undefined;
       try {
         readiness = await calculateMaintenanceReadiness(vehicle.id);
       } catch {
@@ -104,16 +105,14 @@ async function evaluateForecastSupply({
         targets,
         forecast.target_week_end,
       );
-      const bookingConflict = (bookings.data ?? [])
-        .filter((booking: any) => booking.assigned_vehicle_id === vehicle.id)
-        .some((booking: any) =>
-          overlaps(
-            booking.pickup_at,
-            booking.return_at,
-            targetWeekStart,
-            targetWeekEnd,
-          ),
-        );
+      const bookingConflict = hasOutstandingBookingConflict(
+        (bookings.data ?? []).filter(
+          (booking: any) => booking.assigned_vehicle_id === vehicle.id,
+        ),
+        rentals.data ?? [],
+        targetWeekStart,
+        targetWeekEnd,
+      );
       const rentalConflict = (rentals.data ?? [])
         .filter((rental: any) => rental.vehicle_id === vehicle.id)
         .some(

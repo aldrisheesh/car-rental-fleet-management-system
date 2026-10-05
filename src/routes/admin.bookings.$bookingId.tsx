@@ -1,7 +1,11 @@
+import { currentDocumentDecision } from "@/lib/document-review-version";
+import { DateChangeRequests } from "@/components/booking/DateChangeRequests";
+import { CategorizedField } from "@/components/booking/CategorizedField";
+import { validCategory } from "@/lib/booking-categories";
 import { depositRefund, releaseDayReached } from "@/lib/rental-finance";
 import { currentLedgerStage } from "@/lib/booking-ledger";
 import { bookingReferenceLabel } from "@/lib/booking-reference";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
@@ -293,9 +297,7 @@ function BookingDetailPage() {
           const body = (await requirementsResult.value
             .json()
             .catch(() => null)) as
-            | AdminRequirementsResponse
-            | { message?: string }
-            | null;
+            AdminRequirementsResponse | { message?: string } | null;
           if (
             !requirementsResult.value.ok ||
             !body ||
@@ -415,24 +417,29 @@ function BookingDetailPage() {
     ? rentalState(booking)
     : booking.booking_status;
   const paymentStatus = booking.payment_status ?? "Unavailable";
+  const terminalBooking = ["Cancelled", "Rejected"].includes(
+    booking.booking_status,
+  );
   const confirmationException = booking.confirmation_exception_message?.trim();
-  const paymentStageDetail = !ownerView
-    ? "Owner/Admin issues payment requests and verifies proof. Check the payment status before preparing the rental."
-    : requirementStatus !== "Verified"
-      ? "Verify requirements, then prepare the handover arrangements and quote."
-      : confirmationException
-        ? `Payment approved. ${confirmationException}`
-        : booking.booking_status === "Confirmed"
-          ? "Payment verified and booking confirmed."
-          : paymentStatus === "Verified"
-            ? "Payment verified. Complete the readiness checks to confirm the booking."
-            : payment?.status === "Not Submitted"
-              ? "Waiting for the customer to submit the payment proof."
-              : paymentStatus === "Not Submitted"
-                ? "Send the quote in Quote & handover before the customer can pay."
-                : paymentStatus === "Needs Resubmission"
-                  ? "Waiting for the customer to resubmit their payment proof."
-                  : "Review the customer’s submitted payment proof.";
+  const paymentStageDetail = terminalBooking
+    ? "This request is closed. Any payment records remain available in the audit history."
+    : !ownerView
+      ? "Owner/Admin issues payment requests and verifies proof. Check the payment status before preparing the rental."
+      : requirementStatus !== "Verified"
+        ? "Verify requirements, then prepare the handover arrangements and quote."
+        : confirmationException
+          ? `Payment approved. ${confirmationException}`
+          : booking.booking_status === "Confirmed"
+            ? "Payment verified and booking confirmed."
+            : paymentStatus === "Verified"
+              ? "Payment verified. Complete the readiness checks to confirm the booking."
+              : payment?.status === "Not Submitted"
+                ? "Waiting for the customer to submit the payment proof."
+                : paymentStatus === "Not Submitted"
+                  ? "Send the quote in Quote & handover before the customer can pay."
+                  : paymentStatus === "Needs Resubmission"
+                    ? "Waiting for the customer to resubmit their payment proof."
+                    : "Review the customer’s submitted payment proof.";
   const currentStage = currentLedgerStage({
     booking,
     requirementStatus,
@@ -561,7 +568,7 @@ function BookingDetailPage() {
     <div className="admin-booking-detail-page">
       <header className="admin-booking-detail-page__header">
         <div>
-          <Link to="/admin/bookings" reloadDocument className="touch-target">
+          <Link to="/admin/bookings" className="touch-target">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back to Bookings
           </Link>
@@ -625,6 +632,9 @@ function BookingDetailPage() {
 
       <div className="admin-booking-ledger">
         <div className="admin-booking-ledger__left">
+          {ownerView ? (
+            <DateChangeRequests booking={booking} admin onChanged={load} />
+          ) : null}
           <section
             className="admin-booking-ledger__main"
             aria-labelledby="approval-ledger-title"
@@ -816,13 +826,15 @@ function BookingDetailPage() {
               number={4}
               title="Payment & confirmation"
               status={
-                booking.booking_status === "Confirmed"
-                  ? "Confirmed"
-                  : paymentStatus === "Verified"
-                    ? "Ready to confirm"
-                    : paymentStatus === "Not Submitted"
-                      ? "Awaiting payment"
-                      : paymentStatus
+                terminalBooking
+                  ? "Closed"
+                  : booking.booking_status === "Confirmed"
+                    ? "Confirmed"
+                    : paymentStatus === "Verified"
+                      ? "Ready to confirm"
+                      : paymentStatus === "Not Submitted"
+                        ? "Awaiting payment"
+                        : paymentStatus
               }
               detail={paymentStageDetail}
               active={currentStage === 4}
@@ -855,7 +867,9 @@ function BookingDetailPage() {
                     </div>
                     <Link
                       to="/admin/payments"
-                      search={{ payment: payment.id } as never}
+                      search={
+                        { payment: payment.id, returnTo: "ledger" } as never
+                      }
                       className="touch-target admin-booking-ledger__payment-link"
                     >
                       {payment.status === "Verified"
@@ -1028,9 +1042,7 @@ function BookingDetailPage() {
 }
 
 type RequirementReviewStatus =
-  | "Pending Review"
-  | "Needs Resubmission"
-  | "Verified";
+  "Pending Review" | "Needs Resubmission" | "Verified";
 
 function RateQuotePanel({
   bookingId,
@@ -1752,7 +1764,7 @@ function RejectUnconfirmedBooking({
   const [message, setMessage] = useState("");
 
   async function reject() {
-    if (!reason.trim()) return;
+    if (!validCategory("booking_rejection", reason)) return;
     setSaving(true);
     setMessage("");
     try {
@@ -1794,16 +1806,14 @@ function RejectUnconfirmedBooking({
           customer receives your reason.
         </p>
       </div>
-      <label>
-        <span>Reason for rejection</span>
-        <TInput
-          value={reason}
-          onChange={(event) => setReason(event.target.value)}
-          placeholder="Required for the customer and audit trail"
-          disabled={busy || saving}
-          maxLength={500}
-        />
-      </label>
+      <CategorizedField
+        id="booking-rejection-reason"
+        label="Reason for rejection"
+        domain="booking_rejection"
+        value={reason}
+        onChange={setReason}
+        disabled={busy || saving}
+      />
       {message ? (
         <p className="admin-booking-resolution__message" role="alert">
           {message}
@@ -1811,7 +1821,7 @@ function RejectUnconfirmedBooking({
       ) : null}
       <Btn
         variant="danger"
-        disabled={busy || saving || !reason.trim()}
+        disabled={busy || saving || !validCategory("booking_rejection", reason)}
         onClick={() => setOpen(true)}
       >
         Reject request
@@ -1862,23 +1872,35 @@ function BookingRequirementsReview({
   embedded?: boolean;
 }) {
   const requirementSet = requirements.requirementSet;
-  const documents = requirements.requiredTypes
-    .map((type) =>
-      requirements.documents.find(
-        (document) =>
-          document.requirement_type === type && document.is_current !== false,
-      ),
-    )
-    .filter((document): document is AdminRequirementDocument =>
-      Boolean(document),
-    );
+  const documents = useMemo(
+    () =>
+      requirements.requiredTypes
+        .map((type) =>
+          requirements.documents.find(
+            (document) =>
+              document.requirement_type === type &&
+              document.is_current !== false,
+          ),
+        )
+        .filter((document): document is AdminRequirementDocument =>
+          Boolean(document),
+        ),
+    [requirements.documents, requirements.requiredTypes],
+  );
   const review = requirements.reviews?.[0] ?? null;
   const hasAllDocuments = requirements.requiredTypes.every((type) =>
     documents.some((document) => document.requirement_type === type),
   );
   const canReview =
     requirementSet?.status === "Pending Review" && hasAllDocuments;
-  const reviewDraftKey = `admin-requirements-review:${requirementSet?.id ?? bookingId}`;
+  const documentVersionKey = documents
+    .map(
+      (document) =>
+        `${document.requirement_type}:${document.id}:${document.version}`,
+    )
+    .sort()
+    .join("|");
+  const reviewDraftKey = `admin-requirements-review:${requirementSet?.id ?? bookingId}:${documentVersionKey}`;
   const [governmentIdOutcome, setGovernmentIdOutcome] = useState("");
   const [governmentIdReason, setGovernmentIdReason] = useState("");
   const [driversLicenseOutcome, setDriversLicenseOutcome] = useState("");
@@ -1914,36 +1936,94 @@ function BookingRequirementsReview({
         window.localStorage.removeItem(reviewDraftKey);
       }
     }
+    const governmentIdDecision = currentDocumentDecision(
+      documents.find(
+        (document) => document.requirement_type === "Valid Government ID",
+      ),
+      review
+        ? {
+            documentId: review.government_id_document_id,
+            version: review.government_id_version,
+            outcome: review.government_id_outcome,
+            reason: review.government_id_reason,
+          }
+        : null,
+    );
+    const driversLicenseDecision = currentDocumentDecision(
+      documents.find(
+        (document) => document.requirement_type === "Driver's License",
+      ),
+      review
+        ? {
+            documentId: review.drivers_license_document_id,
+            version: review.drivers_license_version,
+            outcome: review.drivers_license_outcome,
+            reason: review.drivers_license_reason,
+          }
+        : null,
+    );
+    const proofOfBillingDecision = currentDocumentDecision(
+      documents.find(
+        (document) => document.requirement_type === "Proof of Billing",
+      ),
+      review
+        ? {
+            documentId: review.proof_of_billing_document_id,
+            version: review.proof_of_billing_version,
+            outcome: review.proof_of_billing_outcome,
+            reason: review.proof_of_billing_reason,
+          }
+        : null,
+    );
+    const selfieWithIdDecision = currentDocumentDecision(
+      documents.find(
+        (document) => document.requirement_type === "Selfie with ID",
+      ),
+      review
+        ? {
+            documentId: review.selfie_with_id_document_id,
+            version: review.selfie_with_id_version,
+            outcome: review.selfie_with_id_outcome,
+            reason: review.selfie_with_id_reason,
+          }
+        : null,
+    );
     setGovernmentIdOutcome(
-      draft?.governmentIdOutcome ?? review?.government_id_outcome ?? "",
+      draft?.governmentIdOutcome ?? governmentIdDecision.outcome,
     );
     setGovernmentIdReason(
-      draft?.governmentIdReason ?? review?.government_id_reason ?? "",
+      draft?.governmentIdReason ?? governmentIdDecision.reason,
     );
     setDriversLicenseOutcome(
-      draft?.driversLicenseOutcome ?? review?.drivers_license_outcome ?? "",
+      draft?.driversLicenseOutcome ?? driversLicenseDecision.outcome,
     );
     setDriversLicenseReason(
-      draft?.driversLicenseReason ?? review?.drivers_license_reason ?? "",
+      draft?.driversLicenseReason ?? driversLicenseDecision.reason,
     );
     setProofOfBillingOutcome(
-      draft?.proofOfBillingOutcome ?? review?.proof_of_billing_outcome ?? "",
+      draft?.proofOfBillingOutcome ?? proofOfBillingDecision.outcome,
     );
     setProofOfBillingReason(
-      draft?.proofOfBillingReason ?? review?.proof_of_billing_reason ?? "",
+      draft?.proofOfBillingReason ?? proofOfBillingDecision.reason,
     );
     setSelfieWithIdOutcome(
-      draft?.selfieWithIdOutcome ?? review?.selfie_with_id_outcome ?? "",
+      draft?.selfieWithIdOutcome ?? selfieWithIdDecision.outcome,
     );
     setSelfieWithIdReason(
-      draft?.selfieWithIdReason ?? review?.selfie_with_id_reason ?? "",
+      draft?.selfieWithIdReason ?? selfieWithIdDecision.reason,
     );
     setIdentityConsistency(
-      draft?.identityConsistency ?? review?.identity_consistency ?? "",
+      draft?.identityConsistency ??
+        (governmentIdDecision.outcome &&
+        driversLicenseDecision.outcome &&
+        proofOfBillingDecision.outcome &&
+        selfieWithIdDecision.outcome
+          ? (review?.identity_consistency ?? "")
+          : ""),
     );
     setMessage(null);
     setDraftReady(true);
-  }, [review, requirementSet?.status, reviewDraftKey]);
+  }, [review, requirementSet?.status, reviewDraftKey, documents]);
 
   useEffect(() => {
     if (!draftReady) return;
@@ -2028,7 +2108,8 @@ function BookingRequirementsReview({
       (!gate.canResubmit ||
         replacementReasons.some(
           ([outcome, reason]) =>
-            outcome === "Needs Replacement" && !reason.trim(),
+            outcome === "Needs Replacement" &&
+            !validCategory("document_review", reason),
         ))
     ) {
       setMessage({
@@ -2308,18 +2389,16 @@ function BookingDocumentReviewRow({
         />
       </div>
       {outcome === "Needs Replacement" ? (
-        <label
-          className="admin-booking-ledger__replacement-reason"
-          htmlFor={`${id}-reason`}
-        >
-          <span>Reason for reupload</span>
-          <TInput
+        <div className="admin-booking-ledger__replacement-reason">
+          <CategorizedField
             id={`${id}-reason`}
+            label="Reason for reupload"
+            domain="document_review"
+            categoryPrefix={type === "Selfie with ID" ? "selfie." : "document."}
             value={reason}
-            onChange={(event) => setReason(event.target.value)}
-            placeholder="Tell the customer exactly what needs replacing"
+            onChange={setReason}
           />
-        </label>
+        </div>
       ) : null}
     </div>
   );
@@ -3548,25 +3627,20 @@ function OwnerActionArea({
               hint="Cancellation is available only before the rental is released. The payment and requirement history will be retained."
             />
             <div className="space-y-4 px-5 py-5">
-              <label
-                className="block text-sm font-medium"
-                htmlFor="cancellation-reason"
-              >
-                <span>Cancellation reason</span>
-                <TInput
-                  id="cancellation-reason"
-                  name="cancellation-reason"
-                  value={cancellationReason}
-                  onChange={(event) =>
-                    setCancellationReason(event.target.value)
-                  }
-                  placeholder="Required for the audit trail"
-                  className="mt-2"
-                />
-              </label>
+              <CategorizedField
+                id="cancellation-reason"
+                label="Cancellation reason"
+                domain="cancellation"
+                value={cancellationReason}
+                onChange={setCancellationReason}
+                disabled={busyAction !== null}
+              />
               <Btn
                 variant="danger"
-                disabled={busyAction !== null || !cancellationReason.trim()}
+                disabled={
+                  busyAction !== null ||
+                  !validCategory("cancellation", cancellationReason)
+                }
                 onClick={() => setCancelDialogOpen(true)}
               >
                 Cancel confirmed reservation

@@ -161,3 +161,9 @@ npm run build
 ```
 
 For an integration dry-run, point all three target variables at the same local/disposable Supabase project after migrations are applied. Never use `--apply` merely to test parsing or dry-run behavior.
+
+## Approval ledger state cases
+
+`node --env-file=.env.local --experimental-strip-types scripts/qa/approval-ledger-cases.ts` previews an additive set of 13 numbered ledger cases. Add `--apply` to create them for the existing UAT customer. It preserves a complete existing set and refuses a partial set rather than overwriting customer work. It has no cleanup/delete operation. Inserts are transaction-bound, with fixture-only lifecycle side effects suppressed on that connection; no customer notifications or emails are generated. Placeholder files are visibly synthetic. A rollback can leave owned Storage placeholders for a retry to reuse.
+
+The local inspection index is `output/approval-ledger-cases/index.md`. Cases cover each ledger stage plus document/payment correction, paused confirmation, rejection and cancellation. These rows are normal operational inputs once inserted, so availability/reporting include synthetic confirmed and active rentals. They validate rendered states, not lifecycle transitions.

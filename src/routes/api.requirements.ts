@@ -1,3 +1,5 @@
+import { validCategory } from "@/lib/booking-categories";
+import { dispatchBookingEmail } from "@/lib/transactional-email.server";
 import { createFileRoute } from "@tanstack/react-router";
 import { requirePrincipal } from "@/lib/auth.server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -151,6 +153,14 @@ async function read({ request }: { request: Request }) {
         documents: docs.data ?? [],
         review: r
           ? {
+              governmentIdDocumentId: r.government_id_document_id,
+              governmentIdVersion: r.government_id_version,
+              driversLicenseDocumentId: r.drivers_license_document_id,
+              driversLicenseVersion: r.drivers_license_version,
+              proofOfBillingDocumentId: r.proof_of_billing_document_id,
+              proofOfBillingVersion: r.proof_of_billing_version,
+              selfieWithIdDocumentId: r.selfie_with_id_document_id,
+              selfieWithIdVersion: r.selfie_with_id_version,
               governmentIdOutcome: r.government_id_outcome,
               governmentIdReason: r.government_id_reason,
               driversLicenseOutcome: r.drivers_license_outcome,
@@ -193,6 +203,20 @@ async function mutate({ request }: { request: Request }) {
         unknown
       > | null;
       if (body?.action !== "review") return error("Invalid review action.");
+      for (const field of [
+        "governmentId",
+        "driversLicense",
+        "proofOfBilling",
+        "selfieWithId",
+      ]) {
+        if (
+          body[`${field}Outcome`] === "Needs Replacement" &&
+          !validCategory("document_review", body[`${field}Reason`])
+        )
+          return error(
+            "Choose a correction category for every document needing replacement.",
+          );
+      }
       const setId = String(body.requirementSetId || "");
       const rs = await client
         .from("renter_requirement_sets")
@@ -272,6 +296,7 @@ async function mutate({ request }: { request: Request }) {
           409,
         );
       }
+      await dispatchBookingEmail(rs.data.booking_id);
       return Response.json({
         reviewId: result.data,
         status: body.resultingStatus,
@@ -402,7 +427,9 @@ async function mutate({ request }: { request: Request }) {
         await getSupabaseServerClient()
           .storage.from("renter-requirements")
           .remove([uploadedPath]);
-      } catch {}
+      } catch {
+        // Preserve the original response if best-effort orphan cleanup fails.
+      }
     }
     return error(
       e instanceof Error && e.message === "forbidden"

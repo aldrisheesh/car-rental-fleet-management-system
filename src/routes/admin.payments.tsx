@@ -1,3 +1,6 @@
+import { PaymentPdfPreview } from "@/components/booking/PaymentPdfPreview";
+import { CategorizedField } from "@/components/booking/CategorizedField";
+import { validCategory } from "@/lib/booking-categories";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   createFileRoute,
@@ -169,16 +172,15 @@ function PaymentsQueuePage() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
+  const searchStr = useRouterState({
+    select: (state) => state.location.searchStr,
+  });
+  const search = new URLSearchParams(searchStr);
+  const focusedPaymentId = search.get("payment");
+  const isFocusedReview = Boolean(focusedPaymentId);
+  const returnToLedger = search.get("returnTo") === "ledger";
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(
-    () =>
-      typeof window === "undefined"
-        ? null
-        : new URLSearchParams(window.location.search).get("payment"),
-  );
-  const [isFocusedReview] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      Boolean(new URLSearchParams(window.location.search).get("payment")),
+    null,
   );
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false);
 
@@ -292,7 +294,7 @@ function PaymentsQueuePage() {
   );
 
   const selectedPayment = isFocusedReview
-    ? (payments.find((payment) => payment.id === selectedPaymentId) ?? null)
+    ? (payments.find((payment) => payment.id === focusedPaymentId) ?? null)
     : (pageRows.find((payment) => payment.id === selectedPaymentId) ??
       pageRows.find((payment) => payment.status === "Pending Verification") ??
       pageRows[0] ??
@@ -388,6 +390,7 @@ function PaymentsQueuePage() {
               payment={selectedPayment}
               onReview={reviewPayment}
               focused
+              returnToLedger={returnToLedger}
             />
           ) : selectedPayment ? (
             <div className="admin-payments-layout">
@@ -995,6 +998,7 @@ function PaymentReviewPreview({
   payment,
   onReview,
   focused = false,
+  returnToLedger = false,
 }: {
   payment: AdminPayment;
   onReview: (
@@ -1003,6 +1007,7 @@ function PaymentReviewPreview({
     reason?: string,
   ) => Promise<PaymentReviewConfirmation | undefined>;
   focused?: boolean;
+  returnToLedger?: boolean;
 }) {
   const proof = currentPaymentProof(payment);
   const method =
@@ -1027,7 +1032,6 @@ function PaymentReviewPreview({
     checklist.proofIsClear &&
     checklist.paymentReceived &&
     !saving;
-  const generatedResubmissionRemark = resubmissionRemark(checklist);
 
   useEffect(() => {
     setChecklist(readPaymentChecklist(checklistKey));
@@ -1071,7 +1075,7 @@ function PaymentReviewPreview({
 
   async function requestResubmission() {
     const remark = resubmissionNote.trim();
-    if (!reviewable || !remark) return;
+    if (!reviewable || !validCategory("payment_review", remark)) return;
     setSaving(true);
     setFeedback("");
     try {
@@ -1094,7 +1098,7 @@ function PaymentReviewPreview({
   }
 
   function openResubmission() {
-    setResubmissionNote(generatedResubmissionRemark);
+    setResubmissionNote("");
     setResubmissionOpen(true);
   }
 
@@ -1105,12 +1109,23 @@ function PaymentReviewPreview({
     >
       {focused ? (
         <header className="admin-payments-preview__focused-heading">
-          <Link
-            to="/admin/payments"
-            className="admin-payments-preview__back-link"
-          >
-            <ChevronLeft aria-hidden="true" /> Back to payment queue
-          </Link>
+          {returnToLedger ? (
+            <Link
+              to="/admin/bookings/$bookingId"
+              params={{ bookingId: payment.booking_id }}
+              className="admin-payments-preview__back-link"
+            >
+              <ChevronLeft aria-hidden="true" /> Back to approval ledger
+            </Link>
+          ) : (
+            <Link
+              to="/admin/payments"
+              search={{} as never}
+              className="admin-payments-preview__back-link"
+            >
+              <ChevronLeft aria-hidden="true" /> Back to payment queue
+            </Link>
+          )}
           <div className="admin-payments-preview__focused-title">
             <div>
               <h1 id="payment-preview-heading">Review payment proof</h1>
@@ -1317,20 +1332,17 @@ function PaymentReviewPreview({
             </DialogDescription>
           </DialogHeader>
           <div className="admin-payment-resubmission-dialog__field">
-            <label htmlFor="payment-resubmission-remark">Customer remark</label>
-            <Textarea
+            <CategorizedField
               id="payment-resubmission-remark"
-              className="admin-payment-resubmission-dialog__remark"
+              label="Reason for correction"
+              domain="payment_review"
               value={resubmissionNote}
-              onChange={(event) => setResubmissionNote(event.target.value)}
-              maxLength={500}
-              rows={3}
+              onChange={setResubmissionNote}
               disabled={saving}
-              aria-describedby="payment-resubmission-remark-help"
             />
             <p id="payment-resubmission-remark-help">
-              Suggested from the unchecked review items. You can adjust it
-              before sending.
+              Choose the main reason, then add any instructions the customer
+              needs.
             </p>
           </div>
           <DialogFooter>
@@ -1346,7 +1358,9 @@ function PaymentReviewPreview({
               type="button"
               className="admin-payment-resubmission-dialog__submit"
               onClick={() => void requestResubmission()}
-              disabled={saving || !resubmissionNote.trim()}
+              disabled={
+                saving || !validCategory("payment_review", resubmissionNote)
+              }
             >
               {saving ? "Sending…" : "Confirm request"}
             </button>
@@ -1487,10 +1501,10 @@ function PaymentProofViewer({
         </button>
       </div>
       {proof?.mime_type === "application/pdf" ? (
-        <iframe
-          title={`Preview of ${proof.original_filename ?? "payment proof"}`}
-          src={source.url}
-          style={{ width: `${zoom * 100}%`, height: `${31 * zoom}rem` }}
+        <PaymentPdfPreview
+          source={source.url ?? ""}
+          filename={proof.original_filename ?? "Payment proof"}
+          zoom={zoom}
         />
       ) : (
         <img

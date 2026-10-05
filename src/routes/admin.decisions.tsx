@@ -9,11 +9,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { VehicleUtilizationScreen } from "@/components/admin/vehicle-utilization-screen";
 import {
   reportingRangeError,
+  currentUtilizationFleet,
   type VehicleAnalyticsRow,
 } from "@/lib/utilization-workspace";
 import { FleetAllocationScreen } from "@/components/admin/fleet-allocation-screen";
 import {
   allocationGenerationBlock,
+  allocationContextIdentity,
+  automaticAllocationKey,
   filterAllocationRows,
   filterAllocationGaps,
   selectAllocationId,
@@ -26,6 +29,7 @@ import {
   CartesianGrid,
   Line,
   LineChart,
+  ReferenceArea,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -76,8 +80,6 @@ export const Route = createFileRoute("/admin/decisions")({
   validateSearch: parseDssSearch,
   component: DecisionPage,
 });
-
-const decisionGrid = "rgba(24,35,33,0.12)";
 
 type ForecastResponse = {
   runs: CanonicalForecastRun[];
@@ -236,7 +238,9 @@ function DecisionBriefItem({
 }
 
 function DecisionPage() {
-  const location = useRouterState({ select: (state) => state.location });
+  const location = useRouterState({
+    select: (state) => state.resolvedLocation ?? state.location,
+  });
   const view = dssView(location.pathname, location.hash);
   const isForecast = view === "forecast";
   const search = Route.useSearch();
@@ -289,6 +293,9 @@ function DecisionPage() {
   >([]);
   const [vehicleLoading, setVehicleLoading] = useState(true);
   const [vehicleError, setVehicleError] = useState("");
+  const [vehicleRefreshing, setVehicleRefreshing] = useState(false);
+  const [vehicleRefreshError, setVehicleRefreshError] = useState("");
+  const vehicleSnapshotRange = useRef<string | null>(null);
   const [vehicleLoadedAt, setVehicleLoadedAt] = useState<string | null>(null);
   const [vehicleRefreshVersion, setVehicleRefreshVersion] = useState(0);
   const [supportVersion, setSupportVersion] = useState(0);
@@ -319,13 +326,19 @@ function DecisionPage() {
   useEffect(() => {
     setSelectedBranchId(search.branch ?? "all");
     setSelectedCategoryId(search.category ?? "");
-    setBalanceWeek(search.week ?? "");
+    // An omitted URL week keeps the resolved selection instead of reopening
+    // the allocation filters to every week while the select displays one.
+    setBalanceWeek((current) => search.week ?? current);
   }, [search.branch, search.category, search.week]);
   function chooseBranch(branch: string) {
     setSelectedBranchId(branch);
     void navigate({
       to: isForecast ? "/admin/decisions/forecast" : "/admin/decisions",
-      search: (previous) => ({ ...previous, branch, category: undefined }),
+      search: (previous) => ({
+        ...previous,
+        branch,
+        category: selectedCategoryId || undefined,
+      }),
       replace: true,
     });
   }
@@ -400,7 +413,11 @@ function DecisionPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    setVehicleLoading(true);
+    const rangeKey = `${analyticsRange.start}:${analyticsRange.end}`;
+    const hasCurrentSnapshot = vehicleSnapshotRange.current === rangeKey;
+    setVehicleLoading(!hasCurrentSnapshot);
+    setVehicleRefreshing(true);
+    setVehicleRefreshError("");
     setVehicleError("");
     readApi<VehicleAnalyticsResponse>(
       `/api/vehicle-analytics?start=${analyticsRange.start}&end=${analyticsRange.end}`,
@@ -408,18 +425,28 @@ function DecisionPage() {
     )
       .then((body) => {
         if (controller.signal.aborted) return;
-        setVehicleAnalytics(body.vehicles ?? []);
+        setVehicleAnalytics(currentUtilizationFleet(body.vehicles ?? []));
+        vehicleSnapshotRange.current = rangeKey;
         setVehicleLoadedAt(new Date().toISOString());
       })
       .catch((error) => {
         if (controller.signal.aborted) return;
-        setVehicleAnalytics([]);
-        setVehicleError(
-          errorMessage(error, "Unable to load vehicle analytics."),
-        );
+        if (hasCurrentSnapshot) {
+          setVehicleRefreshError(
+            "Activity could not be updated. Showing the last successful results; try Refresh activity again.",
+          );
+        } else {
+          setVehicleAnalytics([]);
+          setVehicleError(
+            errorMessage(error, "Unable to load vehicle analytics."),
+          );
+        }
       })
       .finally(() => {
-        if (!controller.signal.aborted) setVehicleLoading(false);
+        if (!controller.signal.aborted) {
+          setVehicleLoading(false);
+          setVehicleRefreshing(false);
+        }
       });
     return () => controller.abort();
   }, [
@@ -622,6 +649,7 @@ function DecisionPage() {
     recommendationId: string,
     state: "Approved" | "Rejected",
     approvedTransferUnits?: number,
+    reason?: string,
   ) {
     setAllocationBusy(true);
     try {
@@ -634,6 +662,7 @@ function DecisionPage() {
             recommendationId,
             state,
             approvedTransferUnits,
+            reason,
           }),
         },
       );
@@ -692,6 +721,11 @@ function DecisionPage() {
     )
     .find((run) => forecastRows.some((forecast) => forecast.run_id === run.id));
 
+  const allocationSnapshotIdentity = allocationContextIdentity(
+    latestRun?.id ?? "",
+    currentSupplyRows.map((row) => row.id),
+  );
+
   const currentAllocationRows = selectCurrentRecommendations(
     allocationRows,
     currentSupplyRows,
@@ -745,6 +779,7 @@ function DecisionPage() {
         recommendation: row.id,
       }),
       replace: true,
+      resetScroll: false,
     });
   }
   const reviewContext = selectedContext(
@@ -808,9 +843,9 @@ function DecisionPage() {
         right.target_week_end.localeCompare(left.target_week_end),
       )[0]?.target_week_end
     : null;
-  const focusedWmaForecast = focusedForecastRows.find(
-    (row) => Number(row.horizon) === 1,
-  );
+  const focusedWmaForecast =
+    focusedForecastRows.find((row) => row.target_week_start === balanceWeek) ??
+    focusedForecastRows[0];
   const focusedWmaCalculation = focusedWmaForecast
     ? buildWmaCalculation(focusedWmaForecast)
     : null;
@@ -949,9 +984,7 @@ function DecisionPage() {
     void evaluateSupply(
       unevaluatedForecasts.map((forecast) => forecast.id),
       `automatic-supply-${latestRun.id}`,
-    ).then((succeeded) => {
-      if (!succeeded) synchronizedSupplyRuns.current.delete(latestRun.id);
-    });
+    );
   }, [
     forecastLoading,
     latestRun?.id,
@@ -974,16 +1007,17 @@ function DecisionPage() {
       !surplusEvaluations.length ||
       currentAllocationRows.length ||
       pendingAllocations.length ||
-      generatedAllocationRuns.current.has(latestRun.id)
+      generatedAllocationRuns.current.has(allocationSnapshotIdentity)
     )
       return;
-    generatedAllocationRuns.current.add(latestRun.id);
-    void generateAllocations(`automatic-allocation-${latestRun.id}`).then(
-      (succeeded) => {
-        if (!succeeded) generatedAllocationRuns.current.delete(latestRun.id);
-      },
+    // One automatic attempt per exact supply snapshot. Failures remain visible
+    // until the admin retries; clearing the guard would create a request loop.
+    generatedAllocationRuns.current.add(allocationSnapshotIdentity);
+    void automaticAllocationKey(allocationSnapshotIdentity).then(
+      generateAllocations,
     );
   }, [
+    allocationSnapshotIdentity,
     allocationBusy,
     allocationLoading,
     currentAllocationRows.length,
@@ -1074,135 +1108,191 @@ function DecisionPage() {
           </span>
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={focusedForecastChart}
-            margin={{ top: 12, right: 18, bottom: 14, left: 0 }}
-          >
-            <CartesianGrid stroke={decisionGrid} vertical={false} />
-            <XAxis
-              dataKey="d"
-              tickFormatter={formatChartDay}
-              tick={{ fill: "#52635f", fontSize: 11 }}
-              axisLine={{ stroke: decisionGrid }}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fill: "#52635f", fontSize: 11 }}
-              axisLine={{ stroke: decisionGrid }}
-              tickLine={false}
-              width={32}
-              allowDecimals
-            />
-            <Tooltip
-              content={({ active, label }) => {
-                if (!active) return null;
-                const point = focusedForecastChart.find(
-                  (item) => item.d === String(label),
-                );
-                if (!point) return null;
-                return (
-                  <div
-                    style={{
-                      background: "#fff",
-                      border: "1px solid #d8d5cc",
-                      borderRadius: 10,
-                      padding: 12,
-                      color: "#182321",
-                      fontSize: 12,
-                    }}
-                  >
-                    <strong>
-                      Week of {formatWeekRange(point.d, point.weekEnd)}
-                    </strong>
-                    {focusedForecastSeries.map((series) => (
-                      <div key={series.branchId} style={{ marginTop: 10 }}>
-                        <strong style={{ color: series.color }}>
-                          {series.label}
+        <div className="forecast-plot">
+          <div className="forecast-plot-key">
+            <span>Rental demand</span>
+            <div>
+              <span>
+                <i />
+                Recorded
+              </span>
+              <span>
+                <i className="is-predicted" />
+                Forecast
+              </span>
+            </div>
+          </div>
+          <div className="forecast-plot-canvas">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                accessibilityLayer
+                data={focusedForecastChart}
+                margin={{ top: 20, right: 32, bottom: 12, left: 8 }}
+              >
+                <CartesianGrid
+                  stroke="#e6ebe7"
+                  strokeDasharray="3 5"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="d"
+                  tickFormatter={formatChartDay}
+                  tick={{ fill: "#52635f", fontSize: 12 }}
+                  axisLine={{ stroke: "#d7e0db" }}
+                  tickLine={false}
+                  tickMargin={12}
+                  padding={{ left: 12, right: 12 }}
+                  minTickGap={30}
+                />
+                <YAxis
+                  tick={{ fill: "#52635f", fontSize: 12 }}
+                  tickFormatter={formatQuantity}
+                  axisLine={false}
+                  tickLine={false}
+                  width={38}
+                  tickMargin={10}
+                  domain={[0, (maximum: number) => Math.max(1, maximum * 1.2)]}
+                  tickCount={5}
+                  allowDecimals
+                />
+                <Tooltip
+                  cursor={{ stroke: "#97b4a8", strokeDasharray: "3 5" }}
+                  content={({ active, label }) => {
+                    if (!active) return null;
+                    const point = focusedForecastChart.find(
+                      (item) => item.d === String(label),
+                    );
+                    if (!point) return null;
+                    return (
+                      <div className="forecast-plot-tooltip">
+                        <strong>
+                          Week of {formatWeekRange(point.d, point.weekEnd)}
                         </strong>
-                        <div>
-                          Actual demand:{" "}
-                          {Number.isFinite(point[series.actualKey])
-                            ? formatQuantity(Number(point[series.actualKey]))
-                            : "Not available yet"}
-                        </div>
-                        <div>
-                          Forecast:{" "}
-                          {Number.isFinite(point[series.forecastKey])
-                            ? formatQuantity(Number(point[series.forecastKey]))
-                            : "No saved forecast available"}
-                        </div>
-                        {point[`kind-${series.branchId}`] ? (
-                          <div>{point[`kind-${series.branchId}`]}</div>
-                        ) : null}
-                        {point[`generated-${series.branchId}`] ? (
-                          <div>
-                            Saved{" "}
-                            {formatDateTime(
-                              String(point[`generated-${series.branchId}`]),
-                            )}
+                        {focusedForecastSeries.map((series) => (
+                          <div key={series.branchId} style={{ marginTop: 10 }}>
+                            <strong style={{ color: series.color }}>
+                              {series.label}
+                            </strong>
+                            <div>
+                              Actual demand:{" "}
+                              {Number.isFinite(point[series.actualKey])
+                                ? formatQuantity(
+                                    Number(point[series.actualKey]),
+                                  )
+                                : "Not available yet"}
+                            </div>
+                            <div>
+                              Forecast:{" "}
+                              {Number.isFinite(point[series.forecastKey])
+                                ? formatQuantity(
+                                    Number(point[series.forecastKey]),
+                                  )
+                                : "No saved forecast available"}
+                            </div>
+                            {point[`kind-${series.branchId}`] ? (
+                              <div>{point[`kind-${series.branchId}`]}</div>
+                            ) : null}
+                            {point[`generated-${series.branchId}`] ? (
+                              <div>
+                                Saved{" "}
+                                {formatDateTime(
+                                  String(point[`generated-${series.branchId}`]),
+                                )}
+                              </div>
+                            ) : null}
                           </div>
-                        ) : null}
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                );
-              }}
-            />
-            {focusedForecastStart ? (
-              <ReferenceLine
-                x={focusedForecastStart}
-                stroke="#2e647b"
-                strokeDasharray="3 4"
-                label={{
-                  value: "Latest outlook begins",
-                  fill: "#2e647b",
-                  fontSize: 11,
-                  position: "insideTopRight",
-                }}
-              />
-            ) : null}
-            {focusedForecastSeries.flatMap((series) => [
-              <Line
-                key={`${series.branchId}-connector`}
-                type="bumpX"
-                dataKey={series.connectorKey}
-                stroke={series.color}
-                strokeWidth={3}
-                strokeDasharray="7 6"
-                dot={false}
-                activeDot={false}
-                tooltipType="none"
-                legendType="none"
-                connectNulls={false}
-                isAnimationActive={false}
-              />,
-              <Line
-                key={`${series.branchId}-actual`}
-                type="monotoneX"
-                dataKey={series.actualKey}
-                name={`${series.label} — actual weekly demand`}
-                stroke={series.color}
-                strokeWidth={3}
-                dot={{ r: 3.5, fill: series.color }}
-                connectNulls={false}
-                isAnimationActive={false}
-              />,
-              <Line
-                key={`${series.branchId}-forecast`}
-                type="monotoneX"
-                dataKey={series.forecastKey}
-                name={`${series.label} — weekly WMA forecast`}
-                stroke={series.color}
-                strokeWidth={3}
-                strokeDasharray="7 6"
-                dot={{ r: 3.5, fill: series.color }}
-                connectNulls={false}
-                isAnimationActive={false}
-              />,
-            ])}
-          </LineChart>
-        </ResponsiveContainer>
+                    );
+                  }}
+                />
+                {focusedForecastStart ? (
+                  <ReferenceArea
+                    x1={focusedForecastStart}
+                    x2={focusedForecastChart.at(-1)?.d}
+                    fill="#eef5f1"
+                    fillOpacity={0.8}
+                    strokeOpacity={0}
+                  />
+                ) : null}
+                {focusedForecastStart ? (
+                  <ReferenceLine
+                    x={focusedForecastStart}
+                    stroke="#a4beb1"
+                    strokeDasharray="3 5"
+                  />
+                ) : null}
+                {balanceWeek &&
+                balanceWeek !== focusedForecastStart &&
+                focusedForecastRows.some(
+                  (row) => row.target_week_start === balanceWeek,
+                ) ? (
+                  <ReferenceLine
+                    x={balanceWeek}
+                    stroke="#52635f"
+                    strokeDasharray="2 5"
+                  />
+                ) : null}
+                {focusedForecastSeries.flatMap((series) => [
+                  <Line
+                    key={`${series.branchId}-connector`}
+                    type="linear"
+                    dataKey={series.connectorKey}
+                    stroke={series.color}
+                    strokeWidth={2}
+                    strokeDasharray="7 6"
+                    dot={false}
+                    activeDot={false}
+                    tooltipType="none"
+                    legendType="none"
+                    connectNulls={false}
+                    isAnimationActive={false}
+                  />,
+                  <Line
+                    key={`${series.branchId}-actual`}
+                    type="linear"
+                    dataKey={series.actualKey}
+                    name={`${series.label} — actual weekly demand`}
+                    stroke={series.color}
+                    strokeWidth={2.5}
+                    dot={{
+                      r: 4,
+                      fill: series.color,
+                      stroke: "#fff",
+                      strokeWidth: 2,
+                    }}
+                    activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
+                    connectNulls={false}
+                    isAnimationActive={false}
+                  />,
+                  <Line
+                    key={`${series.branchId}-forecast`}
+                    type="linear"
+                    dataKey={series.forecastKey}
+                    name={`${series.label} — weekly WMA forecast`}
+                    stroke={series.color}
+                    strokeWidth={2.5}
+                    strokeDasharray="7 6"
+                    dot={{
+                      r: 4,
+                      fill: "#fff",
+                      stroke: series.color,
+                      strokeWidth: 2,
+                    }}
+                    activeDot={{
+                      r: 6,
+                      fill: "#fff",
+                      stroke: series.color,
+                      strokeWidth: 2,
+                    }}
+                    connectNulls={false}
+                    isAnimationActive={false}
+                  />,
+                ])}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       )}
     </>
   );
@@ -1220,7 +1310,7 @@ function DecisionPage() {
             </h3>
           </div>
           <small>
-            Horizon 1 · target week{" "}
+            Horizon {focusedWmaForecast.horizon} · planning week{" "}
             {formatWeekRange(
               focusedWmaForecast.target_week_start,
               focusedWmaForecast.target_week_end,
@@ -1353,9 +1443,9 @@ function DecisionPage() {
           </h1>
           <p>
             {isForecast
-              ? "Review weekly rental demand and plan supply."
+              ? "Estimate rental demand and plan vehicle needs."
               : view === "allocation"
-                ? "Compare supply and review recommended fleet moves."
+                ? "See which branches need vehicles and review possible transfers."
                 : view === "utilization"
                   ? "Review rental activity and vehicles needing attention."
                   : "Forecast demand, identify shortages, and review fleet moves."}
@@ -1372,20 +1462,26 @@ function DecisionPage() {
 
       {isForecast ? (
         <DemandForecastScreen
+          week={balanceWeek}
+          onWeek={(week) => {
+            setBalanceWeek(week);
+            void navigate({
+              to: "/admin/decisions/forecast",
+              search: (previous) => ({ ...previous, week }),
+              replace: true,
+            });
+          }}
           branch={selectedBranchId}
           category={selectedCategoryId}
           branches={branchOptions}
           categories={categoryOptions}
           rows={focusedForecastRows}
-          evaluations={supplyByForecastId}
           runs={forecastData?.runs ?? []}
           latestRunId={latestRun?.id}
           loading={forecastLoading}
           busy={forecastBusy}
           error={forecastError}
           notice={forecastNotice}
-          supplyLoading={supplyLoading || supplyBusy}
-          supplyError={supplyError}
           mape={forecastData?.mape ?? null}
           eligible={forecastData?.accuracy?.eligibleForecasts}
           excluded={forecastData?.accuracy?.excludedZeroActuals}
@@ -1398,22 +1494,24 @@ function DecisionPage() {
               {focusedForecastSeries.map((series) => (
                 <span key={series.branchId}>
                   <i style={{ background: series.color }} />
-                  {series.label} — actual solid, forecast dashed
+                  {series.label}
                 </span>
               ))}
               <small>
                 Historical forecasts use saved horizon-1 values. Missing values
-                remain blank. Curves only guide the eye between weekly points.{" "}
-                The dashed connector links the last actual to the latest
-                outlook.
+                remain blank. The dashed connector links the last actual to the
+                latest outlook.
                 {focusedForecast.hasSimulatedHistory
                   ? " Historical forecasts in this demo are simulated."
                   : ""}
               </small>
               {focusedForecastStart && focusedForecastEnd ? (
                 <small>
-                  Forecast horizon:{" "}
+                  Shaded area: latest outlook ·{" "}
                   {formatWeekRange(focusedForecastStart, focusedForecastEnd)}
+                  {balanceWeek
+                    ? ` · Selected week: ${formatChartDay(balanceWeek)}`
+                    : ""}
                 </small>
               ) : null}
             </>
@@ -1426,16 +1524,6 @@ function DecisionPage() {
           onFinalize={() => void finalizeForecasts()}
           onReload={() => setSupportVersion((version) => version + 1)}
           onAllocation={openAllocation}
-          onUtilization={() =>
-            void navigate({
-              to: "/admin/decisions/utilization",
-              search: {
-                branch: selectedBranchId,
-                category: selectedCategoryId,
-                week: balanceWeek,
-              },
-            })
-          }
         />
       ) : null}
       {view === "allocation" ? (
@@ -1503,6 +1591,8 @@ function DecisionPage() {
             )
           }
           error={vehicleError}
+          refreshing={vehicleRefreshing}
+          refreshError={vehicleRefreshError}
           loadedAt={vehicleLoadedAt}
           range={analyticsRange}
           search={search}
@@ -1520,8 +1610,12 @@ function DecisionPage() {
             void navigate({
               to: "/admin/decisions/allocation",
               search: {
-                branch: row.branchId ?? "all",
-                category: row.categoryId ?? undefined,
+                branch: row?.branchId ?? search.utilBranch ?? "all",
+                category:
+                  row?.categoryId ??
+                  (search.utilCategory === "all"
+                    ? undefined
+                    : search.utilCategory),
                 week: balanceWeek,
                 recommendation: undefined,
               },

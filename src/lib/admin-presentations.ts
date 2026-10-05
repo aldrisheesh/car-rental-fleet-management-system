@@ -1,11 +1,6 @@
 import type { HandoverQuote, RentalFinancialRecord } from "./rental-finance";
 export type AdminStatusTone =
-  | "success"
-  | "warning"
-  | "error"
-  | "info"
-  | "locked"
-  | "neutral";
+  "success" | "warning" | "error" | "info" | "locked" | "neutral";
 
 export type AdminVehicle = {
   id: string;
@@ -108,6 +103,11 @@ export type AdminBooking = {
   rental?: AdminRental | null;
   requirement_status?: string;
   payment_status?: string;
+  pending_date_change?: {
+    id: string;
+    requested_pickup_at: string;
+    requested_return_at: string;
+  } | null;
 };
 
 export type AdminRequirementDocument = {
@@ -126,6 +126,14 @@ export type AdminRequirementDocument = {
 };
 
 export type AdminRequirementReview = {
+  government_id_document_id?: string;
+  government_id_version?: number;
+  drivers_license_document_id?: string;
+  drivers_license_version?: number;
+  proof_of_billing_document_id?: string;
+  proof_of_billing_version?: number;
+  selfie_with_id_document_id?: string;
+  selfie_with_id_version?: number;
   government_id_outcome?: string;
   government_id_reason?: string | null;
   drivers_license_outcome?: string;

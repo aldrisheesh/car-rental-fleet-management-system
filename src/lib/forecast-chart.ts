@@ -22,7 +22,7 @@ export function buildFocusedForecastChart(
       rows.map((row) => [row.branch_id, row.branch?.name ?? row.branch_id]),
     ),
   ];
-  const palette = ["#007c70", "#6650a4", "#b54708", "#0f6cbd"];
+  const palette = ["#176454", "#426a93", "#a56624", "#765c86"];
   const series = branches.map(([branchId, label], index) => ({
     branchId,
     label,

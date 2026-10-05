@@ -88,91 +88,85 @@ export function DssScreenSkeleton({ screen }: { screen: Screen }) {
       <span className="sr-only">Loading {label}…</span>
       <div aria-hidden="true">
         <div className="dss-loading-toolbar">
-          {Array.from({ length: screen === "utilization" ? 4 : 2 }, (_, i) => (
-            <div className="dss-loading-field" key={i}>
-              <Skeleton className="dss-loading-short" />
-              <Skeleton className="dss-loading-control" />
-            </div>
-          ))}
+          {Array.from(
+            {
+              length:
+                screen === "utilization" ? 4 : screen === "forecast" ? 3 : 2,
+            },
+            (_, i) => (
+              <div className="dss-loading-field" key={i}>
+                <Skeleton className="dss-loading-short" />
+                <Skeleton className="dss-loading-control" />
+              </div>
+            ),
+          )}
           <div className="dss-loading-toolbar-actions">
             <Skeleton className="dss-loading-button" />
             {screen === "allocation" ? (
-              <Skeleton className="dss-loading-button" />
+              <Skeleton className="dss-loading-short" />
             ) : null}
           </div>
           <Skeleton className="dss-loading-toolbar-note" />
         </div>
         {screen === "forecast" ? (
-          <div className="dss-forecast-layout">
-            <div className="dss-forecast-main">
-              <div className="admin-decision-panel">
-                <Heading />
-                <div className="dss-loading-chart">
-                  <Skeleton className="dss-loading-chart-plot" />
-                </div>
-              </div>
-              <div className="admin-decision-panel">
-                <Heading />
-                <Rows count={3} />
-              </div>
-              <div className="admin-decision-panel">
-                <Heading />
-                <Rows count={3} columns={4} />
+          <div className="dss-forecast-main">
+            <div className="dss-loading-list-item">
+              <Skeleton className="dss-loading-title" />
+              <Skeleton className="dss-loading-copy" />
+              <Skeleton className="dss-loading-short" />
+            </div>
+            <div className="admin-decision-panel">
+              <Heading />
+              <div className="dss-loading-chart">
+                <Skeleton className="dss-loading-chart-plot" />
               </div>
             </div>
-            <div className="admin-decision-panel dss-loading-accuracy">
+            <div className="admin-decision-panel">
               <Heading />
-              <Skeleton className="dss-loading-metric" />
-              <Evidence />
+              <Rows count={3} columns={3} />
+            </div>
+            <div className="admin-decision-panel">
+              <Rows count={2} columns={1} />
             </div>
           </div>
         ) : null}
         {screen === "allocation" ? (
           <>
             <div className="admin-decision-panel">
-              <Heading />
-              <Rows count={2} />
-            </div>
-            <div className="dss-allocation-layout">
-              <div className="dss-allocation-register">
-                <div className="admin-decision-panel">
-                  <Heading />
-                  {Array.from({ length: 2 }, (_, i) => (
-                    <div className="dss-loading-list-item" key={i}>
-                      <Skeleton className="dss-loading-copy" />
-                      <Skeleton className="dss-loading-short" />
-                      <Skeleton className="dss-loading-copy" />
-                    </div>
-                  ))}
-                </div>
-                <div className="admin-decision-panel">
-                  <Heading />
-                  <Evidence />
-                </div>
+              <div className="dss-loading-list-item">
+                <Skeleton className="dss-loading-title" />
+                <Skeleton className="dss-loading-copy" />
+                <Skeleton className="dss-loading-short" />
               </div>
-              <div className="admin-decision-panel">
-                <Heading />
-                <Evidence />
-                <div className="dss-loading-list-item">
-                  <Skeleton className="dss-loading-copy" />
-                  <ExternalAdvisorySkeleton />
-                </div>
+              <Heading />
+              <Rows count={2} columns={4} />
+              <div className="dss-loading-list-item">
+                <Skeleton className="dss-loading-copy" />
+              </div>
+            </div>
+            <div className="admin-decision-panel">
+              <Heading />
+              <Rows count={2} columns={4} />
+              <div className="dss-loading-list-item">
+                <Skeleton className="dss-loading-copy" />
+                <Skeleton className="dss-loading-copy" />
               </div>
             </div>
           </>
         ) : null}
         {screen === "utilization" ? (
           <>
-            <div className="admin-decision-panel">
-              <Heading />
-              <Rows count={6} columns={9} />
+            <div className="dss-loading-list-item">
+              <Skeleton className="dss-loading-title" />
+              <Skeleton className="dss-loading-copy" />
             </div>
             <div className="admin-decision-panel">
               <Heading />
-              <div className="dss-loading-inspector">
-                <Evidence />
-                <Evidence />
-              </div>
+              <Rows count={6} columns={6} />
+            </div>
+            <div className="admin-decision-panel">
+              <Heading />
+              <Rows count={2} columns={1} />
             </div>
           </>
         ) : null}

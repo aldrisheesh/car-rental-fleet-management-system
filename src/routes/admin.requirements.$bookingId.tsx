@@ -1,3 +1,4 @@
+import { CategorizedField } from "@/components/booking/CategorizedField";
 import { bookingReferenceLabel } from "@/lib/booking-reference";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
@@ -664,20 +665,14 @@ function ReviewPanel({
             onChange={setGovernmentIdOutcome}
             options={["Accepted", "Needs Replacement"]}
           />
-          <label
-            className="block text-sm font-medium"
-            htmlFor="government-id-reason"
-          >
-            <span>Government ID reason</span>
-            <TInput
-              id="government-id-reason"
-              name="government-id-reason"
-              value={governmentIdReason}
-              onChange={(event) => setGovernmentIdReason(event.target.value)}
-              placeholder="Required when replacement is needed"
-              className="mt-2"
-            />
-          </label>
+          <CategorizedField
+            id="government-id-reason"
+            label="Government ID correction"
+            domain="document_review"
+            value={governmentIdReason}
+            onChange={setGovernmentIdReason}
+            optional
+          />
           <ReviewSelect
             id="drivers-license-outcome"
             label="Driver's License outcome"
@@ -685,20 +680,14 @@ function ReviewPanel({
             onChange={setDriversLicenseOutcome}
             options={["Accepted", "Needs Replacement"]}
           />
-          <label
-            className="block text-sm font-medium"
-            htmlFor="drivers-license-reason"
-          >
-            <span>Driver's License reason</span>
-            <TInput
-              id="drivers-license-reason"
-              name="drivers-license-reason"
-              value={driversLicenseReason}
-              onChange={(event) => setDriversLicenseReason(event.target.value)}
-              placeholder="Required when replacement is needed"
-              className="mt-2"
-            />
-          </label>
+          <CategorizedField
+            id="drivers-license-reason"
+            label="Driver’s license correction"
+            domain="document_review"
+            value={driversLicenseReason}
+            onChange={setDriversLicenseReason}
+            optional
+          />
           <ReviewSelect
             id="proof-of-billing-outcome"
             label="Proof of Billing outcome"
@@ -706,20 +695,14 @@ function ReviewPanel({
             onChange={setProofOfBillingOutcome}
             options={["Accepted", "Needs Replacement"]}
           />
-          <label
-            className="block text-sm font-medium"
-            htmlFor="proof-of-billing-reason"
-          >
-            <span>Proof of Billing reason</span>
-            <TInput
-              id="proof-of-billing-reason"
-              name="proof-of-billing-reason"
-              value={proofOfBillingReason}
-              onChange={(event) => setProofOfBillingReason(event.target.value)}
-              placeholder="Required when replacement is needed"
-              className="mt-2"
-            />
-          </label>
+          <CategorizedField
+            id="proof-of-billing-reason"
+            label="Proof of billing correction"
+            domain="document_review"
+            value={proofOfBillingReason}
+            onChange={setProofOfBillingReason}
+            optional
+          />
           <ReviewSelect
             id="selfie-with-id-outcome"
             label="Selfie with ID outcome"
@@ -727,20 +710,15 @@ function ReviewPanel({
             onChange={setSelfieWithIdOutcome}
             options={["Accepted", "Needs Replacement"]}
           />
-          <label
-            className="block text-sm font-medium"
-            htmlFor="selfie-with-id-reason"
-          >
-            <span>Selfie with ID reason</span>
-            <TInput
-              id="selfie-with-id-reason"
-              name="selfie-with-id-reason"
-              value={selfieWithIdReason}
-              onChange={(event) => setSelfieWithIdReason(event.target.value)}
-              placeholder="Required when replacement is needed"
-              className="mt-2"
-            />
-          </label>
+          <CategorizedField
+            id="selfie-with-id-reason"
+            label="Selfie with ID correction"
+            domain="document_review"
+            categoryPrefix="selfie."
+            value={selfieWithIdReason}
+            onChange={setSelfieWithIdReason}
+            optional
+          />
           <ReviewSelect
             id="identity-consistency"
             label="Identity consistency"
@@ -873,9 +851,7 @@ function currentDocuments(
 
 async function readJson<T>(response: Response) {
   const body = (await response.json().catch(() => null)) as
-    | T
-    | { message?: string }
-    | null;
+    T | { message?: string } | null;
   if (!response.ok) {
     throw new Error(
       body &&

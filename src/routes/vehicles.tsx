@@ -1,3 +1,4 @@
+import { HANDOVER_TIMES } from "@/lib/handover-times";
 import {
   useCallback,
   useEffect,
@@ -116,19 +117,7 @@ function availabilityDateTimeFromSearch(value: string | undefined) {
     : dateTimeInputFromIso(value) || undefined;
 }
 
-const finderTimeOptions = [
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-];
+const finderTimeOptions = HANDOVER_TIMES;
 
 function finderDateFromDateTimeLocal(value: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})T/.exec(value);
@@ -419,6 +408,24 @@ function FindCarPage() {
       return;
     }
 
+    if (
+      ![values.passengerCount, values.largeBagCount, values.maximumBudget].some(
+        (value) => value.trim(),
+      )
+    ) {
+      setFinderErrors({});
+      setFinderError("");
+      setFinderResponse(null);
+      void navigate({
+        to: "/vehicles",
+        search: {
+          finderStart: values.requestedStart,
+          finderEnd: values.requestedEnd,
+          finderIntent: "trip",
+        } as never,
+      });
+      return;
+    }
     void evaluateFinder(values, true);
   }
 
@@ -438,8 +445,16 @@ function FindCarPage() {
     setFinderDraftRange(
       hasBookableRange ? { from: pickupDate, to: returnDate } : undefined,
     );
-    setFinderPickupTime("");
-    setFinderReturnTime("");
+    setFinderPickupTime(
+      hasBookableRange
+        ? finderTimeFromDateTimeLocal(activeFinderForm.requestedStart)
+        : "",
+    );
+    setFinderReturnTime(
+      hasBookableRange
+        ? finderTimeFromDateTimeLocal(activeFinderForm.requestedEnd)
+        : "",
+    );
     setFinderDatePickerOpen(true);
   }
 

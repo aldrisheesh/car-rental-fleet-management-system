@@ -19,6 +19,11 @@ type DateRangePickerProps = {
   pickupTimeId: string;
   returnTimeId: string;
   onApply: () => void;
+  returnLocked?: boolean;
+  isStartUnavailable?: (day: Date) => boolean;
+  availabilityMessage?: string;
+  availabilityPending?: boolean;
+  selectionUnavailable?: boolean;
 };
 
 export function DateRangePicker({
@@ -34,6 +39,11 @@ export function DateRangePicker({
   pickupTimeId,
   returnTimeId,
   onApply,
+  returnLocked = false,
+  isStartUnavailable,
+  availabilityMessage,
+  availabilityPending = false,
+  selectionUnavailable = false,
 }: DateRangePickerProps) {
   const hasPickupDate = Boolean(selected?.from);
   const hasReturnDate = Boolean(selected?.to);
@@ -43,7 +53,8 @@ export function DateRangePicker({
     pickupTime,
     returnTime,
   );
-  const canApply = period !== null;
+  const canApply =
+    period !== null && !availabilityPending && !selectionUnavailable;
   const dateFormatter = new Intl.DateTimeFormat("en-PH", {
     weekday: "short",
     month: "short",
@@ -61,8 +72,10 @@ export function DateRangePicker({
 
   function clearDates() {
     onSelect(undefined);
-    onPickupTimeChange("");
-    onReturnTimeChange("");
+    if (!returnLocked) {
+      onPickupTimeChange("");
+      onReturnTimeChange("");
+    }
   }
 
   return (
@@ -72,16 +85,41 @@ export function DateRangePicker({
         aria-label="Rental dates"
       >
         <div className="home-date-calendar-frame">
-          <Calendar
-            className="home-date-calendar"
-            mode="range"
-            selected={selected}
-            onSelect={onSelect}
-            numberOfMonths={2}
-            min={0}
-            disabled={{ before: firstAvailableDate }}
-            classNames={{ today: "home-date-calendar-today" }}
-          />
+          {returnLocked ? (
+            <Calendar
+              className="home-date-calendar"
+              mode="single"
+              selected={selected?.from}
+              onSelect={(day) => onSelect(day ? { from: day } : undefined)}
+              defaultMonth={selected?.from ?? firstAvailableDate}
+              numberOfMonths={2}
+              disabled={[
+                { before: firstAvailableDate },
+                (day) =>
+                  availabilityPending || Boolean(isStartUnavailable?.(day)),
+              ]}
+              modifiers={{
+                unavailable: (day) =>
+                  day >= firstAvailableDate &&
+                  Boolean(isStartUnavailable?.(day)),
+              }}
+              modifiersClassNames={{
+                unavailable: "reschedule-day-unavailable",
+              }}
+              classNames={{ today: "home-date-calendar-today" }}
+            />
+          ) : (
+            <Calendar
+              className="home-date-calendar"
+              mode="range"
+              selected={selected}
+              onSelect={onSelect}
+              numberOfMonths={2}
+              min={0}
+              disabled={{ before: firstAvailableDate }}
+              classNames={{ today: "home-date-calendar-today" }}
+            />
+          )}
           <div className="home-date-calendar-actions">
             {hasPickupDate && (
               <button type="button" onClick={clearDates}>
@@ -89,12 +127,21 @@ export function DateRangePicker({
               </button>
             )}
           </div>
+          {availabilityMessage && (
+            <p className="reschedule-availability-guide" role="status">
+              {availabilityMessage}
+            </p>
+          )}
         </div>
       </section>
       <aside className="home-date-times" aria-label="Rental times">
         <header className="home-date-times-header">
-          <h2>Set your times</h2>
-          <p>Choose the times that suit your schedule.</p>
+          <h2>{returnLocked ? "Handover time" : "Set your times"}</h2>
+          <p>
+            {returnLocked
+              ? "Your return adjusts to keep the same rental duration."
+              : "Choose the times that suit your schedule."}
+          </p>
         </header>
         <div className="home-date-time-field">
           <label htmlFor={pickupTimeId}>Pickup time</label>
@@ -102,7 +149,7 @@ export function DateRangePicker({
             id={pickupTimeId}
             value={pickupTime}
             onChange={(event) => onPickupTimeChange(event.target.value)}
-            disabled={!hasPickupDate}
+            disabled={!hasPickupDate && !returnLocked}
           >
             <option value="">--:--</option>
             {timeOptions.map((time) => (
@@ -113,20 +160,35 @@ export function DateRangePicker({
           </select>
         </div>
         <div className="home-date-time-field">
-          <label htmlFor={returnTimeId}>Return time</label>
-          <select
-            id={returnTimeId}
-            value={returnTime}
-            onChange={(event) => onReturnTimeChange(event.target.value)}
-            disabled={!hasReturnDate}
-          >
-            <option value="">--:--</option>
-            {timeOptions.map((time) => (
-              <option key={time} value={time}>
-                {formatTime(time)}
-              </option>
-            ))}
-          </select>
+          {returnLocked ? (
+            <>
+              <span className="home-date-fixed-return-label">
+                Return · calculated automatically
+              </span>
+              <p className="home-date-fixed-return">
+                {hasReturnDate
+                  ? `${returnLabel} at ${formatTime(returnTime)}`
+                  : "Choose a handover date"}
+              </p>
+            </>
+          ) : (
+            <>
+              <label htmlFor={returnTimeId}>Return time</label>
+              <select
+                id={returnTimeId}
+                value={returnTime}
+                onChange={(event) => onReturnTimeChange(event.target.value)}
+                disabled={!hasReturnDate}
+              >
+                <option value="">--:--</option>
+                {timeOptions.map((time) => (
+                  <option key={time} value={time}>
+                    {formatTime(time)}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
         </div>
         <button
           className="customer-primary-button"

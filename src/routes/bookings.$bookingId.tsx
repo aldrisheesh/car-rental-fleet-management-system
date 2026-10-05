@@ -1,9 +1,20 @@
+import { BookingJourneySkeleton } from "@/components/customer/BookingJourneySkeleton";
+import { documentReplacedSinceReview } from "@/lib/document-review-version";
+import {
+  readBookingLoadingState,
+  rememberBookingLoadingState,
+} from "@/lib/booking-loading-state";
+import { CategorizedField } from "@/components/booking/CategorizedField";
+import { validCategory } from "@/lib/booking-categories";
+import { DateChangeRequests } from "@/components/booking/DateChangeRequests";
+import { PaymentPolicyConfirmation } from "@/components/booking/PaymentPolicyConfirmation";
+import { PAYMENT_POLICY_VERSION } from "@/lib/payment-policy";
 import {
   meetingMapUrl,
   pickupArrangementReady,
 } from "@/lib/pickup-arrangement";
 import { bookingReference } from "@/lib/booking-reference";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlertCircle,
@@ -129,33 +140,20 @@ type BookingPageData = {
   vehicleError: string | null;
 };
 
-type BookingLoadingVariant = "detail" | "payment-waiting" | "resolution";
-
 function BookingDetailPage() {
   const { bookingId } = Route.useParams();
   const [pageData, setPageData] = useState<BookingPageData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingVariant, setLoadingVariant] = useState<BookingLoadingVariant>(
-    () =>
-      typeof window !== "undefined" &&
-      window.sessionStorage.getItem(`booking-loading-variant:${bookingId}`) ===
-        "payment-waiting"
-        ? "payment-waiting"
-        : "detail",
-  );
+  const [loadingVariant, setLoadingVariant] = useState<
+    LifecyclePresentation["state"] | null
+  >(null);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState("");
   const loadBooking = useCallback(
     async ({ preserveView = false }: { preserveView?: boolean } = {}) => {
       if (!preserveView) {
         setLoading(true);
-        setLoadingVariant(
-          window.sessionStorage.getItem(
-            `booking-loading-variant:${bookingId}`,
-          ) === "payment-waiting"
-            ? "payment-waiting"
-            : "detail",
-        );
+        setLoadingVariant(readBookingLoadingState(bookingId));
       }
       setError("");
       setNotFound(false);
@@ -183,7 +181,7 @@ function BookingDetailPage() {
           return;
         }
         if (booking.confirmation_exception_message?.trim())
-          setLoadingVariant("resolution");
+          setLoadingVariant("confirmation-resolution");
 
         const [requirementsResult, paymentResult, vehiclesResult] =
           await Promise.allSettled([
@@ -273,14 +271,11 @@ function BookingDetailPage() {
   useEffect(() => {
     if (!pageData) return;
     const lifecycle = deriveCustomerLifecycle(pageData.composition);
-    window.sessionStorage.setItem(
-      `booking-loading-variant:${bookingId}`,
-      lifecycle.state === "payment-waiting" ? "payment-waiting" : "detail",
-    );
+    rememberBookingLoadingState(bookingId, lifecycle.state);
   }, [bookingId, pageData]);
 
   if (loading) {
-    return <BookingDetailSkeleton variant={loadingVariant} />;
+    return <BookingJourneySkeleton state={loadingVariant} />;
   }
 
   if (error) {
@@ -458,6 +453,10 @@ function BookingDetailPage() {
                 vehicle={vehicle}
                 onRefresh={() => loadBooking({ preserveView: true })}
               />
+              <DateChangeRequests
+                booking={booking}
+                onChanged={() => loadBooking({ preserveView: true })}
+              />
             </div>
             <BookingSummary
               booking={booking}
@@ -466,266 +465,6 @@ function BookingDetailPage() {
               onWithdrawn={loadBooking}
               showRequestManagement={canManageRequest}
             />
-          </div>
-        </div>
-      </main>
-      <Footer />
-    </CustomerPage>
-  );
-}
-
-function BookingDetailSkeleton({
-  variant = "detail",
-}: {
-  variant?: BookingLoadingVariant;
-}) {
-  if (variant === "resolution") {
-    return <BookingResolutionSkeleton />;
-  }
-  if (variant === "payment-waiting") {
-    return <PaymentAwaitingSkeleton />;
-  }
-
-  return (
-    <CustomerPage className="booking-detail-page booking-detail-page--confirmed">
-      <Header />
-      <section
-        className="booking-requirements-skeleton-journey"
-        aria-hidden="true"
-      >
-        <div className="customer-container booking-requirements-skeleton-journey__inner">
-          <i />
-          <div>
-            <i />
-            <i />
-            <i />
-            <i />
-            <i />
-            <i />
-          </div>
-        </div>
-      </section>
-      <main id="main-content" className="booking-detail-main">
-        <div className="customer-container">
-          <div
-            className="booking-detail-skeleton"
-            role="status"
-            aria-live="polite"
-          >
-            <span className="sr-only">Loading booking details…</span>
-            <div
-              className="booking-detail-skeleton__primary"
-              aria-hidden="true"
-            >
-              <i className="booking-detail-skeleton__title" />
-              <i className="booking-detail-skeleton__copy" />
-              {[1, 2].map((moment) => (
-                <section
-                  className="booking-detail-skeleton__moment"
-                  key={moment}
-                >
-                  <div>
-                    <i />
-                    <i />
-                    <i />
-                  </div>
-                  <div>
-                    <i />
-                    <i />
-                    <i />
-                  </div>
-                </section>
-              ))}
-              <section className="booking-detail-skeleton__next">
-                <i />
-                <div>
-                  <i />
-                  <i />
-                  <i />
-                </div>
-              </section>
-            </div>
-            <aside
-              className="booking-detail-skeleton__summary"
-              aria-hidden="true"
-            >
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-            </aside>
-          </div>
-        </div>
-      </main>
-      <Footer />
-    </CustomerPage>
-  );
-}
-
-function PaymentAwaitingSkeleton() {
-  return (
-    <CustomerPage className="booking-detail-page booking-detail-page--payment">
-      <Header />
-      <section
-        className="booking-requirements-skeleton-journey"
-        aria-hidden="true"
-      >
-        <div className="customer-container booking-requirements-skeleton-journey__inner">
-          <i />
-          <div>
-            <i />
-            <i />
-            <i />
-            <i />
-            <i />
-            <i />
-          </div>
-        </div>
-      </section>
-      <main id="main-content" className="booking-detail-main">
-        <div className="customer-container">
-          <div
-            className="booking-payment-awaiting-skeleton"
-            role="status"
-            aria-live="polite"
-          >
-            <span className="sr-only">Loading payment details…</span>
-            <div
-              className="booking-payment-awaiting-skeleton__primary"
-              aria-hidden="true"
-            >
-              <i className="booking-payment-awaiting-skeleton__title" />
-              <i className="booking-payment-awaiting-skeleton__copy" />
-              <section className="booking-payment-awaiting-skeleton__handoff">
-                {[1, 2, 3].map((step) => (
-                  <div key={step}>
-                    <i />
-                    <i />
-                    {step === 2 ? <i /> : null}
-                  </div>
-                ))}
-              </section>
-              <section className="booking-payment-awaiting-skeleton__trip">
-                <i />
-                <div>
-                  <section>
-                    <i />
-                    <div>
-                      <i />
-                      <i />
-                      <i />
-                    </div>
-                  </section>
-                  <section>
-                    <i />
-                    <div>
-                      <i />
-                      <i />
-                    </div>
-                  </section>
-                </div>
-              </section>
-            </div>
-            <aside
-              className="booking-payment-awaiting-skeleton__summary"
-              aria-hidden="true"
-            >
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-            </aside>
-          </div>
-        </div>
-      </main>
-      <Footer />
-    </CustomerPage>
-  );
-}
-
-function BookingResolutionSkeleton() {
-  return (
-    <CustomerPage className="booking-detail-page booking-detail-page--resolution">
-      <Header />
-      <section
-        className="booking-requirements-skeleton-journey"
-        aria-hidden="true"
-      >
-        <div className="customer-container booking-requirements-skeleton-journey__inner">
-          <i />
-          <div>
-            <i />
-            <i />
-            <i />
-            <i />
-            <i />
-            <i />
-          </div>
-        </div>
-      </section>
-      <main id="main-content" className="booking-detail-main">
-        <div className="customer-container">
-          <div
-            className="booking-resolution-skeleton"
-            role="status"
-            aria-live="polite"
-          >
-            <span className="sr-only">Loading booking resolution details…</span>
-            <div
-              className="booking-resolution-skeleton__primary"
-              aria-hidden="true"
-            >
-              <i className="booking-resolution-skeleton__title" />
-              <section className="booking-resolution-skeleton__reassurance">
-                <article>
-                  <i />
-                  <i />
-                  <i />
-                </article>
-                <article>
-                  <i />
-                  <i />
-                  <i />
-                </article>
-                <article>
-                  <i />
-                  <i />
-                  <i />
-                </article>
-              </section>
-              <div className="booking-resolution-skeleton__summary-copy">
-                <i />
-                <i />
-                <i />
-              </div>
-              <dl className="booking-resolution-skeleton__facts">
-                {[1, 2, 3, 4].map((fact) => (
-                  <div key={fact}>
-                    <i />
-                    <i />
-                    {fact === 1 || fact === 4 ? <i /> : null}
-                  </div>
-                ))}
-              </dl>
-              <i className="booking-resolution-skeleton__contact" />
-            </div>
-            <aside
-              className="booking-resolution-skeleton__vehicle"
-              aria-hidden="true"
-            >
-              <i />
-              <i />
-              <i />
-              <i />
-              <div>
-                <i />
-                <i />
-                <i />
-                <i />
-              </div>
-            </aside>
           </div>
         </div>
       </main>
@@ -785,7 +524,7 @@ function BookingStatusBand({
         title="No action needed — payment is under review."
       >
         Briah is checking the payment details and proof you submitted. We’ll
-        update this booking if anything needs to be corrected.
+        notify you here and by email when email updates are enabled.
       </StatusCallout>
     );
   }
@@ -796,7 +535,8 @@ function BookingStatusBand({
         title="No action needed — requirements are under review."
       >
         Briah is reviewing your submitted documents. Payment remains locked
-        until requirements are verified.
+        until requirements and your quote are ready. Updates appear in
+        Notifications and are emailed when email updates are enabled.
       </StatusCallout>
     );
   }
@@ -908,14 +648,30 @@ function BookingStateContent({
         </>
       );
     case "confirmed":
-      return <ConfirmedBooking booking={booking} vehicle={vehicle} />;
+      return (
+        <>
+          <BookingFinancialSummary
+            booking={booking}
+            payment={composition.payment}
+          />
+          <ConfirmedBooking booking={booking} vehicle={vehicle} />
+        </>
+      );
     case "active-rental":
       return <ActiveRental booking={booking} vehicle={vehicle} />;
     case "returned":
       return <ReturnedRental booking={booking} vehicle={vehicle} />;
     case "rejected":
     case "cancelled":
-      return <BookingFactsSection booking={booking} vehicle={vehicle} />;
+      return (
+        <>
+          <BookingFinancialSummary
+            booking={booking}
+            payment={composition.payment}
+          />
+          <BookingFactsSection booking={booking} vehicle={vehicle} />
+        </>
+      );
     case "unavailable":
       return (
         <StatusCallout tone="error" title="Booking details need a refresh">
@@ -938,7 +694,7 @@ function WithdrawBookingAction({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   async function withdraw() {
-    if (!reason.trim()) return;
+    if (!validCategory("cancellation", reason)) return;
     setSaving(true);
     setError("");
     try {
@@ -972,16 +728,14 @@ function WithdrawBookingAction({
           Withdraw this unfinished request. Your reason is saved with the
           request history.
         </p>
-        <label htmlFor="withdrawal-reason">Reason for withdrawal</label>
-        <input
+        <CategorizedField
           id="withdrawal-reason"
-          className="customer-input"
+          label="Reason for withdrawal"
+          domain="cancellation"
+          customer
           value={reason}
-          maxLength={500}
+          onChange={setReason}
           disabled={saving}
-          autoComplete="off"
-          onChange={(event) => setReason(event.target.value)}
-          placeholder="Tell us why…"
         />
         {error ? (
           <p className="booking-withdrawal__error" role="alert">
@@ -991,7 +745,7 @@ function WithdrawBookingAction({
         <button
           type="button"
           className="customer-secondary-button booking-withdrawal__button"
-          disabled={saving || !reason.trim()}
+          disabled={saving || !validCategory("cancellation", reason)}
           onClick={() => setOpen(true)}
         >
           Withdraw request
@@ -1116,7 +870,11 @@ function BookingSummary({
             </dd>
           </div>
           <div>
-            <dt>Return</dt>
+            <dt>
+              {booking.pickup_delivery_option === "delivery"
+                ? "Collection"
+                : "Return"}
+            </dt>
             <dd>
               {formatInstant(booking.return_at)}
               <small>
@@ -1184,9 +942,6 @@ function RequirementsPanel({
   const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [replacedTypes, setReplacedTypes] = useState<Record<string, boolean>>(
-    {},
-  );
   const [recentlyUploadedType, setRecentlyUploadedType] = useState("");
   const status = requirements?.requirementSet?.status ?? "Not Submitted";
   const requiredTypes = requirements?.requiredTypes ?? [];
@@ -1200,7 +955,12 @@ function RequirementsPanel({
     requiredTypes.every((type) => currentDocument(documents, type));
   const resubmissionReady =
     flaggedTypes.length > 0 &&
-    flaggedTypes.every((type) => replacedTypes[type]);
+    flaggedTypes.every((type) =>
+      documentReplacedSinceReview(
+        currentDocument(documents, type),
+        reviewFor(requirements?.review, type),
+      ),
+    );
 
   async function uploadDocument(
     type: string,
@@ -1222,7 +982,6 @@ function RequirementsPanel({
     form.append("file", file);
     try {
       await fetchJson("/api/requirements", { method: "POST", body: form });
-      setReplacedTypes((current) => ({ ...current, [type]: true }));
       await onRefresh();
       setRecentlyUploadedType(type);
       window.setTimeout(() => setRecentlyUploadedType(""), 360);
@@ -1247,7 +1006,6 @@ function RequirementsPanel({
     form.append("action", action);
     try {
       await fetchJson("/api/requirements", { method: "POST", body: form });
-      setReplacedTypes({});
       await onRefresh();
     } catch (requestError) {
       setSubmitError(
@@ -1870,7 +1628,7 @@ function QuoteHandover({ booking }: { booking: CustomerBooking }) {
   );
 }
 
-function PaymentSubmission({
+export function PaymentSubmission({
   booking,
   bookingId,
   payment,
@@ -1892,6 +1650,13 @@ function PaymentSubmission({
   const [file, setFile] = useState<File | null>(null);
   const [proofPreviewUrl, setProofPreviewUrl] = useState<string | null>(null);
   const [qrPreviewOpen, setQrPreviewOpen] = useState(false);
+  const [policyOpen, setPolicyOpen] = useState(false);
+  const [policyAccepted, setPolicyAccepted] = useState(false);
+  const [policyLoading, setPolicyLoading] = useState(true);
+  const [policySaving, setPolicySaving] = useState(false);
+  const [policyError, setPolicyError] = useState("");
+  const policySaveInFlight = useRef(false);
+  const submissionInFlight = useRef(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState("");
   const [focusKey, setFocusKey] = useState(0);
@@ -1916,6 +1681,7 @@ function PaymentSubmission({
     booking.pickup_delivery_option !== "pickup" ||
     pickupArrangementReady(booking);
   const canSubmitPayment =
+    policyAccepted &&
     arrangementsReady &&
     Boolean(method) &&
     hasRequiredAmount &&
@@ -1924,6 +1690,60 @@ function PaymentSubmission({
     methods.length > 0;
   const resubmissionReason = payment?.resubmission_reason?.trim();
   const quote = payment?.payment_quote;
+
+  useEffect(() => {
+    let cancelled = false;
+    setPolicyLoading(true);
+    setPolicyAccepted(false);
+    void fetchJson<{ accepted: boolean }>(
+      `/api/payment-policy?bookingId=${encodeURIComponent(bookingId)}`,
+    )
+      .then((result) => {
+        if (cancelled) return;
+        setPolicyAccepted(result.accepted);
+        setPolicyOpen(!result.accepted);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPolicyOpen(true);
+      })
+      .finally(() => {
+        if (!cancelled) setPolicyLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [bookingId]);
+
+  async function acknowledgePolicy() {
+    if (policySaveInFlight.current) return;
+    policySaveInFlight.current = true;
+    setPolicySaving(true);
+    setPolicyError("");
+    try {
+      await fetchJson("/api/payment-policy", {
+        method: "POST",
+        body: JSON.stringify({
+          bookingId,
+          policyVersion: PAYMENT_POLICY_VERSION,
+          policyAcknowledged: true,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+      setPolicyAccepted(true);
+      setPolicyOpen(false);
+    } catch (error) {
+      setPolicyError(
+        errorFromResult(
+          error,
+          "Your acknowledgement could not be saved. Please try again.",
+        ),
+      );
+    } finally {
+      policySaveInFlight.current = false;
+      setPolicySaving(false);
+    }
+  }
 
   useEffect(() => {
     if (!file || !file.type.startsWith("image/")) {
@@ -1991,7 +1811,18 @@ function PaymentSubmission({
       return;
     }
     if (!file) return;
+    await confirmSubmission();
+  }
 
+  async function confirmSubmission() {
+    if (
+      submissionInFlight.current ||
+      !policyAccepted ||
+      !canSubmitPayment ||
+      !file
+    )
+      return;
+    submissionInFlight.current = true;
     setSubmitting(true);
     const proofFile = file;
     const form = new FormData();
@@ -2000,6 +1831,8 @@ function PaymentSubmission({
     form.set("submittedAmount", amount);
     form.set("transactionReference", reference.trim());
     form.set("file", proofFile);
+    form.set("policyAcknowledged", "true");
+    form.set("policyVersion", PAYMENT_POLICY_VERSION);
     try {
       await fetchJson<{ payment: CustomerPayment }>("/api/payments", {
         method: "POST",
@@ -2011,6 +1844,7 @@ function PaymentSubmission({
         errorFromResult(requestError, "Payment could not be submitted."),
       );
     } finally {
+      submissionInFlight.current = false;
       setSubmitting(false);
     }
   }
@@ -2122,246 +1956,289 @@ function PaymentSubmission({
         </StatusCallout>
       ) : null}
 
-      <form className="booking-payment-form" onSubmit={submit} noValidate>
-        <fieldset>
-          <legend>Payment information</legend>
-          <p className="booking-payment-form__intro">
-            Select a payment method to show its payment code.
+      {!policyAccepted ? (
+        <div className="booking-payment-policy-gate" role="status">
+          <p>
+            {policyLoading
+              ? "Checking your payment policy acknowledgement…"
+              : "Review the cancellation and date-change policies before accessing payment instructions."}
           </p>
-          <div className="booking-form-field">
-            <label htmlFor="payment-method">Payment method</label>
-            <select
-              id="payment-method"
-              name="paymentMethodId"
-              autoComplete="off"
-              className="customer-select"
-              value={method}
-              onChange={(event) => setMethod(event.target.value)}
-              aria-invalid={Boolean(fieldErrors.method)}
-              aria-describedby={
-                fieldErrors.method ? "payment-method-error" : undefined
-              }
-              disabled={submitting || methods.length === 0}
+          {!policyLoading && (
+            <button
+              type="button"
+              className="customer-secondary-button"
+              onClick={() => setPolicyOpen(true)}
             >
-              <option value="" disabled hidden>
-                Choose a payment method
-              </option>
-              {methods.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
+              Review payment policies
+            </button>
+          )}
+        </div>
+      ) : (
+        <form className="booking-payment-form" onSubmit={submit} noValidate>
+          <fieldset>
+            <legend>Payment information</legend>
+            <p className="booking-payment-form__intro">
+              Select a payment method to show its payment code.
+            </p>
+            <p className="booking-payment-policy-note">
+              <ShieldCheck size={17} aria-hidden="true" />
+              <span>
+                Your 50% down payment is non-refundable if you cancel.
+              </span>
+            </p>
+            <div className="booking-form-field">
+              <label htmlFor="payment-method">Payment method</label>
+              <select
+                id="payment-method"
+                name="paymentMethodId"
+                autoComplete="off"
+                className="customer-select"
+                value={method}
+                onChange={(event) => setMethod(event.target.value)}
+                aria-invalid={Boolean(fieldErrors.method)}
+                aria-describedby={
+                  fieldErrors.method ? "payment-method-error" : undefined
+                }
+                disabled={submitting || methods.length === 0}
+              >
+                <option value="" disabled hidden>
+                  Choose a payment method
                 </option>
-              ))}
-            </select>
-            <FieldError id="payment-method" message={fieldErrors.method} />
-          </div>
+                {methods.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+              <FieldError id="payment-method" message={fieldErrors.method} />
+            </div>
 
-          <div className="booking-payment-workspace">
-            <section
-              key={selectedMethod?.id ?? "payment-method-placeholder"}
-              className={`booking-payment-qr-panel${selectedMethod && qrImageUrl ? " booking-payment-qr-panel--revealed" : ""}`}
-              aria-live="polite"
-              aria-labelledby="payment-code-title"
-            >
-              {selectedMethod && qrImageUrl ? (
-                <>
-                  <div>
+            <div className="booking-payment-workspace">
+              <section
+                key={selectedMethod?.id ?? "payment-method-placeholder"}
+                className={`booking-payment-qr-panel${selectedMethod && qrImageUrl ? " booking-payment-qr-panel--revealed" : ""}`}
+                aria-live="polite"
+                aria-labelledby="payment-code-title"
+              >
+                {selectedMethod && qrImageUrl ? (
+                  <>
+                    <div>
+                      <h2 id="payment-code-title">
+                        Scan to pay with {selectedMethod.label}
+                      </h2>
+                      <p className="booking-payment-qr-panel__amount">
+                        <span>Amount due</span>
+                        <strong>{amountDueLabel}</strong>
+                      </p>
+                    </div>
+                    <button
+                      className="booking-payment-qr-panel__image"
+                      type="button"
+                      onClick={() => setQrPreviewOpen(true)}
+                      aria-label={`Preview ${selectedMethod.label} payment QR code`}
+                    >
+                      <img
+                        src={qrImageUrl}
+                        alt={`${selectedMethod.label} payment QR code`}
+                      />
+                      <span>
+                        <Eye size={15} aria-hidden="true" /> View larger
+                      </span>
+                    </button>
+                    <Dialog
+                      open={qrPreviewOpen}
+                      onOpenChange={setQrPreviewOpen}
+                    >
+                      <DialogContent
+                        className="booking-payment-qr-preview-dialog w-[min(92vw,42rem)] max-w-none overflow-hidden p-0"
+                        onOpenAutoFocus={(event) => event.preventDefault()}
+                      >
+                        <DialogHeader className="border-b border-[#d8d5cc] px-6 py-5 pr-14">
+                          <DialogTitle>
+                            Scan to pay with {selectedMethod.label}
+                          </DialogTitle>
+                          <DialogDescription>
+                            Amount due: {amountDueLabel}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="booking-payment-qr-preview-dialog__image">
+                          <img
+                            src={qrImageUrl}
+                            alt={`${selectedMethod.label} payment QR code`}
+                          />
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    {selectedMethod.recipient_name ||
+                    selectedMethod.account_number ? (
+                      <dl className="booking-payment-qr-panel__recipient">
+                        {selectedMethod.recipient_name ? (
+                          <div>
+                            <dt>Recipient</dt>
+                            <dd>{selectedMethod.recipient_name}</dd>
+                          </div>
+                        ) : null}
+                        {selectedMethod.account_number ? (
+                          <div>
+                            <dt>Account number</dt>
+                            <dd>{selectedMethod.account_number}</dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="booking-payment-qr-panel__empty">
                     <h2 id="payment-code-title">
-                      Scan to pay with {selectedMethod.label}
+                      {selectedMethod
+                        ? "Payment code unavailable"
+                        : "Choose a payment method"}
                     </h2>
-                    <p className="booking-payment-qr-panel__amount">
-                      <span>Amount due</span>
-                      <strong>{amountDueLabel}</strong>
+                    <p>
+                      {selectedMethod
+                        ? "Choose another method or contact the team for payment details."
+                        : "Its payment code will appear here."}
                     </p>
                   </div>
-                  <button
-                    className="booking-payment-qr-panel__image"
-                    type="button"
-                    onClick={() => setQrPreviewOpen(true)}
-                    aria-label={`Preview ${selectedMethod.label} payment QR code`}
-                  >
-                    <img
-                      src={qrImageUrl}
-                      alt={`${selectedMethod.label} payment QR code`}
-                    />
-                    <span>
-                      <Eye size={15} aria-hidden="true" /> View larger
-                    </span>
-                  </button>
-                  <Dialog open={qrPreviewOpen} onOpenChange={setQrPreviewOpen}>
-                    <DialogContent
-                      className="booking-payment-qr-preview-dialog w-[min(92vw,42rem)] max-w-none overflow-hidden p-0"
-                      onOpenAutoFocus={(event) => event.preventDefault()}
-                    >
-                      <DialogHeader className="border-b border-[#d8d5cc] px-6 py-5 pr-14">
-                        <DialogTitle>
-                          Scan to pay with {selectedMethod.label}
-                        </DialogTitle>
-                        <DialogDescription>
-                          Amount due: {amountDueLabel}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="booking-payment-qr-preview-dialog__image">
-                        <img
-                          src={qrImageUrl}
-                          alt={`${selectedMethod.label} payment QR code`}
-                        />
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                  {selectedMethod.recipient_name ||
-                  selectedMethod.account_number ? (
-                    <dl className="booking-payment-qr-panel__recipient">
-                      {selectedMethod.recipient_name ? (
-                        <div>
-                          <dt>Recipient</dt>
-                          <dd>{selectedMethod.recipient_name}</dd>
-                        </div>
-                      ) : null}
-                      {selectedMethod.account_number ? (
-                        <div>
-                          <dt>Account number</dt>
-                          <dd>{selectedMethod.account_number}</dd>
-                        </div>
-                      ) : null}
-                    </dl>
-                  ) : null}
-                </>
-              ) : (
-                <div className="booking-payment-qr-panel__empty">
-                  <h2 id="payment-code-title">
-                    {selectedMethod
-                      ? "Payment code unavailable"
-                      : "Choose a payment method"}
-                  </h2>
+                )}
+              </section>
+
+              <section
+                className="booking-payment-proof"
+                aria-labelledby="payment-proof-heading"
+              >
+                <div>
+                  <h2 id="payment-proof-heading">Submit your proof</h2>
                   <p>
-                    {selectedMethod
-                      ? "Choose another method or contact the team for payment details."
-                      : "Its payment code will appear here."}
+                    Once payment is complete, enter the confirmation details.
                   </p>
                 </div>
-              )}
-            </section>
 
-            <section
-              className="booking-payment-proof"
-              aria-labelledby="payment-proof-heading"
-            >
-              <div>
-                <h2 id="payment-proof-heading">Submit your proof</h2>
-                <p>Once payment is complete, enter the confirmation details.</p>
-              </div>
-
-              <div className="booking-form-field" id="payment-proof">
-                <label htmlFor="payment-proof-file">Payment proof</label>
-                <label
-                  className={`booking-payment-proof-file${proofInputsDisabled ? " is-disabled" : ""}`}
-                  htmlFor="payment-proof-file"
-                >
-                  <span
-                    className="booking-payment-proof-file__thumbnail"
-                    aria-hidden="true"
+                <div className="booking-form-field" id="payment-proof">
+                  <label htmlFor="payment-proof-file">Payment proof</label>
+                  <label
+                    className={`booking-payment-proof-file${proofInputsDisabled ? " is-disabled" : ""}`}
+                    htmlFor="payment-proof-file"
                   >
-                    {proofPreviewUrl ? (
-                      <img src={proofPreviewUrl} alt="" />
-                    ) : (
-                      <FileText size={24} strokeWidth={1.7} />
-                    )}
-                  </span>
-                  <span className="booking-payment-proof-file__copy">
-                    <strong>{file ? file.name : "Choose a file"}</strong>
-                    <small>
-                      {file
-                        ? `${fileSizeLabel(file.size)} · Ready to upload with your payment`
-                        : "JPEG, PNG, or PDF · Up to 10 MiB"}
-                    </small>
-                  </span>
-                  <span className="booking-payment-proof-file__action">
-                    {file ? "Change" : "Upload"}
-                  </span>
+                    <span
+                      className="booking-payment-proof-file__thumbnail"
+                      aria-hidden="true"
+                    >
+                      {proofPreviewUrl ? (
+                        <img src={proofPreviewUrl} alt="" />
+                      ) : (
+                        <FileText size={24} strokeWidth={1.7} />
+                      )}
+                    </span>
+                    <span className="booking-payment-proof-file__copy">
+                      <strong>{file ? file.name : "Choose a file"}</strong>
+                      <small>
+                        {file
+                          ? `${fileSizeLabel(file.size)} · Ready to upload with your payment`
+                          : "JPEG, PNG, or PDF · Up to 10 MiB"}
+                      </small>
+                    </span>
+                    <span className="booking-payment-proof-file__action">
+                      {file ? "Change" : "Upload"}
+                    </span>
+                    <input
+                      id="payment-proof-file"
+                      name="file"
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                      disabled={proofInputsDisabled}
+                      onChange={(event) =>
+                        chooseProof(
+                          event.target.files?.[0],
+                          event.currentTarget,
+                        )
+                      }
+                    />
+                  </label>
+                  {!file && state === "payment-resubmission" ? (
+                    <p className="customer-helper">
+                      Choose a replacement proof file.
+                    </p>
+                  ) : null}
+                  <FieldError id="payment-proof" message={fieldErrors.proof} />
+                </div>
+
+                <div className="booking-form-field">
+                  <label htmlFor="payment-reference">
+                    Transaction reference
+                  </label>
                   <input
-                    id="payment-proof-file"
-                    name="file"
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                    disabled={proofInputsDisabled}
-                    onChange={(event) =>
-                      chooseProof(event.target.files?.[0], event.currentTarget)
+                    id="payment-reference"
+                    name="transactionReference"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="customer-input"
+                    type="text"
+                    value={reference}
+                    onChange={(event) => setReference(event.target.value)}
+                    placeholder="Enter reference number"
+                    aria-invalid={Boolean(fieldErrors.reference)}
+                    aria-describedby={
+                      fieldErrors.reference
+                        ? "payment-reference-error"
+                        : undefined
                     }
+                    disabled={proofInputsDisabled}
                   />
-                </label>
-                {!file && state === "payment-resubmission" ? (
-                  <p className="customer-helper">
-                    Choose a replacement proof file.
-                  </p>
-                ) : null}
-                <FieldError id="payment-proof" message={fieldErrors.proof} />
-              </div>
+                  <FieldError
+                    id="payment-reference"
+                    message={fieldErrors.reference}
+                  />
+                </div>
+              </section>
+            </div>
+          </fieldset>
 
-              <div className="booking-form-field">
-                <label htmlFor="payment-reference">Transaction reference</label>
-                <input
-                  id="payment-reference"
-                  name="transactionReference"
-                  autoComplete="off"
-                  spellCheck={false}
-                  className="customer-input"
-                  type="text"
-                  value={reference}
-                  onChange={(event) => setReference(event.target.value)}
-                  placeholder="Enter reference number"
-                  aria-invalid={Boolean(fieldErrors.reference)}
-                  aria-describedby={
-                    fieldErrors.reference
-                      ? "payment-reference-error"
-                      : undefined
-                  }
-                  disabled={proofInputsDisabled}
-                />
-                <FieldError
-                  id="payment-reference"
-                  message={fieldErrors.reference}
-                />
-              </div>
-            </section>
+          {methods.length === 0 ? (
+            <StatusCallout
+              tone="error"
+              title="Payment methods unavailable"
+              action={
+                <button
+                  className="customer-secondary-button"
+                  type="button"
+                  onClick={() => void onRefresh()}
+                >
+                  Refresh payment options
+                </button>
+              }
+            >
+              No active payment method was returned by the payment service. No
+              payment submission was started.
+            </StatusCallout>
+          ) : null}
+
+          <div className="booking-detail-actions">
+            <button
+              className="customer-primary-button"
+              type="submit"
+              disabled={submitting || !canSubmitPayment}
+            >
+              {submitting
+                ? state === "payment-resubmission"
+                  ? "Resubmitting…"
+                  : "Submitting…"
+                : state === "payment-resubmission"
+                  ? "Resubmit payment information"
+                  : "Submit payment for review"}
+              <ArrowRight size={20} aria-hidden="true" />
+            </button>
           </div>
-        </fieldset>
-
-        {methods.length === 0 ? (
-          <StatusCallout
-            tone="error"
-            title="Payment methods unavailable"
-            action={
-              <button
-                className="customer-secondary-button"
-                type="button"
-                onClick={() => void onRefresh()}
-              >
-                Refresh payment options
-              </button>
-            }
-          >
-            No active payment method was returned by the payment service. No
-            payment submission was started.
-          </StatusCallout>
-        ) : null}
-
-        <div className="booking-detail-actions">
-          <button
-            className="customer-primary-button"
-            type="submit"
-            disabled={submitting || !canSubmitPayment}
-          >
-            {submitting
-              ? state === "payment-resubmission"
-                ? "Resubmitting…"
-                : "Submitting…"
-              : state === "payment-resubmission"
-                ? "Resubmit payment information"
-                : "Submit payment for review"}
-            <ArrowRight size={20} aria-hidden="true" />
-          </button>
-        </div>
-      </form>
+        </form>
+      )}
+      <PaymentPolicyConfirmation
+        open={policyOpen}
+        onOpenChange={setPolicyOpen}
+        onConfirm={() => void acknowledgePolicy()}
+        submitting={policySaving}
+        error={policyError}
+        amount={amountDueLabel}
+      />
     </section>
   );
 }
@@ -2737,6 +2614,77 @@ function BookingResolution({
   );
 }
 
+function BookingFinancialSummary({
+  booking,
+  payment,
+}: {
+  booking: CustomerBooking;
+  payment: CustomerPayment | null;
+}) {
+  const quote = payment?.payment_quote;
+  if (!payment || !quote) return null;
+  const total = numericValue(quote.total_amount);
+  const paid =
+    payment.status === "Verified"
+      ? numericValue(payment.submitted_amount)
+      : null;
+  const balance = numericValue(quote.remaining_balance_amount);
+  const deposit = numericValue(quote.security_deposit_amount);
+  const cancelled = booking.booking_status === "Cancelled";
+  const terminal = cancelled || booking.booking_status === "Rejected";
+  return (
+    <section
+      className="booking-detail-section booking-financial-summary"
+      aria-labelledby="booking-financial-title"
+    >
+      <h2 id="booking-financial-title">
+        {terminal ? "Payment record" : "Payment at handover"}
+      </h2>
+      <dl className="booking-payment-quote">
+        {total !== null && (
+          <div>
+            <dt>Total rental price</dt>
+            <dd>{formatCurrency(total)}</dd>
+          </div>
+        )}
+        <div>
+          <dt>Verified down payment</dt>
+          <dd>
+            {paid !== null
+              ? formatCurrency(paid)
+              : "No verified payment recorded"}
+          </dd>
+        </div>
+        {!terminal && balance !== null && (
+          <div>
+            <dt>Remaining rental balance</dt>
+            <dd>{formatCurrency(balance)}</dd>
+          </div>
+        )}
+        {!terminal && deposit !== null && (
+          <div>
+            <dt>Refundable security deposit</dt>
+            <dd>{formatCurrency(deposit)}</dd>
+          </div>
+        )}
+        {!terminal && balance !== null && deposit !== null && (
+          <div className="booking-payment-quote__total">
+            <dt>Total due at handover</dt>
+            <dd>{formatCurrency(balance + deposit)}</dd>
+          </div>
+        )}
+      </dl>
+      <p className="booking-payment-form__intro">
+        {cancelled && paid !== null
+          ? "Your verified 50% down payment is non-refundable on cancellation. The security deposit is separate; it is collected at handover."
+          : terminal
+            ? "Contact the team for any payment reconciliation. This record does not confirm a refund."
+            : "Pay the remaining balance and security deposit at handover. The deposit is refundable after return, subject to inspection and any agreed deductions."}
+      </p>
+    </section>
+  );
+}
+
 function ConfirmedBooking({
   booking,
   vehicle,
@@ -2810,8 +2758,10 @@ function ConfirmedBooking({
           <small>{rentalReturn.weekdayAndTime}</small>
         </div>
         <div className="booking-confirmation-details">
-          <p>Rental return</p>
-          <h3>Return to {returnAddress}</h3>
+          <p>{isPickup ? "Rental return" : "Scheduled collection"}</p>
+          <h3>
+            {isPickup ? "Return to" : "Collection at"} {returnAddress}
+          </h3>
           {isPickup ? (
             <MeetingInstructions
               address={booking.return_meeting_address}
@@ -2823,7 +2773,11 @@ function ConfirmedBooking({
               <Clock3 size={20} aria-hidden="true" />
               <div>
                 <dt>{rentalReturn.weekdayAndTime}</dt>
-                <dd>Return the vehicle at the scheduled time and location.</dd>
+                <dd>
+                  {isPickup
+                    ? "Return the vehicle at the scheduled time and location."
+                    : "We’ll collect the vehicle at the scheduled time and address."}
+                </dd>
               </div>
             </div>
           </dl>
@@ -3160,13 +3114,21 @@ function BookingFactsSection({
           ],
           [
             MapPin,
-            "Pickup branch",
-            booking.pickup_branch?.name ?? "Not recorded",
+            booking.pickup_delivery_option === "delivery"
+              ? "Delivery address"
+              : "Pickup branch",
+            (booking.pickup_delivery_option === "delivery"
+              ? booking.pickup_location
+              : booking.pickup_branch?.name) ?? "Not recorded",
           ],
           [
             MapPin,
-            "Return branch",
-            booking.return_branch?.name ?? "Not recorded",
+            booking.pickup_delivery_option === "delivery"
+              ? "Collection address"
+              : "Return branch",
+            (booking.pickup_delivery_option === "delivery"
+              ? (booking.dropoff_location ?? booking.pickup_location)
+              : booking.return_branch?.name) ?? "Not recorded",
           ],
         ]}
       />
@@ -3291,22 +3253,33 @@ function reviewFor(
   type: string,
 ) {
   if (!review) return null;
-  const outcomes: Record<string, { outcome: string; reason: string }> = {
+  const outcomes: Record<
+    string,
+    { outcome: string; reason: string; documentId?: string; version?: number }
+  > = {
     "Valid Government ID": {
       outcome: review.governmentIdOutcome,
       reason: review.governmentIdReason,
+      documentId: review.governmentIdDocumentId,
+      version: review.governmentIdVersion,
     },
     "Driver's License": {
       outcome: review.driversLicenseOutcome,
       reason: review.driversLicenseReason,
+      documentId: review.driversLicenseDocumentId,
+      version: review.driversLicenseVersion,
     },
     "Proof of Billing": {
       outcome: review.proofOfBillingOutcome,
       reason: review.proofOfBillingReason,
+      documentId: review.proofOfBillingDocumentId,
+      version: review.proofOfBillingVersion,
     },
     "Selfie with ID": {
       outcome: review.selfieWithIdOutcome,
       reason: review.selfieWithIdReason,
+      documentId: review.selfieWithIdDocumentId,
+      version: review.selfieWithIdVersion,
     },
   };
   return outcomes[type] ?? null;

@@ -1,3 +1,7 @@
+import { rememberBookingLoadingState } from "@/lib/booking-loading-state";
+import { CategorizedField } from "@/components/booking/CategorizedField";
+import { BookingPolicy } from "@/components/booking/BookingPolicy";
+import { validCategory } from "@/lib/booking-categories";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
@@ -383,11 +387,13 @@ function RentalRequestPage() {
         "Choose a pickup date at least one calendar day ahead. Same-day booking is not available.";
     if (pickup && returned && returned <= pickup)
       nextErrors.returnAt = "Return must be after pickup.";
-    if (!draft.purposeOfUse.trim())
-      nextErrors.purposeOfUse = "Tell us the purpose of this rental.";
+    if (!validCategory("purpose", draft.purposeOfUse))
+      nextErrors.purposeOfUse =
+        "Choose a purpose category and add details if you select Other.";
     Object.assign(nextErrors, bookingServiceErrors(draft));
-    if (draft.destination.length > 200)
-      nextErrors.destination = "Destination must be 200 characters or fewer.";
+    if (!validCategory("destination", draft.destination))
+      nextErrors.destination =
+        "Choose a destination area; add details for Other (200 characters maximum).";
     return nextErrors;
   }
 
@@ -504,6 +510,8 @@ function RentalRequestPage() {
       }
       if (typeof window !== "undefined")
         window.sessionStorage.removeItem(storageKey);
+      if (!editBookingId)
+        rememberBookingLoadingState(bookingId, "requirements-needed");
       window.location.assign(`/bookings/${encodeURIComponent(bookingId)}`);
     } catch (error) {
       if (
@@ -564,7 +572,9 @@ function RentalRequestPage() {
           ) : null}
 
           {masterLoading || editLoading ? (
-            <TripOverviewSkeleton />
+            <TripOverviewSkeleton
+              delivery={draft.pickupDeliveryOption === "delivery"}
+            />
           ) : masterError || editError ? (
             <StatusCallout
               tone="error"
@@ -717,7 +727,7 @@ function RentalRequestPage() {
   );
 }
 
-function TripOverviewSkeleton() {
+function TripOverviewSkeleton({ delivery }: { delivery: boolean }) {
   return (
     <div
       className="request-overview request-overview--loading"
@@ -767,10 +777,23 @@ function TripOverviewSkeleton() {
         <i className="request-overview-skeleton__form-title" />
         <i className="request-overview-skeleton__form-copy" />
         <i className="request-overview-skeleton__label" />
-        <i className="request-overview-skeleton__input" />
-        <i className="request-overview-skeleton__checkbox" />
+        <div className="request-overview-skeleton__service">
+          <i />
+          <i />
+        </div>
+        {delivery ? (
+          <>
+            <i className="request-overview-skeleton__input" />
+            <i className="request-overview-skeleton__checkbox" />
+          </>
+        ) : (
+          <div className="request-overview-skeleton__pickup">
+            <i />
+            <i />
+          </div>
+        )}
         <i className="request-overview-skeleton__label" />
-        <i className="request-overview-skeleton__textarea" />
+        <i className="request-overview-skeleton__input" />
         <i className="request-overview-skeleton__label" />
         <i className="request-overview-skeleton__input" />
         <i className="request-overview-skeleton__button" />
@@ -1132,45 +1155,24 @@ function TripOverview({
             ) : null}
           </>
         )}
-        <div className="customer-field">
-          <label className="customer-label" htmlFor="purpose">
-            Purpose of use
-          </label>
-          <textarea
-            id="purpose"
-            name="purpose"
-            className="customer-textarea"
-            value={draft.purposeOfUse}
-            onChange={(event) =>
-              updateDraft("purposeOfUse", event.target.value)
-            }
-            aria-invalid={Boolean(errors.purposeOfUse)}
-            aria-describedby={errors.purposeOfUse ? "purpose-error" : undefined}
-            placeholder="For example, a family trip…"
-            required
-          />
-          <FieldError id="purpose" message={errors.purposeOfUse} />
-        </div>
-        <div className="customer-field">
-          <label className="customer-label" htmlFor="destination">
-            Destination <span className="customer-helper">(optional)</span>
-          </label>
-          <input
-            id="destination"
-            name="destination"
-            className="customer-input"
-            type="text"
-            maxLength={200}
-            value={draft.destination}
-            onChange={(event) => updateDraft("destination", event.target.value)}
-            aria-invalid={Boolean(errors.destination)}
-            aria-describedby={
-              errors.destination ? "destination-error" : undefined
-            }
-            placeholder="For example, Tagaytay…"
-          />
-          <FieldError id="destination" message={errors.destination} />
-        </div>
+        <CategorizedField
+          id="purpose"
+          label="Purpose of use"
+          domain="purpose"
+          customer
+          value={draft.purposeOfUse}
+          onChange={(value) => updateDraft("purposeOfUse", value)}
+        />
+        <FieldError id="purpose" message={errors.purposeOfUse} />
+        <CategorizedField
+          id="destination"
+          label="Destination area"
+          domain="destination"
+          customer
+          value={draft.destination}
+          onChange={(value) => updateDraft("destination", value)}
+        />
+        <FieldError id="destination" message={errors.destination} />
         {sessionChecked && !principal ? (
           <p className="request-overview-signin">
             You can fill in the details now. Sign in before saving your request.
@@ -1494,6 +1496,7 @@ function ReviewPanel({
           {submitError}
         </StatusCallout>
       ) : null}
+      <BookingPolicy />
       <label className="request-review-acknowledgement">
         <input
           type="checkbox"
@@ -1501,7 +1504,10 @@ function ReviewPanel({
           onChange={(event) => onAcknowledgementChange(event.target.checked)}
         />
         <span>
-          <strong>I have read and understand the rental guidelines.</strong>
+          <strong>
+            I have read and understand the rental guidelines and cancellation
+            policy.
+          </strong>
         </span>
       </label>
       <p className="request-review-next-step">

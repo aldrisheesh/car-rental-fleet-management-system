@@ -21,6 +21,7 @@ export type VehicleAnalyticsRow = {
   reportingEnd: string;
   coverage: "Complete" | "Partial/Insufficient Historical Eligibility Data";
   rentalDays: number;
+  lastRentalStartedAt?: string | null;
   eligibleOperationalDays: number | null;
   utilizationPercent: number | null;
   maintenanceReady: boolean;
@@ -177,6 +178,17 @@ export async function getVehicleAnalytics(
         reportingEnd: endDate,
         coverage,
         rentalDays: rentalDaysSet.size,
+        lastRentalStartedAt:
+          vr
+            .map((r: { started_at: string | null }) => r.started_at)
+            .filter(
+              (date: string | null): date is string =>
+                !!date &&
+                Number.isFinite(Date.parse(date)) &&
+                Date.parse(date) <= now.getTime(),
+            )
+            .sort((a: string, b: string) => Date.parse(b) - Date.parse(a))[0] ??
+          null,
         eligibleOperationalDays: eligible,
         utilizationPercent:
           eligible && eligible > 0 && coverage === "Complete"
