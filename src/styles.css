@@ -14199,7 +14199,8 @@
 }
 
 .harbor-auth-backdrop:not(.harbor-auth-backdrop--embedded) {
-  animation: harbor-auth-backdrop-in 160ms ease-out both;
+  opacity: 1;
+  transition: opacity 160ms ease-out;
 }
 
 .harbor-auth-backdrop--embedded {
@@ -14209,19 +14210,6 @@
   padding: 0;
   background: transparent;
   backdrop-filter: none;
-}
-
-@keyframes harbor-auth-backdrop-in {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes harbor-auth-dialog-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.5rem) scale(0.985);
-  }
 }
 
 .harbor-booking-auth-panel .harbor-auth-dialog--embedded {
@@ -14469,7 +14457,30 @@
 }
 
 .harbor-auth-dialog:not(.harbor-auth-dialog--embedded) {
-  animation: harbor-auth-dialog-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Starting styles apply only when these surfaces appear, so switching between
+   typing and mouse input cannot replay their entrance. */
+@starting-style {
+  .harbor-auth-backdrop:not(.harbor-auth-backdrop--embedded) {
+    opacity: 0;
+  }
+  .harbor-auth-dialog:not(.harbor-auth-dialog--embedded) {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .harbor-auth-backdrop:not(.harbor-auth-backdrop--embedded),
+  .harbor-auth-dialog:not(.harbor-auth-dialog--embedded) {
+    transition: none;
+  }
 }
 
 .harbor-auth-close {
@@ -16767,7 +16778,8 @@
 
 .home-hero-visual img {
   object-position: center 54%;
-  animation: home-hero-image-enter 480ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  opacity: 1;
+  transition: opacity 480ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .home-hero-content {
@@ -16806,8 +16818,11 @@
 
 .home-hero-copy {
   width: min(100%, 46rem);
-  animation: home-hero-content-enter 420ms cubic-bezier(0.23, 1, 0.32, 1) 70ms
-    both;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 420ms cubic-bezier(0.23, 1, 0.32, 1) 70ms,
+    transform 420ms cubic-bezier(0.23, 1, 0.32, 1) 70ms;
 }
 
 .home-service-kicker {
@@ -16845,8 +16860,11 @@
 .home-search-zone {
   width: min(100%, 54rem);
   margin-top: 2.65rem;
-  animation: home-hero-content-enter 420ms cubic-bezier(0.23, 1, 0.32, 1) 150ms
-    both;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 420ms cubic-bezier(0.23, 1, 0.32, 1) 150ms,
+    transform 420ms cubic-bezier(0.23, 1, 0.32, 1) 150ms;
 }
 
 .home-search-rail {
@@ -17117,25 +17135,14 @@
   padding: 0.3rem 0;
 }
 
-@keyframes home-hero-image-enter {
-  from {
+@starting-style {
+  .home-hero-visual img {
     opacity: 0;
   }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes home-hero-content-enter {
-  from {
+  .home-hero-copy,
+  .home-search-zone {
     opacity: 0;
     transform: translateY(0.8rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -17152,7 +17159,7 @@
   .home-hero-visual img,
   .home-hero-copy,
   .home-search-zone {
-    animation: none;
+    transition: none;
   }
 
   .home-date-picker-popover[data-state="open"],
@@ -31137,8 +31144,6 @@ html[data-input-modality="keyboard"] details::details-content {
 }
 html[data-input-modality="keyboard"] :is(
   [class*="animate-in"], [class*="animate-out"],
-  .harbor-auth-backdrop, .harbor-auth-dialog,
-  .home-hero-visual img, .home-hero-copy, .home-search-zone,
   .booking-requirement-row--just-uploaded .booking-document-thumbnail,
   .booking-payment-qr-panel--revealed
 ) { animation: none !important; }
