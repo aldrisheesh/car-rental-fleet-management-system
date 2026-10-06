@@ -29,7 +29,7 @@ import type { DateRange } from "react-day-picker";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { VehicleCard } from "@/components/site/VehicleCard";
-import finderHero from "@/assets/destinations/elyu.jpg";
+import finderHero from "@/assets/destinations/elyu.webp";
 import { DateRangePicker } from "@/components/site/DateRangePicker";
 import { RentalDateTrigger } from "@/components/site/RentalDateTrigger";
 import {

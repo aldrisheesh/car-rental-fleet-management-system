@@ -1,4 +1,4 @@
-import { signInDestination } from "@/lib/sign-in-destination";
+import { completeSignIn, signInDestination } from "@/lib/sign-in-destination";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowRight, CircleAlert, Eye, EyeOff, Mail, X } from "lucide-react";
 
@@ -17,11 +17,7 @@ import {
 
 type AuthStage = "email" | "password" | "create";
 type AuthField =
-  | "email"
-  | "password"
-  | "fullName"
-  | "phoneNumber"
-  | "confirmPassword";
+  "email" | "password" | "fullName" | "phoneNumber" | "confirmPassword";
 type AuthFieldErrors = Partial<Record<AuthField, string>>;
 
 export function SignInDialog({
@@ -166,21 +162,22 @@ export function SignInDialog({
       customerDestination(),
       adminSuccessTo,
     );
-    onAuthenticated?.();
-    onOpenChange(false);
+    let redirectTo =
+      customerSuccessTo || destination !== customerDestination()
+        ? destination
+        : null;
     if (result.principal?.role === "Customer/Renter" && customerSuccessSearch) {
       const search = new URLSearchParams(
         customerSuccessSearch as Record<string, string>,
       );
-      window.location.assign(`${destination}?${search.toString()}`);
-      return;
+      redirectTo = `${destination}?${search.toString()}`;
     }
-    if (customerSuccessTo) {
-      window.location.assign(destination);
-      return;
-    }
-    if (destination === customerDestination()) return;
-    window.location.assign(destination);
+    completeSignIn({
+      destination: redirectTo,
+      navigate: (target) => window.location.assign(target),
+      onAuthenticated,
+      onClose: () => onOpenChange(false),
+    });
   }
 
   async function createAccount(event: FormEvent<HTMLFormElement>) {
@@ -224,15 +221,12 @@ export function SignInDialog({
       setSubmitting(false);
       return;
     }
-    const destination = customerDestination();
-    onAuthenticated?.();
-    onOpenChange(false);
-    if (customerSuccessTo) {
-      window.location.assign(destination);
-      return;
-    }
-    if (destination === customerDestination()) return;
-    window.location.assign(destination);
+    completeSignIn({
+      destination: customerSuccessTo ? customerDestination() : null,
+      navigate: (target) => window.location.assign(target),
+      onAuthenticated,
+      onClose: () => onOpenChange(false),
+    });
   }
 
   async function googleReady() {

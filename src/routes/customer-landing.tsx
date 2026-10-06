@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import heroImg from "@/assets/hero-car.jpg";
 import baguioImg from "@/assets/destinations/bagui.webp";
-import elyuImg from "@/assets/destinations/elyu.jpg";
+import elyuImg from "@/assets/destinations/elyu.webp";
 import pampangaImg from "@/assets/destinations/pampanga.webp";
 import subicImg from "@/assets/destinations/subic.jpg";
 import tagaytayImg from "@/assets/destinations/tagaytay.avif";

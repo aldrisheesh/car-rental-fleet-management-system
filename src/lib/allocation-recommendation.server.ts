@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Dynamic Supabase query rows are normalized at this server boundary. */
 import { hasUnfinishedConfirmedReservation } from "./fleet-transfer-eligibility";
 import {
-  calculateMaintenanceReadiness,
+  evaluateMaintenanceReadiness,
   selectAuthoritativePreventiveTargets,
 } from "./maintenance-readiness.server";
 import {
@@ -11,6 +11,7 @@ import {
 } from "./supply-evaluation.server";
 import { getSupabaseServerClient } from "./supabase/server";
 import { calculateCanonicalIdleSnapshot } from "./vehicle-analytics.server";
+import { instantToManilaCalendarDate } from "./business-time";
 import {
   rankAllocationCandidates,
   type AllocationCandidate,
@@ -47,7 +48,9 @@ export async function revalidateSourceCandidates(
   const [vehicles, bookings, rentals, events, maintenance] = await Promise.all([
     client
       .from("vehicles")
-      .select("id,name,license_plate,branch_id,category_id,is_active")
+      .select(
+        "id,name,license_plate,branch_id,category_id,is_active,current_odometer_km,condition_blocks_rental_use",
+      )
       .in("id", snapshotVehicleIds),
     client
       .from("booking_requests")
@@ -56,7 +59,7 @@ export async function revalidateSourceCandidates(
       .eq("booking_status", "Confirmed"),
     client
       .from("rental_transactions")
-      .select("booking_id,vehicle_id,started_at,ended_at")
+      .select("booking_id,vehicle_id,started_at,ended_at,inspection_status")
       .in("vehicle_id", snapshotVehicleIds),
     client
       .from("vehicle_operational_state_events")
@@ -93,12 +96,19 @@ export async function revalidateSourceCandidates(
       !vehicle.is_active
     )
       continue;
-    let readiness;
-    try {
-      readiness = await calculateMaintenanceReadiness(vehicle.id);
-    } catch {
-      continue;
-    }
+    const readiness = evaluateMaintenanceReadiness(
+      vehicle,
+      (maintenance.data ?? []).filter(
+        (record: any) => record.vehicle_id === vehicle.id,
+      ),
+      instantToManilaCalendarDate(now),
+      (rentals.data ?? []).some(
+        (r: any) =>
+          r.vehicle_id === vehicle.id &&
+          r.ended_at != null &&
+          r.inspection_status === "Pending",
+      ),
+    );
     if (!readiness.maintenanceReady) continue;
     const maintenanceTargets = selectAuthoritativePreventiveTargets(
       (maintenance.data ?? []).filter(

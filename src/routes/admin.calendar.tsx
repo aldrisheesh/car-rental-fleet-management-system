@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -98,7 +99,7 @@ function CalendarPage() {
     latestRequest.current = request;
     setState({ status: "loading" });
     try {
-      const response = await fetch(
+      const response = await readFetch(
         `/api/admin-calendar?month=${encodeURIComponent(period)}`,
         { credentials: "same-origin" },
       );

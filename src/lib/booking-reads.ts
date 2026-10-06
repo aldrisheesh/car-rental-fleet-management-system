@@ -1,2 +1,6 @@
 export const BOOKING_READ_SELECT =
   "*, customer:profiles!booking_requests_customer_id_fkey(id,full_name,email,phone_number), requested_vehicle:vehicles!booking_requests_requested_vehicle_id_fkey(id,name,license_plate,branch_id,image_url,seat_capacity,transmission,fuel_type,daily_rate), assigned_vehicle:vehicles!booking_requests_assigned_vehicle_id_fkey(id,name,license_plate,branch_id,is_active,image_url,seat_capacity,transmission,fuel_type,daily_rate), pickup_branch:branches!booking_requests_pickup_branch_id_fkey(id,name), return_branch:branches!booking_requests_return_branch_id_fkey(id,name)";
+
+// Dashboard labels and submitted-work counts do not need ledger enrichment.
+export const DISPATCH_BOOKING_SELECT =
+  "id,booking_status,pickup_at,return_at,created_at,updated_at,customer:profiles!booking_requests_customer_id_fkey(id,full_name),requested_vehicle:vehicles!booking_requests_requested_vehicle_id_fkey(id,name),pickup_branch:branches!booking_requests_pickup_branch_id_fkey(id,name)";

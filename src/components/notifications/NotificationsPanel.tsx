@@ -1,5 +1,6 @@
 import { getAdminSession, isStaffRole } from "@/lib/admin-auth";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { readFetch } from "@/lib/read-fetch";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bell,
   Car,
@@ -49,7 +50,7 @@ export function NotificationsPanel({
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/notifications", {
+      const response = await readFetch("/api/notifications", {
         credentials: "same-origin",
       });
       const body = (await response
@@ -88,7 +89,7 @@ export function NotificationsPanel({
     if (!isUnread(notification) || markingId) return;
     setMarkingId(notification.id);
     try {
-      const response = await fetch("/api/notifications", {
+      const response = await readFetch("/api/notifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
@@ -130,7 +131,7 @@ export function NotificationsPanel({
     setError(null);
     setData({ ...data, emailNotificationsEnabled: enabled });
     try {
-      const response = await fetch("/api/notifications", {
+      const response = await readFetch("/api/notifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
@@ -324,11 +325,29 @@ function NotificationInbox({
   onUpdateEmailPreference: (enabled: boolean) => Promise<void>;
 }) {
   const [filter, setFilter] = useState<NotificationCategory>("all");
+  const [page, setPage] = useState(1);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const notifications = data?.notifications ?? [];
   const resolvedCustomerBindings = data?.customerBindings ?? customerBindings;
   const visibleNotifications = notifications.filter((notification) =>
     filter === "all" ? true : notification.relatedEntityType === filter,
   );
+  const pageSize = 10;
+  const pageCount = Math.max(
+    1,
+    Math.ceil(visibleNotifications.length / pageSize),
+  );
+  const currentPage = Math.min(page, pageCount);
+  const firstIndex = (currentPage - 1) * pageSize;
+  const pageNotifications = visibleNotifications.slice(
+    firstIndex,
+    firstIndex + pageSize,
+  );
+  const changePage = (nextPage: number) => {
+    setPage(Math.max(1, Math.min(nextPage, pageCount)));
+    headingRef.current?.focus({ preventScroll: true });
+    headingRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+  };
   const unreadCount = data?.unreadCount ?? 0;
   const filters: Array<{
     id: NotificationCategory;
@@ -418,7 +437,10 @@ function NotificationInbox({
               type="button"
               className={cn(filter === id && "is-active")}
               aria-pressed={filter === id}
-              onClick={() => setFilter(id)}
+              onClick={() => {
+                setFilter(id);
+                setPage(1);
+              }}
             >
               <Icon aria-hidden="true" />
               <span>{label}</span>
@@ -457,7 +479,9 @@ function NotificationInbox({
       <div className="customer-notification-inbox-feed">
         <header className="customer-notification-inbox-heading">
           <div>
-            <h2>Your updates</h2>
+            <h2 ref={headingRef} tabIndex={-1}>
+              Your updates
+            </h2>
             <p>
               {audience === "admin"
                 ? "Recorded booking, rental, payment, maintenance and fleet events. Open details for the current status."
@@ -502,7 +526,7 @@ function NotificationInbox({
           </div>
         ) : (
           <div className="customer-notification-list">
-            {visibleNotifications.map((notification) => (
+            {pageNotifications.map((notification) => (
               <InboxNotificationRow
                 audience={audience}
                 adminBindings={data?.adminBindings ?? []}
@@ -518,6 +542,37 @@ function NotificationInbox({
             ))}
           </div>
         )}
+        {visibleNotifications.length > 0 && data ? (
+          <nav
+            className="notification-pagination"
+            aria-label="Notification pagination"
+          >
+            <p role="status">
+              {firstIndex + 1}–
+              {Math.min(firstIndex + pageSize, visibleNotifications.length)} of{" "}
+              {visibleNotifications.length} notifications
+            </p>
+            <div>
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => changePage(currentPage - 1)}
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage} of {pageCount}
+              </span>
+              <button
+                type="button"
+                disabled={currentPage === pageCount}
+                onClick={() => changePage(currentPage + 1)}
+              >
+                Next
+              </button>
+            </div>
+          </nav>
+        ) : null}
       </div>
     </section>
   );

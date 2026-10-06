@@ -262,14 +262,16 @@ async function read() {
     if (!internal(principal.role))
       return fail("Allocation recommendation access is restricted.", 403);
     const client = getSupabaseServerClient() as any;
-    const view = await loadRecommendationView(client);
-    let summary = null;
-    try {
-      summary = (await loadCurrentAllocationContext(client)).summary;
-    } catch (error) {
-      if (!(error instanceof AllocationContextError && error.status === 409))
-        throw error;
-    }
+    const [view, summary] = await Promise.all([
+      loadRecommendationView(client),
+      loadCurrentAllocationContext(client)
+        .then((context) => context.summary)
+        .catch((error) => {
+          if (error instanceof AllocationContextError && error.status === 409)
+            return null;
+          throw error;
+        }),
+    ]);
     return Response.json({ ...view, summary });
   } catch (error) {
     return fail(

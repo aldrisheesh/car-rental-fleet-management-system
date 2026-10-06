@@ -10,6 +10,8 @@ import {
 } from "@tanstack/react-router";
 
 import { Toaster as SonnerToaster } from "sonner";
+import { useEffect } from "react";
+import { installMotionPreferences } from "@/lib/motion-preferences";
 
 import appCss from "../styles.css?url";
 
@@ -138,6 +140,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => installMotionPreferences(document, window), []);
 
   return (
     <QueryClientProvider client={queryClient}>

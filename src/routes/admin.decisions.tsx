@@ -107,9 +107,17 @@ type AllocationResponse = {
 };
 
 async function readApi<T>(input: RequestInfo | URL, init?: RequestInit) {
+  // Bound read waits; mutations retain their server-side idempotent workflow.
+  const timeout =
+    !init?.method || init.method === "GET" ? AbortSignal.timeout(30_000) : null;
   const response = await fetch(input, {
     ...init,
     credentials: "same-origin",
+    signal: timeout
+      ? init?.signal
+        ? AbortSignal.any([init.signal, timeout])
+        : timeout
+      : init?.signal,
   });
   const body = await response.json().catch(() => null);
   if (!response.ok) {
@@ -191,9 +199,11 @@ function scrollToSection(id: string) {
   const target = document.getElementById(id);
   if (!target) return;
   target.scrollIntoView({
-    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ? "auto"
-      : "smooth",
+    behavior:
+      document.documentElement.dataset.inputModality === "keyboard" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
     block: "start",
   });
   target.focus({ preventScroll: true });
@@ -370,48 +380,51 @@ function DecisionPage() {
     setForecastError("");
     setSupplyError("");
 
-    Promise.allSettled([
-      readApi<ForecastResponse>("/api/forecasts", {
-        signal: controller.signal,
-      }),
-      readApi<SupplyResponse>("/api/supply-evaluations", {
-        signal: controller.signal,
-      }),
-    ]).then(([forecastResult, supplyResult]) => {
-      if (controller.signal.aborted) return;
-      if (forecastResult.status === "fulfilled") {
-        setForecastData(forecastResult.value);
+    void readApi<ForecastResponse>("/api/forecasts", {
+      signal: controller.signal,
+    })
+      .then((body) => {
+        if (controller.signal.aborted) return;
+        setForecastData(body);
         hasForecastSnapshot.current = true;
         setForecastError("");
-      } else {
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return;
         if (!hasForecastSnapshot.current) setForecastData(null);
         setForecastError(
-          errorMessage(
-            forecastResult.reason,
-            "Unable to load canonical forecasts.",
-          ),
+          errorMessage(error, "Unable to load canonical forecasts."),
         );
-      }
-      if (supplyResult.status === "fulfilled") {
+      })
+      .finally(() => {
+        if (!controller.signal.aborted && initialForecastLoad)
+          setForecastLoading(false);
+      });
+
+    void readApi<SupplyResponse>("/api/supply-evaluations", {
+      signal: controller.signal,
+    })
+      .then((body) => {
+        if (controller.signal.aborted) return;
         hasSupplySnapshot.current = true;
-        setSupplyEvaluations(supplyResult.value.evaluations ?? []);
-      } else {
+        setSupplyEvaluations(body.evaluations ?? []);
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return;
         setSupplyEvaluations([]);
         setSupplyError(
-          errorMessage(
-            supplyResult.reason,
-            "Unable to load canonical supply evaluations.",
-          ),
+          errorMessage(error, "Unable to load canonical supply evaluations."),
         );
-      }
-      if (initialForecastLoad) setForecastLoading(false);
-      setSupplyLoading(false);
-    });
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setSupplyLoading(false);
+      });
 
     return () => controller.abort();
   }, [supportVersion]);
 
   useEffect(() => {
+    if (view !== "utilization" && view !== "overview") return;
     const controller = new AbortController();
     const rangeKey = `${analyticsRange.start}:${analyticsRange.end}`;
     const hasCurrentSnapshot = vehicleSnapshotRange.current === rangeKey;
@@ -454,6 +467,7 @@ function DecisionPage() {
     analyticsRange.end,
     vehicleRefreshVersion,
     supportVersion,
+    view,
   ]);
 
   useEffect(() => {
@@ -1304,13 +1318,13 @@ function DecisionPage() {
       >
         <header>
           <div>
-            <span>Auditable WMA example</span>
+            <span>Calculation example</span>
             <h3 id="forecast-calculation-heading">
               {forecastLabel(focusedWmaForecast)}
             </h3>
           </div>
           <small>
-            Horizon {focusedWmaForecast.horizon} · planning week{" "}
+            Planning week{" "}
             {formatWeekRange(
               focusedWmaForecast.target_week_start,
               focusedWmaForecast.target_week_end,
@@ -1319,10 +1333,10 @@ function DecisionPage() {
         </header>
         <div className="admin-decision-calculation-table" role="table">
           <div className="is-heading" role="row">
-            <span role="columnheader">Input week</span>
-            <span role="columnheader">Demand</span>
-            <span role="columnheader">Weight</span>
-            <span role="columnheader">Contribution</span>
+            <span role="columnheader">Week used</span>
+            <span role="columnheader">Rental demand</span>
+            <span role="columnheader">Importance</span>
+            <span role="columnheader">Added to estimate</span>
           </div>
           {focusedWmaCalculation.terms.map((term) => (
             <div
@@ -1330,10 +1344,11 @@ function DecisionPage() {
               key={`${term.sourceType}-${term.sourceWeekStart}-${term.weight}`}
             >
               <span role="cell">
-                {formatDay(term.sourceWeekStart)} · {term.sourceType}
+                {formatDay(term.sourceWeekStart)} ·{" "}
+                {term.sourceType === "Actual" ? "Recorded" : "Estimated"}
               </span>
               <strong role="cell">{formatDecimal(term.sourceValue)}</strong>
-              <strong role="cell">{formatDecimal(term.weight)}</strong>
+              <strong role="cell">{formatDecimal(term.weight * 100)}%</strong>
               <strong role="cell">
                 {formatDecimal(term.weightedContribution)}
               </strong>
@@ -1351,9 +1366,9 @@ function DecisionPage() {
             {` = ${formatDecimal(focusedWmaCalculation.forecastDemand)}`}
           </code>
           <p>
-            Forecast demand:{" "}
-            {formatDecimal(focusedWmaCalculation.forecastDemand)}. The planning
-            requirement rounds up to{" "}
+            Estimated rental demand:{" "}
+            {formatDecimal(focusedWmaCalculation.forecastDemand)}. Rounded up,
+            plan for{" "}
             <strong>
               {focusedWmaCalculation.requiredVehicles}{" "}
               {focusedWmaCalculation.requiredVehicles === 1
@@ -1363,8 +1378,8 @@ function DecisionPage() {
             .
           </p>
           <small>
-            This estimates weekly booking demand. Fleet movement remains an
-            advisory decision reviewed by the Owner/Admin.
+            This is a weekly planning estimate. Review bookings before arranging
+            a vehicle transfer.
           </small>
         </div>
       </section>

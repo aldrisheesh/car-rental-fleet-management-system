@@ -28,11 +28,11 @@ test("fleet and maintenance project canonical state without persisted readiness"
     routeSource("admin.maintenance.tsx"),
   ]);
 
-  assert.match(fleet, /fetch\("\/api\/admin-fleet"/);
+  assert.match(fleet, /readFetch\("\/api\/admin-fleet"/);
   assert.match(fleet, /vehicle\.maintenanceReady/);
   assert.match(fleet, /pendingInspection/);
   assert.doesNotMatch(fleet, /setReady|readyState|statusOverrides/);
-  assert.match(maintenance, /fetch\("\/api\/maintenance"/);
+  assert.match(maintenance, /readFetch\("\/api\/maintenance"/);
   assert.match(maintenance, /method: "POST"/);
   assert.match(maintenance, /method: "PATCH"/);
   assert.doesNotMatch(maintenance, /method: "DELETE"/);

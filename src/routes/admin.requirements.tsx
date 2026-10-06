@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { bookingReference } from "@/lib/booking-reference";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -57,7 +58,7 @@ function RequirementsQueuePage() {
   const load = useCallback(async () => {
     setState({ status: "loading" });
     try {
-      const response = await fetch("/api/requirements", {
+      const response = await readFetch("/api/requirements", {
         credentials: "same-origin",
       });
       const body = (await response.json().catch(() => null)) as {

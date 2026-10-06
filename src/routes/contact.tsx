@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   AlertCircle,
@@ -93,7 +94,7 @@ function ContactPage() {
 
     try {
       setSubmitting(true);
-      const response = await fetch("/api/contact-inquiries", {
+      const response = await readFetch("/api/contact-inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, subject, message }),

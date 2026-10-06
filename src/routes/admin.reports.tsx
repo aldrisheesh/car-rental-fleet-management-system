@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { formatWeekRange, weekEndFromStart } from "@/lib/planning-week";
 import {
   createFileRoute,
@@ -59,10 +60,13 @@ function ReportsPage() {
     const controller = new AbortController();
     setLoading(true);
     setError("");
-    fetch(`/api/admin-reports?${new URLSearchParams({ start, end, branch })}`, {
-      credentials: "same-origin",
-      signal: controller.signal,
-    })
+    readFetch(
+      `/api/admin-reports?${new URLSearchParams({ start, end, branch })}`,
+      {
+        credentials: "same-origin",
+        signal: controller.signal,
+      },
+    )
       .then(async (response) => {
         const body = (await response.json().catch(() => null)) as
           AdminReportsResponse | { message?: string } | null;
@@ -421,6 +425,7 @@ function ReportSections({ report }: { report: AdminReportsResponse }) {
           </p>
         )}
       </section>
+      <BookingInsightsSection report={report} />
       {report.decisionSupport ? (
         <details className="admin-reports-evidence-disclosure">
           <summary>Forecast and transfer evidence</summary>
@@ -431,6 +436,102 @@ function ReportSections({ report }: { report: AdminReportsResponse }) {
     </div>
   );
 }
+function BookingInsightsSection({ report }: { report: AdminReportsResponse }) {
+  const total = report.bookings.requests;
+  const rows = (items: Array<{ label: string; count: number }>) =>
+    items.map((item) => [
+      item.label,
+      item.count,
+      total ? `${((item.count / total) * 100).toFixed(1)}%` : "—",
+    ]);
+  return (
+    <section
+      className="admin-reports-supporting admin-reports-booking-insights"
+      aria-labelledby="report-booking-insights-title"
+    >
+      <div className="admin-reports-section-heading">
+        <div>
+          <h2 id="report-booking-insights-title">
+            What are customers renting for?
+          </h2>
+          <p>
+            {total} booking request{total === 1 ? "" : "s"} submitted in this
+            period, for the selected branch filter. Includes cancelled and
+            rejected requests.
+          </p>
+        </div>
+      </div>
+      <div className="admin-reports-chart-grid">
+        <ReportBars
+          title="Rental purposes"
+          description="Booking requests by reason for renting."
+          items={(report.bookings.purposes ?? []).map((item) => ({
+            label: item.label,
+            value: item.count,
+            detail: total
+              ? `${((item.count / total) * 100).toFixed(1)}% of requests`
+              : undefined,
+          }))}
+        />
+        <ReportBars
+          title="Most requested destination areas"
+          description="Where customers say they plan to travel."
+          items={(report.bookings.destinations ?? []).map((item) => ({
+            label: item.label,
+            value: item.count,
+            detail: total
+              ? `${((item.count / total) * 100).toFixed(1)}% of requests`
+              : undefined,
+          }))}
+        />
+      </div>
+      <details className="reports-record-disclosure">
+        <summary>View purpose and destination counts</summary>
+        <div className="admin-reports-booking-insights__grid">
+          <ReportTable
+            title="Rental purposes"
+            columns={["Purpose", "Requests", "Share"]}
+            rows={rows(report.bookings.purposes ?? [])}
+            empty="No booking requests in this period."
+          />
+          <ReportTable
+            title="Most requested destination areas"
+            columns={["Destination area", "Requests", "Share"]}
+            rows={rows(report.bookings.destinations ?? [])}
+            empty="No booking requests in this period."
+          />
+        </div>
+      </details>
+      <details className="reports-record-disclosure">
+        <summary>Pickup, delivery and request outcomes</summary>
+        <div className="admin-reports-booking-insights__grid">
+          <ReportTable
+            title="Pickup or delivery"
+            columns={["Service", "Requests", "Share"]}
+            rows={rows(report.bookings.services ?? [])}
+            empty="No booking requests in this period."
+          />
+          <ReportTable
+            title="Current request status"
+            columns={["Status", "Requests", "Share"]}
+            rows={rows(
+              report.bookings.statusBreakdown.map((item) => ({
+                label: item.status,
+                count: item.count,
+              })),
+            )}
+            empty="No booking requests in this period."
+          />
+        </div>
+        <p className="admin-reports-booking-insights__note">
+          Statuses reflect the records now, not their status at the end of the
+          selected period.
+        </p>
+      </details>
+    </section>
+  );
+}
+
 function DecisionSupportSection({ report }: { report: AdminReportsResponse }) {
   const decision = report.decisionSupport!;
   return (
@@ -669,57 +770,207 @@ function SupportingRecordsSection({
           Payment reporting is restricted to Owner/Admin.
         </p>
       )}
-      <div className="admin-reports-supporting__tables">
-        <ReportTable
-          title="Branch demand and fleet activity"
-          columns={[
-            "Branch",
-            "Requests",
-            "Rental starts",
-            "Fleet",
-            "Utilization",
-            "Blocking maintenance",
-          ]}
-          rows={report.branchesPerformance.map((row) => [
-            row.name,
-            row.bookingRequests,
-            row.rentalStarts,
-            row.fleetCount,
-            row.utilization.averagePercent == null
-              ? "Unavailable"
-              : formatPercent(row.utilization.averagePercent),
-            row.blockingMaintenance,
-          ])}
-          empty="No branch records are available."
-        />
-        <ReportTable
-          title="Vehicle-category activity"
-          columns={[
-            "Category",
-            "Fleet",
-            "Rental days",
-            "Utilization",
-            "Idle",
-            "Idle unknown",
-          ]}
-          rows={report.categoriesPerformance.map((row) => [
-            row.name,
-            row.fleetCount,
-            row.rentalDays,
-            row.utilization.averagePercent == null
-              ? "Unavailable"
-              : formatPercent(row.utilization.averagePercent),
-            row.idleVehicles,
-            row.unableToDetermineIdle,
-          ])}
-          empty="No category records are available."
+      <div className="admin-reports-chart-grid admin-reports-operational-charts">
+        <BranchActivityChart report={report} />
+        <ReportBars
+          title="Vehicle use by category"
+          description="Share of eligible days spent on rental. Each bar uses a 0–100% scale."
+          unit="percent"
+          maximum={100}
+          items={[...report.categoriesPerformance]
+            .sort(
+              (a, b) =>
+                (b.utilization.averagePercent ?? -1) -
+                (a.utilization.averagePercent ?? -1),
+            )
+            .map((row) => ({
+              label: row.name,
+              value: row.utilization.averagePercent,
+              detail: `${row.rentalDays} rental days · ${row.fleetCount} vehicles`,
+            }))}
         />
       </div>
+      <details className="reports-record-disclosure admin-reports-operational-details">
+        <summary>View branch and vehicle-category records</summary>
+        <div className="admin-reports-supporting__tables">
+          <ReportTable
+            title="Branch demand and fleet activity"
+            columns={[
+              "Branch",
+              "Requests",
+              "Rental starts",
+              "Fleet",
+              "Utilization",
+              "Blocking maintenance",
+            ]}
+            rows={report.branchesPerformance.map((row) => [
+              row.name,
+              row.bookingRequests,
+              row.rentalStarts,
+              row.fleetCount,
+              row.utilization.averagePercent == null
+                ? "Unavailable"
+                : formatPercent(row.utilization.averagePercent),
+              row.blockingMaintenance,
+            ])}
+            empty="No branch records are available."
+          />
+          <ReportTable
+            title="Vehicle-category activity"
+            columns={[
+              "Category",
+              "Fleet",
+              "Rental days",
+              "Utilization",
+              "Idle",
+              "Idle unknown",
+            ]}
+            rows={report.categoriesPerformance.map((row) => [
+              row.name,
+              row.fleetCount,
+              row.rentalDays,
+              row.utilization.averagePercent == null
+                ? "Unavailable"
+                : formatPercent(row.utilization.averagePercent),
+              row.idleVehicles,
+              row.unableToDetermineIdle,
+            ])}
+            empty="No category records are available."
+          />
+        </div>
+      </details>
       <p className="admin-reports-decision__note">
         Utilization excludes vehicles without enough historical eligibility
         evidence; unavailable values are not converted to zero.
       </p>
     </section>
+  );
+}
+type ReportBarItem = { label: string; value: number | null; detail?: string };
+function ReportBars({
+  title,
+  description,
+  items,
+  maximum,
+  unit = "count",
+}: {
+  title: string;
+  description: string;
+  items: ReportBarItem[];
+  maximum?: number;
+  unit?: "count" | "percent";
+}) {
+  const scale = maximum ?? Math.max(1, ...items.map((item) => item.value ?? 0));
+  return (
+    <figure className="admin-reports-bar-chart">
+      <figcaption>
+        <h3>{title}</h3>
+        <p>{description}</p>
+      </figcaption>
+      {items.length ? (
+        <ul className="admin-reports-bar-list">
+          {items.map((item) => (
+            <li key={item.label}>
+              <div className="admin-reports-bar-label">
+                <span>{item.label}</span>
+                <strong>
+                  {item.value == null
+                    ? "Unavailable"
+                    : unit === "percent"
+                      ? formatPercent(item.value)
+                      : item.value}
+                </strong>
+              </div>
+              {item.value == null ? null : (
+                <div className="admin-reports-bar-track" aria-hidden="true">
+                  <span
+                    style={{
+                      width: `${Math.max(0, Math.min(100, (item.value / scale) * 100))}%`,
+                    }}
+                  />
+                </div>
+              )}
+              {item.detail ? <small>{item.detail}</small> : null}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="admin-reports-chart-empty">No records in this period.</p>
+      )}
+      {unit === "percent" ? (
+        <div className="admin-reports-chart-scale" aria-hidden="true">
+          <span>0%</span>
+          <span>50%</span>
+          <span>100%</span>
+        </div>
+      ) : null}
+    </figure>
+  );
+}
+function BranchActivityChart({ report }: { report: AdminReportsResponse }) {
+  const scale = Math.max(
+    1,
+    ...report.branchesPerformance.flatMap((row) => [
+      row.bookingRequests,
+      row.rentalStarts,
+    ]),
+  );
+  return (
+    <figure className="admin-reports-bar-chart">
+      <figcaption>
+        <h3>Requests and rentals by branch</h3>
+        <p>
+          New booking requests and rentals that started in this period. Requests
+          may be for a later rental date.
+        </p>
+      </figcaption>
+      <div className="admin-reports-chart-legend">
+        <span>
+          <i className="report-series-requests" aria-hidden="true" />
+          Booking requests
+        </span>
+        <span>
+          <i className="report-series-rentals" aria-hidden="true" />
+          Rentals started
+        </span>
+      </div>
+      {report.branchesPerformance.length ? (
+        <ul className="admin-reports-branch-bars">
+          {report.branchesPerformance.map((row) => (
+            <li key={row.branchId ?? row.name}>
+              <h4>{row.name}</h4>
+              {[
+                {
+                  label: "Booking requests",
+                  value: row.bookingRequests,
+                  style: "report-series-requests",
+                },
+                {
+                  label: "Rentals started",
+                  value: row.rentalStarts,
+                  style: "report-series-rentals",
+                },
+              ].map((series) => (
+                <div className="admin-reports-branch-series" key={series.label}>
+                  <span>{series.label}</span>
+                  <div className="admin-reports-bar-track" aria-hidden="true">
+                    <span
+                      className={series.style}
+                      style={{ width: `${(series.value / scale) * 100}%` }}
+                    />
+                  </div>
+                  <strong>{series.value}</strong>
+                </div>
+              ))}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="admin-reports-chart-empty">
+          No branch records in this period.
+        </p>
+      )}
+    </figure>
   );
 }
 function ReportTable({

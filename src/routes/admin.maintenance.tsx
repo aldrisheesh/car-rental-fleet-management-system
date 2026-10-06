@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
   CalendarDays,
@@ -42,7 +43,8 @@ type MaintenanceSearch = {
 
 export const Route = createFileRoute("/admin/maintenance")({
   validateSearch: (search: Record<string, unknown>): MaintenanceSearch => ({
-    vehicleId: typeof search.vehicleId === "string" ? search.vehicleId : undefined,
+    vehicleId:
+      typeof search.vehicleId === "string" ? search.vehicleId : undefined,
   }),
   beforeLoad: () => {
     if (typeof window === "undefined") return;
@@ -177,7 +179,9 @@ function MaintenancePage() {
   const [vehicleRows, setVehicleRows] = useState<VehicleResponse[]>([]);
   const [readiness, setReadiness] = useState<ReadinessItem[]>([]);
   const [query, setQuery] = useState("");
-  const [queueFilter, setQueueFilter] = useState<"Scheduled" | "In Progress" | "Overdue" | "Completed" | "Cancelled">("In Progress");
+  const [queueFilter, setQueueFilter] = useState<
+    "Scheduled" | "In Progress" | "Overdue" | "Completed" | "Cancelled"
+  >("In Progress");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -201,9 +205,9 @@ function MaintenancePage() {
     try {
       const [recordsResponse, vehiclesResponse, readinessResponse] =
         await Promise.all([
-          fetch("/api/maintenance"),
-          fetch("/api/vehicles"),
-          fetch("/api/maintenance?readiness=summary"),
+          readFetch("/api/maintenance"),
+          readFetch("/api/vehicles"),
+          readFetch("/api/maintenance?readiness=summary"),
         ]);
       const [nextRecords, vehicleRows, nextReadiness] = await Promise.all([
         responseJson<MaintenanceRecord[]>(recordsResponse),
@@ -249,17 +253,32 @@ function MaintenancePage() {
     [records],
   );
   const attention = useMemo(
-    () => readiness.filter((item) => !item.maintenanceReady && (!preselectedVehicleId || item.vehicleId === preselectedVehicleId)),
+    () =>
+      readiness.filter(
+        (item) =>
+          !item.maintenanceReady &&
+          (!preselectedVehicleId || item.vehicleId === preselectedVehicleId),
+      ),
     [readiness, preselectedVehicleId],
   );
   const closedRecords = useMemo(
-    () => records.filter((record) => (record.status === "Completed" || record.status === "Cancelled") && (!preselectedVehicleId || record.vehicle_id === preselectedVehicleId)),
+    () =>
+      records.filter(
+        (record) =>
+          (record.status === "Completed" || record.status === "Cancelled") &&
+          (!preselectedVehicleId || record.vehicle_id === preselectedVehicleId),
+      ),
     [records, preselectedVehicleId],
   );
   const filteredRecords = useMemo(() => {
     return records.filter((record) => {
-      const matchesFilter = !record.archived_at && record.status === queueFilter;
-      return matchesFilter && (!preselectedVehicleId || record.vehicle_id === preselectedVehicleId) && matchesMaintenanceSearch(record, query);
+      const matchesFilter =
+        !record.archived_at && record.status === queueFilter;
+      return (
+        matchesFilter &&
+        (!preselectedVehicleId || record.vehicle_id === preselectedVehicleId) &&
+        matchesMaintenanceSearch(record, query)
+      );
     });
   }, [query, queueFilter, records, preselectedVehicleId]);
   const selectedRecord = useMemo(
@@ -306,7 +325,8 @@ function MaintenancePage() {
           ["Overdue", "Scheduled"].includes(record.status),
       ) ??
       records.find(
-        (record) => record.vehicle_id === preselectedVehicleId && !record.archived_at,
+        (record) =>
+          record.vehicle_id === preselectedVehicleId && !record.archived_at,
       );
     if (!matchingRecord) return;
     setQueueFilter(matchingRecord.status as typeof queueFilter);
@@ -316,7 +336,8 @@ function MaintenancePage() {
   useEffect(() => {
     if (!query.trim()) return;
     const matchingRecord = records.find(
-      (record) => !record.archived_at && matchesMaintenanceSearch(record, query),
+      (record) =>
+        !record.archived_at && matchesMaintenanceSearch(record, query),
     );
     if (!matchingRecord) return;
     setQueueFilter(matchingRecord.status as typeof queueFilter);
@@ -335,7 +356,7 @@ function MaintenancePage() {
     setFeedback(null);
     try {
       const result = await responseJson<{ active_rental_conflict?: boolean }>(
-        await fetch("/api/maintenance", {
+        await readFetch("/api/maintenance", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(createMaintenancePayload(draft)),
@@ -373,7 +394,8 @@ function MaintenancePage() {
         : status === "Cancelled"
           ? !["Scheduled", "Overdue"].includes(record.status)
           : record.status !== "In Progress"
-    ) return;
+    )
+      return;
     setCompletionDraft({
       ...finalDraft(record),
       ...(status === "Cancelled" ? { remarks: "" } : {}),
@@ -390,13 +412,14 @@ function MaintenancePage() {
         : transition.status === "Cancelled"
           ? !["Scheduled", "Overdue"].includes(transition.record.status)
           : transition.record.status !== "In Progress")
-    ) return;
+    )
+      return;
     setMutationPending(true);
     setMutationError(null);
     setFeedback(null);
     try {
       await responseJson(
-        await fetch("/api/maintenance", {
+        await readFetch("/api/maintenance", {
           method: "PATCH",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(
@@ -416,8 +439,8 @@ function MaintenancePage() {
           completedStatus === "In Progress"
             ? "Maintenance service started."
             : completedStatus === "Completed"
-            ? "Maintenance record completed."
-            : "Maintenance record cancelled and retained in history.",
+              ? "Maintenance record completed."
+              : "Maintenance record cancelled and retained in history.",
       });
       await loadCanonicalData();
     } catch (error) {
@@ -449,7 +472,17 @@ function MaintenancePage() {
     <header className="admin-maintenance-heading">
       <div>
         <h1>Maintenance Management</h1>
-        {preselectedVehicleId ? <p className="admin-maintenance-scope">Service records for {vehicleRows.find(vehicle => vehicle.id === preselectedVehicleId)?.name ?? "the selected vehicle"}. Status totals below cover all vehicles. <Link to="/admin/maintenance" search={{ vehicleId: undefined }}>View all vehicles</Link></p> : null}
+        {preselectedVehicleId ? (
+          <p className="admin-maintenance-scope">
+            Service records for{" "}
+            {vehicleRows.find((vehicle) => vehicle.id === preselectedVehicleId)
+              ?.name ?? "the selected vehicle"}
+            . Status totals below cover all vehicles.{" "}
+            <Link to="/admin/maintenance" search={{ vehicleId: undefined }}>
+              View all vehicles
+            </Link>
+          </p>
+        ) : null}
       </div>
       <div className="admin-maintenance-heading__actions">
         <label className="admin-maintenance-header-search">
@@ -501,6 +534,7 @@ function MaintenancePage() {
       {feedback && (
         <div
           role={feedback.kind === "warning" ? "alert" : "status"}
+          data-motion-success={feedback.kind === "success" ? "true" : undefined}
           aria-live="polite"
           className={`admin-maintenance-feedback ${
             feedback.kind === "warning"
@@ -536,9 +570,11 @@ function MaintenancePage() {
           >
             <span>{label}</span>
             <strong>
-              {records.filter(
-                (record) => !record.archived_at && record.status === filter,
-              ).length}
+              {
+                records.filter(
+                  (record) => !record.archived_at && record.status === filter,
+                ).length
+              }
             </strong>
           </button>
         ))}
@@ -552,15 +588,17 @@ function MaintenancePage() {
           <header>
             <div>
               <h2>
-                {(
-                  {
-                    Scheduled: "Vehicle Maintenance Scheduled",
-                    "In Progress": "Vehicle Maintenance in Progress",
-                    Overdue: "Vehicle Maintenance Overdue",
-                    Completed: "Vehicle Maintenance Completed",
-                    Cancelled: "Vehicle Maintenance Cancelled",
-                  } as const
-                )[queueFilter]}
+                {
+                  (
+                    {
+                      Scheduled: "Vehicle Maintenance Scheduled",
+                      "In Progress": "Vehicle Maintenance in Progress",
+                      Overdue: "Vehicle Maintenance Overdue",
+                      Completed: "Vehicle Maintenance Completed",
+                      Cancelled: "Vehicle Maintenance Cancelled",
+                    } as const
+                  )[queueFilter]
+                }
               </h2>
               <p>
                 {filteredRecords.length} matching record
@@ -615,7 +653,10 @@ function MaintenancePage() {
                           ? `Started ${formatDate(record.service_started_at, true)}`
                           : record.next_service_date
                             ? `PMS due ${formatDate(record.next_service_date)}`
-                            : formatDate(record.completed_at ?? record.service_started_at)}
+                            : formatDate(
+                                record.completed_at ??
+                                  record.service_started_at,
+                              )}
                     </small>
                   </span>
                   <span
@@ -642,25 +683,56 @@ function MaintenancePage() {
         />
       </div>
 
-      <section className="admin-maintenance-history" aria-labelledby="maintenance-history-heading">
+      <section
+        className="admin-maintenance-history"
+        aria-labelledby="maintenance-history-heading"
+      >
         <div className="admin-maintenance-history__heading">
           <div>
             <h2 id="maintenance-history-heading">Maintenance history</h2>
-            <p>Closed maintenance remains available for accountability and review.</p>
+            <p>
+              Closed maintenance remains available for accountability and
+              review.
+            </p>
           </div>
-          <span>{closedRecords.length} record{closedRecords.length === 1 ? "" : "s"}</span>
+          <span>
+            {closedRecords.length} record{closedRecords.length === 1 ? "" : "s"}
+          </span>
         </div>
         {closedRecords.length ? (
           <div className="admin-maintenance-history__rows">
             {closedRecords.map((record) => (
-              <button key={record.id} type="button" onClick={() => { setSelectedRecordId(record.id); setDetailsOpen(true); }}>
-                <span><strong>{record.vehicle?.name ?? "Unknown vehicle"}</strong><small>{record.vehicle?.license_plate ?? "Plate unavailable"}</small></span>
-                <span><strong>{record.maintenance_type}</strong><small>{formatDate(record.completed_at ?? record.created_at)}</small></span>
-                <span className={`is-${record.status.toLowerCase()}`}>{record.status}</span>
+              <button
+                key={record.id}
+                type="button"
+                onClick={() => {
+                  setSelectedRecordId(record.id);
+                  setDetailsOpen(true);
+                }}
+              >
+                <span>
+                  <strong>{record.vehicle?.name ?? "Unknown vehicle"}</strong>
+                  <small>
+                    {record.vehicle?.license_plate ?? "Plate unavailable"}
+                  </small>
+                </span>
+                <span>
+                  <strong>{record.maintenance_type}</strong>
+                  <small>
+                    {formatDate(record.completed_at ?? record.created_at)}
+                  </small>
+                </span>
+                <span className={`is-${record.status.toLowerCase()}`}>
+                  {record.status}
+                </span>
               </button>
             ))}
           </div>
-        ) : <p className="admin-maintenance-empty">No closed maintenance records yet.</p>}
+        ) : (
+          <p className="admin-maintenance-empty">
+            No closed maintenance records yet.
+          </p>
+        )}
       </section>
 
       <MaintenanceRecordDialog
@@ -695,13 +767,33 @@ function MaintenancePage() {
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="admin-maintenance-details-dialog max-h-[88vh] overflow-y-auto p-0 sm:max-w-5xl">
           <DialogTitle className="sr-only">
-            Maintenance details for {selectedRecord ? (vehicleById.get(selectedRecord.vehicle_id)?.name ?? "vehicle") : "vehicle"}
+            Maintenance details for{" "}
+            {selectedRecord
+              ? (vehicleById.get(selectedRecord.vehicle_id)?.name ?? "vehicle")
+              : "vehicle"}
           </DialogTitle>
-          <DialogDescription className="sr-only">Review the service record, rental impact, and prior maintenance history.</DialogDescription>
+          <DialogDescription className="sr-only">
+            Review the service record, rental impact, and prior maintenance
+            history.
+          </DialogDescription>
           <MaintenanceWorkspaceDetail
             record={selectedRecord}
-            vehicle={selectedRecord ? (vehicleById.get(selectedRecord.vehicle_id) ?? null) : null}
-            history={selectedRecord ? records.filter((item) => item.vehicle_id === selectedRecord.vehicle_id && item.id !== selectedRecord.id).slice(0, 5) : []}
+            vehicle={
+              selectedRecord
+                ? (vehicleById.get(selectedRecord.vehicle_id) ?? null)
+                : null
+            }
+            history={
+              selectedRecord
+                ? records
+                    .filter(
+                      (item) =>
+                        item.vehicle_id === selectedRecord.vehicle_id &&
+                        item.id !== selectedRecord.id,
+                    )
+                    .slice(0, 5)
+                : []
+            }
             readiness={readiness}
             onStart={(record) => openTransition(record, "In Progress")}
             onComplete={(record) => openTransition(record, "Completed")}
@@ -774,19 +866,44 @@ function MaintenancePreview({
     : null;
   return (
     <aside className="admin-maintenance-preview">
-      {!record ? <p className="admin-maintenance-empty">Select a maintenance record to preview it.</p> : <>
-        <div className="admin-maintenance-preview__heading">
-          <div><h2>{record.vehicle?.name ?? "Unknown vehicle"}</h2><span>{record.vehicle?.license_plate ?? "Plate unavailable"}</span></div>
-          <strong className={`is-${record.status.toLowerCase()}`}>{record.status}</strong>
-        </div>
-        <dl>
-          <Detail label="Service">{record.maintenance_type}</Detail>
-          <Detail label={record.scheduled_for ? "Scheduled" : "Started"}>{formatDate(record.scheduled_for ?? record.service_started_at, true)}</Detail>
-          <Detail label="Rental readiness">{rentalReadinessState(recordReadiness)}</Detail>
-        </dl>
-        {!recordReadiness?.maintenanceReady && recordReadiness?.reasons.length ? <p>{rentalReadinessReasons(recordReadiness).join(" ")}</p> : null}
-        <Btn variant="primary" onClick={onViewDetails}>View details</Btn>
-      </>}
+      {!record ? (
+        <p className="admin-maintenance-empty">
+          Select a maintenance record to preview it.
+        </p>
+      ) : (
+        <>
+          <div className="admin-maintenance-preview__heading">
+            <div>
+              <h2>{record.vehicle?.name ?? "Unknown vehicle"}</h2>
+              <span>
+                {record.vehicle?.license_plate ?? "Plate unavailable"}
+              </span>
+            </div>
+            <strong className={`is-${record.status.toLowerCase()}`}>
+              {record.status}
+            </strong>
+          </div>
+          <dl>
+            <Detail label="Service">{record.maintenance_type}</Detail>
+            <Detail label={record.scheduled_for ? "Scheduled" : "Started"}>
+              {formatDate(
+                record.scheduled_for ?? record.service_started_at,
+                true,
+              )}
+            </Detail>
+            <Detail label="Rental readiness">
+              {rentalReadinessState(recordReadiness)}
+            </Detail>
+          </dl>
+          {!recordReadiness?.maintenanceReady &&
+          recordReadiness?.reasons.length ? (
+            <p>{rentalReadinessReasons(recordReadiness).join(" ")}</p>
+          ) : null}
+          <Btn variant="primary" onClick={onViewDetails}>
+            View details
+          </Btn>
+        </>
+      )}
     </aside>
   );
 }
@@ -876,14 +993,12 @@ function MaintenanceWorkspaceDetail({
                   }
                 />
                 <p>
-                  <strong>
-                    {rentalReadinessState(recordReadiness)}
-                  </strong>
+                  <strong>{rentalReadinessState(recordReadiness)}</strong>
                   <small>
                     {recordReadiness?.maintenanceReady
                       ? "No recorded maintenance condition is preventing rental use."
-                      : (rentalReadinessReasons(recordReadiness).join(" ") ||
-                        "Rental readiness information is unavailable.")}
+                      : rentalReadinessReasons(recordReadiness).join(" ") ||
+                        "Rental readiness information is unavailable."}
                   </small>
                 </p>
               </div>
@@ -897,12 +1012,16 @@ function MaintenanceWorkspaceDetail({
               </div>
               <dl>
                 <Detail label="Service type">{record.maintenance_type}</Detail>
-                {record.scheduled_for ? <Detail label="Scheduled service">
-                  {formatDate(record.scheduled_for, true)}
-                </Detail> : null}
-                {record.service_started_at ? <Detail label="Actual service started">
-                  {formatDate(record.service_started_at, true)}
-                </Detail> : null}
+                {record.scheduled_for ? (
+                  <Detail label="Scheduled service">
+                    {formatDate(record.scheduled_for, true)}
+                  </Detail>
+                ) : null}
+                {record.service_started_at ? (
+                  <Detail label="Actual service started">
+                    {formatDate(record.service_started_at, true)}
+                  </Detail>
+                ) : null}
                 <Detail label="Description">{record.description}</Detail>
                 <Detail label="Odometer">
                   {formatOdometer(record.odometer_at_service)}
@@ -945,7 +1064,10 @@ function MaintenanceWorkspaceDetail({
             </div>
             {history.map((item) => (
               <div key={item.id}>
-                <span aria-hidden="true" className={`admin-maintenance-history-dot is-${item.status.toLowerCase()}`} />
+                <span
+                  aria-hidden="true"
+                  className={`admin-maintenance-history-dot is-${item.status.toLowerCase()}`}
+                />
                 <time>
                   {formatDate(item.completed_at ?? item.service_started_at)}
                 </time>
@@ -956,8 +1078,12 @@ function MaintenanceWorkspaceDetail({
           </section>
           {record.status === "Scheduled" || record.status === "Overdue" ? (
             <footer className="admin-maintenance-detail__actions">
-              <Btn variant="danger" onClick={() => onCancel(record)}>Cancel maintenance</Btn>
-              <Btn variant="primary" onClick={() => onStart(record)}>Start service</Btn>
+              <Btn variant="danger" onClick={() => onCancel(record)}>
+                Cancel maintenance
+              </Btn>
+              <Btn variant="primary" onClick={() => onStart(record)}>
+                Start service
+              </Btn>
             </footer>
           ) : record.status === "In Progress" ? (
             <footer className="admin-maintenance-detail__actions">
@@ -1068,7 +1194,11 @@ function TransitionDialog({
       <DialogContent className="admin-maintenance-transition-dialog sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
-            {completing ? "Complete maintenance" : starting ? "Start maintenance" : "Cancel maintenance"}
+            {completing
+              ? "Complete maintenance"
+              : starting
+                ? "Start maintenance"
+                : "Cancel maintenance"}
           </DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
@@ -1077,7 +1207,13 @@ function TransitionDialog({
         </p>
         {(completing || starting) && (
           <div className="grid gap-4 py-2 sm:grid-cols-2">
-            <TransitionField label={starting ? "Actual odometer at service start (km)" : "Final odometer at service (km)"}>
+            <TransitionField
+              label={
+                starting
+                  ? "Actual odometer at service start (km)"
+                  : "Final odometer at service (km)"
+              }
+            >
               <TInput
                 type="number"
                 min="0"
@@ -1088,37 +1224,41 @@ function TransitionDialog({
                 }
               />
             </TransitionField>
-            {completing && <TransitionField label="Actual cost (PHP)">
-              <TInput
-                type="number"
-                min="0"
-                step="0.01"
-                value={draft.costPhp}
-                onChange={(event) => update("costPhp", event.target.value)}
-              />
-            </TransitionField>}
-            {completing && <>
-            <TransitionField label="Next service date">
-              <TInput
-                type="date"
-                value={draft.nextServiceDate}
-                onChange={(event) =>
-                  update("nextServiceDate", event.target.value)
-                }
-              />
-            </TransitionField>
-            <TransitionField label="Next service odometer (km)">
-              <TInput
-                type="number"
-                min="0"
-                step="0.1"
-                value={draft.nextServiceOdometer}
-                onChange={(event) =>
-                  update("nextServiceOdometer", event.target.value)
-                }
-              />
-            </TransitionField>
-            </>}
+            {completing && (
+              <TransitionField label="Actual cost (PHP)">
+                <TInput
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={draft.costPhp}
+                  onChange={(event) => update("costPhp", event.target.value)}
+                />
+              </TransitionField>
+            )}
+            {completing && (
+              <>
+                <TransitionField label="Next service date">
+                  <TInput
+                    type="date"
+                    value={draft.nextServiceDate}
+                    onChange={(event) =>
+                      update("nextServiceDate", event.target.value)
+                    }
+                  />
+                </TransitionField>
+                <TransitionField label="Next service odometer (km)">
+                  <TInput
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={draft.nextServiceOdometer}
+                    onChange={(event) =>
+                      update("nextServiceOdometer", event.target.value)
+                    }
+                  />
+                </TransitionField>
+              </>
+            )}
           </div>
         )}
         {cancelling ? (
@@ -1132,7 +1272,9 @@ function TransitionDialog({
               <select
                 className="input-control w-full"
                 value={draft.cancellationReason ?? ""}
-                onChange={(event) => update("cancellationReason", event.target.value)}
+                onChange={(event) =>
+                  update("cancellationReason", event.target.value)
+                }
               >
                 <option value="">Select a reason</option>
                 <option>Service appointment rescheduled</option>
@@ -1145,7 +1287,15 @@ function TransitionDialog({
           </>
         ) : null}
         <TransitionField
-          label={completing ? "Final remarks" : starting ? "Service-start remarks" : cancelling ? "Additional remarks (optional)" : "Remarks"}
+          label={
+            completing
+              ? "Final remarks"
+              : starting
+                ? "Service-start remarks"
+                : cancelling
+                  ? "Additional remarks (optional)"
+                  : "Remarks"
+          }
         >
           <textarea
             className="input-control min-h-24 w-full py-2.5"
@@ -1171,7 +1321,9 @@ function TransitionDialog({
               ? "Saving…"
               : completing
                 ? "Complete maintenance"
-                : starting ? "Start maintenance" : "Cancel maintenance"}
+                : starting
+                  ? "Start maintenance"
+                  : "Cancel maintenance"}
           </Btn>
         </DialogFooter>
       </DialogContent>

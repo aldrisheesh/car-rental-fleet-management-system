@@ -50,6 +50,17 @@ async function read({ request }: { request: Request }) {
     }
     if (principal.role === "Operations Staff")
       return Response.json({ payments: [] });
+    if (
+      principal.role === "Owner/Admin" &&
+      url.searchParams.get("view") === "summary"
+    ) {
+      const result = await client
+        .from("payments")
+        .select("id,booking_id,status")
+        .order("updated_at", { ascending: false });
+      if (result.error) return error("Unable to load payments.", 503);
+      return Response.json({ payments: result.data ?? [] });
+    }
     let query = client
       .from("payments")
       .select(
@@ -59,13 +70,17 @@ async function read({ request }: { request: Request }) {
     if (principal.role === "Customer/Renter")
       query = query.eq("customer_id", principal.userId);
     if (bookingId) query = query.eq("booking_id", bookingId);
-    const result = await query;
+    if (url.searchParams.get("paymentId"))
+      query = query.eq("id", url.searchParams.get("paymentId"));
+    const [result, methods] = await Promise.all([
+      query,
+      client
+        .from("payment_methods")
+        .select("id,code,label,recipient_name,account_number,qr_image_path")
+        .eq("is_active", true)
+        .order("label"),
+    ]);
     if (result.error) return error("Unable to load payments.", 503);
-    const methods = await client
-      .from("payment_methods")
-      .select("id,code,label,recipient_name,account_number,qr_image_path")
-      .eq("is_active", true)
-      .order("label");
     const bookingIds = [
       ...new Set(
         (result.data ?? []).map(

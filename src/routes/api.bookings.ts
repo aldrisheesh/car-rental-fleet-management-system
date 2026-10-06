@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Canonical booking joins and financial projections predate generated Supabase types. */
 import { validCategory } from "@/lib/booking-categories";
 import { validateReportRange } from "@/lib/admin-reports";
 import { dispatchBookingEmail } from "@/lib/transactional-email.server";
@@ -16,7 +17,10 @@ import {
   revalidateFinderBookingBasis,
 } from "@/lib/finder-booking";
 import { evaluateCanonicalVehicleFinder } from "@/lib/vehicle-finder.server";
-import { BOOKING_READ_SELECT } from "@/lib/booking-reads";
+import {
+  BOOKING_READ_SELECT,
+  DISPATCH_BOOKING_SELECT,
+} from "@/lib/booking-reads";
 import { existingBookingFromLookup } from "@/lib/booking-idempotency";
 
 const text = (v: unknown) => (typeof v === "string" ? v.trim() : "");
@@ -57,6 +61,9 @@ async function readBookings({ request }: { request: Request }) {
     const principal = await requirePrincipal();
     const client = getSupabaseServerClient();
     const url = new URL(request.url);
+    const dispatch =
+      principal.role !== "Customer/Renter" &&
+      url.searchParams.get("view") === "dispatch";
     const queue =
       principal.role !== "Customer/Renter" &&
       url.searchParams.get("view") === "queue";
@@ -72,10 +79,16 @@ async function readBookings({ request }: { request: Request }) {
     const limit = queueLimit ?? 25;
     let query = (client as any)
       .from("booking_requests")
-      .select(BOOKING_READ_SELECT, queue ? { count: "exact" } : undefined)
+      .select(
+        dispatch ? DISPATCH_BOOKING_SELECT : BOOKING_READ_SELECT,
+        queue ? { count: "exact" } : undefined,
+      )
       .order("created_at", { ascending: false });
     if (principal.role === "Customer/Renter")
       query = query.eq("customer_id", principal.userId);
+    // Keep the ownership predicate above for customer detail reads as well.
+    if (url.searchParams.get("bookingId"))
+      query = query.eq("id", url.searchParams.get("bookingId"));
     // A renter's trip request is operationally relevant from the moment it is
     // created. Draft here means “awaiting documents,” not “invisible to admin.”
     if (queue && url.searchParams.get("status"))
@@ -106,33 +119,37 @@ async function readBookings({ request }: { request: Request }) {
     if (result.error)
       return errorResponse("Unable to load booking requests.", 503);
     const rows = result.data ?? [];
+    if (dispatch)
+      return Response.json({ bookings: rows, candidateVehicles: [] });
     const bookingIds = rows.map((b: any) => b.id);
     const rentalColumns =
       principal.role === "Owner/Admin"
         ? "*"
         : "id,booking_id,vehicle_id,scheduled_pickup_at,scheduled_return_at,started_at,ended_at";
-    const rentalsResult = bookingIds.length
-      ? await (client as any)
-          .from("rental_transactions")
-          .select(rentalColumns)
-          .in("booking_id", bookingIds)
-      : { data: [], error: null };
+    const [rentalsResult, finderResult] = await Promise.all([
+      bookingIds.length
+        ? (client as any)
+            .from("rental_transactions")
+            .select(rentalColumns)
+            .in("booking_id", bookingIds)
+        : { data: [], error: null },
+      bookingIds.length
+        ? (client as any)
+            .from("booking_finder_context")
+            .select(
+              "booking_id,selected_vehicle_id,requested_start,requested_end,passenger_count,large_bag_count,maximum_budget,preferred_category_id,destination,recommendation_rank,finder_baseline,created_at,preferred_category:vehicle_categories(id,name),selected_vehicle:vehicles(id,name)",
+            )
+            .in("booking_id", bookingIds)
+        : { data: [], error: null },
+    ]);
+    if (rentalsResult.error || finderResult.error)
+      return errorResponse("Unable to load booking requests.", 503);
     const rentalMap = new Map(
       (rentalsResult.data ?? []).map((r: any) => [r.booking_id, r]),
     );
     rows.forEach((b: any) => {
       b.rental = rentalMap.get(b.id) ?? null;
     });
-    const finderResult = bookingIds.length
-      ? await (client as any)
-          .from("booking_finder_context")
-          .select(
-            "booking_id,selected_vehicle_id,requested_start,requested_end,passenger_count,large_bag_count,maximum_budget,preferred_category_id,destination,recommendation_rank,finder_baseline,created_at,preferred_category:vehicle_categories(id,name),selected_vehicle:vehicles(id,name)",
-          )
-          .in("booking_id", bookingIds)
-      : { data: [], error: null };
-    if (finderResult.error)
-      return errorResponse("Unable to load booking requests.", 503);
     const finderMap = new Map(
       (finderResult.data ?? []).map((context: any) => [
         context.booking_id,

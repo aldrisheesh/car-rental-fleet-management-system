@@ -13,10 +13,20 @@ export const Route = createFileRoute("/api/notifications")({
   server: { handlers: { GET: readNotifications, POST: markNotificationRead } },
 });
 
-async function readNotifications() {
+async function readNotifications({ request }: { request: Request }) {
   try {
     const principal = await requirePrincipal();
     const client = getSupabaseServerClient();
+    if (new URL(request.url).searchParams.get("view") === "unread") {
+      const unread = await client
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("recipient_id", principal.userId)
+        .is("read_at", null);
+      if (unread.error)
+        return errorResponse("Unable to load notifications.", 503);
+      return Response.json({ unreadCount: unread.count ?? 0 });
+    }
     const [items, unread, preference] = await Promise.all([
       client
         .from("notifications")

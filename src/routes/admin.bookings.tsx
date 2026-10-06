@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { getAdminSession } from "@/lib/admin-auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { bookingStage } from "@/lib/booking-stage";
@@ -55,6 +56,18 @@ function initialSearchParam(key: string) {
   return new URLSearchParams(window.location.search).get(key) ?? "";
 }
 
+const RENTAL_STAGES = [
+  { value: "Document review", label: "Document review" },
+  { value: "Awaiting documents", label: "Awaiting documents" },
+  { value: "Payment review", label: "Payment review" },
+  { value: "Awaiting payment", label: "Awaiting payment" },
+  { value: "Ready to confirm", label: "Ready to confirm" },
+  { value: "Reschedule requested", label: "Date-change review" },
+  { value: "Confirmed", label: "Awaiting handover" },
+  { value: "Active rental", label: "Active rental" },
+  { value: "Returned", label: "Returned" },
+];
+
 function initialPage() {
   const value = Number(initialSearchParam("page"));
   return Number.isInteger(value) && value > 0 ? value : 1;
@@ -79,6 +92,10 @@ function BookingsPage() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [query, setQuery] = useState(() => initialSearchParam("q"));
   const [status, setStatus] = useState(() => initialSearchParam("status"));
+  const [stage, setStage] = useState(() => {
+    const value = initialSearchParam("stage");
+    return RENTAL_STAGES.some((option) => option.value === value) ? value : "";
+  });
   const [branch, setBranch] = useState(() => initialSearchParam("branch"));
   const [reportFrom, setReportFrom] = useState(() =>
     initialSearchParam("from"),
@@ -90,7 +107,9 @@ function BookingsPage() {
   const load = useCallback(async () => {
     setState({ status: "loading" });
     try {
-      const serverPaginated = !query.trim();
+      // Derived stages require the same full-record view used by text search,
+      // so stage filtering happens before local pagination, across all requests.
+      const serverPaginated = !query.trim() && !stage;
       const params = new URLSearchParams();
       if (reportFrom) params.set("from", reportFrom);
       if (reportTo) params.set("to", reportTo);
@@ -101,7 +120,7 @@ function BookingsPage() {
         if (status) params.set("status", status);
         if (branch) params.set("branch", branch);
       }
-      const response = await fetch(
+      const response = await readFetch(
         `/api/bookings${params.size ? `?${params}` : ""}`,
         {
           credentials: "same-origin",
@@ -127,7 +146,7 @@ function BookingsPage() {
             : "Unable to load rental requests.",
       });
     }
-  }, [branch, page, pageSize, query, status, reportFrom, reportTo]);
+  }, [branch, page, pageSize, query, status, stage, reportFrom, reportTo]);
 
   useEffect(() => {
     void load();
@@ -138,6 +157,7 @@ function BookingsPage() {
     const next = new URLSearchParams();
     if (query) next.set("q", query);
     if (status) next.set("status", status);
+    if (stage) next.set("stage", stage);
     if (branch) next.set("branch", branch);
     if (reportFrom) next.set("from", reportFrom);
     if (reportTo) next.set("to", reportTo);
@@ -149,7 +169,7 @@ function BookingsPage() {
       "",
       `${window.location.pathname}${search ? `?${search}` : ""}`,
     );
-  }, [branch, page, pageSize, query, status, reportFrom, reportTo]);
+  }, [branch, page, pageSize, query, status, stage, reportFrom, reportTo]);
 
   const bookings = useMemo(
     () => (state.status === "ready" ? state.bookings : []),
@@ -184,6 +204,7 @@ function BookingsPage() {
     const normalizedQuery = query.trim().toLowerCase();
     return bookings.filter((booking) => {
       if (status && booking.booking_status !== status) return false;
+      if (stage && bookingStage(booking).label !== stage) return false;
       if (branch && booking.pickup_branch?.id !== branch) return false;
       if (!normalizedQuery) return true;
       return [
@@ -203,7 +224,7 @@ function BookingsPage() {
         .toLowerCase()
         .includes(normalizedQuery);
     });
-  }, [bookings, branch, query, status]);
+  }, [bookings, branch, query, status, stage]);
 
   const serverPaginated = state.status === "ready" && state.serverPaginated;
   const total = serverPaginated ? state.total : rows.length;
@@ -219,6 +240,7 @@ function BookingsPage() {
   const clearFilters = () => {
     setQuery("");
     setStatus("");
+    setStage("");
     setBranch("");
     setReportFrom("");
     setReportTo("");
@@ -237,7 +259,7 @@ function BookingsPage() {
     (b) => bookingStage(b).label === "Reschedule requested",
   ).length;
   const hasFilters = Boolean(
-    query || status || branch || reportFrom || reportTo,
+    query || status || stage || branch || reportFrom || reportTo,
   );
   const isLoading = state.status === "loading";
 
@@ -359,6 +381,24 @@ function BookingsPage() {
             {statusOptions.map((value) => (
               <option key={value} value={value}>
                 {value}
+              </option>
+            ))}
+          </TSelect>
+        </label>
+        <label className="min-w-[170px]">
+          <span className="sr-only">Filter by rental stage</span>
+          <TSelect
+            name="booking-stage"
+            value={stage}
+            onChange={(event) => {
+              setStage(event.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="">All rental stages</option>
+            {RENTAL_STAGES.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </TSelect>

@@ -129,8 +129,8 @@ test("Admin Maintenance source is canonical and exposes honest states", async ()
 
   assert.doesNotMatch(page, /@\/data\/admin/);
   assert.doesNotMatch(page, /recharts|Fleet downtime|statusOverrides/);
-  assert.match(page, /fetch\("\/api\/maintenance"\)/);
-  assert.match(page, /fetch\("\/api\/vehicles"\)/);
+  assert.match(page, /readFetch\("\/api\/maintenance"\)/);
+  assert.match(page, /readFetch\("\/api\/vehicles"\)/);
   assert.match(page, /readiness=summary/);
   assert.match(page, /Loading maintenance data/);
   assert.match(page, /Unable to load maintenance records/);

@@ -1,3 +1,4 @@
+import { readFetch } from "./read-fetch.ts";
 import type { HandoverQuote, RentalFinancialRecord } from "./rental-finance";
 import {
   instantToManilaDateTimeLocal,
@@ -232,7 +233,7 @@ export async function fetchJson<T>(
     if (!isMultipart && !headers.has("Content-Type")) {
       headers.set("Content-Type", "application/json");
     }
-    response = await fetch(input, {
+    response = await readFetch(input, {
       credentials: "same-origin",
       ...init,
       headers,

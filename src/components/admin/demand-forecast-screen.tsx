@@ -231,8 +231,12 @@ export function DemandForecastScreen(p: Props) {
                 <tr>
                   {p.branch === "all" ? <th scope="col">Branch</th> : null}
                   <th scope="col">Planning week</th>
-                  <th scope="col">Estimated rental demand</th>
-                  <th scope="col">Vehicles to plan for</th>
+                  <th scope="col" className="is-numeric">
+                    Estimated rental demand
+                  </th>
+                  <th scope="col" className="is-numeric">
+                    Vehicles to plan for
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -253,9 +257,6 @@ export function DemandForecastScreen(p: Props) {
                         row.target_week_start,
                         row.target_week_end,
                       )}
-                      {row.target_week_start === week ? (
-                        <small>Selected week</small>
-                      ) : null}
                     </td>
                     <td className="is-numeric">
                       {p.formatQuantity(row.forecasted_demand)}
@@ -272,11 +273,12 @@ export function DemandForecastScreen(p: Props) {
       ) : null}
       <div className="dss-forecast-details">
         <details className="dss-forecast-disclosure dss-forecast-evidence">
-          <summary>How the selected week was calculated</summary>
+          <summary>How we estimate rental demand</summary>
           <div className="dss-forecast-disclosure-body">
             <p>
-              Three recent weekly inputs are weighted at 50%, 30% and 20%. Later
-              weeks also use earlier forecast values.
+              We use three weeks of rental demand, giving more importance to the
+              latest week: 50%, then 30%, then 20%. Estimates further ahead also
+              use earlier estimates.
             </p>
             {p.branch === "all" ? (
               <p>
@@ -285,35 +287,36 @@ export function DemandForecastScreen(p: Props) {
               </p>
             ) : null}
             {p.calculation ?? (
-              <p>No calculation evidence is available for this selection.</p>
+              <p>No calculation details are saved for this selection.</p>
             )}
           </div>
         </details>
         <details className="dss-forecast-disclosure">
-          <summary>Past forecast performance and history</summary>
+          <summary>How close were past estimates?</summary>
           <div className="dss-forecast-disclosure-body">
-            <h2>Past forecast performance</h2>
+            <h2>Estimates compared with recorded demand</h2>
             <p>
-              One-week-ahead forecasts compared with completed actual demand
-              across all eligible branches and categories.
+              Compares estimates made one week ahead with recorded rental demand
+              after the week ends. Covers all branches and vehicle categories,
+              not just this selection.
             </p>
             <div className="dss-forecast-accuracy">
-              <span>Average forecast error</span>
+              <span>Average difference from recorded demand</span>
               <strong>
                 {p.mape == null ? "Not yet available" : `${p.mape.toFixed(1)}%`}
               </strong>
               <p>
                 {p.mape == null
-                  ? "Forecast error becomes available after earlier forecasts are compared with completed weeks that recorded demand."
-                  : "Lower is better. This compares earlier one-week forecasts with recorded demand; it is not an accuracy score or a guarantee of future results."}
+                  ? "Available once past estimates are compared with completed weeks that recorded demand."
+                  : "A lower percentage means past estimates were closer to recorded demand. It does not guarantee future results."}
               </p>
               <dl>
                 <div>
-                  <dt>Eligible observations</dt>
+                  <dt>Comparisons included</dt>
                   <dd>{p.eligible ?? "Unavailable"}</dd>
                 </div>
                 <div>
-                  <dt>Zero-actual exclusions</dt>
+                  <dt>Comparisons skipped: no recorded demand</dt>
                   <dd>{p.excluded ?? "Unavailable"}</dd>
                 </div>
               </dl>
@@ -324,37 +327,35 @@ export function DemandForecastScreen(p: Props) {
                 {p.busy
                   ? "Working…"
                   : p.finalizable
-                    ? `Finalize ${p.finalizable} completed`
-                    : "No forecasts awaiting finalization"}
+                    ? `Compare ${p.finalizable} completed forecasts`
+                    : "No completed forecasts to compare"}
               </Btn>
             </div>
             <details className="admin-transfer-evidence admin-forecast-accuracy">
-              <summary>Accuracy scope and exclusions</summary>
+              <summary>What is included in this comparison?</summary>
               <p>
-                Mean Absolute Percentage Error (MAPE) covers all eligible
-                branch/category series, not only the chart selection.
-                Zero-actual weeks remain in demand history but are excluded from
-                MAPE. Unfinished weeks and later recursive horizons are
-                excluded.
+                The percentage is Mean Absolute Percentage Error (MAPE). Each
+                comparison is for one branch, category and completed week. Weeks
+                with no recorded demand are skipped because percentage error
+                cannot be calculated from zero. Unfinished weeks and estimates
+                made more than one week ahead are also excluded.
               </p>
               <p>
-                Synthetic records demonstrate the calculation and workflow. They
-                do not establish real-world predictive accuracy or measure
-                transfer quality.
+                These demo records show how the calculation works. They do not
+                prove accuracy in a real business or assess transfer decisions.
               </p>
             </details>{" "}
             <details className="admin-transfer-evidence">
-              <summary>Saved forecast runs</summary>
+              <summary>Previously saved forecasts</summary>
               {p.runs.length > 10 ? (
-                <p>Showing the 10 most recent saved runs.</p>
+                <p>Showing the 10 most recent saved forecasts.</p>
               ) : null}
               <p>
-                The chart uses the latest saved run containing forecast results.
-                A newer run with insufficient history does not replace those
-                results.
+                The chart shows the latest saved results. If a newer attempt has
+                too little rental history, the previous results stay visible.
               </p>
               {!p.runs.length ? (
-                <p>No saved runs are available.</p>
+                <p>No saved forecasts are available.</p>
               ) : (
                 <ul className="dss-forecast-history">
                   {[...p.runs]
@@ -366,9 +367,9 @@ export function DemandForecastScreen(p: Props) {
                       <li key={run.id}>
                         <span>{p.formatDateTime(run.generated_at)}</span>
                         {run.id === p.latestRunId ? (
-                          <strong>Displayed run</strong>
+                          <strong>Shown in the chart</strong>
                         ) : (
-                          <span>Saved run</span>
+                          <span>Saved forecast</span>
                         )}
                         <small>{run.id}</small>
                       </li>

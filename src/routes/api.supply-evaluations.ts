@@ -163,7 +163,9 @@ async function read() {
     const c = getSupabaseServerClient() as any;
     const { data, error } = await c
       .from("supply_evaluations")
-      .select("*, vehicles:supply_evaluation_vehicles(*)")
+      .select(
+        "id,forecast_id,evaluated_at,required_units_snapshot,projected_supply,shortage_units,surplus_units,data_quality_state",
+      )
       .order("evaluated_at", { ascending: false });
     if (error) return fail("Unable to load supply evaluations.", 503);
     return Response.json({ evaluations: data ?? [] });

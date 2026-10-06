@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { DialogThemeProvider } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import {
@@ -392,7 +393,7 @@ export function AdminShell() {
     let cancelled = false;
     async function loadUnreadCount() {
       try {
-        const response = await fetch("/api/notifications", {
+        const response = await readFetch("/api/notifications?view=unread", {
           credentials: "same-origin",
         });
         const body = (await response
@@ -607,7 +608,9 @@ export function AdminShell() {
             id="admin-mobile-navigation"
             aria-label={staffView ? "Staff operations" : "Admin operations"}
             hidden={!mobileNavOpen}
-            className="border-t border-border bg-white px-5 py-4 lg:hidden"
+            inert={!mobileNavOpen}
+            data-state={mobileNavOpen ? "open" : "closed"}
+            className="mobile-navigation-motion border-t border-border bg-white px-5 py-4 lg:hidden"
           >
             <SidebarLinks
               items={navItems}

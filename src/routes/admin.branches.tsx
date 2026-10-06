@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import {
   AlertCircle,
@@ -47,7 +48,7 @@ export const Route = createFileRoute("/admin/branches")({
 type Branch = CanonicalBranchRecord;
 type SaveResult = { branch: Branch; point: DssRoutePoint | null };
 async function locationRequest<T>(input: object): Promise<T> {
-  const response = await fetch("/api/dss-locations", {
+  const response = await readFetch("/api/dss-locations", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(input),
@@ -78,7 +79,7 @@ function BranchesPage() {
     const results = await Promise.allSettled([
       fetchMasterData<Branch>("branches"),
       fetchMasterData<ApiMasterVehicle>("vehicles"),
-      fetch("/api/dss-locations").then(async (r) => {
+      readFetch("/api/dss-locations").then(async (r) => {
         const b = await r.json();
         if (!r.ok) throw new Error(b.message);
         return b.points as Record<string, DssRoutePoint>;

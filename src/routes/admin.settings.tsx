@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Check, Loader2, Mail, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -32,7 +33,7 @@ function SettingsPage() {
   async function load() {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin-public-contact");
+      const response = await readFetch("/api/admin-public-contact");
       const payload = (await response.json().catch(() => null)) as ContactPayload | { message?: string } | null;
       if (!response.ok) throw new Error((payload as { message?: string } | null)?.message ?? "Unable to load public contact management.");
       applyPayload(payload as ContactPayload);
@@ -56,7 +57,7 @@ function SettingsPage() {
   async function save() {
     try {
       setSaving(true);
-      const response = await fetch("/api/admin-public-contact", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ settings, locations }) });
+      const response = await readFetch("/api/admin-public-contact", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ settings, locations }) });
       const payload = (await response.json().catch(() => null)) as ContactPayload | { message?: string } | null;
       if (!response.ok) throw new Error((payload as { message?: string } | null)?.message ?? "Unable to save public contact details.");
       applyPayload(payload as ContactPayload);
@@ -69,7 +70,7 @@ function SettingsPage() {
   async function setInquiryStatus(inquiry: Inquiry, status: Inquiry["status"]) {
     try {
       setChangingInquiry(inquiry.id);
-      const response = await fetch("/api/admin-public-contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ inquiryId: inquiry.id, status }) });
+      const response = await readFetch("/api/admin-public-contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ inquiryId: inquiry.id, status }) });
       const payload = (await response.json().catch(() => null)) as { message?: string } | null;
       if (!response.ok) throw new Error(payload?.message ?? "Unable to update inquiry.");
       setInquiries((current) => current.map((item) => item.id === inquiry.id ? { ...item, status } : item));

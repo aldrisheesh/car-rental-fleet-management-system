@@ -25,25 +25,29 @@ async function read() {
       return deny(403, "Forecast access is restricted.");
     const c = getSupabaseServerClient() as any;
     const [a, b] = await Promise.all([
-      readForecastHistoryPages<any>((from, to) =>
-        c
-          .from("forecast_runs")
-          .select("*")
-          .order("generated_at", { ascending: false })
-          .order("id")
-          .range(from, to),
+      readForecastHistoryPages<any>(
+        (from, to) =>
+          c
+            .from("forecast_runs")
+            .select("id,generated_at")
+            .order("generated_at", { ascending: false })
+            .order("id")
+            .range(from, to),
+        1000,
       )
         .then((data) => ({ data, error: null }))
         .catch((error) => ({ data: null, error })),
-      readForecastHistoryPages<any>((from, to) =>
-        c
-          .from("forecasts")
-          .select(
-            "*, inputs:forecast_inputs(*), branch:branches(id,name), category:vehicle_categories(id,name)",
-          )
-          .order("target_week_start")
-          .order("id")
-          .range(from, to),
+      readForecastHistoryPages<any>(
+        (from, to) =>
+          c
+            .from("forecasts")
+            .select(
+              "id,run_id,branch_id,vehicle_category_id,horizon,target_week_start,target_week_end,forecasted_demand,required_vehicle_units,actual_demand,ape,created_at,inputs:forecast_inputs(source_type,source_week_start,source_value,input_order,weight,weighted_contribution),branch:branches(id,name),category:vehicle_categories(id,name)",
+            )
+            .order("target_week_start")
+            .order("id")
+            .range(from, to),
+        1000,
       )
         .then((data) => ({ data, error: null }))
         .catch((error) => ({ data: null, error })),

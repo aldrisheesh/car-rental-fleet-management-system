@@ -201,7 +201,7 @@ test("Fleet page does not use prototype fleet, booking, or unsupported fields", 
     /@\/data\/admin|56 total vehicles|condition: "Good"/,
   );
   assert.doesNotMatch(page, /chassisNumber|Color|Chassis No\./);
-  assert.match(page, /fetch\("\/api\/admin-fleet"/);
+  assert.match(page, /readFetch\("\/api\/admin-fleet"/);
   assert.match(page, /Fleet Management/);
   assert.doesNotMatch(page, /For inspection/);
 });

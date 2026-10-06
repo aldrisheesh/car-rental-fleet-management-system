@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { BookingJourneySkeleton } from "@/components/customer/BookingJourneySkeleton";
 import { documentReplacedSinceReview } from "@/lib/document-review-version";
 import {
@@ -171,7 +172,9 @@ function BookingDetailPage() {
           return;
         }
 
-        const bookings = await fetchJson<CustomerBooking[]>("/api/bookings");
+        const bookings = await fetchJson<CustomerBooking[]>(
+          `/api/bookings?bookingId=${encodeURIComponent(bookingId)}`,
+        );
         const booking = bookings.find(
           (candidate) => candidate.id === bookingId,
         );
@@ -1217,7 +1220,7 @@ function RequirementDocumentPreview({
     if (force) setPreviewUrl("");
     setPreviewError("");
     try {
-      const response = await fetch(
+      const response = await readFetch(
         `/api/requirements?documentId=${encodeURIComponent(document.id)}`,
         { credentials: "same-origin" },
       );
@@ -1348,7 +1351,7 @@ function PdfDocumentThumbnail({
         const [{ GlobalWorkerOptions, getDocument }, response] =
           await Promise.all([
             import("pdfjs-dist"),
-            fetch(source, { credentials: "omit" }),
+            readFetch(source, { credentials: "omit" }),
           ]);
         if (!response.ok)
           throw new Error("The secure PDF could not be loaded.");
@@ -1414,7 +1417,7 @@ function PdfDocumentPreview({
         const [{ GlobalWorkerOptions, getDocument }, response] =
           await Promise.all([
             import("pdfjs-dist"),
-            fetch(source, { credentials: "omit" }),
+            readFetch(source, { credentials: "omit" }),
           ]);
         if (!response.ok) {
           throw new Error("The secure PDF could not be loaded.");

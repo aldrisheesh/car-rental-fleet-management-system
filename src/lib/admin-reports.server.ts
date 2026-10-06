@@ -35,7 +35,9 @@ export async function loadAdminReport(
     client.from("vehicle_categories").select("id,name,is_active").order("name"),
     client
       .from("booking_requests")
-      .select("id,booking_status,created_at,pickup_branch_id")
+      .select(
+        "id,booking_status,created_at,pickup_branch_id,purpose_of_use,destination,pickup_delivery_option",
+      )
       .gte("created_at", historicalStart)
       .lt("created_at", range.endExclusiveInstant),
     client
@@ -128,22 +130,24 @@ export async function loadAdminReport(
 
   const forecastRows = forecastResult.data ?? [];
   const forecastIds = forecastRows.map((row: any) => String(row.id));
-  const supplyResult = forecastIds.length
-    ? await decisionClient
-        .from("supply_evaluations")
-        .select(
-          "id,forecast_id,evaluated_at,projected_supply,shortage_units,surplus_units",
-        )
-        .in("forecast_id", forecastIds)
-        .lt("evaluated_at", range.endExclusiveInstant)
-    : { data: [], error: null };
-  const batchResult = latestRun
-    ? await decisionClient
-        .from("allocation_recommendation_batches")
-        .select("id,generated_at")
-        .gte("generated_at", latestRun.generatedAt)
-        .lt("generated_at", range.endExclusiveInstant)
-    : { data: [], error: null };
+  const [supplyResult, batchResult] = await Promise.all([
+    forecastIds.length
+      ? decisionClient
+          .from("supply_evaluations")
+          .select(
+            "id,forecast_id,evaluated_at,projected_supply,shortage_units,surplus_units",
+          )
+          .in("forecast_id", forecastIds)
+          .lt("evaluated_at", range.endExclusiveInstant)
+      : { data: [], error: null },
+    latestRun
+      ? decisionClient
+          .from("allocation_recommendation_batches")
+          .select("id,generated_at")
+          .gte("generated_at", latestRun.generatedAt)
+          .lt("generated_at", range.endExclusiveInstant)
+      : { data: [], error: null },
+  ]);
   if (supplyResult.error || batchResult.error)
     throw new ReportSourceError("decision-support snapshot source failed");
 
@@ -224,6 +228,9 @@ export async function loadAdminReport(
       status: row.booking_status,
       createdAt: row.created_at,
       branchId: row.pickup_branch_id,
+      purpose: row.purpose_of_use,
+      destination: row.destination,
+      service: row.pickup_delivery_option,
     })),
     rentals: (rentals.data ?? []).map((row) => ({
       id: row.id,

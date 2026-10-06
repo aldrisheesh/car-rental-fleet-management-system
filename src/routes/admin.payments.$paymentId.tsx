@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { bookingReferenceLabel } from "@/lib/booking-reference";
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
@@ -71,10 +72,10 @@ function PaymentReviewPage() {
     setState({ status: "loading" });
     setMutation(null);
     try {
-      const [paymentsResponse, bookingsResponse] = await Promise.all([
-        fetch("/api/payments", { credentials: "same-origin" }),
-        fetch("/api/bookings", { credentials: "same-origin" }),
-      ]);
+      const paymentsResponse = await readFetch(
+        `/api/payments?paymentId=${encodeURIComponent(paymentId)}`,
+        { credentials: "same-origin" },
+      );
       const paymentsBody = (await paymentsResponse
         .json()
         .catch(() => null)) as {
@@ -99,6 +100,10 @@ function PaymentReviewPage() {
       let booking: AdminBooking | null = null;
       let contextError: string | null = null;
       try {
+        const bookingsResponse = await readFetch(
+          `/api/bookings?bookingId=${encodeURIComponent(payment.booking_id)}`,
+          { credentials: "same-origin" },
+        );
         const bookings = await parseAdminBookingResponse(bookingsResponse, {
           allowStaffResponse: false,
         });
@@ -205,7 +210,7 @@ function PaymentReviewPage() {
     setOpeningProof(true);
     setMutation(null);
     try {
-      const response = await fetch(
+      const response = await readFetch(
         `/api/payments?proofId=${encodeURIComponent(proof.id)}`,
         { credentials: "same-origin" },
       );
@@ -252,7 +257,7 @@ function PaymentReviewPage() {
     setSaving(true);
     setMutation(null);
     try {
-      const response = await fetch("/api/payments", {
+      const response = await readFetch("/api/payments", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -334,6 +339,7 @@ function PaymentReviewPage() {
         <div
           className={`mb-5 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm ${mutation.tone === "error" ? "border-[#edc9c5] bg-[#fff5f3] text-[#8d302f]" : "border-[#b9d9c8] bg-[#f1faf4] text-[#267a55]"}`}
           role={mutation.tone === "error" ? "alert" : "status"}
+          data-motion-success={mutation.tone === "success" ? "true" : undefined}
           aria-live="polite"
         >
           {mutation.tone === "error" ? (

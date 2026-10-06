@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { currentDocumentDecision } from "@/lib/document-review-version";
 import { DateChangeRequests } from "@/components/booking/DateChangeRequests";
 import { CategorizedField } from "@/components/booking/CategorizedField";
@@ -263,9 +264,25 @@ function BookingDetailPage() {
     setState({ status: "loading" });
     setFeedback(null);
     try {
-      const response = await fetch("/api/bookings?includeDraft=1", {
-        credentials: "same-origin",
-      });
+      // Each endpoint authorizes this exact booking independently.
+      const reviewReads = ownerView
+        ? Promise.allSettled([
+            readFetch(
+              `/api/requirements?bookingId=${encodeURIComponent(bookingId)}`,
+              { credentials: "same-origin" },
+            ),
+            readFetch(
+              `/api/payments?bookingId=${encodeURIComponent(bookingId)}`,
+              { credentials: "same-origin" },
+            ),
+          ])
+        : null;
+      const response = await readFetch(
+        `/api/bookings?bookingId=${encodeURIComponent(bookingId)}`,
+        {
+          credentials: "same-origin",
+        },
+      );
       const parsed = await parseAdminBookingResponse(response, {
         allowStaffResponse: true,
       });
@@ -281,17 +298,7 @@ function BookingDetailPage() {
       let payments: AdminPayment[] | null = null;
       const failures: string[] = [];
       if (ownerView) {
-        const results = await Promise.allSettled([
-          fetch(
-            `/api/requirements?bookingId=${encodeURIComponent(bookingId)}`,
-            {
-              credentials: "same-origin",
-            },
-          ),
-          fetch(`/api/payments?bookingId=${encodeURIComponent(bookingId)}`, {
-            credentials: "same-origin",
-          }),
-        ]);
+        const results = await reviewReads!;
         const requirementsResult = results[0];
         if (requirementsResult?.status === "fulfilled") {
           const body = (await requirementsResult.value
@@ -488,7 +495,7 @@ function BookingDetailPage() {
     setBusyAction(action);
     setFeedback(null);
     try {
-      const response = await fetch("/api/bookings", {
+      const response = await readFetch("/api/bookings", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -613,6 +620,7 @@ function BookingDetailPage() {
         <div
           className={`mb-5 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm ${feedback.tone === "error" ? "border-[#edc9c5] bg-[#fff5f3] text-[#8d302f]" : feedback.tone === "success" ? "border-[#b9d9c8] bg-[#f1faf4] text-[#267a55]" : "border-[#d6e3ed] bg-[#f2f8fc] text-[#2e647b]"}`}
           role={feedback.tone === "error" ? "alert" : "status"}
+          data-motion-success={feedback.tone === "success" ? "true" : undefined}
           aria-live="polite"
         >
           <span>{feedback.message}</span>
@@ -1090,7 +1098,7 @@ function RateQuotePanel({
   }, [data.quote]);
 
   async function request(body: Record<string, unknown>) {
-    const response = await fetch("/api/rate-quotes", {
+    const response = await readFetch("/api/rate-quotes", {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
@@ -1178,6 +1186,7 @@ function RateQuotePanel({
         <p
           className={`mt-3 rounded-md border px-3 py-2 text-sm ${message.tone === "error" ? "border-[#edc9c5] bg-[#fff5f3] text-[#8d302f]" : "border-[#b9d9c8] bg-[#f1faf4] text-[#267a55]"}`}
           role={message.tone === "error" ? "alert" : "status"}
+          data-motion-success={message.tone === "success" ? "true" : undefined}
         >
           {message.text}
         </p>
@@ -1395,7 +1404,7 @@ function PaymentQuotePanel({
 
   useEffect(() => {
     setConfirmed(false);
-    void fetch(
+    void readFetch(
       `/api/payment-quote?bookingId=${encodeURIComponent(booking.id)}`,
       { credentials: "same-origin" },
     )
@@ -1416,7 +1425,7 @@ function PaymentQuotePanel({
     setSaving(true);
     setMessage(null);
     try {
-      const response = await fetch("/api/payment-quote", {
+      const response = await readFetch("/api/payment-quote", {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
@@ -1609,6 +1618,7 @@ function PaymentQuotePanel({
         <p
           className={`admin-booking-payment-terms__message is-${message.tone}`}
           role={message.tone === "error" ? "alert" : "status"}
+          data-motion-success={message.tone === "success" ? "true" : undefined}
         >
           {message.message}
         </p>
@@ -1660,7 +1670,7 @@ function PaymentRequirementPanel({
     setSaving(true);
     setMessage(null);
     try {
-      const response = await fetch("/api/payment-terms", {
+      const response = await readFetch("/api/payment-terms", {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
@@ -1741,6 +1751,7 @@ function PaymentRequirementPanel({
         <p
           className={`admin-booking-payment-terms__message is-${message.tone}`}
           role={message.tone === "error" ? "alert" : "status"}
+          data-motion-success={message.tone === "success" ? "true" : undefined}
         >
           {message.message}
         </p>
@@ -1768,7 +1779,7 @@ function RejectUnconfirmedBooking({
     setSaving(true);
     setMessage("");
     try {
-      const response = await fetch("/api/bookings", {
+      const response = await readFetch("/api/bookings", {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
@@ -2136,7 +2147,7 @@ function BookingRequirementsReview({
     setSaving(true);
     setMessage(null);
     try {
-      const response = await fetch("/api/requirements", {
+      const response = await readFetch("/api/requirements", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -2240,6 +2251,7 @@ function BookingRequirementsReview({
       {message ? (
         <p
           role={message.tone === "error" ? "alert" : "status"}
+          data-motion-success={message.tone === "success" ? "true" : undefined}
           className={`mx-5 mt-5 rounded-md border px-3 py-2 text-sm ${message.tone === "error" ? "border-[#edc9c5] bg-[#fff5f3] text-[#8d302f]" : "border-[#b9d9c8] bg-[#f1faf4] text-[#267a55]"}`}
         >
           {message.text}
@@ -2413,7 +2425,7 @@ function AdminDocumentThumbnail({
 
   useEffect(() => {
     let cancelled = false;
-    void fetch(
+    void readFetch(
       `/api/requirements?documentId=${encodeURIComponent(document.id)}`,
       { credentials: "same-origin" },
     )
@@ -2465,7 +2477,7 @@ function AdminPdfThumbnail({ source }: { source: string }) {
         const [{ GlobalWorkerOptions, getDocument }, response] =
           await Promise.all([
             import("pdfjs-dist"),
-            fetch(source, { credentials: "omit" }),
+            readFetch(source, { credentials: "omit" }),
           ]);
         if (!response.ok)
           throw new Error("The secure PDF could not be loaded.");
@@ -2517,7 +2529,7 @@ function AdminDocumentPreview({
   const [error, setError] = useState("");
   useEffect(() => {
     let cancelled = false;
-    void fetch(
+    void readFetch(
       `/api/requirements?documentId=${encodeURIComponent(document.id)}`,
       { credentials: "same-origin" },
     )
@@ -2628,7 +2640,7 @@ function AdminPdfDocumentPreview({
         const [{ GlobalWorkerOptions, getDocument }, response] =
           await Promise.all([
             import("pdfjs-dist"),
-            fetch(src, { credentials: "omit" }),
+            readFetch(src, { credentials: "omit" }),
           ]);
         if (!response.ok)
           throw new Error("The secure PDF could not be loaded.");
@@ -4125,7 +4137,7 @@ function PickupArrangementCard({
     setSaving(true);
     setError("");
     try {
-      const response = await fetch("/api/bookings", {
+      const response = await readFetch("/api/bookings", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },

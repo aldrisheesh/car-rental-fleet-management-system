@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { PaymentPdfPreview } from "@/components/booking/PaymentPdfPreview";
 import { CategorizedField } from "@/components/booking/CategorizedField";
 import { validCategory } from "@/lib/booking-categories";
@@ -187,7 +188,7 @@ function PaymentsQueuePage() {
   const load = useCallback(async () => {
     setState({ status: "loading" });
     try {
-      const response = await fetch("/api/payments", {
+      const response = await readFetch("/api/payments", {
         credentials: "same-origin",
       });
       const body = (await response.json().catch(() => null)) as {
@@ -268,7 +269,7 @@ function PaymentsQueuePage() {
       const proof = currentPaymentProof(payment);
       if (!proof || proof.version == null)
         throw new Error("A current payment proof is required before review.");
-      const response = await fetch("/api/payments", {
+      const response = await readFetch("/api/payments", {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
@@ -462,7 +463,7 @@ function PaymentMethodManager({
     setLoading(true);
     setMessage("");
     try {
-      const response = await fetch("/api/payment-methods", {
+      const response = await readFetch("/api/payment-methods", {
         credentials: "same-origin",
       });
       const body = (await response.json().catch(() => null)) as {
@@ -526,7 +527,7 @@ function PaymentMethodManager({
       form.set("accountNumber", draft.accountNumber);
       form.set("isActive", String(draft.isActive));
       if (draft.qrImage) form.set("qrImage", draft.qrImage);
-      const response = await fetch("/api/payment-methods", {
+      const response = await readFetch("/api/payment-methods", {
         method: "POST",
         credentials: "same-origin",
         body: form,
@@ -1555,9 +1556,12 @@ function usePaymentReviewContext(
   useEffect(() => {
     let active = true;
     setState({ status: "loading" });
-    const bookingRequest = fetch("/api/bookings", {
-      credentials: "same-origin",
-    })
+    const bookingRequest = readFetch(
+      `/api/bookings?bookingId=${encodeURIComponent(payment.booking_id)}`,
+      {
+        credentials: "same-origin",
+      },
+    )
       .then(async (response) => {
         const body = await parseAdminBookingResponse(response, {
           allowStaffResponse: false,
@@ -1582,7 +1586,7 @@ function usePaymentReviewContext(
       }));
     const proofRequest: Promise<PaymentProofSource> = !proof
       ? Promise.resolve({ status: "empty" })
-      : fetch(`/api/payments?proofId=${encodeURIComponent(proof.id)}`, {
+      : readFetch(`/api/payments?proofId=${encodeURIComponent(proof.id)}`, {
           credentials: "same-origin",
         })
           .then(async (response) => {

@@ -672,3 +672,88 @@ test("Reports page has no prototype business-data or financial-report coupling",
   assert.doesNotMatch(source, /@\/data\/admin/);
   assert.doesNotMatch(source, /\bRevenue\b|Average Ticket|Revenue Trend/i);
 });
+
+test("booking insights group structured categories without guessing free text and respect Manila dates and branches", () => {
+  const data = sources();
+  data.bookings = [
+    {
+      id: "a",
+      status: "Confirmed",
+      branchId: "b1",
+      createdAt: "2026-08-31T16:00:00Z",
+      purpose: "Family trip — visiting relatives",
+      destination: "Cavite — Tagaytay",
+      service: "pickup",
+    },
+    {
+      id: "b",
+      status: "Cancelled",
+      branchId: "b1",
+      createdAt: "2026-09-01T15:59:59Z",
+      purpose: "Family trip",
+      destination: "Cavite — Bacoor",
+      service: "delivery",
+    },
+    {
+      id: "c",
+      status: "Rejected",
+      branchId: "b1",
+      createdAt: "2026-09-01T08:00:00Z",
+      purpose: "Family vacation",
+      destination: "Tagaytay",
+      service: null,
+    },
+    {
+      id: "d",
+      status: "Submitted",
+      branchId: "b1",
+      createdAt: "2026-09-01T09:00:00Z",
+      purpose: null,
+      destination: " ",
+      service: "delivery",
+    },
+    {
+      id: "outside",
+      status: "Confirmed",
+      branchId: "b1",
+      createdAt: "2026-09-01T16:00:00Z",
+      purpose: "Business / work",
+      destination: "Rizal",
+    },
+    {
+      id: "other-branch",
+      status: "Confirmed",
+      branchId: "b2",
+      createdAt: "2026-09-01T09:00:00Z",
+      purpose: "Business / work",
+      destination: "Rizal",
+    },
+  ];
+  const range = validateReportRange("2026-09-01", "2026-09-01");
+  const report = buildAdminReport("Owner/Admin", range, "b1", data);
+  assert.equal(report.bookings.requests, 4);
+  assert.deepEqual(report.bookings.purposes, [
+    { label: "Family trip", count: 2 },
+    { label: "Not categorized", count: 1 },
+    { label: "Not provided", count: 1 },
+  ]);
+  assert.deepEqual(report.bookings.destinations, [
+    { label: "Cavite", count: 2 },
+    { label: "Not categorized", count: 1 },
+    { label: "Not provided", count: 1 },
+  ]);
+  assert.deepEqual(report.bookings.services, [
+    { label: "Delivery", count: 2 },
+    { label: "Pickup", count: 1 },
+    { label: "Not recorded", count: 1 },
+  ]);
+  assert.equal(
+    buildAdminReport("Owner/Admin", range, ALL_BRANCHES, data).bookings
+      .requests,
+    5,
+  );
+  assert.deepEqual(
+    buildAdminReport("Owner/Admin", range, "b3", data).bookings.destinations,
+    [],
+  );
+});

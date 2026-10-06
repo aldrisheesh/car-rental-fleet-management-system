@@ -1,0 +1,7 @@
+# Personal handover customer guide
+
+Scope: only homepage #rental-assurances, preserving navigation, footer, car gallery and rental behavior. User selected Version 1 of the three image concepts. The approved reference is exec-0a8c0281-d2f0-49be-aea1-3dd8e63b8362.png in the Codex generated_images folder. Visual contract: left portrait handover photo, right Newsreader heading and intro, six numbered steps in a two-column three-row ordered list, sage circular Lucide icons, thin row dividers, green Find your car action and booking caveat. At <=900px photography stacks above content; <=600px steps become one column.
+
+Asset provenance: src/assets/home-personal-handover.jpg generated using built-in image_gen on 2026-10-06. Original exec-a9d6794e-00ea-4e1d-9d9c-c40a6d88bb3e.png remains under /Users/aldrich/.codex/generated_images/01a0e868-701e-7e93-b892-ebc9db76e32a. Converted to JPEG at quality85 using sips without retouching. Fictional Filipino customer and rental team member handing keys beside a white SUV in a tropical stone driveway. No real staff or customer identity. Alt text identifies the illustrative handover.
+
+Content preserves review before payment, 50% down payment, final approval, handover balance/deposit, IDs and inspection, return deposit settlement and agreed deductions. The photo is lazy loaded with explicit intrinsic dimensions; text is live semantic HTML. Lint and production build pass; desktop/mobile screenshots verified with no mobile page overflow.

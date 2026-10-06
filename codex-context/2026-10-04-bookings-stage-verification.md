@@ -26,3 +26,9 @@ Pagination advanced to page 2 with records 26-50 of 242 and returned to page 1. 
 ## Documentation boundary
 
 `DESIGN.md` was already missing before this extension. No global design file or sidecar was created, and no pre-existing design drift was repaired or canonized. The task summary, stage table, and status band remain Bookings-specific choices rather than new global design rules.
+
+## Rental-stage filtering — 2026-10-06
+
+The Bookings toolbar now includes All rental stages, using the exact labels returned by bookingStage. It combines with search, booking status, allocation location and reporting dates, resets to page one on selection, persists in the stage URL parameter, and clears with Clear filters. An active stage uses the existing complete-record search retrieval path and filters before local pagination; the default queue retains server pagination. No status or stage is inferred from scheduled dates. Verified Returned across all branches (191 requests), then Taft (123 requests); every displayed row was Returned. The six stage semantics tests and route lint passed.
+
+The rental-stage dropdown was narrowed to journey steps: document review / awaiting documents, payment review / awaiting payment, ready to confirm, date-change review, awaiting handover, active rental and returned. Draft, Cancelled, Rejected and diagnostic states remain available through the booking-status filter or visible row warnings as appropriate. Date-change review and Awaiting handover map to the existing Reschedule requested and Confirmed stage values; the canonical row calculation is unchanged.

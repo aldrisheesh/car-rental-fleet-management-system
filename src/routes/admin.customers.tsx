@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Eye,
@@ -247,7 +248,7 @@ function CanonicalRequirementReview() {
       const data = await responseJson<{
         requirementSets: RequirementSetSummary[];
       }>(
-        await fetch("/api/requirements?view=all", {
+        await readFetch("/api/requirements?view=all", {
           credentials: "same-origin",
         }),
       );
@@ -275,7 +276,7 @@ function CanonicalRequirementReview() {
     setNotice("");
     try {
       const details = await responseJson<RequirementDetails>(
-        await fetch(
+        await readFetch(
           `/api/requirements?bookingId=${encodeURIComponent(set.booking_id)}`,
           {
             credentials: "same-origin",
@@ -305,7 +306,7 @@ function CanonicalRequirementReview() {
     if (popup) popup.opener = null;
     try {
       const data = await responseJson<{ url: string }>(
-        await fetch(
+        await readFetch(
           `/api/requirements?documentId=${encodeURIComponent(documentId)}`,
           {
             credentials: "same-origin",
@@ -349,7 +350,7 @@ function CanonicalRequirementReview() {
     setNotice("");
     try {
       await responseJson(
-        await fetch("/api/requirements", {
+        await readFetch("/api/requirements", {
           method: "POST",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },

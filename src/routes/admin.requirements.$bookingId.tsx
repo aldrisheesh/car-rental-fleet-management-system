@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { CategorizedField } from "@/components/booking/CategorizedField";
 import { bookingReferenceLabel } from "@/lib/booking-reference";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -84,10 +85,15 @@ function RequirementsReviewPage() {
     setMutation(null);
     try {
       const [bookingsResponse, requirementsResponse] = await Promise.all([
-        fetch("/api/bookings", { credentials: "same-origin" }),
-        fetch(`/api/requirements?bookingId=${encodeURIComponent(bookingId)}`, {
+        readFetch(`/api/bookings?bookingId=${encodeURIComponent(bookingId)}`, {
           credentials: "same-origin",
         }),
+        readFetch(
+          `/api/requirements?bookingId=${encodeURIComponent(bookingId)}`,
+          {
+            credentials: "same-origin",
+          },
+        ),
       ]);
       const bookings = await parseAdminBookingResponse(bookingsResponse, {
         allowStaffResponse: false,
@@ -230,7 +236,7 @@ function RequirementsReviewPage() {
     setOpeningDocumentId(document.id);
     setMutation(null);
     try {
-      const response = await fetch(
+      const response = await readFetch(
         `/api/requirements?documentId=${encodeURIComponent(document.id)}`,
         { credentials: "same-origin" },
       );
@@ -314,7 +320,7 @@ function RequirementsReviewPage() {
     setSaving(true);
     setMutation(null);
     try {
-      const response = await fetch("/api/requirements", {
+      const response = await readFetch("/api/requirements", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -408,6 +414,7 @@ function RequirementsReviewPage() {
         <div
           className={`mb-5 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm ${mutation.tone === "error" ? "border-[#edc9c5] bg-[#fff5f3] text-[#8d302f]" : "border-[#b9d9c8] bg-[#f1faf4] text-[#267a55]"}`}
           role={mutation.tone === "error" ? "alert" : "status"}
+          data-motion-success={mutation.tone === "success" ? "true" : undefined}
           aria-live="polite"
         >
           {mutation.tone === "error" ? (

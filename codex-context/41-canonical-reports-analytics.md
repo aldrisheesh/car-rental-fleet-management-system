@@ -61,3 +61,13 @@ Cover prototype removal, canonical branch filter, date validation/Manila boundar
 
 ## Definition of Done
 No Reports-page business-record imports from `@/data/admin`. Every displayed report value is canonical and date-range-defined. Ambiguous finance is omitted.
+
+## Booking interests extension — 2026-10-05
+
+Reports now include purpose, requested destination area, pickup/delivery, and current booking status summaries. Each request submitted in the inclusive Manila date range and selected pickup branch counts once, including cancelled/rejected requests. Shares use all matching requests as the denominator. Purpose/destination use the existing booking category labels, ignoring additional trip details; no raw addresses or customer information are exposed. Unrecognized legacy text is Not categorized; blank fields are Not provided. Destination areas represent stated plans, not verified visits. Current statuses are not historical period-end status snapshots. The frontend and API preserve existing role authorization and report-source error handling. Existing records were not changed or recategorized.
+
+## Reports charts — 2026-10-06
+
+Purpose and destination summaries now use horizontal count bars with each request share labeled; exact counts remain in an expandable table. Branch activity pairs booking requests with rental starts on a shared count scale, with an explicit note that requests can be for later rental dates. Category utilization uses a fixed 0–100% scale, ranks measured categories first, and leaves unavailable measurements unplotted. Maintenance/payment summaries remain figures. Supporting branch/category tables are expandable. All charts use the existing response and date/branch filters; no aggregation or permissions changed. Visible numeric labels provide accessible equivalents to decorative bars, and charts stack below 800px.
+
+The preceding synthetic-data cleanup separately categorized all 299 demo bookings using deterministic trip-context patterns; baseline generation now retains those categories. These illustrative records are not observed customer statistics.

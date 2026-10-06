@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { calculateMaintenanceReadiness } from "./maintenance-readiness.server.ts";
+import { calculateFleetMaintenanceSnapshot } from "./maintenance-readiness.server.ts";
 import {
   findVehicles,
   hasScheduledRentalConflict,
@@ -66,12 +66,11 @@ export async function listCatalogVehiclesForAvailability(
 
   const vehicles = vehicleResult.data ?? [];
   try {
-    const readiness = await Promise.all(
-      vehicles.map((vehicle) =>
-        calculateMaintenanceReadiness(vehicle.id, client),
-      ),
+    const snapshot = await calculateFleetMaintenanceSnapshot(client);
+    const readiness = new Map(
+      snapshot.readiness.map((item) => [item.vehicleId, item]),
     );
-    const catalogVehicles = vehicles.map((vehicle, index) => {
+    const catalogVehicles = vehicles.map((vehicle) => {
       const hasBookingConflict = (bookingResult.data ?? []).some(
         (booking) =>
           booking.assigned_vehicle_id === vehicle.id &&
@@ -91,7 +90,7 @@ export async function listCatalogVehiclesForAvailability(
       return {
         ...vehicle,
         is_available:
-          readiness[index]?.maintenanceReady === true &&
+          readiness.get(vehicle.id)?.maintenanceReady === true &&
           !hasBookingConflict &&
           !hasRentalConflict,
       };
@@ -157,12 +156,11 @@ export async function evaluateCanonicalVehicleFinder(
     };
 
   const vehicles = vehicleResult.data ?? [];
-  const readiness = await Promise.all(
-    vehicles.map((vehicle) =>
-      calculateMaintenanceReadiness(vehicle.id, client),
-    ),
+  const snapshot = await calculateFleetMaintenanceSnapshot(client);
+  const readiness = new Map(
+    snapshot.readiness.map((item) => [item.vehicleId, item]),
   );
-  const candidates: FinderCandidate[] = vehicles.map((vehicle, index) => ({
+  const candidates: FinderCandidate[] = vehicles.map((vehicle) => ({
     id: vehicle.id,
     name: vehicle.name,
     category: vehicle.category?.name ?? "",
@@ -175,7 +173,7 @@ export async function evaluateCanonicalVehicleFinder(
     transmission: vehicle.transmission,
     fuelType: vehicle.fuel_type,
     isActive: vehicle.is_active,
-    maintenanceReady: readiness[index]?.maintenanceReady === true,
+    maintenanceReady: readiness.get(vehicle.id)?.maintenanceReady === true,
     bookingConflict: (bookingResult.data ?? []).some(
       (booking) =>
         booking.assigned_vehicle_id === vehicle.id &&

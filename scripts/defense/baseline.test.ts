@@ -1,4 +1,8 @@
 import test from "node:test";
+import {
+  validCategory,
+  splitCategory,
+} from "../../src/lib/booking-categories.ts";
 import assert from "node:assert/strict";
 import {
   buildBaseline,
@@ -282,4 +286,25 @@ test("capture archives current records without requiring a destructive prepare",
   assert.equal(parseArgs(["capture"]).apply, false);
   assert.equal(parseArgs(["capture", "--apply"]).apply, true);
   assert.ok(TABLES.includes("booking_payment_policy_acceptances"));
+});
+
+test("synthetic booking interests use complete categories with coherent, varied destinations", () => {
+  const { data } = buildBaseline(source, "2026-10-06");
+  const purposeCounts = new Map<string, number>();
+  for (const row of data.booking_requests) {
+    assert.ok(validCategory("purpose", row.purpose_of_use));
+    assert.ok(validCategory("destination", row.destination));
+    const purpose = splitCategory("purpose", row.purpose_of_use).code;
+    const destination = splitCategory("destination", row.destination).code;
+    purposeCounts.set(purpose, (purposeCounts.get(purpose) ?? 0) + 1);
+    if (purpose === "purpose.airport")
+      assert.equal(destination, "destination.ncr");
+    if (["destination.benguet", "destination.zambales"].includes(destination)) {
+      assert.ok(
+        Date.parse(row.return_at) - Date.parse(row.pickup_at) > 2 * 86400000,
+      );
+    }
+  }
+  assert.equal(purposeCounts.size, 7);
+  assert.ok(new Set(purposeCounts.values()).size >= 5);
 });

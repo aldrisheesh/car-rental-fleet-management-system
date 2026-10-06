@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import {
   CalendarDays,
@@ -119,7 +120,7 @@ function ActivityPage() {
       if (applied.to) params.set("to", manilaEnd(applied.to));
       if (applied.query) params.set("search", applied.query);
       try {
-        const response = await fetch(`/api/audit-events?${params}`, {
+        const response = await readFetch(`/api/audit-events?${params}`, {
           credentials: "same-origin",
           signal: controller.signal,
         });

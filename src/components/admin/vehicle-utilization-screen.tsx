@@ -462,38 +462,40 @@ export function VehicleUtilizationScreen(p: Props) {
       </section>
       <div className="utilization-supporting-details">
         <details className="utilization-method-disclosure">
-          <summary>How activity and idle status are determined</summary>
+          <summary>What do rental activity and idle mean?</summary>
           <div>
             <p>
-              Rental activity counts distinct Manila calendar days touched by
-              actual rental transactions during the reporting period. Confirmed
-              bookings alone do not count. Last rental started shows the latest
-              recorded rental start, which may fall outside this period.
+              <strong>Rental days:</strong> Each day a vehicle was on an actual
+              rental counts once, even for part of a day. A confirmed booking
+              alone does not count.
             </p>
             <p>
-              Utilization is rental days divided by eligible operational days,
-              multiplied by 100. Inactive days and blocking maintenance without
-              rental activity are excluded. Incomplete historical eligibility
-              data or no eligible days leaves the percentage unavailable.
+              <strong>Utilization:</strong> Rental days ÷ days counted for use ×
+              100. Inactive days and maintenance that prevents use without
+              rental activity are excluded. Missing history or no days to count
+              means the percentage is unavailable.
             </p>
             <p>
-              A vehicle is flagged as idle only after at least 14 days since its
-              last return or activation used for the count, and it must pass
-              current readiness checks. The count starts from that date, not the
-              rental's start date. No activity in the reporting period alone
-              does not mean the vehicle is idle or suitable for transfer.
+              <strong>Idle:</strong> At least 14 days since the last return or
+              activation, with the vehicle currently ready for rental. No
+              rentals in this period alone does not mean it is idle or ready to
+              transfer.
+            </p>
+            <p>
+              <strong>Last rental started:</strong> The most recent rental start
+              on record, even if it was before this reporting period.
             </p>
             {unknownIdle ? (
               <p>
                 {unknownIdle} matching vehicle
-                {unknownIdle === 1 ? " has" : "s have"} insufficient evidence to
-                determine current idle status.
+                {unknownIdle === 1 ? " needs" : "s need"} more recorded history
+                before we can tell whether{" "}
+                {unknownIdle === 1 ? "it is" : "they are"} idle.
               </p>
             ) : null}
             <small>
               {p.loadedAt ? `Loaded ${p.formatDateTime(p.loadedAt)}. ` : ""}
-              Reporting dates are inclusive, Asia/Manila. These analytics
-              describe recorded system activity.
+              Both start and end dates are included. Days use Philippine time.
             </small>
           </div>
         </details>

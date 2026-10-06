@@ -202,7 +202,7 @@ export function Btn({
     <button
       {...rest}
       type={type}
-      className={`touch-target inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition-[background-color,border-color,color,opacity] duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${variants[variant]} ${rest.className ?? ""}`}
+      className={`${variant === "primary" ? "admin-action-press " : ""}touch-target inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition-[background-color,border-color,color,opacity] duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${variants[variant]} ${rest.className ?? ""}`}
     >
       {children}
     </button>

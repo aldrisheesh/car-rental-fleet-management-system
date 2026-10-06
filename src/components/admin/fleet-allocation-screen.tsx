@@ -161,7 +161,7 @@ export function FleetAllocationScreen(p: Props) {
           : approvedUnits
             ? `${approvedUnits} vehicle${approvedUnits === 1 ? " has" : "s have"} been approved for transfer. Arrange movement in Fleet, then update availability.`
             : shortageUnits
-              ? "No suitable transfer is saved yet. Review the reason below and check vehicle schedules."
+              ? "A planning gap was found, but no transfer option is saved for it. Check the explanation below before arranging a vehicle."
               : "No transfer is needed for this estimate. Update availability as bookings change.";
   const nextSteps: Record<AllocationGap["reason"], string> = {
     NoCompatibleSurplus:
@@ -171,7 +171,7 @@ export function FleetAllocationScreen(p: Props) {
     InsufficientEligibleCandidates:
       "The suitable transfer vehicles cannot cover the full need. Check upcoming returns for the remaining vehicles.",
     NoRemainingCapacity:
-      "The spare capacity was matched to other branch needs. Review those transfers before arranging another option.",
+      "The last check did not save a transfer for this branch, even though spare capacity was recorded. Spare capacity alone does not guarantee a vehicle can be offered. Check transfer options again to review the current result.",
   };
   if (p.loading) return <DssScreenSkeleton screen="allocation" />;
   return (
@@ -333,17 +333,31 @@ export function FleetAllocationScreen(p: Props) {
           </div>
         )}
         <details className="allocation-disclosure">
-          <summary>How availability is counted</summary>
+          <summary>What do these numbers mean?</summary>
           <div>
+            <ul>
+              <li>
+                <strong>Vehicles to plan for:</strong> Weekly rental estimate,
+                rounded up—not the number of cars needed at the same time.
+              </li>
+              <li>
+                <strong>Available for planning:</strong> Excludes confirmed
+                bookings during this week, ongoing rentals and maintenance that
+                prevents use.
+              </li>
+              <li>
+                <strong>Result:</strong> “Needs 1 more” means one vehicle short
+                of the estimate. “1 spare” means one extra to consider for
+                transfer.
+              </li>
+            </ul>
             <p>
-              Vehicles to plan for are rounded weekly demand, not the number of
-              simultaneous rentals. Available vehicles exclude confirmed
-              bookings during the week, active rentals and blocking maintenance.
+              Before transferring, check bookings and vehicle condition. Only
+              suitable vehicles in the same category can be suggested.
             </p>
             <p>
-              Transfers must use the same vehicle category and pass booking and
-              readiness checks. Updating availability and finding transfers
-              cover all weeks and categories in the current forecast.
+              <strong>Last checked:</strong> Choose “Update availability” after
+              bookings, returns or maintenance change.
             </p>
             <ul>
               {forecasts.map((row) => (
@@ -355,6 +369,10 @@ export function FleetAllocationScreen(p: Props) {
                 </li>
               ))}
             </ul>
+            <p>
+              Updates cover all forecast weeks and categories. “Reload saved
+              analysis” displays saved results without a new check.
+            </p>
             <Btn onClick={p.onReload} disabled={p.busy}>
               Reload saved analysis
             </Btn>
@@ -366,15 +384,13 @@ export function FleetAllocationScreen(p: Props) {
         aria-labelledby="allocation-options-heading"
       >
         <header className="allocation-section-heading">
-          <h2 id="allocation-options-heading">
-            Suggested transfer{p.rows.length === 1 ? "" : "s"}
-          </h2>
+          <h2 id="allocation-options-heading">Can another branch help?</h2>
           <Btn
             onClick={p.onGenerate}
             disabled={!!p.generationBlock || p.busy}
             aria-describedby="allocation-generation-help"
           >
-            {p.busy ? "Working…" : "Find transfer options"}
+            {p.busy ? "Working…" : "Check transfer options"}
           </Btn>
         </header>
         <p id="allocation-generation-help" className="allocation-inline-empty">
@@ -385,7 +401,7 @@ export function FleetAllocationScreen(p: Props) {
           !p.busy
             ? "No transfer is needed for the selected week and category."
             : (p.generationBlock ??
-              "Find transfer options checks spare vehicles against branch needs.")}
+              "Check transfer options looks for vehicles another branch can offer. It does not book or move a vehicle.")}
           {p.generationBlock &&
           shortageUnits > 0 &&
           fullyChecked &&
@@ -394,9 +410,9 @@ export function FleetAllocationScreen(p: Props) {
             ? " Review upcoming returns and bookings. Update availability after those records change."
             : ""}
         </p>
-        {p.rows.length ? (
+        {p.rows.length > 1 || status !== "All" ? (
           <label className="allocation-decision-filter">
-            Show decisions{" "}
+            Filter by decision{" "}
             <select
               value={status}
               onChange={(event) => {
@@ -405,7 +421,13 @@ export function FleetAllocationScreen(p: Props) {
               }}
             >
               {["All", "Pending", "Approved", "Rejected"].map((value) => (
-                <option key={value}>{value}</option>
+                <option key={value} value={value}>
+                  {value === "Pending"
+                    ? "Awaiting review"
+                    : value === "Rejected"
+                      ? "Declined"
+                      : value}
+                </option>
               ))}
             </select>
           </label>
@@ -471,15 +493,16 @@ export function FleetAllocationScreen(p: Props) {
               {p.rows.length
                 ? "No transfers with this decision status."
                 : shortageUnits
-                  ? "No suitable transfer saved for this selection."
+                  ? "No transfer option is saved for this week and vehicle category."
                   : fullyChecked
                     ? "No transfer needed for this estimate."
                     : "Check branch availability first."}
             </strong>
             {!p.rows.length && shortageUnits ? (
               <p>
-                Another branch may not have spare vehicles, or its vehicles may
-                not pass the transfer checks.
+                A shortage means the branch may need help. It does not guarantee
+                another branch has a suitable vehicle to send. The reason for
+                each branch is shown below.
               </p>
             ) : null}
           </div>
@@ -499,29 +522,54 @@ export function FleetAllocationScreen(p: Props) {
                   <div>
                     <strong>
                       {remaining > 0
-                        ? `${shortName(forecast.branch_id)} still needs ${remaining} more vehicle${remaining === 1 ? "" : "s"} beyond the proposed or approved transfers.`
-                        : `${shortName(forecast.branch_id)} has transfers proposed or approved for the estimated need.`}
+                        ? `${shortName(forecast.branch_id)}: ${remaining} vehicle${remaining === 1 ? " still needs" : "s still need"} a transfer option.`
+                        : coverage.approved
+                          ? `${shortName(forecast.branch_id)}: transfer approved. Movement still needs to be arranged.`
+                          : `${shortName(forecast.branch_id)}: a transfer option is ready for your review.`}
                     </strong>
                     <p>
-                      {gap
+                      {remaining > 0 && gap
                         ? nextSteps[gap.reason]
                         : coverage.approved
                           ? "Arrange approved movements in Fleet, then update availability."
                           : coverage.pending
-                            ? "Review the transfer before arranging any movement."
-                            : "Find transfer options to check whether another branch can help."}
+                            ? "The suggested transfer could cover the saved planning gap. Review the vehicle and journey before approving; no vehicle has moved yet."
+                            : "Choose Check transfer options to see whether another branch can offer a suitable vehicle."}
                     </p>
+                    {remaining > 0 ? (
+                      <div className="allocation-help-actions">
+                        <Link to="/admin/fleet">Check vehicle records</Link>
+                        <Link to="/admin/calendar">Check upcoming returns</Link>
+                      </div>
+                    ) : null}
                     <details className="allocation-shortage-evidence">
-                      <summary>View saved shortage analysis</summary>
-                      <p>
-                        Pending: {coverage.pending} · Approved:{" "}
-                        {coverage.approved} · Rejected: {coverage.rejected}.
-                        These are decisions, not completed transfers.
-                      </p>
-                      {gap ? (
+                      <summary>What has been decided for this branch?</summary>
+                      {!coverage.pending && !coverage.approved ? (
                         <p>
-                          {p.gapCopy(gap.reason)} {gap.unresolvedUnits} could
-                          not be matched when the analysis was saved.
+                          No transfer is awaiting approval or approved to help
+                          this branch.
+                        </p>
+                      ) : null}
+                      {coverage.pending > 0 ? (
+                        <p>
+                          A suggested transfer could provide {coverage.pending}{" "}
+                          vehicle{coverage.pending === 1 ? "" : "s"}. It still
+                          needs your approval.
+                        </p>
+                      ) : null}
+                      {coverage.approved > 0 ? (
+                        <p>
+                          Transfer approved for {coverage.approved} vehicle
+                          {coverage.approved === 1 ? "" : "s"}. Approval records
+                          the decision; arrange the movement separately in
+                          Fleet.
+                        </p>
+                      ) : null}
+                      {coverage.rejected > 0 ? (
+                        <p>
+                          Suggestions for {coverage.rejected} vehicle
+                          {coverage.rejected === 1 ? " was" : "s were"}{" "}
+                          declined, so they do not cover this branch’s need.
                         </p>
                       ) : null}
                     </details>
@@ -531,103 +579,98 @@ export function FleetAllocationScreen(p: Props) {
             })}
           </div>
         ) : null}
-        <details className="allocation-disclosure allocation-analysis-controls">
-          <summary>Analysis options</summary>
-          <div>
-            <p>
-              This action covers all weeks and categories in the current
-              forecast.
-            </p>
-          </div>
-        </details>
-        <details className="allocation-disclosure">
-          <summary>
-            Previous transfer decisions ({selectedHistory.length})
-          </summary>
-          <div>
-            <p>
-              Saved decisions for this week and category, including older
-              analyses.
-            </p>
-            {selectedHistory.length ? (
-              <ul className="allocation-history-list">
-                {selectedHistory.map((row) => (
-                  <li key={row.id}>
-                    <strong>
-                      {row.source_branch_name} → {row.destination_branch_name}
-                    </strong>
-                    <span>
-                      {row.decision_state}
-                      {row.decision_state === "Approved"
-                        ? ` · ${row.approved_transfer_units ?? "Unrecorded"} vehicle${row.approved_transfer_units === 1 ? "" : "s"} approved`
-                        : ""}
-                    </span>
-                    <small>Recorded {p.formatDateTime(row.decided_at)}</small>
-                    <details className="allocation-history-details">
-                      <summary>View decision details</summary>
-                      <div>
-                        <p>
-                          <strong>Planning week:</strong>{" "}
-                          {formatWeekRange(
-                            row.target_week_start,
-                            row.target_week_end,
+        {selectedHistory.length > 0 ? (
+          <details className="allocation-disclosure">
+            <summary>
+              Previous transfer decisions ({selectedHistory.length})
+            </summary>
+            <div>
+              <p>
+                Saved decisions for this week and category, including older
+                analyses.
+              </p>
+              {selectedHistory.length ? (
+                <ul className="allocation-history-list">
+                  {selectedHistory.map((row) => (
+                    <li key={row.id}>
+                      <strong>
+                        {row.source_branch_name} → {row.destination_branch_name}
+                      </strong>
+                      <span>
+                        {row.decision_state}
+                        {row.decision_state === "Approved"
+                          ? ` · ${row.approved_transfer_units ?? "Unrecorded"} vehicle${row.approved_transfer_units === 1 ? "" : "s"} approved`
+                          : ""}
+                      </span>
+                      <small>Recorded {p.formatDateTime(row.decided_at)}</small>
+                      <details className="allocation-history-details">
+                        <summary>View decision details</summary>
+                        <div>
+                          <p>
+                            <strong>Planning week:</strong>{" "}
+                            {formatWeekRange(
+                              row.target_week_start,
+                              row.target_week_end,
+                            )}
+                          </p>
+                          <p>
+                            <strong>Recorded reason:</strong>{" "}
+                            {row.decision_reason || "No reason recorded."}
+                          </p>
+                          <p>
+                            {row.decision_state === "Approved"
+                              ? "Approval records a quantity, not a completed vehicle move. Check the vehicle's current branch in Fleet before arranging movement."
+                              : "This recommendation was rejected. No movement is recorded by this decision."}
+                          </p>
+                          <h3>
+                            Candidate vehicles in the saved recommendation
+                          </h3>
+                          <p>
+                            These candidates were checked when the analysis was
+                            saved. This list does not identify a vehicle as
+                            moved or individually approved.
+                          </p>
+                          {row.candidates.length ? (
+                            <ul>
+                              {row.candidates.map((candidate) => (
+                                <li key={candidate.id}>
+                                  <strong>
+                                    {candidate.vehicle_name_snapshot}
+                                  </strong>
+                                  <span>
+                                    {candidate.license_plate_snapshot ??
+                                      "No plate recorded"}
+                                  </span>
+                                  <Link
+                                    to="/admin/fleet"
+                                    search={{
+                                      week: p.week,
+                                      category: p.category,
+                                      recommendation: row.id,
+                                      q:
+                                        candidate.license_plate_snapshot ??
+                                        candidate.vehicle_name_snapshot,
+                                    }}
+                                  >
+                                    Review vehicle in Fleet
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p>No candidate vehicles were recorded.</p>
                           )}
-                        </p>
-                        <p>
-                          <strong>Recorded reason:</strong>{" "}
-                          {row.decision_reason || "No reason recorded."}
-                        </p>
-                        <p>
-                          {row.decision_state === "Approved"
-                            ? "Approval records a quantity, not a completed vehicle move. Check the vehicle's current branch in Fleet before arranging movement."
-                            : "This recommendation was rejected. No movement is recorded by this decision."}
-                        </p>
-                        <h3>Candidate vehicles in the saved recommendation</h3>
-                        <p>
-                          These candidates were checked when the analysis was
-                          saved. This list does not identify a vehicle as moved
-                          or individually approved.
-                        </p>
-                        {row.candidates.length ? (
-                          <ul>
-                            {row.candidates.map((candidate) => (
-                              <li key={candidate.id}>
-                                <strong>
-                                  {candidate.vehicle_name_snapshot}
-                                </strong>
-                                <span>
-                                  {candidate.license_plate_snapshot ??
-                                    "No plate recorded"}
-                                </span>
-                                <Link
-                                  to="/admin/fleet"
-                                  search={{
-                                    week: p.week,
-                                    category: p.category,
-                                    recommendation: row.id,
-                                    q:
-                                      candidate.license_plate_snapshot ??
-                                      candidate.vehicle_name_snapshot,
-                                  }}
-                                >
-                                  Review vehicle in Fleet
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p>No candidate vehicles were recorded.</p>
-                        )}
-                      </div>
-                    </details>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No previous decisions for this selection.</p>
-            )}
-          </div>
-        </details>
+                        </div>
+                      </details>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No previous decisions for this selection.</p>
+              )}
+            </div>
+          </details>
+        ) : null}
       </section>
       {showReview ? (
         <section
@@ -641,7 +684,10 @@ export function FleetAllocationScreen(p: Props) {
           <header className="allocation-section-heading">
             <div>
               <h2>Review transfer</h2>
-              <p>Check the vehicles and route before recording a decision.</p>
+              <p>
+                Check the vehicle and travel conditions, then record your
+                decision.
+              </p>
             </div>
             <Btn onClick={() => setOpenedId(null)}>Close review</Btn>
           </header>

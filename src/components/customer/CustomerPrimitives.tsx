@@ -1,5 +1,5 @@
-import viosImage from "@/assets/vehicles/toyota_vios.png";
-import everestImage from "@/assets/vehicles/ford_everest.png";
+import viosImage from "@/assets/vehicles/toyota_vios.webp";
+import everestImage from "@/assets/vehicles/ford_everest.webp";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,

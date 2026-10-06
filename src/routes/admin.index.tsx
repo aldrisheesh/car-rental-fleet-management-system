@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -61,7 +62,7 @@ type LoadState =
   | { status: "ready"; data: DashboardSources };
 
 async function readJson<T>(url: string): Promise<T> {
-  const response = await fetch(url, { credentials: "same-origin" });
+  const response = await readFetch(url, { credentials: "same-origin" });
   return readJsonResponse<T>(response);
 }
 
@@ -81,7 +82,7 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
 }
 
 async function readBookings() {
-  const response = await fetch("/api/bookings", { credentials: "same-origin" });
+  const response = await readFetch("/api/bookings?view=dispatch", { credentials: "same-origin" });
   return parseAdminBookingResponse(response, { allowStaffResponse: true });
 }
 
@@ -99,7 +100,7 @@ function DashboardOverview() {
   const loadDashboard = useCallback(async () => {
     setState({ status: "loading" });
     try {
-      const baseResponse = await fetch("/api/admin-dashboard", {
+      const baseResponse = await readFetch("/api/admin-dashboard", {
         credentials: "same-origin",
       });
       const base = await readJsonResponse<AdminDashboardResponse>(baseResponse);
@@ -167,7 +168,7 @@ function DashboardOverview() {
           },
           {
             label: "payments",
-            load: () => readJson<{ payments: AdminPayment[] }>("/api/payments"),
+            load: () => readJson<{ payments: AdminPayment[] }>("/api/payments?view=summary"),
             assign: (value) => {
               sources.payments = (
                 value as { payments: AdminPayment[] }

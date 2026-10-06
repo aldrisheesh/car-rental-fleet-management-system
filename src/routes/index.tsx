@@ -2,6 +2,8 @@ import { HANDOVER_TIMES } from "@/lib/handover-times";
 import {
   useEffect,
   useMemo,
+  useRef,
+  useLayoutEffect,
   useState,
   type CSSProperties,
   type FormEvent,
@@ -11,18 +13,24 @@ import type { DateRange } from "react-day-picker";
 import {
   ArrowRight,
   CarFront,
+  FileText,
+  CreditCard,
+  CircleCheck,
+  Users,
   ChevronLeft,
   ChevronRight,
-  FileCheck2,
   Headphones,
   ShieldCheck,
   Tag,
+  Pause,
+  Play,
 } from "lucide-react";
 
-import heroCar from "@/assets/home-hero-editorial.png";
-import fordEverestImage from "@/assets/home-vehicle-everest.png";
-import hondaCityImage from "@/assets/home-vehicle-city.png";
-import toyotaViosImage from "@/assets/home-vehicle-vios.png";
+import handoverPhoto from "@/assets/home-personal-handover.jpg";
+import heroCar from "@/assets/home-hero-daylight.jpg";
+import fordEverestImage from "@/assets/home-vehicle-everest.webp";
+import hondaCityImage from "@/assets/home-vehicle-city.webp";
+import toyotaViosImage from "@/assets/home-vehicle-vios.webp";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { DateRangePicker } from "@/components/site/DateRangePicker";
@@ -117,7 +125,75 @@ function HomePage() {
   const [featuredVehiclesLoading, setFeaturedVehiclesLoading] = useState(true);
   const [featuredVehiclesError, setFeaturedVehiclesError] = useState("");
   const [featuredOffset, setFeaturedOffset] = useState(0);
-  const [filmstripPaused, setFilmstripPaused] = useState(false);
+  const [rotationPaused, setRotationPaused] = useState(false);
+  const [signInOpen, setSignInOpen] = useState(false);
+  const [filmstripHovered, setFilmstripHovered] = useState(false);
+  const [filmstripFocused, setFilmstripFocused] = useState(false);
+  const filmstripPaused =
+    rotationPaused || filmstripHovered || filmstripFocused || signInOpen;
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const detailRailRef = useRef<HTMLDivElement>(null);
+  const shiftDirection = useRef(1);
+  const previousOffset = useRef(0);
+  const shiftAnimations = useRef<Animation[]>([]);
+
+  useLayoutEffect(() => {
+    if (signInOpen) {
+      shiftAnimations.current.forEach((animation) => animation.cancel());
+    }
+  }, [signInOpen]);
+
+  useLayoutEffect(() => {
+    if (previousOffset.current === featuredOffset) return;
+    previousOffset.current = featuredOffset;
+    const elements = [galleryRef.current, detailRailRef.current];
+    const starts = elements.map((element, index) => {
+      if (!element || shiftAnimations.current[index]?.playState !== "running") {
+        return {
+          opacity: "0.85",
+          transform: `translateX(${shiftDirection.current * 8}px)`,
+        };
+      }
+      const style = getComputedStyle(element);
+      return { opacity: style.opacity, transform: style.transform };
+    });
+    shiftAnimations.current.forEach((animation) => animation.cancel());
+    shiftAnimations.current = [];
+    if (
+      document.documentElement.dataset.inputModality === "keyboard" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    shiftAnimations.current = elements.flatMap((element, index) =>
+      element
+        ? [
+            element.animate(
+              [starts[index], { opacity: "1", transform: "translateX(0)" }],
+              {
+                duration: 220,
+                easing: "cubic-bezier(0.23, 1, 0.32, 1)",
+              },
+            ),
+          ]
+        : [],
+    );
+  }, [featuredOffset]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const cancelMotion = () =>
+      shiftAnimations.current.forEach((animation) => animation.cancel());
+    const preferenceChanged = () => {
+      if (media.matches) cancelMotion();
+    };
+    document.addEventListener("keydown", cancelMotion, true);
+    media.addEventListener("change", preferenceChanged);
+    return () => {
+      cancelMotion();
+      document.removeEventListener("keydown", cancelMotion, true);
+      media.removeEventListener("change", preferenceChanged);
+    };
+  }, []);
 
   const firstAvailableDate = useMemo(() => {
     const date = new Date();
@@ -175,17 +251,30 @@ function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (
-      filmstripPaused ||
-      featuredVehicles.length < 2 ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    )
-      return;
-
-    const timer = window.setInterval(() => {
-      setFeaturedOffset((offset) => (offset + 1) % featuredVehicles.length);
-    }, 6000);
-    return () => window.clearInterval(timer);
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let timer: number | undefined;
+    const syncRotation = () => {
+      window.clearInterval(timer);
+      if (
+        filmstripPaused ||
+        featuredVehicles.length < 2 ||
+        media.matches ||
+        document.hidden
+      )
+        return;
+      timer = window.setInterval(() => {
+        shiftDirection.current = 1;
+        setFeaturedOffset((offset) => (offset + 1) % featuredVehicles.length);
+      }, 6000);
+    };
+    syncRotation();
+    media.addEventListener("change", syncRotation);
+    document.addEventListener("visibilitychange", syncRotation);
+    return () => {
+      window.clearInterval(timer);
+      media.removeEventListener("change", syncRotation);
+      document.removeEventListener("visibilitychange", syncRotation);
+    };
   }, [featuredVehicles.length, filmstripPaused]);
 
   function submitFinder(event: FormEvent<HTMLFormElement>) {
@@ -241,6 +330,7 @@ function HomePage() {
 
   function cycleFeaturedVehicles(direction: "previous" | "next") {
     if (featuredVehicles.length < 2) return;
+    shiftDirection.current = direction === "next" ? 1 : -1;
     setFeaturedOffset(
       (offset) =>
         (offset + (direction === "next" ? 1 : -1) + featuredVehicles.length) %
@@ -250,15 +340,15 @@ function HomePage() {
 
   return (
     <CustomerPage>
-      <Header homeMarketing />
+      <Header homeMarketing onSignInOpenChange={setSignInOpen} />
       <main id="main-content">
         <section className="home-hero" aria-labelledby="home-title">
           <div className="home-hero-visual" aria-hidden="true">
             <img
               src={heroCar}
               alt=""
-              width={1920}
-              height={1080}
+              width={1672}
+              height={941}
               fetchPriority="high"
             />
           </div>
@@ -359,10 +449,17 @@ function HomePage() {
         <section
           className="home-featured home-filmstrip"
           aria-labelledby="fleet-showcase"
-          onMouseEnter={() => setFilmstripPaused(true)}
-          onMouseLeave={() => setFilmstripPaused(false)}
-          onFocusCapture={() => setFilmstripPaused(true)}
-          onBlurCapture={() => setFilmstripPaused(false)}
+          onPointerEnter={(event) => {
+            if (event.pointerType === "mouse") setFilmstripHovered(true);
+          }}
+          onPointerLeave={(event) => {
+            if (event.pointerType === "mouse") setFilmstripHovered(false);
+          }}
+          onFocusCapture={() => setFilmstripFocused(true)}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget))
+              setFilmstripFocused(false);
+          }}
         >
           <div className="home-filmstrip-masthead">
             <div className="customer-container home-filmstrip-masthead-inner">
@@ -394,18 +491,18 @@ function HomePage() {
           visibleFeaturedVehicles.length > 0 ? (
             <>
               <div
-                className="home-filmstrip-gallery home-filmstrip-gallery--shift"
+                className="home-filmstrip-gallery"
+                ref={galleryRef}
                 style={filmstripColumnStyle}
-                key={`gallery-${featuredOffset}`}
               >
                 {visibleFeaturedVehicles.map((vehicle) => (
                   <FilmstripVehicle key={vehicle.id} vehicle={vehicle} />
                 ))}
               </div>
               <div
-                className="home-filmstrip-detail-rail home-filmstrip-detail-rail--shift"
+                className="home-filmstrip-detail-rail"
+                ref={detailRailRef}
                 style={filmstripColumnStyle}
-                key={`detail-rail-${featuredOffset}`}
               >
                 {visibleFeaturedVehicles.map((vehicle) => (
                   <FilmstripVehicleDetails key={vehicle.id} vehicle={vehicle} />
@@ -413,10 +510,29 @@ function HomePage() {
               </div>
               <div className="customer-container home-filmstrip-footer">
                 <span className="home-filmstrip-route">Manila and Rizal</span>
-                <span aria-live="polite">
+                <span aria-live={filmstripPaused ? "polite" : "off"}>
                   {String(featuredOffset + 1).padStart(2, "0")} /{" "}
                   {String(featuredVehicles.length).padStart(2, "0")}
                 </span>
+                <button
+                  type="button"
+                  className="home-gallery-rotation"
+                  aria-label={
+                    rotationPaused
+                      ? "Resume car rotation"
+                      : "Pause car rotation"
+                  }
+                  aria-pressed={rotationPaused}
+                  disabled={featuredVehicles.length < 2}
+                  onClick={() => setRotationPaused((paused) => !paused)}
+                >
+                  {rotationPaused ? (
+                    <Play size={15} aria-hidden="true" />
+                  ) : (
+                    <Pause size={15} aria-hidden="true" />
+                  )}
+                  {rotationPaused ? "Resume" : "Pause"}
+                </button>
                 <div
                   className="home-gallery-pager"
                   aria-label="Fleet gallery navigation"
@@ -462,20 +578,163 @@ function HomePage() {
 
         <section
           id="rental-assurances"
-          className="home-trust"
-          aria-label="Rental assurances"
+          className="home-rental-journey"
+          aria-labelledby="home-how-it-works-title"
         >
-          <div className="customer-container home-trust-list">
-            <p>
-              <ShieldCheck size={22} aria-hidden="true" /> Active fleet
-            </p>
-            <p>
-              <Tag size={22} aria-hidden="true" /> Clear daily rates
-            </p>
-            <p>
-              <FileCheck2 size={22} aria-hidden="true" /> Booking review before
-              payment
-            </p>
+          <div className="home-rental-journey__layout">
+            <div className="home-rental-journey__photo">
+              <img
+                src={handoverPhoto}
+                width={1024}
+                height={1536}
+                loading="lazy"
+                decoding="async"
+                alt="Illustration of a friendly car-key handover beside a white SUV."
+              />
+            </div>
+            <div className="home-rental-journey__content">
+              <div className="home-rental-journey__heading">
+                <h2 id="home-how-it-works-title">How it works</h2>
+                <p>
+                  From your first request to the drive home, here’s what to
+                  expect.
+                </p>
+              </div>
+              <ol className="home-rental-journey__steps">
+                <li>
+                  <span
+                    className="home-rental-journey__icon"
+                    aria-hidden="true"
+                  >
+                    <CarFront size={28} strokeWidth={1.8} />
+                  </span>
+                  <div>
+                    <span
+                      className="home-rental-journey__number"
+                      aria-hidden="true"
+                    >
+                      1
+                    </span>
+                    <h3>Choose your car and dates</h3>
+                    <p>
+                      Sign in and send your rental request with pickup or
+                      delivery details.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span
+                    className="home-rental-journey__icon"
+                    aria-hidden="true"
+                  >
+                    <FileText size={28} strokeWidth={1.8} />
+                  </span>
+                  <div>
+                    <span
+                      className="home-rental-journey__number"
+                      aria-hidden="true"
+                    >
+                      2
+                    </span>
+                    <h3>Submit your documents</h3>
+                    <p>
+                      Upload your documents. Check your booking for review
+                      updates or corrections.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span
+                    className="home-rental-journey__icon"
+                    aria-hidden="true"
+                  >
+                    <CreditCard size={28} strokeWidth={1.8} />
+                  </span>
+                  <div>
+                    <span
+                      className="home-rental-journey__number"
+                      aria-hidden="true"
+                    >
+                      3
+                    </span>
+                    <h3>Review your quote and pay</h3>
+                    <p>
+                      Review the charges and terms. Pay 50% down payment and
+                      upload payment proof.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span
+                    className="home-rental-journey__icon"
+                    aria-hidden="true"
+                  >
+                    <CircleCheck size={28} strokeWidth={1.8} />
+                  </span>
+                  <div>
+                    <span
+                      className="home-rental-journey__number"
+                      aria-hidden="true"
+                    >
+                      4
+                    </span>
+                    <h3>Wait for confirmation</h3>
+                    <p>
+                      Payment verification and final approval confirm your
+                      booking.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span
+                    className="home-rental-journey__icon"
+                    aria-hidden="true"
+                  >
+                    <Users size={28} strokeWidth={1.8} />
+                  </span>
+                  <div>
+                    <span
+                      className="home-rental-journey__number"
+                      aria-hidden="true"
+                    >
+                      5
+                    </span>
+                    <h3>Meet the team and start your trip</h3>
+                    <p>
+                      Bring your driver’s license and government-issued ID. Pay
+                      the balance and deposit, then inspect the car together.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span
+                    className="home-rental-journey__icon"
+                    aria-hidden="true"
+                  >
+                    <CarFront size={28} strokeWidth={1.8} />
+                  </span>
+                  <div>
+                    <span
+                      className="home-rental-journey__number"
+                      aria-hidden="true"
+                    >
+                      6
+                    </span>
+                    <h3>Return the car with the team</h3>
+                    <p>
+                      Return as agreed. Inspection and any agreed deductions
+                      settle your refundable deposit.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+              <div className="home-rental-journey__next">
+                <a href="/vehicles">
+                  Find your car <ArrowRight size={22} aria-hidden="true" />
+                </a>
+                <p>Sending a request does not reserve the car yet.</p>
+              </div>
+            </div>
           </div>
         </section>
       </main>

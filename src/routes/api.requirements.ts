@@ -128,24 +128,26 @@ async function read({ request }: { request: Request }) {
         documents: [],
         requiredTypes: TYPES,
       });
-    const docs = set.data
-      ? await client
-          .from("renter_requirement_documents")
-          .select(
-            "id,requirement_set_id,booking_id,customer_id,requirement_type,original_filename,mime_type,size_bytes,version,is_current,uploaded_at,superseded_at",
-          )
-          .eq("requirement_set_id", set.data.id)
-          .order("uploaded_at", { ascending: false })
-      : { data: [], error: null };
-    const reviews = set.data
-      ? await client
-          .from("renter_requirement_reviews")
-          .select("*")
-          .eq("requirement_set_id", set.data.id)
-          .order("reviewed_at", { ascending: false })
-          .limit(1)
-          .maybeSingle()
-      : { data: null, error: null };
+    const [docs, reviews] = await Promise.all([
+      set.data
+        ? client
+            .from("renter_requirement_documents")
+            .select(
+              "id,requirement_set_id,booking_id,customer_id,requirement_type,original_filename,mime_type,size_bytes,version,is_current,uploaded_at,superseded_at",
+            )
+            .eq("requirement_set_id", set.data.id)
+            .order("uploaded_at", { ascending: false })
+        : { data: [], error: null },
+      set.data
+        ? client
+            .from("renter_requirement_reviews")
+            .select("*")
+            .eq("requirement_set_id", set.data.id)
+            .order("reviewed_at", { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        : { data: null, error: null },
+    ]);
     if (principal.role === "Customer/Renter") {
       const r = reviews.data;
       return Response.json({

@@ -1,3 +1,4 @@
+import { readFetch } from "./read-fetch.ts";
 export type ApiMasterVehicle = {
   id: string;
   name: string;
@@ -73,7 +74,7 @@ function buildVehicleUpdateInput(
 }
 
 export async function fetchMasterData<T>(resource: string): Promise<T[]> {
-  const response = await fetch(
+  const response = await readFetch(
     `/api/master-data?resource=${encodeURIComponent(resource)}`,
   );
   if (!response.ok) throw new Error("Unable to load master data.");
@@ -83,7 +84,7 @@ export async function fetchMasterData<T>(resource: string): Promise<T[]> {
 export async function saveMasterData<T>(
   body: Record<string, unknown>,
 ): Promise<T> {
-  const response = await fetch("/api/master-data", {
+  const response = await readFetch("/api/master-data", {
     method: body.id ? "PATCH" : "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

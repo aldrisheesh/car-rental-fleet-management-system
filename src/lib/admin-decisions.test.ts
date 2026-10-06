@@ -292,7 +292,7 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
   assert.match(page, /setSupportVersion\(\(version\) => version \+ 1\)/);
   assert.match(
     page,
-    /\[\s*analyticsRange\.start,\s*analyticsRange\.end,\s*vehicleRefreshVersion,\s*supportVersion,?\s*\]/,
+    /\[\s*analyticsRange\.start,\s*analyticsRange\.end,\s*vehicleRefreshVersion,\s*supportVersion,\s*view,?\s*\]/,
   );
   assert.match(page, /latestForecastIds/);
   assert.match(page, /currentSupplyRows/);
@@ -309,7 +309,7 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
     new URL("../components/admin/allocation-review.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(review, /do not change WMA demand/);
+  assert.match(review, /This is a weekly planning suggestion/);
   assert.match(page, /No compatible donor is available/);
   assert.match(page, /blocked by a booking, rental, maintenance/);
   assert.match(page, /forecastError \|\| allocationError \|\| forecastNotice/);
@@ -323,8 +323,8 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
   assert.match(page, /actual weekly demand/);
   assert.match(page, /selectedBranchId === "all"/);
   assert.match(page, /Forecast horizon:/);
-  assert.match(page, /Auditable WMA example/);
-  assert.match(page, /planning\s+requirement rounds up to/);
+  assert.match(page, /Calculation example/);
+  assert.match(page, /Rounded up,\s+plan for/);
   assert.match(page, /supplyWeekSummaries\.map\(\(summary\) =>/);
   assert.match(page, /Automatic readiness snapshots/);
   assert.match(review, /approvedUnits/);
@@ -341,7 +341,7 @@ test("Decision Support uses canonical sources and has no prototype analytics", a
   assert.match(supplyApi, /if \(principal\.role !== "Owner\/Admin"\)/);
   assert.match(
     allocationApi,
-    /summary = \(await loadCurrentAllocationContext\(client\)\)\.summary/,
+    /loadCurrentAllocationContext\(client\)\s*\.then\(\(context\) => context\.summary\)/,
   );
   assert.match(
     allocationApi,

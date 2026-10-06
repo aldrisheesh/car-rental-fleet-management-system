@@ -156,7 +156,7 @@ test("dashboard removes prototype widgets and implements honest load states", as
     page,
     /Systems healthy|Export report|MoM|YoY|Recent activity|Revenue|Pending payments/,
   );
-  assert.match(page, /fetch\("\/api\/admin-dashboard"/);
+  assert.match(page, /readFetch\("\/api\/admin-dashboard"/);
   assert.match(page, /Loading operational dashboard/);
   assert.match(page, /Unable to load the operational dashboard/);
   assert.match(page, /Retry/);

@@ -1,3 +1,4 @@
+import { readFetch } from "./read-fetch.ts";
 export type PublicContactSettings = {
   phone: string;
   email: string;
@@ -31,7 +32,7 @@ export function phoneHref(phone: string) {
 }
 
 export async function fetchPublicContact() {
-  const response = await fetch("/api/public-contact");
+  const response = await readFetch("/api/public-contact");
   if (!response.ok) throw new Error("Unable to load public contact details.");
   return (await response.json()) as {
     settings: PublicContactSettings;

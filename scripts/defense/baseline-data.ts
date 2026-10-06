@@ -21,6 +21,7 @@ import {
   selectAuthoritativePreventiveTargets,
 } from "../../src/lib/maintenance-readiness.ts";
 import { calculateRentalQuote } from "../../src/lib/rental-quote.ts";
+import { syntheticBookingInterest } from "./booking-interest-data.ts";
 
 export const VERSION = "synthetic-defense-v3";
 export const PROJECT = "vkfacfjkwomhfvrieaza";
@@ -236,6 +237,13 @@ export function buildBaseline(source: Dataset, asOf: string) {
     const deliveryFee = delivery
       ? [500, 700, 900, 1200][sample(label + ":fee", 4)]
       : 0;
+    const interest = syntheticBookingInterest({
+      id: id(`booking:${label}`),
+      pickup,
+      returnAt: end,
+      branch: branch === taft ? "Taft, Manila" : "Antipolo, Rizal",
+      seats: v.seat_capacity ?? 5,
+    });
     const b = put("booking_requests", {
       id: id(`booking:${label}`),
       customer_id: customer.id,
@@ -245,13 +253,8 @@ export function buildBaseline(source: Dataset, asOf: string) {
       return_branch_id: branch,
       pickup_at: pickup,
       return_at: end,
-      destination: [
-        "Tagaytay, Cavite",
-        "Quezon City, Metro Manila",
-        "Antipolo, Rizal",
-        "Calamba, Laguna",
-      ][sample(label + ":destination", 4)],
-      purpose_of_use: `SYNTHETIC / ${["Family visit", "Business appointment", "Weekend trip", "Airport transfer", "Family celebration", "Out-of-town errands"][sample(label + ":purpose", 6)]}`,
+      destination: interest.destination,
+      purpose_of_use: interest.purpose,
       pickup_delivery_option: delivery ? "delivery" : "pickup",
       pickup_location: pickupLocation,
       dropoff_location: dropoffLocation,

@@ -1,4 +1,5 @@
 import type { AppRole } from "./auth";
+import { splitCategory } from "./booking-categories.ts";
 import {
   addDays,
   datesBetween,
@@ -28,6 +29,9 @@ export type ReportBookingSource = {
   status: string;
   createdAt: string;
   branchId: string | null;
+  purpose?: string | null;
+  destination?: string | null;
+  service?: string | null;
 };
 export type ReportRentalSource = {
   id: string;
@@ -206,6 +210,9 @@ export type AdminReportsResponse = {
   bookings: {
     requests: number;
     statusBreakdown: Array<{ status: string; count: number }>;
+    purposes: Array<{ label: string; count: number }>;
+    destinations: Array<{ label: string; count: number }>;
+    services: Array<{ label: string; count: number }>;
   };
   rentals: {
     started: number;
@@ -474,6 +481,32 @@ function overlapsRange(row: ReportMaintenanceSource, range: ReportRange) {
 const unknownBranchName = "Unknown / unassigned branch";
 const unknownCategoryName = "Unknown / unassigned category";
 
+function bookingBreakdown(labels: string[]) {
+  const counts = new Map<string, number>();
+  for (const label of labels) counts.set(label, (counts.get(label) ?? 0) + 1);
+  return [...counts]
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => {
+      const missing = (label: string) =>
+        ["Not categorized", "Not provided", "Not recorded"].includes(label)
+          ? 1
+          : 0;
+      return (
+        missing(a.label) - missing(b.label) ||
+        b.count - a.count ||
+        a.label.localeCompare(b.label)
+      );
+    });
+}
+
+function bookingCategoryLabel(
+  domain: "purpose" | "destination",
+  value?: string | null,
+) {
+  if (!value?.trim()) return "Not provided";
+  return splitCategory(domain, value.trim()).label || "Not categorized";
+}
+
 export function buildAdminReport(
   role: "Owner/Admin" | "Operations Staff",
   range: ReportRange,
@@ -640,6 +673,23 @@ export function buildAdminReport(
     },
     bookings: {
       requests: bookings.length,
+      purposes: bookingBreakdown(
+        bookings.map((row) => bookingCategoryLabel("purpose", row.purpose)),
+      ),
+      destinations: bookingBreakdown(
+        bookings.map((row) =>
+          bookingCategoryLabel("destination", row.destination),
+        ),
+      ),
+      services: bookingBreakdown(
+        bookings.map((row) =>
+          row.service === "delivery"
+            ? "Delivery"
+            : row.service === "pickup"
+              ? "Pickup"
+              : "Not recorded",
+        ),
+      ),
       statusBreakdown: [...statuses]
         .map(([status, count]) => ({ status, count }))
         .sort((a, b) => a.status.localeCompare(b.status)),

@@ -1,3 +1,4 @@
+import { readFetch } from "./read-fetch.ts";
 import type { AppPrincipal } from "./auth";
 
 const VIEW_COOKIE = "briahs-auth-view";
@@ -32,7 +33,7 @@ async function request<T>(
   init?: RequestInit,
 ): Promise<ApiResult<T>> {
   try {
-    const response = await fetch(path, {
+    const response = await readFetch(path, {
       credentials: "same-origin",
       headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
       ...init,

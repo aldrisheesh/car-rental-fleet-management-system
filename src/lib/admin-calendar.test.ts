@@ -183,7 +183,7 @@ test("calendar page has real loading, error, empty, and month-navigation states"
     new URL("../routes/api.admin-calendar.ts", import.meta.url),
     "utf8",
   );
-  assert.match(page, /fetch\(\s*`\/api\/admin-calendar\?month=/);
+  assert.match(page, /readFetch\(\s*`\/api\/admin-calendar\?month=/);
   assert.match(page, /onClick=\{\(\) => changeMonth\(-1\)\}/);
   assert.match(page, /onClick=\{\(\) => changeMonth\(1\)\}/);
   assert.match(page, /latestRequest\.current === request/);

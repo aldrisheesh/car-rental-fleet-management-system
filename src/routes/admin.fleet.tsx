@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
   CalendarDays,
@@ -37,7 +38,9 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin/fleet")({
-  validateSearch: (raw): ReturnType<typeof parseDssSearch> & { q?: string } => ({
+  validateSearch: (
+    raw,
+  ): ReturnType<typeof parseDssSearch> & { q?: string } => ({
     ...parseDssSearch(raw),
     q: typeof raw.q === "string" && raw.q.length <= 150 ? raw.q : undefined,
   }),
@@ -61,7 +64,13 @@ const vehicleTabs: { label: string; status: FleetStatus | "All" }[] = [
 // are deliberately reached through the pager instead of extending the register.
 const pageSize = 4;
 const transmissionOptions = ["Automatic", "Manual"] as const;
-const fuelTypeOptions = ["Petrol", "Diesel", "Hybrid", "Electric", "Other"] as const;
+const fuelTypeOptions = [
+  "Petrol",
+  "Diesel",
+  "Hybrid",
+  "Electric",
+  "Other",
+] as const;
 
 type AddVehicleDraft = {
   plate: string;
@@ -162,12 +171,18 @@ function FleetPage() {
   const [status, setStatus] = useState<FleetStatus | "All">("All");
   const [page, setPage] = useState(1);
   const [branch, setBranch] = useState("All");
+  const [category, setCategory] = useState("All");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [branchSavingId, setBranchSavingId] = useState<string | null>(null);
   const [locationChange, setLocationChange] = useState<{
     vehicle: FleetVehicleRow;
     branchId: string;
-    impacts: Array<{ id: string; booking_status: string; pickup_at: string; customer?: { full_name?: string | null } | null }>;
+    impacts: Array<{
+      id: string;
+      booking_status: string;
+      pickup_at: string;
+      customer?: { full_name?: string | null } | null;
+    }>;
   } | null>(null);
   const [mutationFeedback, setMutationFeedback] = useState("");
   const [mutationError, setMutationError] = useState("");
@@ -201,13 +216,11 @@ function FleetPage() {
     setLoading(true);
     setLoadError("");
     try {
-      const response = await fetch("/api/admin-fleet", {
+      const response = await readFetch("/api/admin-fleet", {
         credentials: "same-origin",
       });
       const body = (await response.json().catch(() => null)) as
-        | AdminFleetResponse
-        | { message?: string }
-        | null;
+        AdminFleetResponse | { message?: string } | null;
       if (!response.ok || !body || !("vehicles" in body)) {
         throw new Error(
           body && "message" in body && body.message
@@ -250,12 +263,18 @@ function FleetPage() {
         if (leftPreferred !== rightPreferred)
           return leftPreferred - rightPreferred;
       }
+      if (category !== "All") {
+        const leftPreferred = left.categoryId === category ? 0 : 1;
+        const rightPreferred = right.categoryId === category ? 0 : 1;
+        if (leftPreferred !== rightPreferred)
+          return leftPreferred - rightPreferred;
+      }
       return (
         (left.branch ?? "").localeCompare(right.branch ?? "") ||
         left.name.localeCompare(right.name)
       );
     });
-  }, [branch, query, snapshot, status]);
+  }, [branch, category, query, snapshot, status]);
 
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
   const pageRows = useMemo(
@@ -265,7 +284,7 @@ function FleetPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [branch, query, status]);
+  }, [branch, category, query, status]);
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
@@ -311,7 +330,7 @@ function FleetPage() {
     setMutationFeedback("");
     try {
       const inspectionWorkflow = returnInspectionForMaintenance;
-      const response = await fetch("/api/maintenance", {
+      const response = await readFetch("/api/maintenance", {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
@@ -355,16 +374,34 @@ function FleetPage() {
     }
   }
 
-  async function changeBranch(vehicle: FleetVehicleRow, branchId: string, trigger: HTMLSelectElement) {
+  async function changeBranch(
+    vehicle: FleetVehicleRow,
+    branchId: string,
+    trigger: HTMLSelectElement,
+  ) {
     if (!branchId || branchId === vehicle.branchId) return;
     allocationTriggerRef.current = trigger;
     setBranchSavingId(vehicle.id);
     setMutationError("");
     setMutationFeedback("");
     try {
-      const response = await fetch(`/api/vehicle-location?vehicleId=${encodeURIComponent(vehicle.id)}`, { credentials: "same-origin" });
-      const payload = (await response.json().catch(() => null)) as { impactedBookings?: Array<{ id: string; booking_status: string; pickup_at: string; customer?: { full_name?: string | null } | null }>; message?: string } | null;
-      if (!response.ok) throw new Error(payload?.message ?? "Unable to check affected booking requests.");
+      const response = await readFetch(
+        `/api/vehicle-location?vehicleId=${encodeURIComponent(vehicle.id)}`,
+        { credentials: "same-origin" },
+      );
+      const payload = (await response.json().catch(() => null)) as {
+        impactedBookings?: Array<{
+          id: string;
+          booking_status: string;
+          pickup_at: string;
+          customer?: { full_name?: string | null } | null;
+        }>;
+        message?: string;
+      } | null;
+      if (!response.ok)
+        throw new Error(
+          payload?.message ?? "Unable to check affected booking requests.",
+        );
       const impacts = payload?.impactedBookings ?? [];
       if (impacts.length) {
         setLocationChange({ vehicle, branchId, impacts });
@@ -382,20 +419,49 @@ function FleetPage() {
     }
   }
 
-  async function commitBranchChange(vehicle: FleetVehicleRow, branchId: string, acknowledgeImpacts: boolean) {
-    setBranchSavingId(vehicle.id); setMutationError(""); setMutationFeedback("");
+  async function commitBranchChange(
+    vehicle: FleetVehicleRow,
+    branchId: string,
+    acknowledgeImpacts: boolean,
+  ) {
+    setBranchSavingId(vehicle.id);
+    setMutationError("");
+    setMutationFeedback("");
     try {
-      const response = await fetch("/api/vehicle-location", {
-        method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ vehicleId: vehicle.id, branchId, acknowledgeImpacts }),
+      const response = await readFetch("/api/vehicle-location", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          vehicleId: vehicle.id,
+          branchId,
+          acknowledgeImpacts,
+        }),
       });
-      const payload = (await response.json().catch(() => null)) as { impacted_bookings?: number; message?: string } | null;
-      if (!response.ok) throw new Error(payload?.message ?? "Unable to update the allocation location.");
+      const payload = (await response.json().catch(() => null)) as {
+        impacted_bookings?: number;
+        message?: string;
+      } | null;
+      if (!response.ok)
+        throw new Error(
+          payload?.message ?? "Unable to update the allocation location.",
+        );
       setLocationChange(null);
-      setMutationFeedback(payload?.impacted_bookings ? `${vehicle.name} allocation location updated and ${payload.impacted_bookings} affected request${payload.impacted_bookings === 1 ? " was" : "s were"} recorded for reconciliation.` : `${vehicle.name} allocation location updated.`);
+      setMutationFeedback(
+        payload?.impacted_bookings
+          ? `${vehicle.name} allocation location updated and ${payload.impacted_bookings} affected request${payload.impacted_bookings === 1 ? " was" : "s were"} recorded for reconciliation.`
+          : `${vehicle.name} allocation location updated.`,
+      );
       await loadFleet();
-    } catch (error) { setMutationError(error instanceof Error ? error.message : "Unable to update the allocation location."); }
-    finally { setBranchSavingId(null); }
+    } catch (error) {
+      setMutationError(
+        error instanceof Error
+          ? error.message
+          : "Unable to update the allocation location.",
+      );
+    } finally {
+      setBranchSavingId(null);
+    }
   }
 
   function updateAddDraft<K extends keyof AddVehicleDraft>(
@@ -448,11 +514,18 @@ function FleetPage() {
       setAddError("Daily rate must be greater than zero.");
       return;
     }
-    if (referenceFuelEfficiency !== null && (!Number.isFinite(referenceFuelEfficiency) || referenceFuelEfficiency <= 0)) {
+    if (
+      referenceFuelEfficiency !== null &&
+      (!Number.isFinite(referenceFuelEfficiency) ||
+        referenceFuelEfficiency <= 0)
+    ) {
       setAddError("Reference fuel efficiency must be greater than zero.");
       return;
     }
-    if (currentOdometerKm !== null && (!Number.isFinite(currentOdometerKm) || currentOdometerKm < 0)) {
+    if (
+      currentOdometerKm !== null &&
+      (!Number.isFinite(currentOdometerKm) || currentOdometerKm < 0)
+    ) {
       setAddError("Current odometer must be zero or greater.");
       return;
     }
@@ -573,18 +646,27 @@ function FleetPage() {
       return;
     }
     if (!Number.isInteger(largeBagCapacity) || largeBagCapacity < 0) {
-      setEditError("Large-bag capacity must be a whole number of zero or more.");
+      setEditError(
+        "Large-bag capacity must be a whole number of zero or more.",
+      );
       return;
     }
     if (!Number.isFinite(dailyRate) || dailyRate <= 0) {
       setEditError("Daily rate must be greater than zero.");
       return;
     }
-    if (referenceFuelEfficiency !== null && (!Number.isFinite(referenceFuelEfficiency) || referenceFuelEfficiency <= 0)) {
+    if (
+      referenceFuelEfficiency !== null &&
+      (!Number.isFinite(referenceFuelEfficiency) ||
+        referenceFuelEfficiency <= 0)
+    ) {
       setEditError("Reference fuel efficiency must be greater than zero.");
       return;
     }
-    if (currentOdometerKm !== null && (!Number.isFinite(currentOdometerKm) || currentOdometerKm < 0)) {
+    if (
+      currentOdometerKm !== null &&
+      (!Number.isFinite(currentOdometerKm) || currentOdometerKm < 0)
+    ) {
       setEditError("Current odometer must be zero or greater.");
       return;
     }
@@ -625,14 +707,13 @@ function FleetPage() {
     }
   }
 
-
   async function resolveInspection(outcome: "Cleared") {
     if (!selectedVehicle?.pendingInspection) return;
     setInspectionSaving(true);
     setMutationError("");
     setMutationFeedback("");
     try {
-      const response = await fetch("/api/admin-fleet", {
+      const response = await readFetch("/api/admin-fleet", {
         method: "PATCH",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
@@ -756,6 +837,7 @@ function FleetPage() {
         <p
           className="mb-4 rounded-md border border-[#267a55]/30 bg-[#267a55]/5 px-4 py-3 text-sm text-[#267a55]"
           role="status"
+          data-motion-success="true"
           aria-live="polite"
         >
           {mutationFeedback}
@@ -814,21 +896,38 @@ function FleetPage() {
                     · page {page} of {totalPages}
                   </p>
                 </div>
-                <label className="admin-fleet-branch-sort">
-                  <span>Sort by branch</span>
-                  <TSelect
-                    value={branch}
-                    onChange={(event) => setBranch(event.target.value)}
-                    aria-label="Sort fleet by branch"
-                  >
-                    <option value="All">All branches</option>
-                    {branches.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </TSelect>
-                </label>
+                <div className="flex flex-wrap gap-3">
+                  <label className="admin-fleet-branch-sort">
+                    <span>Sort by branch</span>
+                    <TSelect
+                      value={branch}
+                      onChange={(event) => setBranch(event.target.value)}
+                      aria-label="Sort fleet by branch"
+                    >
+                      <option value="All">All branches</option>
+                      {branches.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </TSelect>
+                  </label>
+                  <label className="admin-fleet-branch-sort">
+                    <span>Sort by category</span>
+                    <TSelect
+                      value={category}
+                      onChange={(event) => setCategory(event.target.value)}
+                      aria-label="Sort by category"
+                    >
+                      <option value="All">All categories</option>
+                      {categories.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </TSelect>
+                  </label>
+                </div>
               </header>
               {rows.length ? (
                 <>
@@ -841,6 +940,9 @@ function FleetPage() {
                         <tr className="border-b border-border">
                           <th className="px-5 py-3 text-left font-semibold">
                             Vehicle / plate
+                          </th>
+                          <th className="px-5 py-3 text-left font-semibold">
+                            Category
                           </th>
                           <th className="px-5 py-3 text-left font-semibold">
                             Branch location
@@ -897,6 +999,7 @@ function FleetPage() {
                     setQuery("");
                     setStatus("All");
                     setBranch("All");
+                    setCategory("All");
                   }}
                 />
               )}
@@ -906,7 +1009,9 @@ function FleetPage() {
               vehicle={rows.length ? selectedVehicle : null}
               branches={branches}
               branchSaving={Boolean(branchSavingId)}
-              onBranchChange={(vehicle, branchId, trigger) => void changeBranch(vehicle, branchId, trigger)}
+              onBranchChange={(vehicle, branchId, trigger) =>
+                void changeBranch(vehicle, branchId, trigger)
+              }
               inspectionRemarks={inspectionRemarks}
               inspectionSaving={inspectionSaving}
               onInspectionRemarksChange={setInspectionRemarks}
@@ -976,14 +1081,62 @@ function FleetPage() {
         onOpenChange={setImageOpen}
         onUpdated={() => void loadFleet()}
       />
-      <Dialog open={Boolean(locationChange)} onOpenChange={(open) => { if (!open && !branchSavingId) setLocationChange(null); }}>
-        <DialogContent className="sm:max-w-lg" onCloseAutoFocus={(event) => { event.preventDefault(); allocationTriggerRef.current?.focus(); }}>
-          <DialogHeader><DialogTitle>Review affected requests</DialogTitle></DialogHeader>
-          <DialogDescription>Moving {locationChange?.vehicle.name} changes the allocation context for the requests below. Their customer trip details stay unchanged. Continue only after reviewing them.</DialogDescription>
+      <Dialog
+        open={Boolean(locationChange)}
+        onOpenChange={(open) => {
+          if (!open && !branchSavingId) setLocationChange(null);
+        }}
+      >
+        <DialogContent
+          className="sm:max-w-lg"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            allocationTriggerRef.current?.focus();
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>Review affected requests</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            Moving {locationChange?.vehicle.name} changes the allocation context
+            for the requests below. Their customer trip details stay unchanged.
+            Continue only after reviewing them.
+          </DialogDescription>
           <ul className="max-h-52 space-y-2 overflow-y-auto rounded-md border border-border p-3 text-sm">
-            {locationChange?.impacts.map((impact) => <li key={impact.id} className="flex items-center justify-between gap-3"><span>{impact.customer?.full_name ?? "Customer"}</span><span className="text-muted-foreground">{impact.booking_status}</span></li>)}
+            {locationChange?.impacts.map((impact) => (
+              <li
+                key={impact.id}
+                className="flex items-center justify-between gap-3"
+              >
+                <span>{impact.customer?.full_name ?? "Customer"}</span>
+                <span className="text-muted-foreground">
+                  {impact.booking_status}
+                </span>
+              </li>
+            ))}
           </ul>
-          <DialogFooter><Btn disabled={Boolean(branchSavingId)} onClick={() => setLocationChange(null)}>Cancel</Btn><Btn variant="primary" disabled={Boolean(branchSavingId) || !locationChange} onClick={() => { if (locationChange) void commitBranchChange(locationChange.vehicle, locationChange.branchId, true); }}>{branchSavingId ? "Moving…" : "Acknowledge and move"}</Btn></DialogFooter>
+          <DialogFooter>
+            <Btn
+              disabled={Boolean(branchSavingId)}
+              onClick={() => setLocationChange(null)}
+            >
+              Cancel
+            </Btn>
+            <Btn
+              variant="primary"
+              disabled={Boolean(branchSavingId) || !locationChange}
+              onClick={() => {
+                if (locationChange)
+                  void commitBranchChange(
+                    locationChange.vehicle,
+                    locationChange.branchId,
+                    true,
+                  );
+              }}
+            >
+              {branchSavingId ? "Moving…" : "Acknowledge and move"}
+            </Btn>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
@@ -1022,6 +1175,9 @@ function FleetRow({
             {displayValue(vehicle.plate)}
           </span>
         </div>
+      </td>
+      <td className="px-5 py-4 text-muted-foreground">
+        {displayValue(vehicle.category)}
       </td>
       <td className="px-5 py-4 text-muted-foreground">
         <span className="admin-fleet-location">
@@ -1089,7 +1245,9 @@ function FleetDisclosure({
           <TSelect
             value={vehicle.branchId ?? ""}
             disabled={branchSaving || !vehicle.categoryId}
-            onChange={(event) => onBranchChange(event.target.value, event.currentTarget)}
+            onChange={(event) =>
+              onBranchChange(event.target.value, event.currentTarget)
+            }
             aria-label={`Allocation location for ${vehicle.name}`}
           >
             <option value="">Unassigned location</option>
@@ -1306,7 +1464,11 @@ function FleetDetail({
   vehicle: FleetVehicleRow | null;
   branches: Array<{ id: string; name: string }>;
   branchSaving: boolean;
-  onBranchChange: (vehicle: FleetVehicleRow, branchId: string, trigger: HTMLSelectElement) => void;
+  onBranchChange: (
+    vehicle: FleetVehicleRow,
+    branchId: string,
+    trigger: HTMLSelectElement,
+  ) => void;
   inspectionRemarks: string;
   inspectionSaving: boolean;
   onInspectionRemarksChange: (value: string) => void;
@@ -1410,11 +1572,16 @@ function FleetDetail({
                 ) : null}
               </section>
             ) : null}
-            <section className="admin-fleet-detail__management" aria-labelledby="vehicle-management-title">
+            <section
+              className="admin-fleet-detail__management"
+              aria-labelledby="vehicle-management-title"
+            >
               <header>
                 <div>
                   <h3 id="vehicle-management-title">Vehicle management</h3>
-                  <p>Keep fleet information and customer catalog details current.</p>
+                  <p>
+                    Keep fleet information and customer catalog details current.
+                  </p>
                 </div>
               </header>
               <label className="mt-4 hidden gap-2 text-sm lg:grid">
@@ -1423,7 +1590,11 @@ function FleetDetail({
                   value={vehicle.branchId ?? ""}
                   disabled={branchSaving || !vehicle.categoryId}
                   onChange={(event) =>
-                    onBranchChange(vehicle, event.target.value, event.currentTarget)
+                    onBranchChange(
+                      vehicle,
+                      event.target.value,
+                      event.currentTarget,
+                    )
                   }
                   aria-label={`Allocation location for ${vehicle.name}`}
                 >
@@ -1444,24 +1615,44 @@ function FleetDetail({
               </label>
               <div className="admin-fleet-detail__management-actions">
                 {["Reserved", "Rented"].includes(vehicle.status) ? (
-                  <a href="/admin/calendar" className="admin-fleet-detail__management-action admin-fleet-detail__management-action--primary">
+                  <a
+                    href="/admin/calendar"
+                    className="admin-fleet-detail__management-action admin-fleet-detail__management-action--primary"
+                  >
                     <CalendarDays className="h-4 w-4" /> View schedule
                   </a>
                 ) : null}
-                {vehicle.status === "Maintenance" || !vehicle.maintenanceReady ? (
-                  <Link to="/admin/maintenance" search={{ vehicleId: vehicle.id }} className="admin-fleet-detail__management-action admin-fleet-detail__management-action--primary">
+                {vehicle.status === "Maintenance" ||
+                !vehicle.maintenanceReady ? (
+                  <Link
+                    to="/admin/maintenance"
+                    search={{ vehicleId: vehicle.id }}
+                    className="admin-fleet-detail__management-action admin-fleet-detail__management-action--primary"
+                  >
                     <Wrench className="h-4 w-4" /> View maintenance
                   </Link>
                 ) : null}
                 {vehicle.status === "Available" ? (
-                  <button type="button" className="admin-fleet-detail__management-action admin-fleet-detail__management-action--primary" onClick={() => onService(vehicle)}>
+                  <button
+                    type="button"
+                    className="admin-action-press admin-fleet-detail__management-action admin-fleet-detail__management-action--primary"
+                    onClick={() => onService(vehicle)}
+                  >
                     <Wrench className="h-4 w-4" /> Schedule maintenance
                   </button>
                 ) : null}
-                <button type="button" className="admin-fleet-detail__management-action" onClick={() => onEditImage(vehicle)}>
+                <button
+                  type="button"
+                  className="admin-fleet-detail__management-action"
+                  onClick={() => onEditImage(vehicle)}
+                >
                   <Image className="h-4 w-4" /> Manage photos
                 </button>
-                <button type="button" className="admin-fleet-detail__management-action" onClick={() => onEditVehicle(vehicle)}>
+                <button
+                  type="button"
+                  className="admin-fleet-detail__management-action"
+                  onClick={() => onEditVehicle(vehicle)}
+                >
                   Edit vehicle details
                 </button>
               </div>
@@ -1616,7 +1807,8 @@ function AddVehicleDialog({
             </TSelect>
             {showAvailability ? (
               <p className="mt-1 text-xs text-muted-foreground">
-                Use the Fleet allocation-location control to review affected requests before moving this vehicle.
+                Use the Fleet allocation-location control to review affected
+                requests before moving this vehicle.
               </p>
             ) : null}
           </Field>
@@ -1651,7 +1843,9 @@ function AddVehicleDialog({
           <Field label="Fuel type">
             <TSelect
               value={draft.fuelType}
-              onChange={(event) => onDraftChange("fuelType", event.target.value)}
+              onChange={(event) =>
+                onDraftChange("fuelType", event.target.value)
+              }
             >
               <option value="">Not specified</option>
               {fuelTypeOptions.map((item) => (
@@ -1686,7 +1880,8 @@ function AddVehicleDialog({
           <div className="rounded-md border border-dashed border-border bg-muted/30 px-3 py-2.5 text-sm sm:col-span-2">
             <strong className="font-medium">Vehicle photos</strong>
             <small className="mt-0.5 block text-muted-foreground">
-              Save this vehicle first, then use Manage photos to upload up to five customer-visible images.
+              Save this vehicle first, then use Manage photos to upload up to
+              five customer-visible images.
             </small>
           </div>
           {showAvailability ? (
@@ -1714,7 +1909,10 @@ function AddVehicleDialog({
                   type="checkbox"
                   checked={draft.conditionBlocksRentalUse}
                   onChange={(event) =>
-                    onDraftChange("conditionBlocksRentalUse", event.target.checked)
+                    onDraftChange(
+                      "conditionBlocksRentalUse",
+                      event.target.checked,
+                    )
                   }
                 />
                 <span>
@@ -1722,7 +1920,8 @@ function AddVehicleDialog({
                     Block rental use for a condition concern
                   </strong>
                   <small className="mt-0.5 block text-muted-foreground">
-                    Keep the vehicle visible for staff review while preventing new rental allocation.
+                    Keep the vehicle visible for staff review while preventing
+                    new rental allocation.
                   </small>
                 </span>
               </label>
@@ -1777,64 +1976,158 @@ function VehiclePhotoDialog({
   const refresh = useCallback(async () => {
     if (!vehicleId) return;
     setLoading(true);
-    const response = await fetch(`/api/vehicle-images?vehicleId=${encodeURIComponent(vehicleId)}`);
-    const payload = await response.json().catch(() => null) as { images?: VehiclePhoto[]; message?: string } | null;
+    const response = await readFetch(
+      `/api/vehicle-images?vehicleId=${encodeURIComponent(vehicleId)}`,
+    );
+    const payload = (await response.json().catch(() => null)) as {
+      images?: VehiclePhoto[];
+      message?: string;
+    } | null;
     setLoading(false);
-    if (!response.ok) { setError(payload?.message ?? "Unable to load vehicle photos."); return; }
+    if (!response.ok) {
+      setError(payload?.message ?? "Unable to load vehicle photos.");
+      return;
+    }
     setImages(payload?.images ?? []);
   }, [vehicleId]);
 
   useEffect(() => {
-    if (open) { setError(""); void refresh(); }
+    if (open) {
+      setError("");
+      void refresh();
+    }
   }, [open, refresh]);
 
   async function upload(file: File) {
     if (!vehicleId) return;
-    setSaving(true); setError("");
-    const form = new FormData(); form.set("vehicleId", vehicleId); form.set("file", file);
-    const response = await fetch("/api/vehicle-images", { method: "POST", body: form });
-    const payload = await response.json().catch(() => null) as { message?: string } | null;
+    setSaving(true);
+    setError("");
+    const form = new FormData();
+    form.set("vehicleId", vehicleId);
+    form.set("file", file);
+    const response = await readFetch("/api/vehicle-images", {
+      method: "POST",
+      body: form,
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      message?: string;
+    } | null;
     setSaving(false);
-    if (!response.ok) { setError(payload?.message ?? "Unable to upload vehicle photo."); return; }
-    await refresh(); onUpdated();
+    if (!response.ok) {
+      setError(payload?.message ?? "Unable to upload vehicle photo.");
+      return;
+    }
+    await refresh();
+    onUpdated();
   }
 
   async function action(imageId: string, method: "PATCH" | "DELETE") {
     if (!vehicleId) return;
-    setSaving(true); setError("");
-    const response = await fetch("/api/vehicle-images", {
+    setSaving(true);
+    setError("");
+    const response = await readFetch("/api/vehicle-images", {
       method,
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(method === "PATCH" ? { vehicleId, imageId, action: "set-cover" } : { vehicleId, imageId }),
+      body: JSON.stringify(
+        method === "PATCH"
+          ? { vehicleId, imageId, action: "set-cover" }
+          : { vehicleId, imageId },
+      ),
     });
-    const payload = await response.json().catch(() => null) as { message?: string } | null;
+    const payload = (await response.json().catch(() => null)) as {
+      message?: string;
+    } | null;
     setSaving(false);
-    if (!response.ok) { setError(payload?.message ?? "Unable to update vehicle photos."); return; }
-    await refresh(); onUpdated();
+    if (!response.ok) {
+      setError(payload?.message ?? "Unable to update vehicle photos.");
+      return;
+    }
+    await refresh();
+    onUpdated();
   }
 
-  return <Dialog open={open} onOpenChange={(next) => !saving && onOpenChange(next)}>
-    <DialogContent className="admin-fleet-photo-dialog sm:max-w-xl">
-      <DialogHeader className="admin-fleet-photo-dialog__header"><div><DialogTitle>Vehicle photos</DialogTitle><p>{images.length} of 5 photos</p></div></DialogHeader>
-      <p className="admin-fleet-photo-dialog__intro">Add clear exterior or interior photos for {vehicleName}. Choose a cover photo after uploading.</p>
-      <div className={`admin-fleet-photo-dialog__grid ${images.length === 0 ? "is-empty" : ""}`}>
-        {images.map((image) => <article key={image.id} className="admin-fleet-photo-dialog__card">
-          <img src={image.public_url} alt="" />
-          <div className="admin-fleet-photo-dialog__card-actions">
-            {image.is_cover ? <strong>Cover photo</strong> : <button type="button" disabled={saving} onClick={() => void action(image.id, "PATCH")}>Set as cover</button>}
-            <button type="button" className="admin-fleet-photo-dialog__remove" disabled={saving} onClick={() => void action(image.id, "DELETE")}>Remove</button>
+  return (
+    <Dialog open={open} onOpenChange={(next) => !saving && onOpenChange(next)}>
+      <DialogContent className="admin-fleet-photo-dialog sm:max-w-xl">
+        <DialogHeader className="admin-fleet-photo-dialog__header">
+          <div>
+            <DialogTitle>Vehicle photos</DialogTitle>
+            <p>{images.length} of 5 photos</p>
           </div>
-        </article>)}
-        {images.length < 5 ? <button type="button" className="admin-fleet-photo-dialog__upload" disabled={saving} onClick={() => inputRef.current?.click()}>
-          <Image aria-hidden="true" /> <strong>{saving ? "Uploading…" : "Upload photo"}</strong><small>JPG, PNG, or WebP · 5 MB max</small>
-        </button> : null}
-      </div>
-      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void upload(file); }} />
-      {loading ? <p className="admin-fleet-photo-dialog__status">Loading photos…</p> : null}
-      {error ? <p className="admin-fleet-photo-dialog__error" role="alert">{error}</p> : null}
-      <DialogFooter className="admin-fleet-photo-dialog__footer"><Btn disabled={saving} onClick={() => onOpenChange(false)}>Done</Btn></DialogFooter>
-    </DialogContent>
-  </Dialog>;
+        </DialogHeader>
+        <p className="admin-fleet-photo-dialog__intro">
+          Add clear exterior or interior photos for {vehicleName}. Choose a
+          cover photo after uploading.
+        </p>
+        <div
+          className={`admin-fleet-photo-dialog__grid ${images.length === 0 ? "is-empty" : ""}`}
+        >
+          {images.map((image) => (
+            <article key={image.id} className="admin-fleet-photo-dialog__card">
+              <img src={image.public_url} alt="" />
+              <div className="admin-fleet-photo-dialog__card-actions">
+                {image.is_cover ? (
+                  <strong>Cover photo</strong>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => void action(image.id, "PATCH")}
+                  >
+                    Set as cover
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="admin-fleet-photo-dialog__remove"
+                  disabled={saving}
+                  onClick={() => void action(image.id, "DELETE")}
+                >
+                  Remove
+                </button>
+              </div>
+            </article>
+          ))}
+          {images.length < 5 ? (
+            <button
+              type="button"
+              className="admin-fleet-photo-dialog__upload"
+              disabled={saving}
+              onClick={() => inputRef.current?.click()}
+            >
+              <Image aria-hidden="true" />{" "}
+              <strong>{saving ? "Uploading…" : "Upload photo"}</strong>
+              <small>JPG, PNG, or WebP · 5 MB max</small>
+            </button>
+          ) : null}
+        </div>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="sr-only"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (file) void upload(file);
+          }}
+        />
+        {loading ? (
+          <p className="admin-fleet-photo-dialog__status">Loading photos…</p>
+        ) : null}
+        {error ? (
+          <p className="admin-fleet-photo-dialog__error" role="alert">
+            {error}
+          </p>
+        ) : null}
+        <DialogFooter className="admin-fleet-photo-dialog__footer">
+          <Btn disabled={saving} onClick={() => onOpenChange(false)}>
+            Done
+          </Btn>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function Field({

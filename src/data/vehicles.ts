@@ -1,15 +1,15 @@
 import pickup from "@/assets/car-pickup.jpg";
 
-import fordEverest from "@/assets/vehicles/ford_everest.png";
-import hondaCity from "@/assets/vehicles/honda_city.png";
-import mitsubishiMirage from "@/assets/vehicles/mitsubishi_mirage.png";
-import nissanUrvan from "@/assets/vehicles/nissan_urvan.png";
-import toyotaAvanza from "@/assets/vehicles/toyota_avanza.png";
-import toyotaHiace from "@/assets/vehicles/toyota_hiace.png";
-import toyotaInnova from "@/assets/vehicles/toyota_innova.png";
-import toyotaRush from "@/assets/vehicles/toyota_rush.png";
-import toyotaVios from "@/assets/vehicles/toyota_vios.png";
-import toyotaWigo from "@/assets/vehicles/toyota_wigo.png";
+import fordEverest from "@/assets/vehicles/ford_everest.webp";
+import hondaCity from "@/assets/vehicles/honda_city.webp";
+import mitsubishiMirage from "@/assets/vehicles/mitsubishi_mirage.webp";
+import nissanUrvan from "@/assets/vehicles/nissan_urvan.webp";
+import toyotaAvanza from "@/assets/vehicles/toyota_avanza.webp";
+import toyotaHiace from "@/assets/vehicles/toyota_hiace.webp";
+import toyotaInnova from "@/assets/vehicles/toyota_innova.webp";
+import toyotaRush from "@/assets/vehicles/toyota_rush.webp";
+import toyotaVios from "@/assets/vehicles/toyota_vios.webp";
+import toyotaWigo from "@/assets/vehicles/toyota_wigo.webp";
 
 export type Vehicle = {
   id: string;

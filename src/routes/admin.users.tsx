@@ -1,13 +1,8 @@
+import { readFetch } from "@/lib/read-fetch";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Badge,
-  Btn,
-  Card,
-  TInput,
-  TSelect,
-} from "@/components/admin/ui";
+import { Badge, Btn, Card, TInput, TSelect } from "@/components/admin/ui";
 import { APP_ROLES, type AppRole } from "@/lib/auth";
 import {
   canManageApplicationUsers,
@@ -73,13 +68,11 @@ function UsersPage() {
   const loadAccounts = useCallback(async () => {
     setState({ status: "loading" });
     try {
-      const response = await fetch("/api/admin-users", {
+      const response = await readFetch("/api/admin-users", {
         credentials: "same-origin",
       });
       const body = (await response.json().catch(() => null)) as
-        | AdminUsersResponse
-        | { message?: string }
-        | null;
+        AdminUsersResponse | { message?: string } | null;
       if (!response.ok || !body || !("accounts" in body)) {
         throw new Error(
           body && "message" in body && body.message
@@ -139,16 +132,14 @@ function UsersPage() {
     setMutationError("");
     setFeedback("");
     try {
-      const response = await fetch("/api/admin-users", {
+      const response = await readFetch("/api/admin-users", {
         method: "PATCH",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: account.id, role: draftRole }),
       });
       const body = (await response.json().catch(() => null)) as
-        | AdminUserRoleResponse
-        | { message?: string }
-        | null;
+        AdminUserRoleResponse | { message?: string } | null;
       if (!response.ok || !body || !("account" in body)) {
         throw new Error(
           body && "message" in body && body.message
@@ -200,11 +191,15 @@ function UsersPage() {
         </div>
       </header>
 
-      <section className="admin-users-role-coverage" aria-labelledby="role-coverage-title">
+      <section
+        className="admin-users-role-coverage"
+        aria-labelledby="role-coverage-title"
+      >
         <h2 id="role-coverage-title">Role coverage</h2>
         <div>
           {roleSummary.map((item) => {
-            const count = roleCounts.find((entry) => entry.role === item.role)?.count ?? 0;
+            const count =
+              roleCounts.find((entry) => entry.role === item.role)?.count ?? 0;
             return (
               <div key={item.role}>
                 <span
@@ -230,7 +225,8 @@ function UsersPage() {
             <div>
               <h2>Canonical accounts</h2>
               <p>
-                {filteredAccounts.length} of {accounts.length} application profiles
+                {filteredAccounts.length} of {accounts.length} application
+                profiles
               </p>
             </div>
           </header>
@@ -264,86 +260,90 @@ function UsersPage() {
               </TSelect>
             </label>
           </div>
-        {feedback ? (
-          <p
-            className="admin-users-directory__notice is-success"
-            role="status"
-            aria-live="polite"
-          >
-            {feedback}
-          </p>
-        ) : null}
-        {mutationError ? (
-          <p
-            className="admin-users-directory__notice is-error"
-            role="alert"
-          >
-            {mutationError}
-          </p>
-        ) : null}
+          {feedback ? (
+            <p
+              className="admin-users-directory__notice is-success"
+              data-motion-success="true"
+              role="status"
+              aria-live="polite"
+            >
+              {feedback}
+            </p>
+          ) : null}
+          {mutationError ? (
+            <p className="admin-users-directory__notice is-error" role="alert">
+              {mutationError}
+            </p>
+          ) : null}
 
-        {state.status === "loading" ? (
-          <AccountListSkeleton />
-        ) : state.status === "error" ? (
-          <div className="admin-users-directory__empty" role="alert">
-            <p className="text-sm text-[#b43b3b]">{state.message}</p>
-            <Btn className="mt-4" onClick={() => void loadAccounts()}>
-              <RefreshCw className="h-4 w-4" /> Retry accounts
-            </Btn>
-          </div>
-        ) : !filteredAccounts.length ? (
-          <p className="admin-users-directory__empty">
-            {accounts.length
-              ? "No accounts match these filters."
-              : "No canonical application accounts are available."}
-          </p>
-        ) : (
-          <>
-            <div className="hidden overflow-x-auto lg:block">
-              <table className="w-full text-sm">
-                <caption className="sr-only">Canonical users and roles</caption>
-                <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                  <tr className="border-b border-border">
-                    <th className="px-5 py-3 text-left font-semibold">User</th>
-                    <th className="px-5 py-3 text-left font-semibold">Role</th>
-                    <th className="px-5 py-3 text-left font-semibold">
-                      Account status
-                    </th>
-                    <th className="px-5 py-3 text-left font-semibold">
-                      Created
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAccounts.map((account) => (
-                    <UserRow
-                      key={account.id}
-                      account={account}
-                      selected={selectedAccount?.id === account.id}
-                      onSelect={() => setSelectedId(account.id)}
-                    />
-                  ))}
-                </tbody>
-              </table>
+          {state.status === "loading" ? (
+            <AccountListSkeleton />
+          ) : state.status === "error" ? (
+            <div className="admin-users-directory__empty" role="alert">
+              <p className="text-sm text-[#b43b3b]">{state.message}</p>
+              <Btn className="mt-4" onClick={() => void loadAccounts()}>
+                <RefreshCw className="h-4 w-4" /> Retry accounts
+              </Btn>
             </div>
-            <div className="divide-y divide-border lg:hidden">
-              {filteredAccounts.map((account) => (
-                <UserDisclosure
-                  key={account.id}
-                  account={account}
-                  editing={editingId === account.id}
-                  draftRole={draftRole}
-                  canManage={canManageUsers}
-                  saving={savingId === account.id}
-                  onEdit={() => startEditing(account)}
-                  onRoleChange={setDraftRole}
-                  onSave={() => void saveRole(account)}
-                  onCancel={() => setEditingId(null)}
-                />
-              ))}
-            </div>
-          </>
-        )}
+          ) : !filteredAccounts.length ? (
+            <p className="admin-users-directory__empty">
+              {accounts.length
+                ? "No accounts match these filters."
+                : "No canonical application accounts are available."}
+            </p>
+          ) : (
+            <>
+              <div className="hidden overflow-x-auto lg:block">
+                <table className="w-full text-sm">
+                  <caption className="sr-only">
+                    Canonical users and roles
+                  </caption>
+                  <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                    <tr className="border-b border-border">
+                      <th className="px-5 py-3 text-left font-semibold">
+                        User
+                      </th>
+                      <th className="px-5 py-3 text-left font-semibold">
+                        Role
+                      </th>
+                      <th className="px-5 py-3 text-left font-semibold">
+                        Account status
+                      </th>
+                      <th className="px-5 py-3 text-left font-semibold">
+                        Created
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAccounts.map((account) => (
+                      <UserRow
+                        key={account.id}
+                        account={account}
+                        selected={selectedAccount?.id === account.id}
+                        onSelect={() => setSelectedId(account.id)}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="divide-y divide-border lg:hidden">
+                {filteredAccounts.map((account) => (
+                  <UserDisclosure
+                    key={account.id}
+                    account={account}
+                    editing={editingId === account.id}
+                    draftRole={draftRole}
+                    canManage={canManageUsers}
+                    saving={savingId === account.id}
+                    onEdit={() => startEditing(account)}
+                    onRoleChange={setDraftRole}
+                    onSave={() => void saveRole(account)}
+                    onCancel={() => setEditingId(null)}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </Card>
 
         <UserInspector
@@ -386,7 +386,11 @@ function RoleControl({
     return <span className="text-xs text-muted-foreground">Read only</span>;
   if (!editing)
     return (
-      <Btn variant="primary" className="admin-users-inspector__edit" onClick={onEdit}>
+      <Btn
+        variant="primary"
+        className="admin-users-inspector__edit"
+        onClick={onEdit}
+      >
         Edit role
       </Btn>
     );
@@ -478,7 +482,10 @@ function UserInspector({
 }: Omit<UserControls, "account"> & { account: AdminUserAccount | null }) {
   if (!account) {
     return (
-      <Card as="aside" className="admin-users-inspector admin-users-inspector--empty">
+      <Card
+        as="aside"
+        className="admin-users-inspector admin-users-inspector--empty"
+      >
         <h2>Account details</h2>
         <p>Select an account to review its role and access status.</p>
       </Card>
@@ -486,12 +493,20 @@ function UserInspector({
   }
 
   return (
-    <Card as="aside" className="admin-users-inspector" aria-labelledby="account-details-title">
+    <Card
+      as="aside"
+      className="admin-users-inspector"
+      aria-labelledby="account-details-title"
+    >
       <header>
         <p>Account details</p>
         <span aria-hidden="true">{initialsFor(account)}</span>
-        <h2 id="account-details-title">{account.fullName || "Unnamed account"}</h2>
-        <a href={`mailto:${account.email ?? ""}`}>{account.email || "Email unavailable"}</a>
+        <h2 id="account-details-title">
+          {account.fullName || "Unnamed account"}
+        </h2>
+        <a href={`mailto:${account.email ?? ""}`}>
+          {account.email || "Email unavailable"}
+        </a>
       </header>
       <dl>
         <div>
@@ -500,7 +515,9 @@ function UserInspector({
         </div>
         <div>
           <dt>Account status</dt>
-          <dd><Badge>{account.accountStatus}</Badge></dd>
+          <dd>
+            <Badge>{account.accountStatus}</Badge>
+          </dd>
         </div>
         <div>
           <dt>Created</dt>
@@ -540,7 +557,11 @@ function UserInspector({
 
 function AccountListSkeleton() {
   return (
-    <div className="admin-users-skeleton" role="status" aria-label="Loading canonical accounts">
+    <div
+      className="admin-users-skeleton"
+      role="status"
+      aria-label="Loading canonical accounts"
+    >
       {Array.from({ length: 5 }, (_, index) => (
         <div key={index}>
           <i />

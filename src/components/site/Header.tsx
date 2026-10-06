@@ -1,3 +1,4 @@
+import { readFetch } from "@/lib/read-fetch";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
@@ -25,9 +26,11 @@ import { SignInDialog } from "@/components/site/SignInDialog";
 export function Header({
   homeMarketing = false,
   hideWordmark = false,
+  onSignInOpenChange,
 }: {
   homeMarketing?: boolean;
   hideWordmark?: boolean;
+  onSignInOpenChange?: (open: boolean) => void;
 }) {
   const navigate = useNavigate();
   const pathname = useRouterState({
@@ -46,6 +49,11 @@ export function Header({
   const [signingOut, setSigningOut] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const wasOpen = useRef(false);
+
+  function changeSignInOpen(open: boolean) {
+    setSignInOpen(open);
+    onSignInOpenChange?.(open);
+  }
 
   useEffect(() => {
     setPrincipal(getClientPrincipal());
@@ -141,7 +149,7 @@ export function Header({
     let active = true;
     const loadUnreadCount = async () => {
       try {
-        const response = await fetch("/api/notifications", {
+        const response = await readFetch("/api/notifications?view=unread", {
           credentials: "same-origin",
         });
         const body = (await response
@@ -343,7 +351,7 @@ export function Header({
                 <button
                   type="button"
                   className="customer-account-link"
-                  onClick={() => setSignInOpen(true)}
+                  onClick={() => changeSignInOpen(true)}
                 >
                   <UserRound size={24} strokeWidth={1.7} aria-hidden="true" />
                   <span>Sign in</span>
@@ -372,109 +380,110 @@ export function Header({
           </button>
         </div>
 
-        {menuOpen ? (
-          <div
-            ref={menuPanelRef}
-            id="customer-mobile-nav"
-            className="customer-mobile-nav"
-          >
-            <nav className="customer-container" aria-label="Mobile navigation">
-              {homeMarketing && !principal ? (
-                <>
-                  <a
-                    className="customer-mobile-link"
-                    href="/vehicles"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Our cars
-                  </a>
-                  <a
-                    className="customer-mobile-link"
-                    href="#rental-assurances"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    How it works
-                  </a>
-                </>
-              ) : null}
-              {principal ? (
-                <>
-                  {isCustomer ? (
-                    <div className="customer-mobile-account-links">
-                      <p>Account</p>
-                      <Link
-                        to="/customer/profile"
-                        className="customer-mobile-link"
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        Profile &amp; account
-                      </Link>
-                      <Link
-                        to="/customer"
-                        className={`customer-mobile-link${myBookingsActive ? " is-active" : ""}`}
-                        aria-current={myBookingsActive ? "page" : undefined}
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        My bookings
-                      </Link>
-                      <Link
-                        to="/customer/notifications"
-                        className="customer-mobile-link"
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        Notifications
-                        {notificationUnreadCount > 0
-                          ? ` (${notificationUnreadCount})`
-                          : ""}
-                      </Link>
-                      <Link
-                        to="/contact"
-                        className="customer-mobile-link"
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        Contact us
-                      </Link>
-                    </div>
-                  ) : null}
-                  {isAdminWorkspace ? (
+        <div
+          ref={menuPanelRef}
+          hidden={!menuOpen}
+          inert={!menuOpen}
+          data-state={menuOpen ? "open" : "closed"}
+          id="customer-mobile-nav"
+          className="customer-mobile-nav mobile-navigation-motion"
+        >
+          <nav className="customer-container" aria-label="Mobile navigation">
+            {homeMarketing && !principal ? (
+              <>
+                <a
+                  className="customer-mobile-link"
+                  href="/vehicles"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Our cars
+                </a>
+                <a
+                  className="customer-mobile-link"
+                  href="#rental-assurances"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  How it works
+                </a>
+              </>
+            ) : null}
+            {principal ? (
+              <>
+                {isCustomer ? (
+                  <div className="customer-mobile-account-links">
+                    <p>Account</p>
                     <Link
-                      to="/admin"
+                      to="/customer/profile"
                       className="customer-mobile-link"
                       onClick={() => setMenuOpen(false)}
                     >
-                      Admin workspace
+                      Profile &amp; account
                     </Link>
-                  ) : null}
-                  {isCustomer ? (
-                    <button
-                      type="button"
-                      className="customer-mobile-sign-out"
-                      onClick={() => void signOut()}
-                      disabled={signingOut}
+                    <Link
+                      to="/customer"
+                      className={`customer-mobile-link${myBookingsActive ? " is-active" : ""}`}
+                      aria-current={myBookingsActive ? "page" : undefined}
+                      onClick={() => setMenuOpen(false)}
                     >
-                      {signingOut ? "Signing out…" : "Sign out"}
-                    </button>
-                  ) : null}
-                </>
-              ) : !isAuthenticationPage ? (
-                <button
-                  type="button"
-                  className="customer-mobile-sign-in"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setSignInOpen(true);
-                  }}
-                >
-                  Sign in
-                </button>
-              ) : null}
-            </nav>
-          </div>
-        ) : null}
+                      My bookings
+                    </Link>
+                    <Link
+                      to="/customer/notifications"
+                      className="customer-mobile-link"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Notifications
+                      {notificationUnreadCount > 0
+                        ? ` (${notificationUnreadCount})`
+                        : ""}
+                    </Link>
+                    <Link
+                      to="/contact"
+                      className="customer-mobile-link"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Contact us
+                    </Link>
+                  </div>
+                ) : null}
+                {isAdminWorkspace ? (
+                  <Link
+                    to="/admin"
+                    className="customer-mobile-link"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Admin workspace
+                  </Link>
+                ) : null}
+                {isCustomer ? (
+                  <button
+                    type="button"
+                    className="customer-mobile-sign-out"
+                    onClick={() => void signOut()}
+                    disabled={signingOut}
+                  >
+                    {signingOut ? "Signing out…" : "Sign out"}
+                  </button>
+                ) : null}
+              </>
+            ) : !isAuthenticationPage ? (
+              <button
+                type="button"
+                className="customer-mobile-sign-in"
+                onClick={() => {
+                  setMenuOpen(false);
+                  changeSignInOpen(true);
+                }}
+              >
+                Sign in
+              </button>
+            ) : null}
+          </nav>
+        </div>
       </header>
       <SignInDialog
         open={signInOpen}
-        onOpenChange={setSignInOpen}
+        onOpenChange={changeSignInOpen}
         onAuthenticated={() => setPrincipal(getClientPrincipal())}
       />
     </>

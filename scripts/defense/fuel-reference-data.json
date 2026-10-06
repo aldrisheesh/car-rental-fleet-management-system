@@ -1,0 +1,18 @@
+{
+  "purpose": "Researcher-selected synthetic demo assumptions for reference fuel estimates. Not manufacturer ratings or measured vehicle consumption.",
+  "unit": "km/L",
+  "vehicles": {
+    "DEV-AVAN-001": 10,
+    "DEV-CITY-001": 14,
+    "DEV-EVST-001": 8,
+    "DEV-HIAC-001": 9,
+    "DEV-HILX-001": 10,
+    "DEV-INNO-001": 10,
+    "DEV-MIRA-001": 16,
+    "DEV-RANG-001": 10,
+    "DEV-RUSH-001": 10,
+    "DEV-URVN-001": 9,
+    "DEV-VIOS-001": 14,
+    "DEV-WIGO-001": 16
+  }
+}
