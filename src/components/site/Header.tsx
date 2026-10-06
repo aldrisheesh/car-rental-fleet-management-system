@@ -1,5 +1,5 @@
 import { readFetch } from "@/lib/read-fetch";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Bell,
@@ -50,10 +50,13 @@ export function Header({
   const [signInOpen, setSignInOpen] = useState(false);
   const wasOpen = useRef(false);
 
-  function changeSignInOpen(open: boolean) {
-    setSignInOpen(open);
-    onSignInOpenChange?.(open);
-  }
+  const changeSignInOpen = useCallback(
+    (open: boolean) => {
+      setSignInOpen(open);
+      onSignInOpenChange?.(open);
+    },
+    [onSignInOpenChange],
+  );
 
   useEffect(() => {
     setPrincipal(getClientPrincipal());
