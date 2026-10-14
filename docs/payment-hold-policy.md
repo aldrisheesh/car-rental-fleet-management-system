@@ -23,9 +23,19 @@ Verification commands:
 
 ```sh
 DEFENSE_ROLLBACK_TESTS=1 node --env-file=.env.local scripts/defense/payment-hold-rollback-checks.mjs
-node --experimental-strip-types --test src/lib/payment-hold.test.ts src/lib/reminders.test.ts src/lib/reminder-invocation.test.ts src/lib/transactional-email.test.ts src/lib/email-templates.test.ts src/lib/vehicle-finder.test.ts src/lib/reschedule-availability.test.ts
+node --experimental-strip-types --test src/lib/payment-hold.test.ts src/lib/reminders.test.ts src/lib/reminder-invocation.test.ts src/lib/transactional-email.test.ts src/lib/vehicle-finder.test.ts src/lib/reschedule-availability.test.ts
 npx tsc --noEmit
 npm run build
 ```
 
 All database test mutations use controlled synthetic UAT fixtures and roll back. An actual customer inbox receipt is separate from outbox insertion or email-provider acceptance and must not be reported as verified without evidence.
+
+## Production verification — October 14, 2026
+
+- Deployed to `https://briahcarrental.site` from `codex/defense-revisions-2026-10-14`; application commit `4f1d3c3f` (includes the defense report, cancellation and alternative-offer revisions).
+- 128 unit tests, 40 payment-hold database checks, 23 alternative-offer checks and 20 cancellation checks passed. A separate two-connection check verified the shared vehicle advisory lock. All synthetic database mutations were rolled back.
+- Type checking, changed-file lint, local production build and Vercel production builds passed. The security-advisor comparison found zero new findings; this does not claim the older project-wide findings were resolved.
+- Policy activation is enabled. The ten-minute scheduler is active. Its first actual scheduled run succeeded at 2026-10-14 03:30 UTC (11:30 AM Manila); the scheduled HTTP request returned 200 with no network error.
+- Public homepage, catalog and confirmation callback returned 200. An unauthenticated processor request returned 404, and a request using the dedicated processor credential returned 200.
+- Live Supabase Auth previously had a localhost Site URL. The Site URL is now `https://briahcarrental.site`, and the exact `https://briahcarrental.site/auth/confirmed` redirect was added and reread successfully. Existing redirect entries, SMTP settings and the enabled confirmation requirement were preserved.
+- The production transactional email provider accepted four previously queued messages with zero reported delivery-processing failures. This is provider acceptance, not proof of inbox receipt. A new signup confirmation's actual receipt in a real customer's inbox has not been verified; no test customer account was created for this rollout.
