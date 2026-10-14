@@ -45,6 +45,12 @@ try {
       await tx`select to_regclass('public.booking_payment_holds') name`;
     if (!installed.name) await tx.unsafe(fs.readFileSync(migration, "utf8"));
     await tx.unsafe(
+      fs.readFileSync(
+        "supabase/migrations/20261014031608_payment_hold_paid_schedule_guard.sql",
+        "utf8",
+      ),
+    );
+    await tx.unsafe(
       "update briah_private.payment_hold_configuration set enabled=true",
     );
     const [owner] =
@@ -213,6 +219,32 @@ try {
     const [submitted] =
       await tx`select public.submit_payment_proof_atomic(${b.id},${b.customer_id},${method.id},${quote.down_payment_amount},'ROLLBACK-ONLY','qa/hold-proof.png','hold-proof.png','image/png',100) result`;
     checks++;
+    await rollbackCase(tx, async (t) => {
+      await t`select public.assign_booking_vehicle(${b.id},${vehicle},${owner.id})`;
+      const [assigned] =
+        await t`select assigned_vehicle_id from public.booking_requests where id=${b.id}`;
+      assert.equal(assigned.assigned_vehicle_id, vehicle);
+      checks++;
+    });
+    await rollbackCase(tx, async (t) => {
+      await t.unsafe("reset role");
+      await t`update public.payments set status='Verified',reviewed_by=${owner.id},reviewed_at=clock_timestamp() where id=${submitted.result.payment.id}`;
+      await t`update public.booking_requests set pickup_at='2027-12-15T03:00Z',return_at='2027-12-18T03:00Z' where id=${b.id}`;
+      const [moved] =
+        await t`select pickup_at,return_at,state from public.booking_payment_holds where booking_id=${b.id}`;
+      assert.equal(moved.state, "Verified");
+      assert.equal(moved.pickup_at.toISOString(), "2027-12-15T03:00:00.000Z");
+      checks += 2;
+      await t`update public.booking_requests set pickup_at='2027-12-15T03:00Z',return_at='2027-12-18T03:00Z' where id=${competitor.id}`;
+      await t`update public.booking_requests set pickup_meeting_address='Controlled QA pickup',return_meeting_address='Controlled QA return',pickup_meeting_instructions='Controlled QA pickup',return_meeting_instructions='Controlled QA return' where id=${competitor.id}`;
+      await t.unsafe("set local role service_role");
+      await rejects(
+        t,
+        (s) =>
+          s`select public.issue_booking_payment_quote_with_hold(${competitor.id},0,${owner.id},null)`,
+        "vehicle_conflict",
+      );
+    });
     const [review] =
       await tx`select state from public.booking_payment_holds where booking_id=${b.id}`;
     assert.equal(review.state, "Review");

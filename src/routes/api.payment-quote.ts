@@ -13,6 +13,7 @@ export const Route = createFileRoute("/api/payment-quote")({
 async function read({ request }: { request: Request }) {
   try {
     const principal = await requirePrincipal();
+    if (principal.role === "Operations Staff") return fail("Forbidden.", 403);
     const bookingId = new URL(request.url).searchParams.get("bookingId") ?? "";
     if (!bookingId) return fail("Booking reference is required.");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
