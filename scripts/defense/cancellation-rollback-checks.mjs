@@ -45,6 +45,12 @@ try {
           "utf8",
         ),
       );
+    await tx.unsafe(
+      fs.readFileSync(
+        "supabase/migrations/20261014014511_defense_cancellation_reason_integrity.sql",
+        "utf8",
+      ),
+    );
     const [owner] =
       await tx`select id from public.profiles where user_type='Owner/Admin' and account_status='Active' limit 1`;
     const [booking] =
@@ -133,8 +139,17 @@ try {
     assert.equal(approved.status, "Approved");
     checks++;
     const [cancelled] =
-      await tx`select booking_status from public.booking_requests where id=${booking.id}`;
+      await tx`select booking_status,resolution_reason,category_codes from public.booking_requests where id=${booking.id}`;
     assert.equal(cancelled.booking_status, "Cancelled");
+    checks++;
+    assert.equal(cancelled.resolution_reason, second.reason);
+    checks++;
+    assert.equal(cancelled.category_codes.resolution, second.reason_code);
+    checks++;
+    assert.equal(
+      approved.review_reason,
+      "Customer requested cancellation — accepted terms reviewed",
+    );
     checks++;
     const paymentsAfter =
       await tx`select id,status from public.payments where booking_id=${booking.id} order by id`;
@@ -147,6 +162,28 @@ try {
       },
       "request_already_reviewed",
     );
+    await tx.unsafe("reset role");
+    await tx`update public.booking_requests set booking_status='Submitted',confirmed_at=null,confirmed_by=null,resolved_by=null,resolved_at=null,resolution_reason=null where id=${booking.id}`;
+    await tx.unsafe("set local role service_role");
+    const [paidRequest] =
+      await tx`select * from public.request_booking_cancellation_atomic(${booking.id},${booking.customer_id},'Customer requested cancellation')`;
+    const [paidDecision] =
+      await tx`select * from public.review_booking_cancellation_atomic(${paidRequest.id},${owner.id},'approve','Original payment and accepted terms checked')`;
+    const [paidCancelled] =
+      await tx`select booking_status,category_codes from public.booking_requests where id=${booking.id}`;
+    assert.equal(paidDecision.status, "Approved");
+    assert.equal(paidCancelled.booking_status, "Cancelled");
+    checks++;
+    assert.equal(
+      paidCancelled.category_codes.resolution,
+      paidRequest.reason_code,
+    );
+    checks++;
+    assert.deepEqual(
+      await tx`select id,status from public.payments where booking_id=${booking.id} order by id`,
+      paymentsBefore,
+    );
+    checks++;
     throw new Error("ROLLBACK_ONLY");
   });
 } catch (e) {
