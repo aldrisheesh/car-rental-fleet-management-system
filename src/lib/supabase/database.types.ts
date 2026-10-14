@@ -15,6 +15,82 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      booking_resolution_offers: {
+        Row: {
+          id: string;
+          booking_id: string;
+          customer_id: string;
+          proposed_vehicle_id: string;
+          original_vehicle_id: string;
+          original_pickup_at: string;
+          original_return_at: string;
+          proposed_pickup_at: string;
+          proposed_return_at: string;
+          quote_snapshot: Json;
+          note: string;
+          status: "Pending" | "Accepted" | "Declined" | "Withdrawn";
+          created_by: string;
+          created_at: string;
+          responded_by: string | null;
+          responded_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          booking_id: string;
+          customer_id: string;
+          proposed_vehicle_id: string;
+          original_vehicle_id: string;
+          original_pickup_at: string;
+          original_return_at: string;
+          proposed_pickup_at: string;
+          proposed_return_at: string;
+          quote_snapshot: Json;
+          note: string;
+          status?: "Pending" | "Accepted" | "Declined" | "Withdrawn";
+          created_by: string;
+          created_at?: string;
+          responded_by?: string | null;
+          responded_at?: string | null;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["booking_resolution_offers"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      booking_cancellation_requests: {
+        Row: {
+          id: string;
+          booking_id: string;
+          customer_id: string;
+          reason: string;
+          reason_code: string;
+          status: "Pending" | "Approved" | "Rejected";
+          original_pickup_at: string;
+          original_return_at: string;
+          created_at: string;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          review_reason: string | null;
+        };
+        Insert: {
+          id?: string;
+          booking_id: string;
+          customer_id: string;
+          reason: string;
+          reason_code: string;
+          status?: "Pending" | "Approved" | "Rejected";
+          original_pickup_at: string;
+          original_return_at: string;
+          created_at?: string;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          review_reason?: string | null;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["booking_cancellation_requests"]["Insert"]
+        >;
+        Relationships: [];
+      };
       booking_payment_policy_acceptances: {
         Row: {
           booking_id: string;
@@ -932,6 +1008,33 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      create_booking_resolution_offer: {
+        Args: {
+          p_booking_id: string;
+          p_actor_id: string;
+          p_vehicle_id: string;
+          p_pickup_at: string;
+          p_note: string;
+        };
+        Returns: Database["public"]["Tables"]["booking_resolution_offers"]["Row"];
+      };
+      respond_booking_resolution_offer: {
+        Args: { p_offer_id: string; p_actor_id: string; p_action: string };
+        Returns: Database["public"]["Tables"]["booking_resolution_offers"]["Row"];
+      };
+      request_booking_cancellation_atomic: {
+        Args: { p_booking_id: string; p_actor_id: string; p_reason: string };
+        Returns: Database["public"]["Tables"]["booking_cancellation_requests"]["Row"];
+      };
+      review_booking_cancellation_atomic: {
+        Args: {
+          p_request_id: string;
+          p_actor_id: string;
+          p_action: string;
+          p_reason: string;
+        };
+        Returns: Database["public"]["Tables"]["booking_cancellation_requests"]["Row"];
+      };
       acknowledge_booking_payment_policy: {
         Args: {
           p_booking_id: string;

@@ -31261,3 +31261,33 @@ html[data-reduced-motion="true"] .admin-action-press {
 html[data-reduced-motion="true"] [data-motion-success="true"] {
   transition: none;
 }
+.report-builder { padding: 1.25rem; }
+.report-builder h2, .report-builder h3 { color: #143e39; margin: 0; }
+.report-builder__filters { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,240px),1fr)); gap: 1rem; margin: 1.25rem 0; align-items: end; }
+.report-builder__filters label { display: grid; gap: .5rem; font-size: .875rem; }
+.report-builder__result { margin-top: 1.5rem; }
+.report-builder__result > header { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+.allocation-route-map__canvas { height: clamp(280px,40vw,400px); width:100%; position:relative; z-index:0; border:1px solid #c6d2cd; border-radius:8px; }
+.allocation-route-map > p { font-size:.8rem; color:#445d55; line-height:1.5; }
+.booking-cancellation-requests { margin: 1.5rem 0; padding: 1.25rem; border: 1px solid #cbd4ce; border-radius: 12px; }
+.booking-cancellation-requests h3 { color: #143e39; margin: 0 0 .75rem; }
+.booking-cancellation-requests article { padding: .75rem 0; border-bottom:1px solid #d9ded8; }
+.booking-cancellation-requests summary { cursor:pointer; color:#143e39; font-weight:600; }
+.booking-cancellation-requests label { display:grid; gap:.5rem; margin-top:.75rem; }
+.booking-cancellation-requests textarea { min-height:5rem; width:100%; padding:.75rem; border:1px solid #91a99d; border-radius:8px; background:#fff; }
+.booking-cancellation-requests .booking-cancellation-requests__ack { display:flex; gap:.65rem; align-items:baseline; }
+.booking-cancellation-requests button { cursor:pointer; padding:.65rem 1rem; background:#143e39; color:#fff; border-radius:8px; margin-top:.75rem; }
+.booking-cancellation-requests button:disabled { cursor:not-allowed; opacity:.55; }
+.booking-cancellation-requests button:focus-visible { outline:2px solid #143e39; outline-offset:3px; }
+.booking-cancellation-requests__actions { display:flex; gap:.75rem; flex-wrap:wrap; }
+
+.booking-cancellation-requests p { margin: .65rem 0; line-height: 1.55; }
+.booking-cancellation-requests select, .booking-cancellation-requests input[type="datetime-local"] { width: 100%; min-width: 0; padding: .75rem; border: 1px solid #91a99d; border-radius: 8px; background: #fff; color: #143e39; font: inherit; }
+.booking-cancellation-requests input[type="checkbox"] { accent-color: #143e39; flex-shrink: 0; }
+.booking-cancellation-requests select:focus-visible, .booking-cancellation-requests input:focus-visible, .booking-cancellation-requests textarea:focus-visible { outline: 2px solid #143e39; outline-offset: 3px; }
+
+.report-builder h2 { font-size: 1.25rem; font-weight: 600; }
+.report-builder > header p { font-size: .875rem; line-height: 1.5; }
+
+.allocation-route-map__toggle { display: flex; align-items: center; gap: .5rem; margin-top: .75rem; font-size: .875rem; cursor: pointer; }
+.allocation-route-map__toggle input { accent-color: #143e39; }

@@ -34,7 +34,7 @@ const COPY: Record<
   date_change_rejected: {
     subject: "An update on your requested booking dates",
     message:
-      "The team could not approve your requested date change. Your original booking remains in place.",
+      "The team could not approve your requested date change. Open your booking for the decision and its current status.",
     action:
       "Open your booking to review the reason and contact the team about alternatives.",
   },

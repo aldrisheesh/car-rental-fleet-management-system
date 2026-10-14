@@ -18,12 +18,7 @@ export type ProviderStatus =
   | "provider_error";
 
 export type ProviderName =
-  | "open_meteo"
-  | "openweather"
-  | "geoapify"
-  | "locationiq"
-  | "tomtom"
-  | "here";
+  "open_meteo" | "openweather" | "geoapify" | "locationiq" | "tomtom" | "here";
 
 export type ProviderResult<T> = {
   status: ProviderStatus;
@@ -69,6 +64,7 @@ export type NormalizedRoute = {
   distanceMeters: number;
   durationSeconds: number;
   trafficAware: boolean;
+  path?: Coordinates[];
 };
 
 export type TrafficIncidentRequest = {
@@ -648,6 +644,23 @@ export class TomTomRoutingProvider implements RoutingProvider {
     const routes = Array.isArray(body?.routes) ? body.routes : [];
     const first = objectValue(routes[0]);
     const summary = objectValue(first?.summary);
+    const legs = Array.isArray(first?.legs) ? first.legs : [];
+    const path = legs.flatMap((leg) => {
+      const points = objectValue(leg)?.points;
+      return Array.isArray(points)
+        ? points.flatMap((point) => {
+            const row = objectValue(point),
+              latitude = numberValue(row?.latitude),
+              longitude = numberValue(row?.longitude);
+            return latitude !== undefined &&
+              longitude !== undefined &&
+              Math.abs(latitude) <= 90 &&
+              Math.abs(longitude) <= 180
+              ? [{ latitude, longitude }]
+              : [];
+          })
+        : [];
+    });
     const distanceMeters = numberValue(summary?.lengthInMeters);
     const durationSeconds = numberValue(summary?.travelTimeInSeconds);
     return distanceMeters === undefined || durationSeconds === undefined
@@ -656,6 +669,7 @@ export class TomTomRoutingProvider implements RoutingProvider {
           distanceMeters,
           durationSeconds,
           trafficAware: request.trafficAware === true,
+          ...(path.length > 1 ? { path } : {}),
         });
   }
 }

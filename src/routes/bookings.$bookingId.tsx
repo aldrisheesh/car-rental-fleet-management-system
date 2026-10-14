@@ -8,6 +8,8 @@ import {
 import { CategorizedField } from "@/components/booking/CategorizedField";
 import { validCategory } from "@/lib/booking-categories";
 import { DateChangeRequests } from "@/components/booking/DateChangeRequests";
+import { ResolutionOffers } from "@/components/booking/ResolutionOffers";
+import { CancellationRequests } from "@/components/booking/CancellationRequests";
 import { PaymentPolicyConfirmation } from "@/components/booking/PaymentPolicyConfirmation";
 import { PAYMENT_POLICY_VERSION } from "@/lib/payment-policy";
 import {
@@ -457,6 +459,14 @@ function BookingDetailPage() {
                 onRefresh={() => loadBooking({ preserveView: true })}
               />
               <DateChangeRequests
+                booking={booking}
+                onChanged={() => loadBooking({ preserveView: true })}
+              />
+              <ResolutionOffers
+                booking={booking}
+                onChanged={() => loadBooking({ preserveView: true })}
+              />
+              <CancellationRequests
                 booking={booking}
                 onChanged={() => loadBooking({ preserveView: true })}
               />

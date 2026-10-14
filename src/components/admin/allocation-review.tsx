@@ -4,6 +4,7 @@ import {
   transferDecisionReason,
 } from "@/lib/allocation-decision-reason";
 import { ExternalAdvisorySkeleton } from "./dss-loading";
+import { AllocationRouteMap } from "./allocation-route-map";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, ArrowRight } from "lucide-react";
@@ -433,6 +434,7 @@ export function AllocationReview({
               <p role="status">Checking the latest travel information…</p>
             ) : context ? (
               <>
+                <AllocationRouteMap context={context} />
                 <h5>Locations used for the route</h5>
                 <dl className="transfer-review-location-list">
                   <div>

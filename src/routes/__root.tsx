@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { installMotionPreferences } from "@/lib/motion-preferences";
 
 import appCss from "../styles.css?url";
+import leafletCss from "leaflet/dist/leaflet.css?url";
 
 function NotFoundComponent() {
   return (
@@ -105,6 +106,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       ],
       links: [
         { rel: "stylesheet", href: appCss },
+        { rel: "stylesheet", href: leafletCss },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         {
           rel: "preconnect",

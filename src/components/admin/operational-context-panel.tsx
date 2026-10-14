@@ -28,6 +28,17 @@ export type OperationalContextView = {
   sources: Record<string, Source>;
   explanations: string[];
   limitations: string[];
+  routeMap?: {
+    origin: { latitude: number; longitude: number };
+    destination: { latitude: number; longitude: number };
+    path?: Array<{ latitude: number; longitude: number }>;
+    incidents: Array<{
+      location: { latitude: number; longitude: number };
+      closed: boolean;
+    }>;
+    provider: string;
+    checkedAt: string;
+  };
 };
 
 function metric(value: string | number | null | undefined) {

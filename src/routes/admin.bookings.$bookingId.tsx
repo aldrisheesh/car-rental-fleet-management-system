@@ -1,6 +1,8 @@
 import { readFetch } from "@/lib/read-fetch";
 import { currentDocumentDecision } from "@/lib/document-review-version";
 import { DateChangeRequests } from "@/components/booking/DateChangeRequests";
+import { ResolutionOffers } from "@/components/booking/ResolutionOffers";
+import { CancellationRequests } from "@/components/booking/CancellationRequests";
 import { CategorizedField } from "@/components/booking/CategorizedField";
 import { validCategory } from "@/lib/booking-categories";
 import { depositRefund, releaseDayReached } from "@/lib/rental-finance";
@@ -641,7 +643,11 @@ function BookingDetailPage() {
       <div className="admin-booking-ledger">
         <div className="admin-booking-ledger__left">
           {ownerView ? (
-            <DateChangeRequests booking={booking} admin onChanged={load} />
+            <>
+              <ResolutionOffers booking={booking} admin onChanged={load} />
+              <CancellationRequests booking={booking} admin onChanged={load} />
+              <DateChangeRequests booking={booking} admin onChanged={load} />
+            </>
           ) : null}
           <section
             className="admin-booking-ledger__main"

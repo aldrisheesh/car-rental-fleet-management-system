@@ -644,6 +644,8 @@ async function mutateBooking({ request }: { request: Request }) {
         vehicle_maintenance_unready:
           "Assigned vehicle is blocked by maintenance or a due service requirement.",
         vehicle_conflict: "Vehicle conflicts with another confirmed booking.",
+        pending_cancellation_requires_review:
+          "Review the pending cancellation request before handing over the vehicle.",
         vehicle_already_rented:
           "Assigned vehicle already has an active rental.",
         booking_already_released: "This booking has already been released.",

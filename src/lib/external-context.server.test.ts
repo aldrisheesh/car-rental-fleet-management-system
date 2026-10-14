@@ -667,3 +667,51 @@ test("server-only credential parsing and result shapes never expose keys", () =>
   });
   assert.equal(output.includes("secret"), false);
 });
+
+test("routing preserves provider geometry across legs and excludes invalid coordinates", async () => {
+  const route = await new TomTomRoutingProvider(
+    env,
+    http({
+      routes: [
+        {
+          summary: { lengthInMeters: 12000, travelTimeInSeconds: 1800 },
+          legs: [
+            {
+              points: [
+                { latitude: 14.5, longitude: 121 },
+                { latitude: 999, longitude: 121 },
+                { latitude: 14.6, longitude: 121.1 },
+              ],
+            },
+            {
+              points: [
+                { latitude: 14.7, longitude: 121.2 },
+                { latitude: null, longitude: 121.2 },
+              ],
+            },
+          ],
+        },
+      ],
+    }),
+  ).getRoute({
+    origin: coordinates,
+    destination: { latitude: 14.7, longitude: 121.2 },
+  });
+  assert.deepEqual(route.data?.path, [
+    { latitude: 14.5, longitude: 121 },
+    { latitude: 14.6, longitude: 121.1 },
+    { latitude: 14.7, longitude: 121.2 },
+  ]);
+  const missing = await new TomTomRoutingProvider(
+    env,
+    http({
+      routes: [
+        { summary: { lengthInMeters: 12000, travelTimeInSeconds: 1800 } },
+      ],
+    }),
+  ).getRoute({
+    origin: coordinates,
+    destination: { latitude: 14.7, longitude: 121.2 },
+  });
+  assert.equal(missing.data?.path, undefined);
+});

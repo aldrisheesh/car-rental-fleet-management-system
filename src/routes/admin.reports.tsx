@@ -21,6 +21,8 @@ import {
   type AdminReportsResponse,
 } from "@/lib/admin-reports";
 import { getAdminSession } from "@/lib/admin-auth";
+import { ReportBuilder } from "@/components/admin/report-builder";
+import { reportPeriod, type ReportPeriod } from "@/lib/report-period";
 
 type ReportSearch = { from?: string; to?: string; branch?: string };
 export const Route = createFileRoute("/admin/reports")({
@@ -145,6 +147,36 @@ function ReportsPage() {
         </div>
       </header>
       <form className="admin-reports-filters" onSubmit={applyFilters}>
+        <Field label="Period preset" id="report-period">
+          <TSelect
+            id="report-period"
+            value={
+              (
+                [
+                  "this-month",
+                  "last-month",
+                  "this-quarter",
+                  "last-quarter",
+                ] as ReportPeriod[]
+              ).find((period) => {
+                const range = reportPeriod(period);
+                return range.start === draftStart && range.end === draftEnd;
+              }) ?? ""
+            }
+            onChange={(event) => {
+              if (!event.target.value) return;
+              const range = reportPeriod(event.target.value as ReportPeriod);
+              setDraftStart(range.start);
+              setDraftEnd(range.end);
+            }}
+          >
+            <option value="">Custom dates</option>
+            <option value="this-month">This month to date</option>
+            <option value="last-month">Last month</option>
+            <option value="this-quarter">This quarter to date</option>
+            <option value="last-quarter">Last quarter</option>
+          </TSelect>
+        </Field>
         <Field label="From" id="report-from">
           <TInput
             id="report-from"
@@ -209,7 +241,18 @@ function ReportsPage() {
           </Btn>
         </section>
       ) : (
-        <ReportSections report={report} />
+        <>
+          <ReportBuilder
+            start={start}
+            end={end}
+            branch={branch}
+            allowForecast={getAdminSession()?.role === "Owner/Admin"}
+            filtersPending={
+              draftStart !== start || draftEnd !== end || draftBranch !== branch
+            }
+          />
+          <ReportSections report={report} />
+        </>
       )}
     </main>
   );

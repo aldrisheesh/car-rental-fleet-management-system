@@ -232,9 +232,6 @@ export function DemandForecastScreen(p: Props) {
                   {p.branch === "all" ? <th scope="col">Branch</th> : null}
                   <th scope="col">Planning week</th>
                   <th scope="col" className="is-numeric">
-                    Estimated rental demand
-                  </th>
-                  <th scope="col" className="is-numeric">
                     Vehicles to plan for
                   </th>
                 </tr>
@@ -257,9 +254,6 @@ export function DemandForecastScreen(p: Props) {
                         row.target_week_start,
                         row.target_week_end,
                       )}
-                    </td>
-                    <td className="is-numeric">
-                      {p.formatQuantity(row.forecasted_demand)}
                     </td>
                     <td className="is-numeric">
                       {p.formatQuantity(row.required_vehicle_units)}

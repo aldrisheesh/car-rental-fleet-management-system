@@ -43,8 +43,10 @@ import { Route as ApiAdminUsersRouteImport } from './routes/api.admin-users'
 import { Route as ApiAllocationRecommendationsRouteImport } from './routes/api.allocation-recommendations'
 import { Route as ApiAuditEventsRouteImport } from './routes/api.audit-events'
 import { Route as ApiBackupStatusRouteImport } from './routes/api.backup-status'
+import { Route as ApiBookingCancellationsRouteImport } from './routes/api.booking-cancellations'
 import { Route as ApiBookingDateChangesRouteImport } from './routes/api.booking-date-changes'
 import { Route as ApiBookingMasterDataRouteImport } from './routes/api.booking-master-data'
+import { Route as ApiBookingResolutionOffersRouteImport } from './routes/api.booking-resolution-offers'
 import { Route as ApiBookingsRouteImport } from './routes/api.bookings'
 import { Route as ApiContactInquiriesRouteImport } from './routes/api.contact-inquiries'
 import { Route as ApiDssLocationsRouteImport } from './routes/api.dss-locations'
@@ -68,6 +70,7 @@ import { Route as ApiVehicleImagesRouteImport } from './routes/api.vehicle-image
 import { Route as ApiVehicleLocationRouteImport } from './routes/api.vehicle-location'
 import { Route as ApiVehiclesRouteImport } from './routes/api.vehicles'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as AuthConfirmedRouteImport } from './routes/auth.confirmed'
 import { Route as BookingsBookingIdRouteImport } from './routes/bookings.$bookingId'
 import { Route as CustomerNotificationsRouteImport } from './routes/customer_.notifications'
 import { Route as CustomerProfileRouteImport } from './routes/customer_.profile'
@@ -258,6 +261,11 @@ const ApiBackupStatusRoute = ApiBackupStatusRouteImport.update({
   path: '/api/backup-status',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBookingCancellationsRoute = ApiBookingCancellationsRouteImport.update({
+  id: '/api/booking-cancellations',
+  path: '/api/booking-cancellations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiBookingDateChangesRoute = ApiBookingDateChangesRouteImport.update({
   id: '/api/booking-date-changes',
   path: '/api/booking-date-changes',
@@ -268,6 +276,12 @@ const ApiBookingMasterDataRoute = ApiBookingMasterDataRouteImport.update({
   path: '/api/booking-master-data',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBookingResolutionOffersRoute =
+  ApiBookingResolutionOffersRouteImport.update({
+    id: '/api/booking-resolution-offers',
+    path: '/api/booking-resolution-offers',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiBookingsRoute = ApiBookingsRouteImport.update({
   id: '/api/bookings',
   path: '/api/bookings',
@@ -381,6 +395,11 @@ const ApiVehiclesRoute = ApiVehiclesRouteImport.update({
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthConfirmedRoute = AuthConfirmedRouteImport.update({
+  id: '/auth/confirmed',
+  path: '/auth/confirmed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookingsBookingIdRoute = BookingsBookingIdRouteImport.update({
@@ -511,8 +530,10 @@ export interface FileRoutesByFullPath {
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
+  '/api/booking-cancellations': typeof ApiBookingCancellationsRoute
   '/api/booking-date-changes': typeof ApiBookingDateChangesRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
+  '/api/booking-resolution-offers': typeof ApiBookingResolutionOffersRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/contact-inquiries': typeof ApiContactInquiriesRoute
   '/api/dss-locations': typeof ApiDssLocationsRoute
@@ -536,6 +557,7 @@ export interface FileRoutesByFullPath {
   '/api/vehicle-location': typeof ApiVehicleLocationRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/confirmed': typeof AuthConfirmedRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer/notifications': typeof CustomerNotificationsRoute
   '/customer/profile': typeof CustomerProfileRoute
@@ -589,8 +611,10 @@ export interface FileRoutesByTo {
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
+  '/api/booking-cancellations': typeof ApiBookingCancellationsRoute
   '/api/booking-date-changes': typeof ApiBookingDateChangesRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
+  '/api/booking-resolution-offers': typeof ApiBookingResolutionOffersRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/contact-inquiries': typeof ApiContactInquiriesRoute
   '/api/dss-locations': typeof ApiDssLocationsRoute
@@ -614,6 +638,7 @@ export interface FileRoutesByTo {
   '/api/vehicle-location': typeof ApiVehicleLocationRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/confirmed': typeof AuthConfirmedRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer/notifications': typeof CustomerNotificationsRoute
   '/customer/profile': typeof CustomerProfileRoute
@@ -669,8 +694,10 @@ export interface FileRoutesById {
   '/api/allocation-recommendations': typeof ApiAllocationRecommendationsRoute
   '/api/audit-events': typeof ApiAuditEventsRoute
   '/api/backup-status': typeof ApiBackupStatusRoute
+  '/api/booking-cancellations': typeof ApiBookingCancellationsRoute
   '/api/booking-date-changes': typeof ApiBookingDateChangesRoute
   '/api/booking-master-data': typeof ApiBookingMasterDataRoute
+  '/api/booking-resolution-offers': typeof ApiBookingResolutionOffersRoute
   '/api/bookings': typeof ApiBookingsRoute
   '/api/contact-inquiries': typeof ApiContactInquiriesRoute
   '/api/dss-locations': typeof ApiDssLocationsRoute
@@ -694,6 +721,7 @@ export interface FileRoutesById {
   '/api/vehicle-location': typeof ApiVehicleLocationRoute
   '/api/vehicles': typeof ApiVehiclesRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/confirmed': typeof AuthConfirmedRoute
   '/bookings/$bookingId': typeof BookingsBookingIdRoute
   '/customer_/notifications': typeof CustomerNotificationsRoute
   '/customer_/profile': typeof CustomerProfileRoute
@@ -750,8 +778,10 @@ export interface FileRouteTypes {
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
+    | '/api/booking-cancellations'
     | '/api/booking-date-changes'
     | '/api/booking-master-data'
+    | '/api/booking-resolution-offers'
     | '/api/bookings'
     | '/api/contact-inquiries'
     | '/api/dss-locations'
@@ -775,6 +805,7 @@ export interface FileRouteTypes {
     | '/api/vehicle-location'
     | '/api/vehicles'
     | '/auth/callback'
+    | '/auth/confirmed'
     | '/bookings/$bookingId'
     | '/customer/notifications'
     | '/customer/profile'
@@ -828,8 +859,10 @@ export interface FileRouteTypes {
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
+    | '/api/booking-cancellations'
     | '/api/booking-date-changes'
     | '/api/booking-master-data'
+    | '/api/booking-resolution-offers'
     | '/api/bookings'
     | '/api/contact-inquiries'
     | '/api/dss-locations'
@@ -853,6 +886,7 @@ export interface FileRouteTypes {
     | '/api/vehicle-location'
     | '/api/vehicles'
     | '/auth/callback'
+    | '/auth/confirmed'
     | '/bookings/$bookingId'
     | '/customer/notifications'
     | '/customer/profile'
@@ -907,8 +941,10 @@ export interface FileRouteTypes {
     | '/api/allocation-recommendations'
     | '/api/audit-events'
     | '/api/backup-status'
+    | '/api/booking-cancellations'
     | '/api/booking-date-changes'
     | '/api/booking-master-data'
+    | '/api/booking-resolution-offers'
     | '/api/bookings'
     | '/api/contact-inquiries'
     | '/api/dss-locations'
@@ -932,6 +968,7 @@ export interface FileRouteTypes {
     | '/api/vehicle-location'
     | '/api/vehicles'
     | '/auth/callback'
+    | '/auth/confirmed'
     | '/bookings/$bookingId'
     | '/customer_/notifications'
     | '/customer_/profile'
@@ -972,8 +1009,10 @@ export interface RootRouteChildren {
   ApiAllocationRecommendationsRoute: typeof ApiAllocationRecommendationsRoute
   ApiAuditEventsRoute: typeof ApiAuditEventsRoute
   ApiBackupStatusRoute: typeof ApiBackupStatusRoute
+  ApiBookingCancellationsRoute: typeof ApiBookingCancellationsRoute
   ApiBookingDateChangesRoute: typeof ApiBookingDateChangesRoute
   ApiBookingMasterDataRoute: typeof ApiBookingMasterDataRoute
+  ApiBookingResolutionOffersRoute: typeof ApiBookingResolutionOffersRoute
   ApiBookingsRoute: typeof ApiBookingsRoute
   ApiContactInquiriesRoute: typeof ApiContactInquiriesRoute
   ApiDssLocationsRoute: typeof ApiDssLocationsRoute
@@ -997,6 +1036,7 @@ export interface RootRouteChildren {
   ApiVehicleLocationRoute: typeof ApiVehicleLocationRoute
   ApiVehiclesRoute: typeof ApiVehiclesRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  AuthConfirmedRoute: typeof AuthConfirmedRoute
   BookingsBookingIdRoute: typeof BookingsBookingIdRoute
   CustomerNotificationsRoute: typeof CustomerNotificationsRoute
   CustomerProfileRoute: typeof CustomerProfileRoute
@@ -1250,6 +1290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBackupStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/booking-cancellations': {
+      id: '/api/booking-cancellations'
+      path: '/api/booking-cancellations'
+      fullPath: '/api/booking-cancellations'
+      preLoaderRoute: typeof ApiBookingCancellationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/booking-date-changes': {
       id: '/api/booking-date-changes'
       path: '/api/booking-date-changes'
@@ -1262,6 +1309,13 @@ declare module '@tanstack/react-router' {
       path: '/api/booking-master-data'
       fullPath: '/api/booking-master-data'
       preLoaderRoute: typeof ApiBookingMasterDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/booking-resolution-offers': {
+      id: '/api/booking-resolution-offers'
+      path: '/api/booking-resolution-offers'
+      fullPath: '/api/booking-resolution-offers'
+      preLoaderRoute: typeof ApiBookingResolutionOffersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/bookings': {
@@ -1423,6 +1477,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/callback'
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/confirmed': {
+      id: '/auth/confirmed'
+      path: '/auth/confirmed'
+      fullPath: '/auth/confirmed'
+      preLoaderRoute: typeof AuthConfirmedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bookings/$bookingId': {
@@ -1676,8 +1737,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAllocationRecommendationsRoute: ApiAllocationRecommendationsRoute,
   ApiAuditEventsRoute: ApiAuditEventsRoute,
   ApiBackupStatusRoute: ApiBackupStatusRoute,
+  ApiBookingCancellationsRoute: ApiBookingCancellationsRoute,
   ApiBookingDateChangesRoute: ApiBookingDateChangesRoute,
   ApiBookingMasterDataRoute: ApiBookingMasterDataRoute,
+  ApiBookingResolutionOffersRoute: ApiBookingResolutionOffersRoute,
   ApiBookingsRoute: ApiBookingsRoute,
   ApiContactInquiriesRoute: ApiContactInquiriesRoute,
   ApiDssLocationsRoute: ApiDssLocationsRoute,
@@ -1701,6 +1764,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVehicleLocationRoute: ApiVehicleLocationRoute,
   ApiVehiclesRoute: ApiVehiclesRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  AuthConfirmedRoute: AuthConfirmedRoute,
   BookingsBookingIdRoute: BookingsBookingIdRoute,
   CustomerNotificationsRoute: CustomerNotificationsRoute,
   CustomerProfileRoute: CustomerProfileRoute,

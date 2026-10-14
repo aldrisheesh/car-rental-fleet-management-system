@@ -418,12 +418,15 @@ test("Admin UI exposes exact booking detail links and staff-safe detail context"
     "utf8",
   );
   assert.match(decisions, /<AllocationReview/);
-  assert.match(allocationReview, /OperationalContextPanel/);
+  assert.match(allocationReview, /AllocationRouteMap/);
   assert.match(
     allocationReview,
-    /do not change WMA demand or authorize movement/,
+    /No movement is authorized by this recommendation/,
   );
-  assert.match(allocationReview, /moves automatically/);
+  assert.match(
+    allocationReview,
+    /Approval does not confirm a completed movement/,
+  );
   assert.doesNotMatch(decisions, /Vehicle recommendation/);
   assert.doesNotMatch(decisions, /RadarChart/);
   assert.match(decisions, /setContextRecommendationId\(\(current\) =>/);

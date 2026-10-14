@@ -6,6 +6,7 @@ import {
   getServerAuthClient,
 } from "@/lib/auth.server";
 import { isValidPhilippineMobile, toPhilippineMobileE164 } from "@/lib/phone";
+import { emailConfirmationUrl } from "@/lib/email-confirmation-url";
 
 export const Route = createFileRoute("/api/auth/sign-up")({
   server: {
@@ -43,11 +44,28 @@ export const Route = createFileRoute("/api/auth/sign-up")({
         }
 
         const formattedPhoneNumber = toPhilippineMobileE164(phoneNumber)!;
+        let confirmationUrl: string;
+        try {
+          confirmationUrl = emailConfirmationUrl(
+            process.env.APP_BASE_URL,
+            new URL(request.url).origin,
+            process.env.NODE_ENV === "production",
+          );
+        } catch {
+          return Response.json(
+            {
+              message:
+                "Email confirmation is temporarily unavailable. Please contact Briah's Car Rental.",
+            },
+            { status: 503 },
+          );
+        }
 
         const { data, error } = await getServerAuthClient().auth.signUp({
           email,
           password,
           options: {
+            emailRedirectTo: confirmationUrl,
             data: { full_name: fullName, phone_number: formattedPhoneNumber },
           },
         });

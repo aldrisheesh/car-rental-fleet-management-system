@@ -5,6 +5,7 @@ import {
   type ProviderResult,
   type TripContext,
   type TripContextRequest,
+  type Coordinates,
 } from "./external-context.server.ts";
 import {
   interpretOperationalContext,
@@ -55,6 +56,14 @@ export type OperationalContextResponse = {
   recommendation?: {
     recommendedTransferUnits: number;
     candidates: CandidateFuelContext[];
+  };
+  routeMap?: {
+    origin: Coordinates;
+    destination: Coordinates;
+    path?: Coordinates[];
+    incidents: Array<{ location: Coordinates; closed: boolean }>;
+    provider: string;
+    checkedAt: string;
   };
 };
 
@@ -296,6 +305,37 @@ function interpretedResponse(
     context,
     estimatedFuelLiters: context.estimatedFuelLiters ?? null,
     sources: sources(trip),
+    ...(base.kind !== "booking_assignment" &&
+    trip.originGeocode.data &&
+    trip.destinationGeocode.data
+      ? {
+          routeMap: {
+            origin: {
+              latitude: trip.originGeocode.data.latitude,
+              longitude: trip.originGeocode.data.longitude,
+            },
+            destination: {
+              latitude: trip.destinationGeocode.data.latitude,
+              longitude: trip.destinationGeocode.data.longitude,
+            },
+            ...(trip.route.data?.path ? { path: trip.route.data.path } : {}),
+            incidents: (trip.trafficIncidents.data ?? []).flatMap((incident) =>
+              incident.location
+                ? [
+                    {
+                      location: incident.location,
+                      closed: incident.isRoadClosed === true,
+                    },
+                  ]
+                : [],
+            ),
+            provider: trip.route.providerUsed
+              ? PROVIDERS[trip.route.providerUsed]
+              : "Unavailable",
+            checkedAt: trip.route.fetchedAt,
+          },
+        }
+      : {}),
     explanations: readable(context.reasons, REASON_COPY),
     limitations: [
       ...readable(context.limitations, LIMITATION_COPY),

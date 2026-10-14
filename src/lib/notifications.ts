@@ -2,6 +2,11 @@ import { bookingReference } from "./booking-reference.ts";
 import { bookingPath } from "./customer-data.ts";
 
 export type NotificationType =
+  | "resolution_offered"
+  | "resolution_responded"
+  | "cancellation_requested"
+  | "cancellation_approved"
+  | "cancellation_rejected"
   | "date_change_requested"
   | "date_change_approved"
   | "date_change_rejected"

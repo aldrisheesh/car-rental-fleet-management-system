@@ -56,6 +56,14 @@ export function summarizeAuditEvent(
       return "Unfinished booking request rejected.";
     case "booking.withdrawn":
       return "Unfinished booking request withdrawn by customer.";
+    case "booking.cancellation_requested":
+      return "Customer requested cancellation; reservation retained pending review.";
+    case "booking.cancellation_reviewed":
+      return `Cancellation request ${safeLabel(metadata.status) ?? "reviewed"}.`;
+    case "booking.resolution_offered":
+      return "Owner proposed an alternative while preserving the saved rental price.";
+    case "booking.resolution_responded":
+      return `Alternative offer ${safeLabel(metadata.status) ?? "reviewed"}.`;
     case "booking.location_reconciled":
       return "Vehicle allocation location reconciled for this request.";
     case "requirements.submitted":
