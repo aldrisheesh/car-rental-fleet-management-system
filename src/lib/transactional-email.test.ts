@@ -52,6 +52,10 @@ const scheduledProcessor = readFileSync(
 );
 
 const ELIGIBLE = [
+  "payment_due_reminder",
+  "payment_hold_expired",
+  "payment_hold_updated",
+  "payment_review_overdue",
   "booking_cancelled",
   "booking_rejected",
   "quote_issued",

@@ -7,6 +7,10 @@ import { buildTransactionalEmail } from "./email-templates.ts";
 import type { NotificationType } from "./notifications.ts";
 
 export const EMAIL_ELIGIBLE_NOTIFICATION_TYPES = [
+  "payment_due_reminder",
+  "payment_hold_expired",
+  "payment_hold_updated",
+  "payment_review_overdue",
   "booking_cancelled",
   "booking_rejected",
   "quote_issued",

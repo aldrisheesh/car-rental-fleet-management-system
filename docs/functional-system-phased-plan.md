@@ -176,3 +176,6 @@ First protect access control and the complete rental/maintenance workflow. Reser
 Investigate hosting and data coverage immediately. Reassess schedule after Phase 0 using remaining confirmed defects and team capacity; do not assign artificial completion dates before that triage. If time becomes constrained, defer new themes, decorative animation, extra contact/settings features, optional export formats and provider expansion. Do not hide core objective failures behind an 80% claim.
 
 No new AI/ML method, live GPS integration, payment gateway, automatic physical-transfer system or comprehensive refund/penalty ledger is added by this plan. Any genuinely required change to approved scope needs its own explicit decision. Implementation, controlled synthetic-data work and the verified server deployment are recorded in the linked evidence files.
+
+
+October 14, 2026 update: the owner approved the payment-hold deadline, recipients and reminder rules. See [payment-hold-policy.md](payment-hold-policy.md) for the implemented rule and rollout verification. Hold expiry does not cancel bookings or create penalties.

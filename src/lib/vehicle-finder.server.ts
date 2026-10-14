@@ -1,3 +1,4 @@
+import { loadPaymentHoldBlocks } from "./payment-hold.server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { calculateFleetMaintenanceSnapshot } from "./maintenance-readiness.server.ts";
 import {
@@ -41,22 +42,25 @@ export async function listCatalogVehiclesForAvailability(
       errors: validation.errors,
     };
 
-  const [vehicleResult, bookingResult, rentalResult] = await Promise.all([
-    client
-      .from("vehicles")
-      .select(
-        "id,name,license_plate,transmission,fuel_type,seat_capacity,large_luggage_capacity,daily_rate,image_url,is_active,branch:branches(id,name),category:vehicle_categories(id,name)",
-      )
-      .eq("is_active", true)
-      .order("name"),
-    client
-      .from("booking_requests")
-      .select("assigned_vehicle_id,pickup_at,return_at,booking_status")
-      .eq("booking_status", "Confirmed"),
-    client
-      .from("rental_transactions")
-      .select("vehicle_id,scheduled_pickup_at,scheduled_return_at"),
-  ]);
+  const [vehicleResult, bookingResult, rentalResult, holds] = await Promise.all(
+    [
+      client
+        .from("vehicles")
+        .select(
+          "id,name,license_plate,transmission,fuel_type,seat_capacity,large_luggage_capacity,daily_rate,image_url,is_active,branch:branches(id,name),category:vehicle_categories(id,name)",
+        )
+        .eq("is_active", true)
+        .order("name"),
+      client
+        .from("booking_requests")
+        .select("assigned_vehicle_id,pickup_at,return_at,booking_status")
+        .eq("booking_status", "Confirmed"),
+      client
+        .from("rental_transactions")
+        .select("vehicle_id,scheduled_pickup_at,scheduled_return_at"),
+      loadPaymentHoldBlocks(client),
+    ],
+  );
   if (vehicleResult.error || bookingResult.error || rentalResult.error)
     return {
       ok: false as const,
@@ -71,16 +75,27 @@ export async function listCatalogVehiclesForAvailability(
       snapshot.readiness.map((item) => [item.vehicleId, item]),
     );
     const catalogVehicles = vehicles.map((vehicle) => {
-      const hasBookingConflict = (bookingResult.data ?? []).some(
-        (booking) =>
-          booking.assigned_vehicle_id === vehicle.id &&
-          intervalsOverlap(
-            booking.pickup_at,
-            booking.return_at,
-            validation.value.requestedStart,
-            validation.value.requestedEnd,
-          ),
-      );
+      const hasBookingConflict =
+        holds.some(
+          (h) =>
+            h.vehicle_id === vehicle.id &&
+            intervalsOverlap(
+              h.pickup_at,
+              h.return_at,
+              validation.value.requestedStart,
+              validation.value.requestedEnd,
+            ),
+        ) ||
+        (bookingResult.data ?? []).some(
+          (booking) =>
+            booking.assigned_vehicle_id === vehicle.id &&
+            intervalsOverlap(
+              booking.pickup_at,
+              booking.return_at,
+              validation.value.requestedStart,
+              validation.value.requestedEnd,
+            ),
+        );
       const hasRentalConflict = hasScheduledRentalConflict(
         rentalResult.data ?? [],
         vehicle.id,
@@ -133,21 +148,24 @@ export async function evaluateCanonicalVehicleFinder(
       errors: validation.errors,
     };
 
-  const [vehicleResult, bookingResult, rentalResult] = await Promise.all([
-    client
-      .from("vehicles")
-      .select(
-        "id,name,transmission,fuel_type,seat_capacity,large_luggage_capacity,daily_rate,image_url,is_active,branch:branches(name),category:vehicle_categories(name)",
-      )
-      .order("name"),
-    client
-      .from("booking_requests")
-      .select("assigned_vehicle_id,pickup_at,return_at,booking_status")
-      .eq("booking_status", "Confirmed"),
-    client
-      .from("rental_transactions")
-      .select("vehicle_id,scheduled_pickup_at,scheduled_return_at"),
-  ]);
+  const [vehicleResult, bookingResult, rentalResult, holds] = await Promise.all(
+    [
+      client
+        .from("vehicles")
+        .select(
+          "id,name,transmission,fuel_type,seat_capacity,large_luggage_capacity,daily_rate,image_url,is_active,branch:branches(name),category:vehicle_categories(name)",
+        )
+        .order("name"),
+      client
+        .from("booking_requests")
+        .select("assigned_vehicle_id,pickup_at,return_at,booking_status")
+        .eq("booking_status", "Confirmed"),
+      client
+        .from("rental_transactions")
+        .select("vehicle_id,scheduled_pickup_at,scheduled_return_at"),
+      loadPaymentHoldBlocks(client),
+    ],
+  );
   if (vehicleResult.error || bookingResult.error || rentalResult.error)
     return {
       ok: false,
@@ -174,16 +192,27 @@ export async function evaluateCanonicalVehicleFinder(
     fuelType: vehicle.fuel_type,
     isActive: vehicle.is_active,
     maintenanceReady: readiness.get(vehicle.id)?.maintenanceReady === true,
-    bookingConflict: (bookingResult.data ?? []).some(
-      (booking) =>
-        booking.assigned_vehicle_id === vehicle.id &&
-        intervalsOverlap(
-          booking.pickup_at,
-          booking.return_at,
-          validation.value.requestedStart,
-          validation.value.requestedEnd,
-        ),
-    ),
+    bookingConflict:
+      holds.some(
+        (h) =>
+          h.vehicle_id === vehicle.id &&
+          intervalsOverlap(
+            h.pickup_at,
+            h.return_at,
+            validation.value.requestedStart,
+            validation.value.requestedEnd,
+          ),
+      ) ||
+      (bookingResult.data ?? []).some(
+        (booking) =>
+          booking.assigned_vehicle_id === vehicle.id &&
+          intervalsOverlap(
+            booking.pickup_at,
+            booking.return_at,
+            validation.value.requestedStart,
+            validation.value.requestedEnd,
+          ),
+      ),
     rentalConflict: hasScheduledRentalConflict(
       rentalResult.data ?? [],
       vehicle.id,

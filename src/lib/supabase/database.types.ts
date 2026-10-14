@@ -15,6 +15,46 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      booking_payment_holds: {
+        Row: {
+          booking_id: string;
+          vehicle_id: string;
+          customer_id: string;
+          pickup_at: string;
+          return_at: string;
+          state:
+            | "AwaitingPayment"
+            | "Review"
+            | "Correction"
+            | "Verified"
+            | "Expired"
+            | "Completed"
+            | "Released";
+          opened_at: string;
+          deadline_at: string;
+          review_due_at: string | null;
+          generation: number;
+          correction_count: number;
+          changed_at: string;
+          changed_by: string | null;
+          reason: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      booking_payment_hold_events: {
+        Row: {
+          id: string;
+          booking_id: string;
+          actor_id: string | null;
+          occurred_at: string;
+          snapshot: Json;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       booking_resolution_offers: {
         Row: {
           id: string;
@@ -1008,6 +1048,28 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      process_booking_payment_holds: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
+      extend_booking_payment_hold: {
+        Args: {
+          p_booking_id: string;
+          p_actor_id: string;
+          p_deadline: string;
+          p_reason: string;
+        };
+        Returns: Database["public"]["Tables"]["booking_payment_holds"]["Row"];
+      };
+      issue_booking_payment_quote_with_hold: {
+        Args: {
+          p_booking_id: string;
+          p_actor_id: string;
+          p_delivery_fee: number;
+          p_deadline?: string | null;
+        };
+        Returns: Json;
+      };
       create_booking_resolution_offer: {
         Args: {
           p_booking_id: string;

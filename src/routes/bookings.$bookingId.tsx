@@ -1,3 +1,5 @@
+import { usePaymentHoldAllowsProof } from "@/lib/use-payment-hold";
+import { PaymentHoldNotice } from "@/components/booking/PaymentHoldNotice";
 import { readFetch } from "@/lib/read-fetch";
 import { BookingJourneySkeleton } from "@/components/customer/BookingJourneySkeleton";
 import { documentReplacedSinceReview } from "@/lib/document-review-version";
@@ -1693,7 +1695,9 @@ export function PaymentSubmission({
   const arrangementsReady =
     booking.pickup_delivery_option !== "pickup" ||
     pickupArrangementReady(booking);
+  const holdAllowsProof = usePaymentHoldAllowsProof(payment?.payment_hold);
   const canSubmitPayment =
+    holdAllowsProof &&
     policyAccepted &&
     arrangementsReady &&
     Boolean(method) &&
@@ -1869,6 +1873,7 @@ export function PaymentSubmission({
       className="booking-detail-section booking-payment-section booking-payment-section--request"
       aria-label="Payment submission"
     >
+      <PaymentHoldNotice hold={payment?.payment_hold} />
       <p className="booking-payment-request__lead">
         {state === "payment-resubmission"
           ? "Review the requested changes, then update your payment details and proof for another review."
@@ -1969,7 +1974,12 @@ export function PaymentSubmission({
         </StatusCallout>
       ) : null}
 
-      {!policyAccepted ? (
+      {!holdAllowsProof ? (
+        <p role="status">
+          Payment instructions are closed until the owner renews the hold after
+          checking availability.
+        </p>
+      ) : !policyAccepted ? (
         <div className="booking-payment-policy-gate" role="status">
           <p>
             {policyLoading
@@ -2524,6 +2534,7 @@ function PaymentUnderReview({ payment }: { payment: CustomerPayment | null }) {
             </dd>
           </div>
         </dl>
+        <PaymentHoldNotice hold={payment?.payment_hold} />
         <p className="booking-payment-review__note">
           <Clock3 size={18} aria-hidden="true" />
           No action is needed while we review your proof.

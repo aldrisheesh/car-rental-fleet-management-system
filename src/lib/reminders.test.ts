@@ -271,7 +271,7 @@ test("processor derivation never mutates booking or rental lifecycle state", () 
   const before = structuredClone(input);
   deriveReminderNotifications(input, NOW);
   assert.deepEqual(input, before);
-  assert.doesNotMatch(serverImplementation, /\.update\(|\.delete\(|\.rpc\(/);
+  assert.doesNotMatch(serverImplementation, /\.update\(|\.delete\(/);
   assert.match(serverImplementation, /\.from\("notifications"\)\s*\.upsert\(/s);
 });
 

@@ -1,3 +1,4 @@
+import { OwnerPaymentHold } from "@/components/booking/PaymentHoldNotice";
 import { readFetch } from "@/lib/read-fetch";
 import { currentDocumentDecision } from "@/lib/document-review-version";
 import { DateChangeRequests } from "@/components/booking/DateChangeRequests";
@@ -1386,6 +1387,9 @@ function PaymentQuotePanel({
   payment: AdminPayment | null;
   onRefresh: () => Promise<void>;
 }) {
+  const [deadline, setDeadline] = useState("");
+  const urgent =
+    Date.parse(booking.pickup_at) <= Date.now() + 24 * 60 * 60 * 1000;
   const [deliveryFee, setDeliveryFee] = useState("");
   const [issuedQuote, setIssuedQuote] = useState<Record<
     string,
@@ -1435,7 +1439,14 @@ function PaymentQuotePanel({
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ bookingId: booking.id, deliveryFee: fee }),
+        body: JSON.stringify({
+          bookingId: booking.id,
+          deliveryFee: fee,
+          deadline:
+            urgent && deadline
+              ? new Date(deadline + "+08:00").toISOString()
+              : null,
+        }),
       });
       const body = (await response.json().catch(() => null)) as {
         message?: string;
@@ -1478,6 +1489,27 @@ function PaymentQuotePanel({
 
   return (
     <section className="admin-booking-payment-terms admin-booking-payment-quote-panel">
+      <OwnerPaymentHold
+        key={String(issuedQuote?.issued_at ?? booking.id)}
+        bookingId={booking.id}
+      />
+      {!locked && urgent ? (
+        <label>
+          Payment deadline before handover (Manila time)
+          <TInput
+            type="datetime-local"
+            value={deadline}
+            onChange={(event) => setDeadline(event.target.value)}
+            required
+            disabled={saving}
+          />
+        </label>
+      ) : !locked ? (
+        <p>
+          Sending this quote holds the vehicle for 24 hours. Availability is
+          checked before payment is requested.
+        </p>
+      ) : null}
       {!hasDailyRate ? (
         <p className="admin-booking-payment-terms__notice" role="alert">
           Add a daily rate to the requested vehicle before creating a quote.
@@ -1564,7 +1596,7 @@ function PaymentQuotePanel({
             <strong>
               {formatAdminMoney(quote.downPaymentAmount)}
               {payment?.status === "Not Submitted" || !payment
-                ? " due today"
+                ? " required"
                 : " down payment"}
             </strong>
           </section>

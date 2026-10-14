@@ -1,3 +1,4 @@
+import { loadPaymentHoldBlocks } from "./payment-hold.server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./supabase/database.types";
 import type { RescheduleBlock } from "./reschedule-availability";
@@ -15,7 +16,7 @@ export async function loadRescheduleAvailability(
   const vehicleId =
     booking.data.assigned_vehicle_id ?? booking.data.requested_vehicle_id;
   if (!vehicleId) throw Error("vehicle_missing");
-  const [bookings, rentals] = await Promise.all([
+  const [bookings, rentals, holds] = await Promise.all([
     client
       .from("booking_requests")
       .select("pickup_at,return_at")
@@ -29,9 +30,13 @@ export async function loadRescheduleAvailability(
       .eq("vehicle_id", vehicleId)
       .neq("booking_id", bookingId)
       .gt("scheduled_return_at", new Date().toISOString()),
+    loadPaymentHoldBlocks(client, bookingId),
   ]);
   if (bookings.error || rentals.error) throw Error("availability_unavailable");
   const blocks: RescheduleBlock[] = [
+    ...holds
+      .filter((h) => h.vehicle_id === vehicleId)
+      .map((h) => ({ start: h.pickup_at, end: h.return_at })),
     ...(bookings.data ?? []).map((b) => ({
       start: b.pickup_at,
       end: b.return_at,

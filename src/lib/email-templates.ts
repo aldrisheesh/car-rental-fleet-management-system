@@ -13,6 +13,32 @@ const COPY: Record<
   EmailEligibleNotificationType,
   { subject: string; message: string; action: string }
 > = {
+  payment_due_reminder: {
+    subject: "Your payment deadline is approaching",
+    message: "Your vehicle has a temporary payment hold.",
+    action:
+      "Open your booking for the exact Manila-time deadline. Submit your payment proof before it ends to keep the vehicle held during review.",
+  },
+  payment_hold_expired: {
+    subject: "Your temporary vehicle hold ended",
+    message:
+      "The payment deadline has passed; your rental request remains saved.",
+    action:
+      "Contact the team to recheck availability before paying or submitting proof. Expiry does not automatically cancel the request or impose a fee.",
+  },
+  payment_hold_updated: {
+    subject: "Your payment deadline was updated",
+    message:
+      "The owner has updated your payment hold after checking availability.",
+    action:
+      "Open your booking to review the new deadline before paying or submitting proof.",
+  },
+  payment_review_overdue: {
+    subject: "Payment review needs your attention",
+    message: "A timely submitted payment proof is overdue for review.",
+    action:
+      "Review the booking payment. The vehicle remains held while review is delayed.",
+  },
   booking_cancelled: {
     subject: "Your rental booking has been cancelled",
     message: "Your booking has been cancelled.",

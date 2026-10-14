@@ -1,3 +1,4 @@
+import { loadPaymentHoldBlocks } from "./payment-hold.server";
 /* eslint-disable @typescript-eslint/no-explicit-any -- Dynamic Supabase query rows are normalized at this server boundary. */
 import { hasUnfinishedConfirmedReservation } from "./fleet-transfer-eligibility";
 import {
@@ -45,34 +46,36 @@ export async function revalidateSourceCandidates(
   const weekStart = manilaDateBoundaryToInstant(evaluation.targetWeekStart);
   const weekEnd = manilaDateBoundaryToInstant(evaluation.targetWeekEnd);
   if (!weekStart || !weekEnd) return [];
-  const [vehicles, bookings, rentals, events, maintenance] = await Promise.all([
-    client
-      .from("vehicles")
-      .select(
-        "id,name,license_plate,branch_id,category_id,is_active,current_odometer_km,condition_blocks_rental_use",
-      )
-      .in("id", snapshotVehicleIds),
-    client
-      .from("booking_requests")
-      .select("id,assigned_vehicle_id,pickup_at,return_at,booking_status")
-      .in("assigned_vehicle_id", snapshotVehicleIds)
-      .eq("booking_status", "Confirmed"),
-    client
-      .from("rental_transactions")
-      .select("booking_id,vehicle_id,started_at,ended_at,inspection_status")
-      .in("vehicle_id", snapshotVehicleIds),
-    client
-      .from("vehicle_operational_state_events")
-      .select("vehicle_id,is_active,effective_at")
-      .in("vehicle_id", snapshotVehicleIds)
-      .order("effective_at", { ascending: true }),
-    client
-      .from("maintenance_records")
-      .select(
-        "vehicle_id,status,maintenance_type,blocks_rental_use,next_service_odometer,next_service_date,completed_at,created_at",
-      )
-      .in("vehicle_id", snapshotVehicleIds),
-  ]);
+  const [vehicles, bookings, rentals, events, maintenance, holds] =
+    await Promise.all([
+      client
+        .from("vehicles")
+        .select(
+          "id,name,license_plate,branch_id,category_id,is_active,current_odometer_km,condition_blocks_rental_use",
+        )
+        .in("id", snapshotVehicleIds),
+      client
+        .from("booking_requests")
+        .select("id,assigned_vehicle_id,pickup_at,return_at,booking_status")
+        .in("assigned_vehicle_id", snapshotVehicleIds)
+        .eq("booking_status", "Confirmed"),
+      client
+        .from("rental_transactions")
+        .select("booking_id,vehicle_id,started_at,ended_at,inspection_status")
+        .in("vehicle_id", snapshotVehicleIds),
+      client
+        .from("vehicle_operational_state_events")
+        .select("vehicle_id,is_active,effective_at")
+        .in("vehicle_id", snapshotVehicleIds)
+        .order("effective_at", { ascending: true }),
+      client
+        .from("maintenance_records")
+        .select(
+          "vehicle_id,status,maintenance_type,blocks_rental_use,next_service_odometer,next_service_date,completed_at,created_at",
+        )
+        .in("vehicle_id", snapshotVehicleIds),
+      loadPaymentHoldBlocks(client),
+    ]);
   if (
     vehicles.error ||
     bookings.error ||
@@ -90,6 +93,7 @@ export async function revalidateSourceCandidates(
 
   const candidates: AllocationCandidate[] = [];
   for (const vehicle of vehicles.data ?? []) {
+    if (holds.some((h) => h.vehicle_id === vehicle.id)) continue;
     if (
       vehicle.branch_id !== evaluation.branchId ||
       vehicle.category_id !== evaluation.categoryId ||

@@ -16,6 +16,9 @@ export async function processScheduledNotificationCycle(options?: {
 }) {
   const now = options?.now ?? new Date();
   const client = options?.client ?? getSupabaseServerClient();
+  // Persist deadline notifications before dispatching their email outbox.
+  const holds = await client.rpc("process_booking_payment_holds");
+  if (holds.error) throw new Error("payment_hold_processing_failed");
   const [reminders, operational] = await Promise.all([
     processScheduledReminders({ now, client }),
     processOperationalNotifications({ now, client }),
@@ -26,7 +29,7 @@ export async function processScheduledNotificationCycle(options?: {
   } catch {
     email = { processingFailed: true };
   }
-  return { ...reminders, operational, email };
+  return { ...reminders, paymentHolds: holds.data, operational, email };
 }
 
 export async function processScheduledReminders(options?: {

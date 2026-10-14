@@ -1,3 +1,5 @@
+import { loadPaymentHoldBlocks } from "@/lib/payment-hold.server";
+import { intervalsOverlap } from "@/lib/vehicle-finder";
 import { createFileRoute } from "@tanstack/react-router";
 /* eslint-disable @typescript-eslint/no-explicit-any -- Supabase dynamic query adapter is isolated at this server boundary. */
 import {
@@ -68,6 +70,20 @@ function repository(client: any): OperationalContextRepository {
         .limit(1);
       if (conflicts.error) throw new Error("canonical_read_failed");
       if ((conflicts.data ?? []).length) return null;
+      const holds = await loadPaymentHoldBlocks(client, bookingId);
+      if (
+        holds.some(
+          (h) =>
+            h.vehicle_id === vehicleId &&
+            intervalsOverlap(
+              h.pickup_at,
+              h.return_at,
+              booking.pickup_at,
+              booking.return_at,
+            ),
+        )
+      )
+        return null;
       return {
         id: vehicle.id,
         name: vehicle.name,

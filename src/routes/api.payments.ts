@@ -101,10 +101,26 @@ async function read({ request }: { request: Request }) {
         (quote: { booking_id: string }) => [quote.booking_id, quote],
       ),
     );
+    const holds = bookingIds.length
+      ? await client
+          .from("booking_payment_holds")
+          .select(
+            "booking_id,state,opened_at,deadline_at,review_due_at,generation,correction_count",
+          )
+          .in("booking_id", bookingIds)
+      : { data: [] };
+    if (holds.error) return error("Unable to check payment deadlines.", 503);
+    const holdByBooking = new Map(
+      (holds.data ?? []).map((hold: { booking_id: string }) => [
+        hold.booking_id,
+        hold,
+      ]),
+    );
     const enrichedPayments = (result.data ?? []).map(
       (payment: { booking_id: string }) => ({
         ...payment,
         payment_quote: quoteByBooking.get(payment.booking_id) ?? null,
+        payment_hold: holdByBooking.get(payment.booking_id) ?? null,
       }),
     );
     const payments =
@@ -315,6 +331,8 @@ async function mutate({ request }: { request: Request }) {
       await client.storage.from("payment-proofs").remove([path]);
       uploadedPath = null;
       const paymentMessages: Record<string, string> = {
+        payment_hold_expired:
+          "The payment window ended. Contact the team to recheck availability before paying or submitting proof.",
         payment_policy_acknowledgement_required:
           "The payment policy has changed. Reload the page and review it before submitting again.",
         payment_quote_required:

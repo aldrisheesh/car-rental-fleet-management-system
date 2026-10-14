@@ -2,6 +2,10 @@ import { bookingReference } from "./booking-reference.ts";
 import { bookingPath } from "./customer-data.ts";
 
 export type NotificationType =
+  | "payment_due_reminder"
+  | "payment_hold_expired"
+  | "payment_hold_updated"
+  | "payment_review_overdue"
   | "resolution_offered"
   | "resolution_responded"
   | "cancellation_requested"

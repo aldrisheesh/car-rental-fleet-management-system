@@ -44,3 +44,6 @@ The following items remain before Phase 4 reminders and Phase 5 deployment can b
 3. Repair the custom-domain DNS records, then verify HTTPS and route behavior on the actual defense domain or the replacement domain the team chooses.
 
 Payment reminders remain intentionally unresolved because the project has no approved payment due date, recipient rule or reminder frequency. That rule must be agreed and recorded before implementation; the system must not invent a cancellation deadline, penalty or fee.
+
+
+October 14, 2026 update: the payment reminder business-rule blocker is resolved by the owner-approved [payment hold policy](payment-hold-policy.md). The original unresolved-policy statement above is retained as historical readiness evidence. The new scheduler and production activation must be verified separately.

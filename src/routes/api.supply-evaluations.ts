@@ -1,3 +1,4 @@
+import { loadPaymentHoldBlocks } from "@/lib/payment-hold.server";
 /* eslint-disable @typescript-eslint/no-explicit-any -- Canonical forecast tables predate the generated Supabase types. */
 import { createFileRoute } from "@tanstack/react-router";
 import { AuthBoundaryError, requirePrincipal } from "@/lib/auth.server";
@@ -56,7 +57,7 @@ async function evaluateForecastSupply({
   if (vehicleError) throw new Error("Unable to load fleet.");
 
   const ids = (vehicles ?? []).map((vehicle: any) => vehicle.id);
-  const [bookings, rentals, maintenance] = await Promise.all([
+  const [bookings, rentals, maintenance, holds] = await Promise.all([
     ids.length
       ? client
           .from("booking_requests")
@@ -78,6 +79,7 @@ async function evaluateForecastSupply({
           )
           .in("vehicle_id", ids)
       : { data: [], error: null },
+    loadPaymentHoldBlocks(client),
   ]);
   if (bookings.error || rentals.error || maintenance.error)
     throw new Error("Unable to load canonical fleet commitments.");
@@ -105,14 +107,20 @@ async function evaluateForecastSupply({
         targets,
         forecast.target_week_end,
       );
-      const bookingConflict = hasOutstandingBookingConflict(
-        (bookings.data ?? []).filter(
-          (booking: any) => booking.assigned_vehicle_id === vehicle.id,
-        ),
-        rentals.data ?? [],
-        targetWeekStart,
-        targetWeekEnd,
-      );
+      const bookingConflict =
+        holds.some(
+          (h) =>
+            h.vehicle_id === vehicle.id &&
+            overlaps(h.pickup_at, h.return_at, targetWeekStart, targetWeekEnd),
+        ) ||
+        hasOutstandingBookingConflict(
+          (bookings.data ?? []).filter(
+            (booking: any) => booking.assigned_vehicle_id === vehicle.id,
+          ),
+          rentals.data ?? [],
+          targetWeekStart,
+          targetWeekEnd,
+        );
       const rentalConflict = (rentals.data ?? [])
         .filter((rental: any) => rental.vehicle_id === vehicle.id)
         .some(

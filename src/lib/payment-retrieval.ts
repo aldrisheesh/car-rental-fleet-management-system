@@ -1,3 +1,4 @@
+import type { PaymentHold } from "./payment-hold";
 export const CUSTOMER_PAYMENT_STATUSES = [
   "Not Submitted",
   "Pending Verification",
@@ -39,6 +40,7 @@ export type CustomerPayment = {
   resubmission_reason?: string | null;
   submitted_at?: string | null;
   updated_at?: string | null;
+  payment_hold?: PaymentHold | null;
   payment_quote?: {
     daily_rate?: number | string | null;
     billable_days?: number | null;

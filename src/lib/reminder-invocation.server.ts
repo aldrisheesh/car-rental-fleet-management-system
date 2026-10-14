@@ -6,7 +6,11 @@ export function isTrustedReminderInvocation(
 ) {
   const expectedSecrets = (
     expectedSecret === undefined
-      ? [process.env.CRON_SECRET, process.env.REMINDER_PROCESSOR_SECRET]
+      ? [
+          process.env.CRON_SECRET,
+          process.env.REMINDER_PROCESSOR_SECRET,
+          process.env.PAYMENT_HOLD_PROCESSOR_SECRET,
+        ]
       : Array.isArray(expectedSecret)
         ? expectedSecret
         : [expectedSecret]
