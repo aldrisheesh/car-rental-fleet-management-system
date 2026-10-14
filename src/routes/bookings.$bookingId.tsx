@@ -1,3 +1,4 @@
+import { submitPaymentWithRecovery } from "@/lib/payment-submission-recovery";
 import { usePaymentHoldAllowsProof } from "@/lib/use-payment-hold";
 import { PaymentHoldNotice } from "@/components/booking/PaymentHoldNotice";
 import { readFetch } from "@/lib/read-fetch";
@@ -1674,6 +1675,7 @@ export function PaymentSubmission({
   const submissionInFlight = useRef(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState("");
+  const [submissionUncertain, setSubmissionUncertain] = useState(false);
   const [focusKey, setFocusKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const selectedMethod = methods.find((item) => item.id === method);
@@ -1697,6 +1699,7 @@ export function PaymentSubmission({
     pickupArrangementReady(booking);
   const holdAllowsProof = usePaymentHoldAllowsProof(payment?.payment_hold);
   const canSubmitPayment =
+    !submissionUncertain &&
     holdAllowsProof &&
     policyAccepted &&
     arrangementsReady &&
@@ -1851,15 +1854,26 @@ export function PaymentSubmission({
     form.set("policyAcknowledged", "true");
     form.set("policyVersion", PAYMENT_POLICY_VERSION);
     try {
-      await fetchJson<{ payment: CustomerPayment }>("/api/payments", {
-        method: "POST",
-        body: form,
+      const result = await submitPaymentWithRecovery({
+        submit: () =>
+          fetchJson<{ payment: CustomerPayment }>("/api/payments", {
+            method: "POST",
+            body: form,
+          }),
+        refresh: onRefresh,
       });
-      await onRefresh();
-    } catch (requestError) {
-      setSubmitError(
-        errorFromResult(requestError, "Payment could not be submitted."),
-      );
+      if (result.state === "rejected") {
+        setSubmitError(
+          errorFromResult(result.error, "Payment could not be submitted."),
+        );
+      } else if (result.state === "uncertain") {
+        setSubmissionUncertain(true);
+        setSubmitError(
+          result.acknowledged
+            ? "Your proof was received, but the latest booking status could not be shown. Check the booking status before sending proof again."
+            : "The submission result could not be confirmed. Check the saved booking status before sending proof again.",
+        );
+      }
     } finally {
       submissionInFlight.current = false;
       setSubmitting(false);
@@ -1969,8 +1983,29 @@ export function PaymentSubmission({
       <QuoteHandover booking={booking} />
       <ErrorSummary errors={errors} focusKey={focusKey} />
       {submitError ? (
-        <StatusCallout tone="error" title="Payment not submitted">
+        <StatusCallout
+          tone={submissionUncertain ? "info" : "error"}
+          title={
+            submissionUncertain
+              ? "Check your payment status"
+              : "Payment not submitted"
+          }
+        >
           {submitError}
+          {submissionUncertain ? (
+            <button
+              type="button"
+              className="customer-secondary-button"
+              disabled={submitting}
+              onClick={async () => {
+                await onRefresh();
+                setSubmissionUncertain(false);
+                setSubmitError("");
+              }}
+            >
+              Check booking status
+            </button>
+          ) : null}
         </StatusCallout>
       ) : null}
 
