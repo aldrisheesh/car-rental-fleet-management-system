@@ -375,6 +375,9 @@ function BookingDetailPage() {
 
   useEffect(() => {
     setExpandedStage(null);
+  }, [bookingId]);
+
+  useEffect(() => {
     void load();
   }, [load]);
 
