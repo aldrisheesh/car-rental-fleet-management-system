@@ -1,3 +1,4 @@
+import { buildTransactionalEmail } from "./email-templates.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -48,3 +49,15 @@ test("correction window and explicit expiry use the same server-derived deadline
 });
 test("visible deadline identifies the Manila timezone", () =>
   assert.match(formatPaymentDeadline(hold.deadline_at), /Manila time/));
+
+test("owner review escalation links to the owner booking screen", () => {
+  const message = buildTransactionalEmail({
+    emailType: "payment_review_overdue",
+    appBaseUrl: "https://briahcarrental.site",
+    bookingId: "d1000000-0000-4000-8000-000000000005",
+  });
+  assert.match(
+    message.text,
+    /https:\/\/briahcarrental.site\/admin\/bookings\/d1000000/,
+  );
+});

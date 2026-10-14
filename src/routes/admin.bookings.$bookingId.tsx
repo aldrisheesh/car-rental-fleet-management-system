@@ -1490,7 +1490,7 @@ function PaymentQuotePanel({
   return (
     <section className="admin-booking-payment-terms admin-booking-payment-quote-panel">
       <OwnerPaymentHold
-        key={String(issuedQuote?.issued_at ?? booking.id)}
+        key={`${String(issuedQuote?.issued_at ?? booking.id)}:${payment?.status ?? "none"}`}
         bookingId={booking.id}
       />
       {!locked && urgent ? (

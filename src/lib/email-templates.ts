@@ -195,12 +195,15 @@ function buildApplicationLink(
   if (!baseUrl) return null;
   if (bookingId && /^[0-9a-f-]{36}$/i.test(bookingId))
     return new URL(
-      `/bookings/${encodeURIComponent(bookingId)}`,
+      `${emailType === "payment_review_overdue" ? "/admin" : ""}/bookings/${encodeURIComponent(bookingId)}`,
       `${baseUrl}/`,
     ).toString();
-  const path = emailType.startsWith("payment_")
-    ? "/payment-details"
-    : "/customer";
+  const path =
+    emailType === "payment_review_overdue"
+      ? "/admin/payments"
+      : emailType.startsWith("payment_")
+        ? "/payment-details"
+        : "/customer";
   return new URL(path, `${baseUrl}/`).toString();
 }
 
