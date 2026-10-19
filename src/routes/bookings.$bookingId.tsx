@@ -13,6 +13,7 @@ import { validCategory } from "@/lib/booking-categories";
 import { DateChangeRequests } from "@/components/booking/DateChangeRequests";
 import { ResolutionOffers } from "@/components/booking/ResolutionOffers";
 import { CancellationRequests } from "@/components/booking/CancellationRequests";
+import { customerCancellationAction } from "@/lib/customer-cancellation";
 import { PaymentPolicyConfirmation } from "@/components/booking/PaymentPolicyConfirmation";
 import { PAYMENT_POLICY_VERSION } from "@/lib/payment-policy";
 import {
@@ -351,6 +352,14 @@ function BookingDetailPage() {
   const isActiveRental = lifecycle.state === "active-rental";
   const isReturnedRental = lifecycle.state === "returned";
   const canManageRequest = lifecycle.state === "requirements-needed";
+  const cancellationAction = customerCancellationAction(
+    booking,
+    composition.payment?.status,
+    Boolean(composition.paymentError),
+  );
+  const canManageBooking =
+    !booking.rental &&
+    ["Draft", "Submitted", "Confirmed"].includes(booking.booking_status);
   const compositionErrors = [
     composition.requirementsError,
     composition.paymentError,
@@ -461,24 +470,45 @@ function BookingDetailPage() {
                 vehicle={vehicle}
                 onRefresh={() => loadBooking({ preserveView: true })}
               />
-              <DateChangeRequests
-                booking={booking}
-                onChanged={() => loadBooking({ preserveView: true })}
-              />
-              <ResolutionOffers
-                booking={booking}
-                onChanged={() => loadBooking({ preserveView: true })}
-              />
-              <CancellationRequests
-                booking={booking}
-                onChanged={() => loadBooking({ preserveView: true })}
-              />
+              <div
+                className={canManageBooking ? "booking-management" : undefined}
+              >
+                {canManageBooking && <h2>Manage your booking</h2>}
+                {canManageBooking && composition.paymentError && (
+                  <p role="status">
+                    Cancellation options are unavailable while your payment
+                    details cannot be loaded. Use “Refresh details” above to try
+                    again.
+                  </p>
+                )}
+                {cancellationAction === "withdraw" && (
+                  <WithdrawBookingAction
+                    bookingId={booking.id}
+                    onWithdrawn={() => loadBooking({ preserveView: true })}
+                  />
+                )}
+                <CancellationRequests
+                  booking={{
+                    ...booking,
+                    payment_status: composition.payment?.status,
+                  }}
+                  paymentUnavailable={Boolean(composition.paymentError)}
+                  onChanged={() => loadBooking({ preserveView: true })}
+                />
+                <DateChangeRequests
+                  booking={booking}
+                  onChanged={() => loadBooking({ preserveView: true })}
+                />
+                <ResolutionOffers
+                  booking={booking}
+                  onChanged={() => loadBooking({ preserveView: true })}
+                />
+              </div>
             </div>
             <BookingSummary
               booking={booking}
               lifecycle={lifecycle}
               vehicle={vehicle}
-              onWithdrawn={loadBooking}
               showRequestManagement={canManageRequest}
             />
           </div>
@@ -738,7 +768,7 @@ function WithdrawBookingAction({
       className="booking-withdrawal"
       aria-labelledby="withdraw-request-title"
     >
-      <summary id="withdraw-request-title">Need to change your plans?</summary>
+      <summary id="withdraw-request-title">Withdraw rental request</summary>
       <div className="booking-withdrawal__content">
         <p>
           Withdraw this unfinished request. Your reason is saved with the
@@ -804,13 +834,11 @@ function BookingSummary({
   booking,
   lifecycle,
   vehicle,
-  onWithdrawn,
   showRequestManagement,
 }: {
   booking: CustomerBooking;
   lifecycle: LifecyclePresentation;
   vehicle: CustomerVehicle | null;
-  onWithdrawn: () => Promise<void>;
   showRequestManagement: boolean;
 }) {
   const vehicleName = booking.rental
@@ -932,12 +960,6 @@ function BookingSummary({
           Need to update your request?{" "}
           <ArrowRight size={18} aria-hidden="true" />
         </Link>
-      ) : null}
-      {showRequestManagement ? (
-        <WithdrawBookingAction
-          bookingId={booking.id}
-          onWithdrawn={onWithdrawn}
-        />
       ) : null}
     </aside>
   );

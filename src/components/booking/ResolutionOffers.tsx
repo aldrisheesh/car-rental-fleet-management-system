@@ -125,6 +125,13 @@ export function ResolutionOffers({
         </p>
       )}
       {!loaded && !error && <p role="status">Loading alternative offers…</p>}
+      {loaded && !admin && eligible && !rows.length && (
+        <p>
+          No alternative has been offered yet. The team is reviewing your
+          booking. When an offer is ready, you can review the vehicle, dates and
+          saved price here before accepting or declining it.
+        </p>
+      )}
       {rows.map((row) => {
         const quote = row.quote_snapshot as Record<string, unknown>;
         const total = Number(quote.total_amount);

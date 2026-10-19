@@ -31363,6 +31363,10 @@ html[data-reduced-motion="true"] [data-motion-success="true"] {
 }
 .allocation-route-map__canvas { height: clamp(280px,40vw,400px); width:100%; position:relative; z-index:0; border:1px solid #c6d2cd; border-radius:8px; }
 .allocation-route-map > p { font-size:.8rem; color:#445d55; line-height:1.5; }
+.booking-management { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+.booking-management > h2 { margin: 0 0 1rem; font-size: 1.5rem; }
+.booking-management > .booking-withdrawal { margin-top: 0; }
+.booking-management > .booking-cancellation-requests { padding: 1rem 0; border: 0; border-radius: 0; }
 .booking-cancellation-requests { margin: 1.5rem 0; padding: 1.25rem; border: 1px solid #cbd4ce; border-radius: 12px; }
 .booking-cancellation-requests h3 { color: #143e39; margin: 0 0 .75rem; }
 .booking-cancellation-requests article { padding: .75rem 0; border-bottom:1px solid #d9ded8; }

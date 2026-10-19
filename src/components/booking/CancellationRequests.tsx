@@ -3,11 +3,13 @@ import { CategorizedField } from "./CategorizedField";
 import { validCategory } from "@/lib/booking-categories";
 import { readFetch } from "@/lib/read-fetch";
 import type { Database } from "@/lib/supabase/database.types";
+import { customerCancellationAction } from "@/lib/customer-cancellation";
 type Cancellation =
   Database["public"]["Tables"]["booking_cancellation_requests"]["Row"];
 export function CancellationRequests({
   booking,
   admin = false,
+  paymentUnavailable = false,
   onChanged,
 }: {
   booking: {
@@ -17,6 +19,7 @@ export function CancellationRequests({
     rental?: unknown;
   };
   admin?: boolean;
+  paymentUnavailable?: boolean;
   onChanged: () => Promise<void>;
 }) {
   const [rows, setRows] = useState<Cancellation[]>([]),
@@ -60,12 +63,11 @@ export function CancellationRequests({
   }, [load, invalidateLoads]);
   const pending = rows.find((r) => r.status === "Pending");
   const eligible =
-    !booking.rental &&
-    (booking.booking_status === "Confirmed" ||
-      (booking.booking_status === "Submitted" &&
-        ["Verified", "Pending Verification"].includes(
-          booking.payment_status ?? "",
-        )));
+    customerCancellationAction(
+      booking,
+      booking.payment_status,
+      paymentUnavailable,
+    ) === "request";
   async function send(action: "request" | "approve" | "reject") {
     setBusy(true);
     setError("");
