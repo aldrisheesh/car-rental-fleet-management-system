@@ -1,13 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { ArrowDownToLine, FileText, SlidersHorizontal } from "lucide-react";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Btn, TSelect } from "./ui";
 import { readFetch } from "@/lib/read-fetch";
@@ -18,6 +16,12 @@ import {
 } from "@/lib/report-query";
 import { reportFilename } from "@/lib/report-filename";
 import { BOOKING_CATEGORIES } from "@/lib/booking-categories";
+
+const PdfPreview = lazy(() =>
+  import("@/components/booking/PaymentPdfPreview").then((module) => ({
+    default: module.PaymentPdfPreview,
+  })),
+);
 
 export function ReportBuilder({
   start,
@@ -40,10 +44,10 @@ export function ReportBuilder({
   const [result, setResult] = useState<QueryReport | null>(null);
   const [busy, setBusy] = useState(false);
   const [options, setOptions] = useState<QueryReport | null>(null);
-  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
   const [exportOpen, setExportOpen] = useState(false);
-  const [exportError, setExportError] = useState("");
+  const [pdfUrl, setPdfUrl] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
   const [downloadStarted, setDownloadStarted] = useState(false);
   const requestVersion = useRef(0);
   const query = {
@@ -107,10 +111,20 @@ export function ReportBuilder({
       });
     return () => controller.abort();
   }, [start, end, branch]);
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
+
   async function generate() {
     const version = ++requestVersion.current;
     setBusy(true);
     setError("");
+    setPdfUrl("");
+    setResult(null);
+    setDownloadStarted(false);
+    setExportOpen(true);
     try {
       const params = new URLSearchParams({ ...query, query: kind });
       params.delete("kind");
@@ -120,7 +134,10 @@ export function ReportBuilder({
       const body = await response.json();
       if (!response.ok)
         throw new Error(body.message ?? "Unable to generate this report.");
+      const { createReportPdf } = await import("@/lib/report-pdf");
+      const pdf = await createReportPdf(body);
       if (requestVersion.current === version) {
+        setPdfUrl(URL.createObjectURL(pdf.output("blob")));
         setResult(body);
         setOptions(body);
       }
@@ -137,23 +154,6 @@ export function ReportBuilder({
       if (requestVersion.current === version) setBusy(false);
     }
   }
-  async function download() {
-    if (!result || !current || filtersPending || exporting) return;
-    setExporting(true);
-    setExportError("");
-    setDownloadStarted(false);
-    try {
-      const { downloadReportPdf } = await import("@/lib/report-pdf");
-      await downloadReportPdf(result);
-      setDownloadStarted(true);
-    } catch {
-      setExportError(
-        "The PDF could not be created. Your preview is still available. Try downloading again.",
-      );
-    } finally {
-      setExporting(false);
-    }
-  }
   return (
     <section
       className="admin-reports-supporting report-builder"
@@ -162,7 +162,7 @@ export function ReportBuilder({
       <header className="report-builder__heading">
         <div>
           <h2 id="report-builder-title">Create an operational report</h2>
-          <p>Choose a report, review the results, then export a copy.</p>
+          <p>Choose a report, preview the PDF, then download it.</p>
         </div>
         <div
           className="report-builder__scope"
@@ -175,6 +175,7 @@ export function ReportBuilder({
       </header>
       <form
         className="report-builder__configuration"
+        ref={formRef}
         onSubmit={(event) => {
           event.preventDefault();
           void generate();
@@ -322,192 +323,72 @@ export function ReportBuilder({
           {error}
         </p>
       )}
-      {!result && !error && (
-        <div className="report-builder__empty" role="status">
-          <FileText size={24} aria-hidden="true" />
-          <h3>
-            {busy
-              ? "Preparing your report"
-              : "Your report preview will appear here"}
-          </h3>
-          <p>
-            {busy
-              ? "Gathering the matching records…"
-              : "Generate a preview to check the results before downloading."}
-          </p>
-        </div>
-      )}
-      {result && (
-        <div className="report-builder__result" aria-busy={busy}>
-          <header>
-            <div>
-              <h3>{result.title}</h3>
-              <p>
-                {formatReportDates(result.query.start, result.query.end)} ·{" "}
-                {result.query.branch === "all"
-                  ? "All branches"
-                  : (result.branches.find(
-                      (item) => item.id === result.query.branch,
-                    )?.name ?? "Selected branch")}
-              </p>
-              <p className="report-builder__timestamp">
-                Generated {formatReportTime(result.generatedAt)} ·{" "}
-                {result.rows.length}{" "}
-                {result.rows.length === 1 ? "result" : "results"}
-              </p>
-            </div>
-            <Dialog
-              open={exportOpen}
-              onOpenChange={(open) => {
-                setExportOpen(open);
-                if (open) {
-                  setExportError("");
-                  setDownloadStarted(false);
-                }
-              }}
-            >
-              <DialogTrigger asChild>
-                <Btn disabled={!current || busy || filtersPending}>
-                  <ArrowDownToLine size={16} aria-hidden="true" />
-                  Export report
-                </Btn>
-              </DialogTrigger>
-              <DialogContent className="report-export-dialog">
-                <DialogHeader>
-                  <DialogTitle>Export report</DialogTitle>
-                  <DialogDescription>
-                    Download the generated preview with its applied filters.
-                  </DialogDescription>
-                </DialogHeader>
-                <dl className="report-export-dialog__summary">
-                  <div>
-                    <dt>Report</dt>
-                    <dd>{result.title}</dd>
-                  </div>
-                  <div>
-                    <dt>Period</dt>
-                    <dd>
-                      {formatReportDates(result.query.start, result.query.end)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Branch</dt>
-                    <dd>
-                      {result.query.branch === "all"
-                        ? "All branches"
-                        : (result.branches.find(
-                            (item) => item.id === result.query.branch,
-                          )?.name ?? "Selected branch")}
-                    </dd>
-                  </div>
-                  {current && refinements.length > 0 && (
-                    <div>
-                      <dt>Filters</dt>
-                      <dd>{refinements.join(" · ")}</dd>
-                    </div>
-                  )}
-                  <div>
-                    <dt>Format</dt>
-                    <dd>PDF · Portrait · Short bond (8.5 × 11 in)</dd>
-                  </div>
-                  <div>
-                    <dt>Filename</dt>
-                    <dd className="report-export-dialog__filename">
-                      {reportFilename(result)}
-                    </dd>
-                  </div>
-                </dl>
-                {(!current || filtersPending) && (
-                  <p role="status" className="report-builder__notice">
-                    Settings changed. Close this dialog and regenerate the
-                    preview before exporting.
-                  </p>
-                )}
-                {exportError && (
-                  <p role="alert" className="admin-reports-alert">
-                    {exportError}
-                  </p>
-                )}
-                <p
-                  role="status"
-                  aria-live="polite"
-                  className="report-export-dialog__status"
-                >
-                  {exporting
-                    ? "Preparing your PDF…"
-                    : downloadStarted
-                      ? "Download started. Check your browser’s downloads for the file."
-                      : "The PDF includes the report scope, results and generation time."}
-                </p>
-                <DialogFooter>
-                  <Btn onClick={() => setExportOpen(false)}>
-                    {downloadStarted ? "Close" : "Cancel"}
-                  </Btn>
-                  <Btn
-                    variant="primary"
-                    disabled={!current || filtersPending || busy || exporting}
-                    onClick={() => void download()}
-                  >
-                    <ArrowDownToLine size={16} aria-hidden="true" />
-                    {exporting
-                      ? "Preparing PDF…"
-                      : downloadStarted
-                        ? "Download again"
-                        : "Download PDF"}
-                  </Btn>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </header>
-          {(!current || filtersPending) && (
+      <Dialog open={exportOpen} onOpenChange={setExportOpen}>
+        <DialogContent
+          className="report-pdf-dialog"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            formRef.current
+              ?.querySelector<HTMLButtonElement>('button[type="submit"]')
+              ?.focus();
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>
+              {result ? result.title : "Report PDF preview"}
+            </DialogTitle>
+            <DialogDescription>
+              {result
+                ? `${formatReportDates(result.query.start, result.query.end)} · ${result.query.branch === "all" ? "All branches" : (result.branches.find((item) => item.id === result.query.branch)?.name ?? "Selected branch")}`
+                : "Preparing your printable report…"}
+            </DialogDescription>
+          </DialogHeader>
+          {result && (!current || filtersPending) && (
             <p role="status" className="report-builder__notice">
-              Settings changed. Generate a new preview before exporting.
+              Settings changed. Close this preview and generate it again before
+              downloading.
             </p>
           )}
-          {busy && <p role="status">Updating the report preview…</p>}
-          <p>{result.note}</p>
           <div
-            className="admin-scroll-region"
+            className="report-pdf-dialog__document"
             tabIndex={0}
             role="region"
-            aria-label="Generated report results"
+            aria-label="Report PDF pages"
+            aria-busy={busy}
           >
-            <table className="admin-decision-data-table">
-              <thead>
-                <tr>
-                  <th>
-                    {result.query.kind === "forecast"
-                      ? "Branch / planning week"
-                      : "Result"}
-                  </th>
-                  {!["purposes", "destinations"].includes(
-                    result.query.kind,
-                  ) && <th>Vehicle category</th>}
-                  <th>
-                    {result.query.kind === "forecast"
-                      ? "Vehicles to plan for"
-                      : result.query.kind === "rentals"
-                        ? "Rental starts"
-                        : "Requests"}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.rows.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.label}</td>
-                    {!["purposes", "destinations"].includes(
-                      result.query.kind,
-                    ) && <td>{row.category || "—"}</td>}
-                    <td>{row.count}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {busy ? (
+              <p role="status">Generating your PDF…</p>
+            ) : error ? (
+              <p role="alert">{error} Close this preview and try again.</p>
+            ) : pdfUrl && result ? (
+              <Suspense fallback={<p role="status">Loading PDF preview…</p>}>
+                <PdfPreview source={pdfUrl} filename={reportFilename(result)} />
+              </Suspense>
+            ) : null}
           </div>
-          {!result.rows.length && <p>No matching records in this period.</p>}
-        </div>
-      )}
+          <footer className="report-pdf-dialog__footer">
+            <p role="status" aria-live="polite">
+              {downloadStarted
+                ? "Download started. Check your browser’s downloads."
+                : "PDF · Portrait · Short bond (8.5 × 11 in)"}
+            </p>
+            <div>
+              <Btn onClick={() => setExportOpen(false)}>Close preview</Btn>
+              {pdfUrl && result && current && !filtersPending && !busy && (
+                <a
+                  className="report-pdf-dialog__download"
+                  href={pdfUrl}
+                  download={reportFilename(result)}
+                  onClick={() => setDownloadStarted(true)}
+                >
+                  <ArrowDownToLine size={16} aria-hidden="true" />
+                  Download PDF
+                </a>
+              )}
+            </div>
+          </footer>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
@@ -521,11 +402,4 @@ function formatReportDates(start: string, end: string) {
       timeZone: "Asia/Manila",
     }).format(new Date(`${date}T00:00:00+08:00`));
   return `${format(start)} – ${format(end)}`;
-}
-function formatReportTime(value: string) {
-  return new Intl.DateTimeFormat("en-PH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Manila",
-  }).format(new Date(value));
 }
