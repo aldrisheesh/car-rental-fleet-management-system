@@ -1,3 +1,4 @@
+import { reportFilename } from "./report-filename";
 import type { QueryReport } from "./report-query";
 import { BOOKING_CATEGORIES } from "./booking-categories";
 
@@ -103,7 +104,5 @@ export async function createReportPdf(report: QueryReport) {
 }
 export async function downloadReportPdf(report: QueryReport) {
   const doc = await createReportPdf(report);
-  doc.save(
-    `Briah-${report.query.kind}-${report.query.start}-${report.query.end}.pdf`,
-  );
+  await doc.save(reportFilename(report), { returnPromise: true });
 }
