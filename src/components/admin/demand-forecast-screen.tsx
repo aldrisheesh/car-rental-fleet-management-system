@@ -227,6 +227,11 @@ export function DemandForecastScreen(p: Props) {
             aria-label="Weekly forecast outlook"
           >
             <table className="admin-decision-data-table dss-forecast-results">
+              <colgroup>
+                {p.branch === "all" ? <col /> : null}
+                <col />
+                <col />
+              </colgroup>
               <thead>
                 <tr>
                   {p.branch === "all" ? <th scope="col">Branch</th> : null}

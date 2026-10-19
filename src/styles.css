@@ -28340,6 +28340,15 @@ label.admin-payment-methods-dialog__availability small {
 }
 .dss-forecast-results {
   min-width: 760px;
+  table-layout: fixed;
+  width: 100%;
+}
+.dss-forecast-results th,
+.dss-forecast-results td {
+  padding: .85rem 1.25rem;
+}
+.dss-forecast-results .is-numeric {
+  font-variant-numeric: tabular-nums;
 }
 .dss-forecast-results td {
   vertical-align: top;
@@ -28425,6 +28434,34 @@ label.admin-payment-methods-dialog__availability small {
 }
 .dss-forecast-evidence .admin-decision-calculation > header span {
   display: none;
+}
+/* Keep the explanation, example and result on the same content edges. */
+.dss-forecast-evidence .admin-decision-calculation > header {
+  padding: .75rem 0 1rem;
+  gap: 1rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.dss-forecast-evidence .admin-decision-calculation-table > div {
+  grid-template-columns: minmax(12rem, 2fr) repeat(3, minmax(6rem, 1fr));
+  gap: 1rem;
+  padding: .75rem .9rem;
+}
+.dss-forecast-evidence .admin-decision-calculation-table > div > :nth-child(n + 2) {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.dss-forecast-evidence .admin-decision-calculation-result {
+  padding: 1rem;
+}
+@media (max-width: 640px) {
+  .dss-forecast-evidence .admin-decision-calculation > header {
+    flex-direction: column;
+    gap: .35rem;
+  }
+  .dss-forecast-evidence .admin-decision-calculation > header small {
+    text-align: left;
+  }
 }
 .dss-forecast-history {
   display: grid;
